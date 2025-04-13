@@ -1,0 +1,452 @@
+/* Base Panel Styling */
+.cleanplaats-panel {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 99999;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.2);
+    font-family: Arial, sans-serif;
+    min-width: 250px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    width: 280px;
+    max-width: 90vw;
+  }
+  
+  /* Collapsed state */
+  .cleanplaats-panel.collapsed {
+    transform: translateY(calc(100% - 42px));
+  }
+  
+  /* Header Styling */
+  .cleanplaats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    user-select: none;
+  }
+  
+  .cleanplaats-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #4a4a4a;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .cleanplaats-header h3::before {
+    content: "";
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-color: #4CAF50;
+    border-radius: 50%;
+  }
+  
+  .cleanplaats-badge {
+    background: #e8f5e9;
+    color: #2e7d32;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: bold;
+    margin-left: 8px;
+  }
+  
+  .cleanplaats-toggle {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 5px;
+    color: #757575;
+    transition: transform 0.3s ease;
+  }
+  
+  .collapsed .cleanplaats-toggle {
+    transform: rotate(180deg);
+  }
+  
+  /* Content Area */
+  .cleanplaats-content {
+    padding: 12px 15px;
+    max-height: 60vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+  
+  .cleanplaats-content::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .cleanplaats-content::-webkit-scrollbar-thumb {
+    background-color: #c1c1c1;
+    border-radius: 3px;
+  }
+  
+  /* Options Styling */
+  .cleanplaats-options {
+    margin-bottom: 15px;
+  }
+  
+  .cleanplaats-section-title {
+    font-size: 13px;
+    color: #757575;
+    margin: 12px 0 8px;
+    text-transform: uppercase;
+  }
+  
+  .cleanplaats-option {
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+  }
+  
+  .cleanplaats-checkbox {
+    position: relative;
+    height: 18px;
+    width: 18px;
+    margin-right: 10px;
+    appearance: none;
+    border: 2px solid #9e9e9e;
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  
+  .cleanplaats-checkbox:checked {
+    background: #4CAF50;
+    border-color: #4CAF50;
+  }
+  
+  .cleanplaats-checkbox:checked::after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  
+  .cleanplaats-option label {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    cursor: pointer;
+    flex: 1;
+  }
+  
+  /* Button Styling */
+  .cleanplaats-button {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;
+    margin-top: 15px;
+    transition: background 0.2s ease;
+    font-size: 14px;
+  }
+  
+  .cleanplaats-button:hover {
+    background: #45a049;
+  }
+  
+  .cleanplaats-button:active {
+    transform: translateY(1px);
+  }
+  
+  .cleanplaats-button.secondary {
+    background: #f5f5f5;
+    color: #4a4a4a;
+    border: 1px solid #e0e0e0;
+  }
+  
+  .cleanplaats-button.secondary:hover {
+    background: #e8e8e8;
+  }
+  
+  /* Stats Area */
+  .cleanplaats-stats {
+    font-size: 13px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 12px;
+  }
+  
+  .cleanplaats-stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 4px 0;
+  }
+  
+  .cleanplaats-stat-label {
+    color: #616161;
+  }
+  
+  .cleanplaats-stat-value {
+    font-weight: bold;
+    color: #4CAF50;
+  }
+  
+  /* Hidden elements */
+  [data-cleanplaats-hidden] {
+    display: none !important;
+  }
+
+  .cleanplaats-hidden {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    pointer-events: none !important;
+  }
+  
+  /* Tooltip */
+  .cleanplaats-tooltip {
+    position: relative;
+    display: inline-block;
+    margin-left: 6px;
+  }
+  
+  .cleanplaats-tooltip-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    background: #e0e0e0;
+    color: #757575;
+    border-radius: 50%;
+    font-size: 11px;
+    cursor: help;
+  }
+  
+  .cleanplaats-tooltip-text {
+    visibility: hidden;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    width: 150px;
+    font-size: 12px;
+    pointer-events: none;
+  }
+  
+  .cleanplaats-tooltip:hover .cleanplaats-tooltip-text {
+    visibility: visible;
+    opacity: 1;
+  }
+  
+  /* First-time notification */
+  .cleanplaats-onboarding {
+    position: fixed;
+    top: 70px; /* Updated: Moved down from 20px to avoid being cut off */
+    right: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.25);
+    padding: 15px;
+    z-index: 99998;
+    width: 320px;
+    max-width: 90vw;
+    font-family: Arial, sans-serif;
+    animation: cleanplaats-slide-in 0.5s ease;
+  }
+  
+  @keyframes cleanplaats-slide-in {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  .cleanplaats-onboarding-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  
+  .cleanplaats-onboarding-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #4a4a4a;
+  }
+  
+  .cleanplaats-onboarding-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #757575;
+    padding: 2px;
+  }
+  
+  .cleanplaats-onboarding-content {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #616161;
+    margin-bottom: 12px;
+  }
+  
+  .cleanplaats-onboarding-button {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;
+    font-size: 14px;
+  }
+
+  /* Empty page notification styles */
+.cleanplaats-empty-notification {
+    background-color: #4CAF50; /* Cleanplaats primary color */
+    color: white; /* Light text for contrast */
+    border: 2px solid #388E3C; /* Darker border for emphasis */
+    padding: 12px;
+    margin-top: 10px;
+    text-align: center;
+    position: relative;
+    z-index: 1000;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 5px; /* Rounded corners for a softer look */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+}
+
+.cleanplaats-empty-notification-content {
+    margin-bottom: 10px;
+}
+
+.cleanplaats-empty-notification p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.cleanplaats-empty-notification-close {
+    background-color: #388E3C; /* Darker button color */
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: bold; /* Make the button text stand out */
+}
+
+.cleanplaats-empty-notification-close:hover {
+    background-color: #2E7D32; /* Even darker on hover */
+}
+
+.cleanplaats-pause-button {
+    background-color: #f0ad4e; /* Example: a shade of orange */
+    color: white;
+    border: none;
+}
+
+.cleanplaats-pause-button:hover {
+    background-color: #eea236; /* Darker shade on hover */
+}
+
+.cleanplaats-skip-loader {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes cleanplaats-notification-fadein {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Buy Me Coffee Button */
+.cleanplaats-bmc-button {
+    display: block;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Loading spinner for aggregated content */
+.cleanplaats-loading-spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 10px auto;
+}
+
+/* Visual indicator for aggregated listings */
+[data-cleanplaats-aggregated="true"] {
+    border-left: 3px solid #3498db;
+}
+
+/* Aggregation Indicator */
+.cleanplaats-aggregation-indicator {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 8px 16px;
+    margin: 10px 0;
+    text-align: center;
+    font-size: 14px;
+    color: #495057;
+}
+
+.cleanplaats-aggregated-page {
+    color: #adb5bd !important;
+    cursor: not-allowed !important;
+    text-decoration: line-through !important;
+}
+
+.cleanplaats-aggregated-indicator {
+    color: #0066cc;
+    font-size: 0.9em;
+}
+
+.hz-Link--disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}

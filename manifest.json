@@ -1,0 +1,29 @@
+{
+    "manifest_version": 3,
+    "name": "Cleanplaats",
+    "version": "1.1.0",
+    "description": "Clean and ad-free browsing experience for Marktplaats.nl",
+    "author": "",
+    "permissions": ["storage"],
+    "host_permissions": ["*://*.marktplaats.nl/*"],
+    "content_scripts": [
+      {
+        "matches": ["*://*.marktplaats.nl/*"],
+        "js": ["content.js"],
+        "css": ["content.css"],
+        "run_at": "document_end"
+      }
+    ],
+    "icons": {
+      
+    },
+    "web_accessible_resources": [
+      {
+        "resources": ["icons/*"],
+        "matches": ["*://*.marktplaats.nl/*"]
+      }
+    ],
+    "action": {
+      "default_title": "Cleanplaats"
+    }
+  }
