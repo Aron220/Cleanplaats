@@ -10,7 +10,7 @@ const CLEANPLAATS = {
         removeTopAds: true,
         removeDagtoppers: true,
         removePromotedListings: true,
-        removeAds: true,
+        // removeAds: true, is now always true
         removeOpvalStickers: true,
         pauseFiltering: false
     },
@@ -52,16 +52,14 @@ if (document.readyState === 'loading') {
 function initCleanplaats() {
     console.log('Cleanplaats: Initializing...');
 
-    // Load saved settings and initialize the extension
     loadSettings()
         .then(() => {
             checkFirstRun()
                 .then(isFirstRun => {
                     CLEANPLAATS.featureFlags.firstRun = isFirstRun;
-
-                    if (isFirstRun) {
-                        showOnboarding();
-                    }
+                    
+                    // Always show onboarding/welcome message
+                    showOnboarding();
 
                     createControlPanel();
                     setupAllObservers();
@@ -180,8 +178,11 @@ function createControlPanel() {
             <div class="cleanplaats-options">
                 <div class="cleanplaats-section-title">Filteropties</div>
                 <div class="cleanplaats-option">
-                    <input type="checkbox" id="removeTopAds" class="cleanplaats-checkbox" ${CLEANPLAATS.settings.removeTopAds ? 'checked' : ''}>
-                    <label for="removeTopAds">
+                    <label class="cleanplaats-switch">
+                        <input type="checkbox" id="removeTopAds" ${CLEANPLAATS.settings.removeTopAds ? 'checked' : ''}>
+                        <span class="cleanplaats-switch-slider"></span>
+                    </label>
+                    <label for="removeTopAds" class="cleanplaats-option-label">
                         Topadvertenties
                         <div class="cleanplaats-tooltip">
                             <span class="cleanplaats-tooltip-icon">?</span>
@@ -190,8 +191,11 @@ function createControlPanel() {
                     </label>
                 </div>
                 <div class="cleanplaats-option">
-                    <input type="checkbox" id="removeDagtoppers" class="cleanplaats-checkbox" ${CLEANPLAATS.settings.removeDagtoppers ? 'checked' : ''}>
-                    <label for="removeDagtoppers">
+                    <label class="cleanplaats-switch">
+                        <input type="checkbox" id="removeDagtoppers" ${CLEANPLAATS.settings.removeDagtoppers ? 'checked' : ''}>
+                        <span class="cleanplaats-switch-slider"></span>
+                    </label>
+                    <label for="removeDagtoppers" class="cleanplaats-option-label">
                         Dagtoppers
                         <div class="cleanplaats-tooltip">
                             <span class="cleanplaats-tooltip-icon">?</span>
@@ -200,8 +204,11 @@ function createControlPanel() {
                     </label>
                 </div>
                 <div class="cleanplaats-option">
-                    <input type="checkbox" id="removePromotedListings" class="cleanplaats-checkbox" ${CLEANPLAATS.settings.removePromotedListings ? 'checked' : ''}>
-                    <label for="removePromotedListings">
+                    <label class="cleanplaats-switch">
+                        <input type="checkbox" id="removePromotedListings" ${CLEANPLAATS.settings.removePromotedListings ? 'checked' : ''}>
+                        <span class="cleanplaats-switch-slider"></span>
+                    </label>
+                    <label for="removePromotedListings" class="cleanplaats-option-label">
                         Bedrijfsadvertenties
                         <div class="cleanplaats-tooltip">
                             <span class="cleanplaats-tooltip-icon">?</span>
@@ -210,8 +217,11 @@ function createControlPanel() {
                     </label>
                 </div>
                 <div class="cleanplaats-option">
-                    <input type="checkbox" id="removeOpvalStickers" class="cleanplaats-checkbox" ${CLEANPLAATS.settings.removeOpvalStickers ? 'checked' : ''}>
-                    <label for="removeOpvalStickers">
+                    <label class="cleanplaats-switch">
+                        <input type="checkbox" id="removeOpvalStickers" ${CLEANPLAATS.settings.removeOpvalStickers ? 'checked' : ''}>
+                        <span class="cleanplaats-switch-slider"></span>
+                    </label>
+                    <label for="removeOpvalStickers" class="cleanplaats-option-label">
                         Opvalstickers
                         <div class="cleanplaats-tooltip">
                             <span class="cleanplaats-tooltip-icon">?</span>
@@ -219,20 +229,9 @@ function createControlPanel() {
                         </div>
                     </label>
                 </div>
-                <div class="cleanplaats-option">
-                    <input type="checkbox" id="removeAds" class="cleanplaats-checkbox" ${CLEANPLAATS.settings.removeAds ? 'checked' : ''}>
-                    <label for="removeAds">
-                        Andere advertenties
-                        <div class="cleanplaats-tooltip">
-                            <span class="cleanplaats-tooltip-icon">?</span>
-                            <span class="cleanplaats-tooltip-text">Verwijdert banners, Google advertenties en andere advertenties</span>
-                        </div>
-                    </label>
-                </div>
-                <button id="pauseFilteringBtn" class="cleanplaats-button cleanplaats-pause-button">${CLEANPLAATS.settings.pauseFiltering ? 'Hervat filtering' : 'Pauzeer filtering'}</button>
             </div>
 
-            <button id="cleanplaats-apply" class="cleanplaats-button">Toepassen</button>
+            <button id="pauseFilteringBtn" class="cleanplaats-button cleanplaats-pause-button">${CLEANPLAATS.settings.pauseFiltering ? 'Hervat filtering' : 'Pauzeer filtering'}</button>
 
             ${CLEANPLAATS.featureFlags.showStats ? `
             <div class="cleanplaats-stats" id="cleanplaats-stats">
@@ -278,37 +277,95 @@ function createControlPanel() {
  * Show the onboarding notification for first-time users
  */
 function showOnboarding() {
+    if (CLEANPLAATS.featureFlags.firstRun) {
+        showFirstTimeOnboarding();
+    } else {
+        showWelcomeToast();
+    }
+}
+
+/**
+ * Show comprehensive first-time onboarding
+ */
+function showFirstTimeOnboarding() {
     const onboarding = document.createElement('div');
     onboarding.className = 'cleanplaats-onboarding';
     onboarding.id = 'cleanplaats-onboarding';
 
     onboarding.innerHTML = `
-        <div class="cleanplaats-onboarding-header">
-            <h3>Welkom bij Cleanplaats!</h3>
-            <button id="cleanplaats-onboarding-close" class="cleanplaats-onboarding-close">×</button>
-        </div>
         <div class="cleanplaats-onboarding-content">
-            <p>Cleanplaats verwijdert advertenties en promotionele content van Marktplaats. Gebruik het configuratiescherm rechtsonder om de filtering aan te passen.</p>
+            <div class="cleanplaats-onboarding-header">
+                <h3>🎉 Welkom bij Cleanplaats!</h3>
+                <button id="cleanplaats-onboarding-close" class="cleanplaats-onboarding-close">×</button>
+            </div>
+            <div class="cleanplaats-onboarding-steps">
+                <div class="cleanplaats-onboarding-step">
+                    <span class="step-number">1</span>
+                    <p>Cleanplaats verwijdert automatisch advertenties en promotionele content</p>
+                </div>
+                <div class="cleanplaats-onboarding-step">
+                    <span class="step-number">2</span>
+                    <p>Gebruik het configuratiescherm rechtsonder om de filtering aan te passen</p>
+                </div>
+                <div class="cleanplaats-onboarding-step">
+                    <span class="step-number">3</span>
+                    <p>Bekijk statistieken over verwijderde items in het configuratiescherm</p>
+                </div>
+            </div>
+            <button id="cleanplaats-onboarding-got-it" class="cleanplaats-onboarding-button">Aan de slag!</button>
         </div>
-        <button id="cleanplaats-onboarding-got-it" class="cleanplaats-onboarding-button">Begrepen!</button>
     `;
 
     document.body.appendChild(onboarding);
-
-    // Setup onboarding event listeners
-    document.getElementById('cleanplaats-onboarding-close').addEventListener('click', () => {
-        document.getElementById('cleanplaats-onboarding').remove();
+    
+    // Setup event listeners
+    ['cleanplaats-onboarding-close', 'cleanplaats-onboarding-got-it'].forEach(id => {
+        document.getElementById(id)?.addEventListener('click', () => {
+            onboarding.classList.add('cleanplaats-fade-out');
+            setTimeout(() => onboarding.remove(), 300);
+        });
     });
 
-    document.getElementById('cleanplaats-onboarding-got-it').addEventListener('click', () => {
-        document.getElementById('cleanplaats-onboarding').remove();
-    });
-
-    // Auto-remove after 12 seconds
+    // Auto-remove after 15 seconds
     setTimeout(() => {
-        const element = document.getElementById('cleanplaats-onboarding');
-        if (element) element.remove();
-    }, 12000);
+        if (onboarding.parentNode) {
+            onboarding.classList.add('cleanplaats-fade-out');
+            setTimeout(() => onboarding.remove(), 300);
+        }
+    }, 15000);
+}
+
+/**
+ * Show welcome toast for returning users
+ */
+function showWelcomeToast() {
+    const toast = document.createElement('div');
+    toast.className = 'cleanplaats-toast';
+    toast.id = 'cleanplaats-toast';
+
+    // Add removed count if available
+    const totalRemoved = CLEANPLAATS.stats.totalRemoved;
+    const message = totalRemoved > 0 
+        ? `Cleanplaats is actief (${totalRemoved} items verwijderd)`
+        : 'Cleanplaats is actief';
+
+    toast.innerHTML = `
+        <div class="cleanplaats-toast-content">
+            <span class="cleanplaats-toast-icon">✨</span>
+            <span class="cleanplaats-toast-message">${message}</span>
+        </div>
+    `;
+
+    document.body.appendChild(toast);
+
+    // Add visible class after a small delay for animation
+    setTimeout(() => toast.classList.add('visible'), 100);
+
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
 
 /**
@@ -460,7 +517,7 @@ function setupEventListeners() {
 
     // Setup checkbox change listeners
     ['removeTopAds', 'removeDagtoppers', 'removePromotedListings',
-        'removeOpvalStickers', 'removeAds'].forEach(id => {
+        'removeOpvalStickers'].forEach(id => {
             const checkbox = document.getElementById(id);
             if (checkbox) {
                 checkbox.addEventListener('change', handleCheckboxChange);
@@ -475,7 +532,35 @@ function handleCheckboxChange(event) {
     const setting = event.target.id;
     const value = event.target.checked;
 
+    // Update state
     CLEANPLAATS.settings[setting] = value;
+
+    // Save settings and apply changes immediately
+    saveSettings()
+        .then(() => {
+            // Reset previous changes and reapply filters
+            resetPreviousChanges();
+            performCleanup();
+            
+            // Show feedback in header
+            const header = document.querySelector('.cleanplaats-header');
+            const feedback = document.createElement('div');
+            feedback.className = 'cleanplaats-feedback';
+            feedback.textContent = '✓';
+            
+            // Remove any existing feedback
+            header.querySelectorAll('.cleanplaats-feedback').forEach(el => el.remove());
+            
+            header.appendChild(feedback);
+            requestAnimationFrame(() => feedback.classList.add('cleanplaats-feedback-show'));
+            
+            // Remove after animation
+            setTimeout(() => feedback.remove(), 1500);
+        })
+        .catch(error => {
+            console.error('Cleanplaats: Failed to apply setting', error);
+            event.target.checked = !value;
+        });
 }
 
 /**
@@ -589,20 +674,17 @@ function performCleanup() {
         return;
     }
 
-    // Perform all cleanups synchronously
+    // Always remove regular ads first
+    removeAllAds();
+    removePersistentGoogleAds();
+
+    // Then handle optional filters
     if (CLEANPLAATS.settings.removeTopAds) removeTopAdvertisements();
     if (CLEANPLAATS.settings.removeDagtoppers) removeDagtoppers();
     if (CLEANPLAATS.settings.removePromotedListings) removePromotedListings();
     if (CLEANPLAATS.settings.removeOpvalStickers) removeOpvalStickerListings();
-    if (CLEANPLAATS.settings.removeAds) {
-        removeAllAds();
-        removePersistentGoogleAds();
-    }
 
     updateStatsDisplay();
-    
-    // Don't call checkForEmptyPage() here anymore
-    // This prevents the cascade of multiple notifications
 }
 
 /**
@@ -703,8 +785,15 @@ function removeAllAds() {
         try {
             const elements = document.querySelectorAll(selector);
             elements.forEach(el => {
+                // First hide the element itself
                 if (!el.hasAttribute('data-cleanplaats-hidden') && hideElement(el)) {
                     count++;
+                }
+                
+                // Also hide the parent li if it's a banner container
+                const parentLi = el.closest('li.bannerContainerLoading');
+                if (parentLi && !parentLi.hasAttribute('data-cleanplaats-hidden')) {
+                    hideElement(parentLi);
                 }
             });
         } catch (error) {
@@ -735,7 +824,11 @@ function removeAllAds() {
         '.hz-Listings__container--cas[data-testid="BottomBlockLazyListings"]',
         '[class*="creative"]',
         '#google_ads_top_frame',
-        '.creative' // Added this line
+        '.creative',
+        'li.bannerContainerLoading', // Added this line to directly target the container
+        '.bannerContainerLoading', // Added this as a fallback
+        '.bannerContainerLoading .hz-Banner', // Added this to target banners inside containers
+        '.bannerContainerLoading .hz-Banner--fluid' // Added this to target fluid banners
     ];
 
     adSelectors.forEach(selector => {
@@ -745,7 +838,7 @@ function removeAllAds() {
     CLEANPLAATS.stats.otherAdsRemoved += count;
 }
 
-    /**
+/**
  * Remove persistent Google ads that resist normal hiding
  */
 function removePersistentGoogleAds() {
