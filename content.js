@@ -186,7 +186,7 @@ function createControlPanel() {
                         Topadvertenties
                         <div class="cleanplaats-tooltip">
                             <span class="cleanplaats-tooltip-icon">?</span>
-                            <span class="cleanplaats-tooltip-text">Verwijdert betaalde "Topadvertentie" advertenties</span>
+                            <span class="cleanplaats-tooltip-text">Verwijdert betaalde "Topadvertenties"</span>
                         </div>
                     </label>
                 </div>
