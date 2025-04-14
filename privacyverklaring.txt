@@ -1,0 +1,14 @@
+Cleanplaats – Privacyverklaring
+Cleanplaats respecteert jouw privacy.
+
+De extensie verzamelt of bewaart geen persoonlijke gegevens.
+
+Alle instellingen worden alleen lokaal opgeslagen via chrome.storage.sync.
+
+Cleanplaats verzendt geen informatie naar externe servers.
+
+Er wordt geen tracking, analytics of profiling gebruikt.
+
+Cleanplaats is 100% open-source en vrij van advertenties of verborgen scripts.
+
+Heb je vragen? Neem gerust contact op via GitHub of Buy Me A Coffee.
