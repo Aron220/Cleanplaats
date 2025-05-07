@@ -26,7 +26,7 @@ Via het bedieningspaneel rechtsonder op de pagina kun je op elk moment filters a
 - Alles wordt lokaal opgeslagen
 - Geen trackers, geen analytics, geen verborgen scripts
 
-Volledige privacyverklaring: zie [PRIVACY.md](PRIVACY.md) of de Web Store vermelding.
+Volledige privacyverklaring: zie [privacy.md](privacy.md) of de Web Store vermelding.
 
 ## ☕ Vind je het handig?
 
