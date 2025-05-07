@@ -1,0 +1,4 @@
+Add panel state persistence to keep the panel collapsed across page loads
+Only show the welcome toast on the main Marktplaats page
+Track when the welcome toast has been shown to avoid showing it multiple times
+Load and save the panel state along with other settings

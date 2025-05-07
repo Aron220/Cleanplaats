@@ -36,6 +36,12 @@ const CLEANPLAATS = {
         showStats: true,
         autoCollapse: false,
         firstRun: true
+    },
+
+    // Panel state
+    panelState: {
+        isCollapsed: false,
+        hasShownWelcomeToast: false
     }
 };
 
@@ -112,7 +118,10 @@ function checkFirstRun() {
 function loadSettings() {
     return new Promise((resolve, reject) => {
         try {
-            chrome.storage.sync.get(CLEANPLAATS.settings, (items) => {
+            chrome.storage.sync.get(['panelState', ...Object.keys(CLEANPLAATS.settings)], (items) => {
+                if (items.panelState) {
+                    CLEANPLAATS.panelState = items.panelState;
+                }
                 Object.assign(CLEANPLAATS.settings, items);
                 resolve();
             });
@@ -162,7 +171,7 @@ function createControlPanel() {
     panel.id = 'cleanplaats-panel';
     panel.className = 'cleanplaats-panel';
 
-    if (CLEANPLAATS.featureFlags.autoCollapse) {
+    if (CLEANPLAATS.featureFlags.autoCollapse || CLEANPLAATS.panelState.isCollapsed) {
         panel.classList.add('collapsed');
     }
 
@@ -339,6 +348,13 @@ function showFirstTimeOnboarding() {
  * Show welcome toast for returning users
  */
 function showWelcomeToast() {
+    // Only show on main page and if not already shown
+    if (CLEANPLAATS.panelState.hasShownWelcomeToast || 
+        location.pathname !== '/' || 
+        location.hostname !== 'www.marktplaats.nl') {
+        return;
+    }
+
     const toast = document.createElement('div');
     toast.className = 'cleanplaats-toast';
     toast.id = 'cleanplaats-toast';
@@ -357,15 +373,14 @@ function showWelcomeToast() {
     `;
 
     document.body.appendChild(toast);
-
-    // Add visible class after a small delay for animation
     setTimeout(() => toast.classList.add('visible'), 100);
-
-    // Auto-remove after 3 seconds
     setTimeout(() => {
         toast.classList.remove('visible');
         setTimeout(() => toast.remove(), 300);
     }, 3000);
+
+    // Mark as shown
+    CLEANPLAATS.panelState.hasShownWelcomeToast = true;
 }
 
 /**
@@ -414,7 +429,7 @@ function showEmptyPageNotification() {
     
     notification.innerHTML = `
         <div class="cleanplaats-empty-notification-content">
-            <p>De pagina is leeg omdat deze helemaal uit advertenties bestond! Probeer een volgende pagina.</p>
+            <p>De pagina is leeg omdat deze helemaal uit advertenties bestond! Probeer een volgende pagina of wijzig de filters.</p>
             <button id="cleanplaats-empty-notification-close" class="cleanplaats-empty-notification-close">OK</button>
         </div>
     `;
@@ -498,8 +513,12 @@ function setupEventListeners() {
                 return;
             }
 
-            panel.classList.toggle('collapsed');
-            toggle.textContent = panel.classList.contains('collapsed') ? '▼' : '▲';
+            CLEANPLAATS.panelState.isCollapsed = !CLEANPLAATS.panelState.isCollapsed;
+            panel.classList.toggle('collapsed', CLEANPLAATS.panelState.isCollapsed);
+            toggle.textContent = CLEANPLAATS.panelState.isCollapsed ? '▼' : '▲';
+
+            // Save panel state
+            chrome.storage.sync.set({ panelState: CLEANPLAATS.panelState });
         });
     }
 
