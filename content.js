@@ -314,7 +314,7 @@ function showFirstTimeOnboarding() {
                 </div>
                 <div class="cleanplaats-onboarding-step">
                     <span class="step-number">2</span>
-                    <p>Gebruik het configuratiescherm rechtsonder om de filtering aan te passen</p>
+                    <p>Gebruik het configuratiescherm rechtsonder om de filtering aan te passen. Je opent en sluit het paneel via het pijltje bovenin.</p>
                 </div>
                 <div class="cleanplaats-onboarding-step">
                     <span class="step-number">3</span>
