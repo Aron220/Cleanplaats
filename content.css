@@ -540,14 +540,37 @@
     white-space: nowrap; /* Keep button text on one line */
 }
 
+/* Style for the pause button */
 .cleanplaats-pause-button {
-    background-color: #f0ad4e; /* Example: a shade of orange */
-    color: white;
+    background-color: #e0e0e0; /* Light gray for active filtering */
+    color: #333; /* Dark text for readability */
     border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;
+    margin-top: 15px;
+    transition: background-color 0.3s ease;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Space between icon and text */
 }
 
 .cleanplaats-pause-button:hover {
-    background-color: #eea236; /* Darker shade on hover */
+    background-color: #d0d0d0; /* Slightly darker gray on hover */
+}
+
+/* Style when filtering is paused */
+.cleanplaats-pause-button[data-paused="true"] {
+    background-color: #f44336; /* Red when paused */
+    color: white;
+}
+
+.cleanplaats-pause-button[data-paused="true"]:hover {
+    background-color: #d32f2f; /* Darker red on hover */
 }
 
 .cleanplaats-skip-loader {
@@ -707,4 +730,251 @@ input:checked + .cleanplaats-switch-slider:before {
 
 .cleanplaats-feedback-show {
     animation: feedbackAnimation 1.5s ease forwards;
+}
+
+/* Blacklist modal styles */
+.cleanplaats-blacklist-modal {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: #fff;
+    border: none;
+    z-index: 9999;
+    padding: 16px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    width: 280px; /* Match panel width */
+    max-width: 90vw; /* Match panel max-width */
+}
+
+.cleanplaats-blacklist-modal-content h4 {
+    margin: 0 0 16px 0;
+    color: #4a4a4a;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cleanplaats-blacklist-modal-content h4::before {
+    content: "👁";
+    font-size: 18px;
+}
+
+.cleanplaats-blacklist-modal-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.cleanplaats-blacklist-modal-content ul::-webkit-scrollbar {
+    width: 6px;
+}
+
+.cleanplaats-blacklist-modal-content ul::-webkit-scrollbar-thumb {
+    background-color: #c1c1c1;
+    border-radius: 3px;
+}
+
+.cleanplaats-blacklist-modal-content li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    margin-bottom: 4px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.cleanplaats-blacklist-modal-content li:hover {
+    background: #f0f0f0;
+}
+
+.cleanplaats-blacklist-modal-content li span {
+    flex: 1;
+    margin-right: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #333;
+    font-size: 14px;
+}
+
+/* Modern button style */
+.cleanplaats-unblacklist-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.3s ease; /* Increased duration for smoother effect */
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.cleanplaats-unblacklist-btn::before {
+    content: "👁";
+    font-size: 14px;
+    text-decoration: line-through;
+    margin-right: 4px;
+    transition: transform 0.3s ease;
+}
+
+.cleanplaats-unblacklist-btn:hover {
+    background: #4CAF50;
+    transform: translateY(-1px);
+}
+
+.cleanplaats-unblacklist-btn::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+}
+
+.cleanplaats-unblacklist-btn:hover::after {
+    transform: translateX(100%);
+}
+
+/* Close button style */
+#cleanplaats-blacklist-close {
+    width: 100%;
+    margin-top: 12px;
+    padding: 8px;
+    background: #f0f0f0;
+    border: none;
+    border-radius: 6px;
+    color: #666;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+#cleanplaats-blacklist-close:hover {
+    background: #e0e0e0;
+}
+
+/* Modern seller hide button */
+.cleanplaats-blacklist-btn-row {
+    margin-top: 4px;
+    margin-bottom: 8px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.cleanplaats-blacklist-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f8f9fa;
+    color: #666;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s ease;
+    width: auto;
+    min-width: auto;
+    max-width: none;
+}
+
+/* Add eye icon */
+.cleanplaats-blacklist-btn::before {
+    content: "👁";
+    font-size: 14px;
+}
+
+/* Hover effect */
+.cleanplaats-blacklist-btn:hover {
+    background: #ff4d4d;
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Hover effect for the eye icon */
+.cleanplaats-blacklist-btn:hover::before {
+    text-decoration: line-through;
+}
+
+/* Blacklist toast notification */
+.cleanplaats-blacklist-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #1a1a1a;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.cleanplaats-blacklist-toast.visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.cleanplaats-blacklist-toast-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cleanplaats-toast-icon {
+    font-size: 18px;
+    text-decoration: line-through;
+}
+
+.cleanplaats-toast-message {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.cleanplaats-toast-message strong {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.cleanplaats-toast-message span {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+/* Style for the "Beheer verborgen verkopers" button */
+#cleanplaats-manage-blacklist {
+    background-color: #2196F3; /* Blue */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;
+    margin-top: 15px;
+    transition: background-color 0.3s ease;
+    font-size: 14px;
+}
+
+#cleanplaats-manage-blacklist:hover {
+    background-color: #1976D2; /* Darker blue on hover */
 }
