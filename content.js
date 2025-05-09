@@ -12,7 +12,6 @@ const CLEANPLAATS = {
         removePromotedListings: true,
         // removeAds: true, is now always true
         removeOpvalStickers: true,
-        pauseFiltering: false,
         blacklistedSellers: []
     },
 
@@ -233,10 +232,6 @@ function createControlPanel() {
                     </label>
                 </div>
             </div>
-
-            <button id="pauseFilteringBtn" class="cleanplaats-button cleanplaats-pause-button">
-                ${CLEANPLAATS.settings.pauseFiltering ? '<span>&#10074;&#10074;</span> Filtering gepauzeerd' : 'Pauzeer filtering'}
-            </button>
 
             ${CLEANPLAATS.featureFlags.showStats ? `
             <div class="cleanplaats-stats" id="cleanplaats-stats">
@@ -532,12 +527,6 @@ function setupEventListeners() {
         applyBtn.addEventListener('click', applySettings);
     }
 
-    // Pause filtering button
-    const pauseFilteringBtn = document.getElementById('pauseFilteringBtn');
-    if (pauseFilteringBtn) {
-        pauseFilteringBtn.addEventListener('click', handlePauseFiltering);
-    }
-
     // Setup checkbox change listeners
     ['removeTopAds', 'removeDagtoppers', 'removePromotedListings',
         'removeOpvalStickers'].forEach(id => {
@@ -587,22 +576,6 @@ function handleCheckboxChange(event) {
 }
 
 /**
- * Handle pause filtering button click
- */
-function handlePauseFiltering() {
-    CLEANPLAATS.settings.pauseFiltering = !CLEANPLAATS.settings.pauseFiltering;
-    saveSettings()
-        .then(() => {
-            const pauseFilteringBtn = document.getElementById('pauseFilteringBtn');
-            if (pauseFilteringBtn) {
-                pauseFilteringBtn.innerHTML = CLEANPLAATS.settings.pauseFiltering ? '<span>&#10074;&#10074;</span> Filtering gepauzeerd' : 'Pauzeer filtering';
-                pauseFilteringBtn.setAttribute('data-paused', CLEANPLAATS.settings.pauseFiltering.toString());
-            }
-            applySettings();
-        });
-}
-
-/**
  * Apply current settings and update the UI
  */
 function applySettings() {
@@ -610,13 +583,6 @@ function applySettings() {
         .then(() => {
             resetPreviousChanges();
             performCleanup();
-
-            // Update pause filtering button state
-            const pauseFilteringBtn = document.getElementById('pauseFilteringBtn');
-            if (pauseFilteringBtn) {
-                pauseFilteringBtn.innerHTML = CLEANPLAATS.settings.pauseFiltering ? '<span>&#10074;&#10074;</span> Filtering gepauzeerd' : 'Pauzeer filtering';
-                pauseFilteringBtn.setAttribute('data-paused', CLEANPLAATS.settings.pauseFiltering.toString());
-            }
         })
         .catch(error => {
             console.error('Cleanplaats: Failed to apply settings', error);
@@ -665,9 +631,7 @@ function updateElementText(id, value) {
  */
 function performInitialCleanup() {
     try {
-        if (!CLEANPLAATS.settings.pauseFiltering) {
-            performCleanup();
-        }
+        performCleanup();
     } catch (error) {
         console.error('Cleanplaats: Initial cleanup failed', error);
     }
@@ -677,10 +641,6 @@ function performInitialCleanup() {
  * Main cleanup function that handles all types of content removal
  */
 function performCleanup() {
-    if (CLEANPLAATS.settings.pauseFiltering) {
-        return;
-    }
-
     // Always remove regular ads first
     removeAllAds();
     removePersistentGoogleAds();
@@ -1180,14 +1140,12 @@ function performCleanupAndCheckForEmptyPage() {
     const checkContentLoaded = setInterval(() => {
         if (document.querySelector('.hz-Listing') || document.querySelector('#adsense-container')) {
             clearInterval(checkContentLoaded);
-            if (!CLEANPLAATS.settings.pauseFiltering) {
-                console.log('Cleanplaats: Running cleanup after navigation');
-                performCleanup();
-                injectBlacklistButtons();
-                // Delay the check for empty page to ensure DOM is fully updated
-                setTimeout(checkForEmptyPage, 500);
-                setupKeyboardNavigation(); // Initialize keyboard navigation
-            }
+            console.log('Cleanplaats: Running cleanup after navigation');
+            performCleanup();
+            injectBlacklistButtons();
+            // Delay the check for empty page to ensure DOM is fully updated
+            setTimeout(checkForEmptyPage, 500);
+            setupKeyboardNavigation(); // Initialize keyboard navigation
         }
     }, 100);
 }
@@ -1210,9 +1168,6 @@ function setupObservers() {
             lastUrl = location.href;
             performCleanupAndCheckForEmptyPage();
         }
-
-        // Don't process mutations if filtering is paused
-        if (CLEANPLAATS.settings.pauseFiltering) return;
 
         let shouldCleanup = false;
 
