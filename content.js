@@ -1133,6 +1133,66 @@ function setupBlacklistModalButtons() {
  ====================== */
 
 /**
+ * Add keyboard navigation for carousel images
+ */
+let keyboardNavigationSetup = false; // Flag to track if keyboard navigation is already set up
+
+function setupKeyboardNavigation() {
+    if (keyboardNavigationSetup) {
+        // Remove the existing event listener
+        document.removeEventListener('keydown', keyboardNavigationHandler);
+    }
+
+    // Define the event listener function
+    keyboardNavigationHandler = function(event) {
+        if (document.querySelector('.Carousel-navigationContainer')) {
+            let nextButton = document.querySelector('.Carousel-navigationContainer button[aria-label="Volgende foto"]');
+            let prevButton = document.querySelector('.Carousel-navigationContainer button[aria-label="Vorige foto"]');
+
+            if (event.key === 'ArrowRight' && nextButton) {
+                event.preventDefault(); // Prevent default arrow key behavior
+                nextButton.focus(); // Focus the button
+                nextButton.click(); // Trigger the click
+            } else if (event.key === 'ArrowLeft' && prevButton) {
+                event.preventDefault(); // Prevent default arrow key behavior
+                prevButton.focus(); // Focus the button
+                prevButton.click(); // Trigger the click
+            }
+        }
+    };
+
+    document.addEventListener('keydown', keyboardNavigationHandler);
+    keyboardNavigationSetup = true; // Set the flag to true after setting up
+}
+
+/**
+ * Perform cleanup and check for empty page
+ */
+function performCleanupAndCheckForEmptyPage() {
+    // Remove the notification on navigation
+    const existingNotification = document.getElementById('cleanplaats-empty-notification');
+    if (existingNotification) {
+        existingNotification.remove();
+        notificationVisible = false;
+    }
+
+    // Immediately reapply filters when new content loads
+    const checkContentLoaded = setInterval(() => {
+        if (document.querySelector('.hz-Listing') || document.querySelector('#adsense-container')) {
+            clearInterval(checkContentLoaded);
+            if (!CLEANPLAATS.settings.pauseFiltering) {
+                console.log('Cleanplaats: Running cleanup after navigation');
+                performCleanup();
+                injectBlacklistButtons();
+                // Delay the check for empty page to ensure DOM is fully updated
+                setTimeout(checkForEmptyPage, 500);
+                setupKeyboardNavigation(); // Initialize keyboard navigation
+            }
+        }
+    }, 100);
+}
+
+/**
  * Set up a combined mutation observer for DOM and URL changes
  */
 function setupObservers() {
@@ -1197,32 +1257,6 @@ function setupObservers() {
 }
 
 /**
- * Perform cleanup and check for empty page
- */
-function performCleanupAndCheckForEmptyPage() {
-    // Remove the notification on navigation
-    const existingNotification = document.getElementById('cleanplaats-empty-notification');
-    if (existingNotification) {
-        existingNotification.remove();
-        notificationVisible = false;
-    }
-
-    // Immediately reapply filters when new content loads
-    const checkContentLoaded = setInterval(() => {
-        if (document.querySelector('.hz-Listing') || document.querySelector('#adsense-container')) {
-            clearInterval(checkContentLoaded);
-            if (!CLEANPLAATS.settings.pauseFiltering) {
-                console.log('Cleanplaats: Running cleanup after navigation');
-                performCleanup();
-                injectBlacklistButtons();
-                // Delay the check for empty page to ensure DOM is fully updated
-                setTimeout(checkForEmptyPage, 500);
-            }
-        }
-    }, 100);
-}
-
-/**
  * Unified function to handle navigation events
  */
 function handleNavigation() {
@@ -1264,7 +1298,11 @@ function setupNavigationDetection() {
 function setupAllObservers() {
     setupObservers();
     setupNavigationDetection();
+    setupKeyboardNavigation(); // Initialize keyboard navigation on initial setup
 }
+
+// Initialize keyboard navigation on initial page load
+setupKeyboardNavigation();
 
 /**
  * Get the current page number from the URL
