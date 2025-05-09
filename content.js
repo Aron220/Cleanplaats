@@ -77,7 +77,7 @@ function initCleanplaats() {
                             clearInterval(checkInitialContent);
                             performInitialCleanup();
                             injectBlacklistButtons();
-                            setTimeout(checkForEmptyPage, 500);
+                            setTimeout(checkForEmptyPage, 300);
                         }
                     }, 100);
                 });
@@ -568,6 +568,9 @@ function handleCheckboxChange(event) {
             
             // Remove after animation
             setTimeout(() => feedback.remove(), 1500);
+
+            // Check for empty page after applying filters
+            checkForEmptyPage();
         })
         .catch(error => {
             console.error('Cleanplaats: Failed to apply setting', error);
