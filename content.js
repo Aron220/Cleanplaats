@@ -448,7 +448,7 @@ function showBubbleNotification(message) {
         `;
 
         document.body.appendChild(toast);
-        requestAnimationFrame(() => toast.classList.add('visible'));
+        setTimeout(() => requestAnimationFrame(() => toast.classList.add('visible')), 0);
     }
 
     // Clear any existing timeout
