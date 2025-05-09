@@ -478,69 +478,7 @@
     transition: opacity 0.3s, transform 0.3s;
   }
 
-  /* Empty page notification styles */
-.cleanplaats-empty-notification {
-    background-color: #4CAF50;
-    color: white;
-    border: 2px solid #388E3C;
-    padding: 16px 24px; /* Increased top/bottom padding */
-    margin: 10px auto;
-    text-align: left;
-    position: relative;
-    z-index: 1000;
-    width: 60%; /* Reduced from 80% */
-    max-width: 600px; /* Reduced from 800px */
-    box-sizing: border-box;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    display: flex;
-    align-items: center;
-    gap: 16px; /* Increased gap */
-}
-
-.cleanplaats-empty-notification::before {
-    content: "";
-    width: 24px;
-    height: 24px;
-    flex-shrink: 0;
-    background-image: url('chrome-extension://__MSG_@@extension_id__/icons/icon48.png'); /* Using your extension's icon */
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-}
-
-.cleanplaats-empty-notification-content {
-    flex-grow: 1;
-    display: flex;
-    justify-content: space-between; /* Space between text and button */
-    align-items: center;
-    gap: 24px; /* Space between text and button */
-}
-
-.cleanplaats-empty-notification p {
-    margin: 5px 0;
-    font-size: 14px;
-    line-height: 1.4; /* Better readability */
-}
-
-.cleanplaats-empty-notification p::before {
-    content: "Cleanplaats: "; /* Add extension name to the message */
-    font-weight: bold;
-}
-
-.cleanplaats-empty-notification-close {
-    background-color: #388E3C;
-    color: white;
-    border: none;
-    padding: 8px 16px; /* Slightly larger button */
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 13px;
-    font-weight: bold;
-    white-space: nowrap; /* Keep button text on one line */
-}
-
-/* Style for the pause button */
+  /* Style for the pause button */
 .cleanplaats-pause-button {
     background-color: #e0e0e0; /* Light gray for active filtering */
     color: #333; /* Dark text for readability */

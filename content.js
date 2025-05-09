@@ -411,75 +411,60 @@ function checkForEmptyPage() {
         clearAllNotifications();
 
         if (visibleListings.length === 0) {
-            showEmptyPageNotification();
+            showBubbleNotification('De pagina is leeg omdat deze helemaal uit advertenties bestond! Probeer een volgende pagina of wijzig de filters.');
         } else if (visibleListings.length < 5) {
-            showFewListingsNotification(visibleListings.length, hiddenCount);
+            const listingWord = visibleListings.length === 1 ? 'resultaat' : 'resultaten';
+            const removedWord = hiddenCount === 1 ? 'advertentie' : 'advertenties';
+            showBubbleNotification(`Er ${visibleListings.length === 1 ? 'is' : 'zijn'} nog ${visibleListings.length} ${listingWord} over nadat Cleanplaats ${hiddenCount} ${removedWord} heeft verwijderd.`);
         }
     }, 1000); // Increased from 500ms to 1000ms
 }
 
 /**
- * Show notification for completely empty page
+ * Show a toast notification
  */
-function showEmptyPageNotification() {
-    const notification = document.createElement('div');
-    notification.id = 'cleanplaats-empty-notification';
-    notification.className = 'cleanplaats-empty-notification';
-    
-    notification.innerHTML = `
-        <div class="cleanplaats-empty-notification-content">
-            <p>De pagina is leeg omdat deze helemaal uit advertenties bestond! Probeer een volgende pagina of wijzig de filters.</p>
-            <button id="cleanplaats-empty-notification-close" class="cleanplaats-empty-notification-close">OK</button>
-        </div>
-    `;
-    
-    insertNotification(notification);
-}
+function showBubbleNotification(message) {
+    let toast = document.getElementById('cleanplaats-bubble-notification');
 
-/**
- * Show notification when few listings remain
- */
-function showFewListingsNotification(remainingCount, removedCount) {
-    const notification = document.createElement('div');
-    notification.id = 'cleanplaats-empty-notification';
-    notification.className = 'cleanplaats-empty-notification';
-    
-    const listingWord = remainingCount === 1 ? 'resultaat' : 'resultaten';
-    const removedWord = removedCount === 1 ? 'advertentie' : 'advertenties';
-    
-    notification.innerHTML = `
-        <div class="cleanplaats-empty-notification-content">
-            <p>Er ${remainingCount === 1 ? 'is' : 'zijn'} nog ${remainingCount} ${listingWord} over nadat Cleanplaats ${removedCount} ${removedWord} heeft verwijderd.</p>
-            <button id="cleanplaats-empty-notification-close" class="cleanplaats-empty-notification-close">OK</button>
-        </div>
-    `;
-    
-    insertNotification(notification);
-}
-
-/**
- * Helper to insert notification in the page
- */
-function insertNotification(notification) {
-    // Remove any existing notification first
-    clearAllNotifications();
-    
-    const searchBar = document.querySelector('.hz-Header-searchBar');
-    if (searchBar) {
-        searchBar.parentNode.insertBefore(notification, searchBar.nextSibling);
-    }
-    
-    // Setup close button
-    document.getElementById('cleanplaats-empty-notification-close').addEventListener('click', () => {
-        notification.remove();
-    });
-    
-    // Auto-remove after 8 seconds
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.remove();
+    if (toast) {
+        // If a toast is already visible, update its message
+        const messageElement = toast.querySelector('.cleanplaats-toast-message span');
+        if (messageElement) {
+            messageElement.textContent = message;
         }
-    }, 8000);
+    } else {
+        // If no toast is visible, create a new one
+        toast = document.createElement('div');
+        toast.className = 'cleanplaats-blacklist-toast';
+        toast.id = 'cleanplaats-bubble-notification'; // Add an ID to find it later
+
+        toast.innerHTML = `
+            <div class="cleanplaats-blacklist-toast-content">
+                <span class="cleanplaats-toast-icon">✨</span>
+                <div class="cleanplaats-toast-message">
+                    <span>${message}</span>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('visible'));
+    }
+
+    // Clear any existing timeout
+    if (toast.timeoutId) {
+        clearTimeout(toast.timeoutId);
+    }
+
+    // Set a new timeout
+    toast.timeoutId = setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => {
+            if (toast) {
+                toast.remove();
+            }
+        }, 300);
+    }, 5000);
 }
 
 /**
@@ -494,6 +479,21 @@ function clearAllNotifications() {
         }
     });
     notificationVisible = false;
+}
+
+/**
+ * Clear the bubble notification
+ */
+function clearBubbleNotification() {
+    const toast = document.getElementById('cleanplaats-bubble-notification');
+    if (toast) {
+        toast.classList.remove('visible');
+        setTimeout(() => {
+            if (toast) {
+                toast.remove();
+            }
+        }, 300);
+    }
 }
 
 /**
@@ -554,6 +554,9 @@ function handleCheckboxChange(event) {
             resetPreviousChanges();
             performCleanup();
             
+            // Clear the bubble notification
+            clearBubbleNotification();
+
             // Show feedback in header
             const header = document.querySelector('.cleanplaats-header');
             const feedback = document.createElement('div');
@@ -1138,6 +1141,9 @@ function performCleanupAndCheckForEmptyPage() {
         existingNotification.remove();
         notificationVisible = false;
     }
+
+    // Clear the bubble notification
+    clearBubbleNotification();
 
     // Immediately reapply filters when new content loads
     const checkContentLoaded = setInterval(() => {
