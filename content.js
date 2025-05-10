@@ -919,7 +919,9 @@ function addSellerToBlacklist(sellerName) {
     }
 }
 
-// Add this new function
+/**
+ * Show a toast notification for blacklisting
+ */
 function showBlacklistToast(sellerName) {
     const toast = document.createElement('div');
     toast.className = 'cleanplaats-blacklist-toast';
@@ -928,7 +930,7 @@ function showBlacklistToast(sellerName) {
         <div class="cleanplaats-blacklist-toast-content">
             <span class="cleanplaats-toast-icon">👁</span>
             <div class="cleanplaats-toast-message">
-                <strong>Verkoper verborgen</strong>
+                <strong>${sellerName} verborgen</strong>
                 <span>Beheer verborgen verkopers via het paneel</span>
             </div>
         </div>
@@ -1089,9 +1091,37 @@ function setupBlacklistModalButtons() {
         btn.style.background = 'red';
         btn.style.color = 'white';
         btn.onclick = () => {
-            removeSellerFromBlacklist(btn.dataset.seller);
+            const sellerName = btn.dataset.seller;
+            showUnblacklistToast(sellerName);
+            removeSellerFromBlacklist(sellerName);
         };
     });
+}
+
+/**
+ * Show a toast notification for unblacklisting
+ */
+function showUnblacklistToast(sellerName) {
+    const toast = document.createElement('div');
+    toast.className = 'cleanplaats-blacklist-toast';
+    
+    toast.innerHTML = `
+        <div class="cleanplaats-blacklist-toast-content">
+            <span class="cleanplaats-toast-icon">👁</span>
+            <div class="cleanplaats-toast-message">
+                <strong>${sellerName} niet meer verborgen</strong>
+                <span>Deze verkoper is weer zichtbaar in de resultaten</span>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('visible'));
+
+    setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
 
 /* ======================
