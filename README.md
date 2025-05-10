@@ -2,7 +2,6 @@
 
 Cleanplaats is een Chrome-extensie die je Marktplaats-bezoek schoon en overzichtelijk maakt. Verwijder automatisch advertenties zoals topadvertenties, dagtoppers, bedrijfsadvertenties en opvalstickers – allemaal met instelbare filters.
 
-![Cleanplaats Screenshot](screenshot.png)
 
 ## ✨ Wat doet Cleanplaats?
 
@@ -15,7 +14,7 @@ Cleanplaats is een Chrome-extensie die je Marktplaats-bezoek schoon en overzicht
 
 ## 🚀 Installatie
 
-1. Ga naar de [Chrome Web Store](#) *(link toevoegen na publicatie)*  
+1. Ga naar de [Chrome Web Store](https://chromewebstore.google.com/detail/peebdbeclpkljmfocjifjpjlngfpfhjp?utm_source=item-share-cb) 
 2. Klik op **Toevoegen aan Chrome**  
 3. Bezoek Marktplaats.nl en Cleanplaats doet de rest!
 
@@ -27,11 +26,11 @@ Via het bedieningspaneel rechtsonder op de pagina kun je op elk moment filters a
 - Alles wordt lokaal opgeslagen
 - Geen trackers, geen analytics, geen verborgen scripts
 
-Volledige privacyverklaring: zie [PRIVACY.md](PRIVACY.md) of de Web Store vermelding.
+Volledige privacyverklaring: zie [privacy.md](privacy.md) of de Web Store vermelding.
 
 ## ☕ Vind je het handig?
 
-Overweeg om de maker te steunen:  
+Overweeg om mij te steunen:  
 👉 [Buy Me A Coffee](https://www.buymeacoffee.com/cleanplaats)
 
 ## 📣 Feedback of bugs?

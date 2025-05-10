@@ -12,7 +12,7 @@ const CLEANPLAATS = {
         removePromotedListings: true,
         // removeAds: true, is now always true
         removeOpvalStickers: true,
-        pauseFiltering: false
+        blacklistedSellers: []
     },
 
     // Stats tracking
@@ -69,24 +69,17 @@ function initCleanplaats() {
 
                     createControlPanel();
                     setupAllObservers();
-                    
+                    applySettings(); // Add this line to apply settings after loading
+
                     // Modified this part to ensure content is loaded
                     const checkInitialContent = setInterval(() => {
-                        if (document.querySelector('.hz-Listing')) {
+                        if (document.querySelector('.hz-Listing') || document.querySelector('#adsense-container')) {
                             clearInterval(checkInitialContent);
                             performInitialCleanup();
-                            // Add delay before checking for empty page
-                            setTimeout(checkForEmptyPage, 1000);
+                            injectBlacklistButtons();
+                            setTimeout(checkForEmptyPage, 300);
                         }
                     }, 100);
-
-                    // Safety timeout after 5 seconds
-                    setTimeout(() => {
-                        clearInterval(checkInitialContent);
-                    }, 5000);
-
-                    // Log initialization complete
-                    console.log('Cleanplaats: Initialization complete');
                 });
         })
         .catch(error => {
@@ -240,8 +233,6 @@ function createControlPanel() {
                 </div>
             </div>
 
-            <button id="pauseFilteringBtn" class="cleanplaats-button cleanplaats-pause-button">${CLEANPLAATS.settings.pauseFiltering ? 'Hervat filtering' : 'Pauzeer filtering'}</button>
-
             ${CLEANPLAATS.featureFlags.showStats ? `
             <div class="cleanplaats-stats" id="cleanplaats-stats">
                 <div class="cleanplaats-section-title">Verwijderde items</div>
@@ -275,11 +266,19 @@ function createControlPanel() {
             <a href="https://www.buymeacoffee.com/cleanplaats" target="_blank" rel="noopener noreferrer" class="cleanplaats-bmc-button">
                     <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 40px !important;width: 180px !important;">
             </a>
+            <button id="cleanplaats-manage-blacklist" class="cleanplaats-button cleanplaats-blacklist-manage-btn" style="margin-top:10px;">Beheer verborgen verkopers</button>
+            <div id="cleanplaats-blacklist-modal" class="cleanplaats-blacklist-modal" style="display:none;"></div>
         </div>
     `;
 
     document.body.appendChild(panel);
     setupEventListeners();
+
+    // Blacklist management button
+    document.getElementById('cleanplaats-manage-blacklist').addEventListener('click', (e) => {
+        e.preventDefault();
+        showBlacklistModal();
+    });
 }
 
 /**
@@ -412,75 +411,60 @@ function checkForEmptyPage() {
         clearAllNotifications();
 
         if (visibleListings.length === 0) {
-            showEmptyPageNotification();
+            showBubbleNotification('De pagina is leeg omdat deze helemaal uit advertenties bestond! Probeer een volgende pagina of wijzig de filters.');
         } else if (visibleListings.length < 5) {
-            showFewListingsNotification(visibleListings.length, hiddenCount);
+            const listingWord = visibleListings.length === 1 ? 'resultaat' : 'resultaten';
+            const removedWord = hiddenCount === 1 ? 'advertentie' : 'advertenties';
+            showBubbleNotification(`Er ${visibleListings.length === 1 ? 'is' : 'zijn'} nog ${visibleListings.length} ${listingWord} over nadat Cleanplaats ${hiddenCount} ${removedWord} heeft verwijderd.`);
         }
     }, 1000); // Increased from 500ms to 1000ms
 }
 
 /**
- * Show notification for completely empty page
+ * Show a toast notification
  */
-function showEmptyPageNotification() {
-    const notification = document.createElement('div');
-    notification.id = 'cleanplaats-empty-notification';
-    notification.className = 'cleanplaats-empty-notification';
-    
-    notification.innerHTML = `
-        <div class="cleanplaats-empty-notification-content">
-            <p>De pagina is leeg omdat deze helemaal uit advertenties bestond! Probeer een volgende pagina of wijzig de filters.</p>
-            <button id="cleanplaats-empty-notification-close" class="cleanplaats-empty-notification-close">OK</button>
-        </div>
-    `;
-    
-    insertNotification(notification);
-}
+function showBubbleNotification(message) {
+    let toast = document.getElementById('cleanplaats-bubble-notification');
 
-/**
- * Show notification when few listings remain
- */
-function showFewListingsNotification(remainingCount, removedCount) {
-    const notification = document.createElement('div');
-    notification.id = 'cleanplaats-empty-notification';
-    notification.className = 'cleanplaats-empty-notification';
-    
-    const listingWord = remainingCount === 1 ? 'resultaat' : 'resultaten';
-    const removedWord = removedCount === 1 ? 'advertentie' : 'advertenties';
-    
-    notification.innerHTML = `
-        <div class="cleanplaats-empty-notification-content">
-            <p>Er ${remainingCount === 1 ? 'is' : 'zijn'} nog ${remainingCount} ${listingWord} over nadat Cleanplaats ${removedCount} ${removedWord} heeft verwijderd.</p>
-            <button id="cleanplaats-empty-notification-close" class="cleanplaats-empty-notification-close">OK</button>
-        </div>
-    `;
-    
-    insertNotification(notification);
-}
-
-/**
- * Helper to insert notification in the page
- */
-function insertNotification(notification) {
-    // Remove any existing notification first
-    clearAllNotifications();
-    
-    const searchBar = document.querySelector('.hz-Header-searchBar');
-    if (searchBar) {
-        searchBar.parentNode.insertBefore(notification, searchBar.nextSibling);
-    }
-    
-    // Setup close button
-    document.getElementById('cleanplaats-empty-notification-close').addEventListener('click', () => {
-        notification.remove();
-    });
-    
-    // Auto-remove after 8 seconds
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.remove();
+    if (toast) {
+        // If a toast is already visible, update its message
+        const messageElement = toast.querySelector('.cleanplaats-toast-message span');
+        if (messageElement) {
+            messageElement.textContent = message;
         }
-    }, 8000);
+    } else {
+        // If no toast is visible, create a new one
+        toast = document.createElement('div');
+        toast.className = 'cleanplaats-blacklist-toast';
+        toast.id = 'cleanplaats-bubble-notification'; // Add an ID to find it later
+
+        toast.innerHTML = `
+            <div class="cleanplaats-blacklist-toast-content">
+                <span class="cleanplaats-toast-icon">✨</span>
+                <div class="cleanplaats-toast-message">
+                    <span>${message}</span>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(toast);
+        setTimeout(() => requestAnimationFrame(() => toast.classList.add('visible')), 0);
+    }
+
+    // Clear any existing timeout
+    if (toast.timeoutId) {
+        clearTimeout(toast.timeoutId);
+    }
+
+    // Set a new timeout
+    toast.timeoutId = setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => {
+            if (toast) {
+                toast.remove();
+            }
+        }, 300);
+    }, 5000);
 }
 
 /**
@@ -495,6 +479,21 @@ function clearAllNotifications() {
         }
     });
     notificationVisible = false;
+}
+
+/**
+ * Clear the bubble notification
+ */
+function clearBubbleNotification() {
+    const toast = document.getElementById('cleanplaats-bubble-notification');
+    if (toast) {
+        toast.classList.remove('visible');
+        setTimeout(() => {
+            if (toast) {
+                toast.remove();
+            }
+        }, 300);
+    }
 }
 
 /**
@@ -528,12 +527,6 @@ function setupEventListeners() {
         applyBtn.addEventListener('click', applySettings);
     }
 
-    // Pause filtering button
-    const pauseFilteringBtn = document.getElementById('pauseFilteringBtn');
-    if (pauseFilteringBtn) {
-        pauseFilteringBtn.addEventListener('click', handlePauseFiltering);
-    }
-
     // Setup checkbox change listeners
     ['removeTopAds', 'removeDagtoppers', 'removePromotedListings',
         'removeOpvalStickers'].forEach(id => {
@@ -561,6 +554,9 @@ function handleCheckboxChange(event) {
             resetPreviousChanges();
             performCleanup();
             
+            // Clear the bubble notification
+            clearBubbleNotification();
+
             // Show feedback in header
             const header = document.querySelector('.cleanplaats-header');
             const feedback = document.createElement('div');
@@ -575,25 +571,13 @@ function handleCheckboxChange(event) {
             
             // Remove after animation
             setTimeout(() => feedback.remove(), 1500);
+
+            // Check for empty page after applying filters
+            checkForEmptyPage();
         })
         .catch(error => {
             console.error('Cleanplaats: Failed to apply setting', error);
             event.target.checked = !value;
-        });
-}
-
-/**
- * Handle pause filtering button click
- */
-function handlePauseFiltering() {
-    CLEANPLAATS.settings.pauseFiltering = !CLEANPLAATS.settings.pauseFiltering;
-    saveSettings()
-        .then(() => {
-            const pauseFilteringBtn = document.getElementById('pauseFilteringBtn');
-            if (pauseFilteringBtn) {
-                pauseFilteringBtn.textContent = CLEANPLAATS.settings.pauseFiltering ? 'Hervat filtering' : 'Pauzeer filtering';
-            }
-            applySettings();
         });
 }
 
@@ -605,33 +589,9 @@ function applySettings() {
         .then(() => {
             resetPreviousChanges();
             performCleanup();
-
-            // Update button text temporarily
-            const applyBtn = document.getElementById('cleanplaats-apply');
-            if (applyBtn) {
-                const originalText = applyBtn.textContent;
-                applyBtn.textContent = '✓ Toegepast!';
-
-                // Clear any existing timeout
-                clearTimeout(applyBtn.timeoutId);
-
-                // Set a new timeout
-                applyBtn.timeoutId = setTimeout(() => {
-                    if (applyBtn) applyBtn.textContent = originalText;
-                }, 1500);
-            }
         })
         .catch(error => {
             console.error('Cleanplaats: Failed to apply settings', error);
-
-            // Show error on button
-            const applyBtn = document.getElementById('cleanplaats-apply');
-            if (applyBtn) {
-                applyBtn.textContent = '❌ Error!';
-                setTimeout(() => {
-                    if (applyBtn) applyBtn.textContent = 'Toepassen';
-                }, 1500);
-            }
         });
 }
 
@@ -677,9 +637,7 @@ function updateElementText(id, value) {
  */
 function performInitialCleanup() {
     try {
-        if (!CLEANPLAATS.settings.pauseFiltering) {
-            performCleanup();
-        }
+        performCleanup();
     } catch (error) {
         console.error('Cleanplaats: Initial cleanup failed', error);
     }
@@ -689,10 +647,6 @@ function performInitialCleanup() {
  * Main cleanup function that handles all types of content removal
  */
 function performCleanup() {
-    if (CLEANPLAATS.settings.pauseFiltering) {
-        return;
-    }
-
     // Always remove regular ads first
     removeAllAds();
     removePersistentGoogleAds();
@@ -702,6 +656,17 @@ function performCleanup() {
     if (CLEANPLAATS.settings.removeDagtoppers) removeDagtoppers();
     if (CLEANPLAATS.settings.removePromotedListings) removePromotedListings();
     if (CLEANPLAATS.settings.removeOpvalStickers) removeOpvalStickerListings();
+
+    // Handle blacklisted sellers
+    document.querySelectorAll('.hz-Listing').forEach(listing => {
+        const sellerNameEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-link');
+        if (!sellerNameEl) return;
+        const sellerName = sellerNameEl.textContent.trim();
+        if (CLEANPLAATS.settings.blacklistedSellers.includes(sellerName)) {
+            listing.setAttribute('data-cleanplaats-hidden', 'true');
+            listing.style.display = 'none';
+        }
+    });
 
     updateStatsDisplay();
 }
@@ -934,8 +899,295 @@ function hideElement(element) {
 }
 
 /* ======================
+ BLACKLIST MANAGEMENT
+ ====================== */
+
+/**
+ * Add a seller to the blacklist
+ */
+function addSellerToBlacklist(sellerName) {
+    if (!CLEANPLAATS.settings.blacklistedSellers.includes(sellerName)) {
+        CLEANPLAATS.settings.blacklistedSellers.push(sellerName);
+        saveSettings().then(() => {
+            performCleanup();
+            injectBlacklistButtons();
+            updateBlacklistModal();
+            
+            // Show toast notification
+            showBlacklistToast(sellerName);
+        });
+    }
+}
+
+/**
+ * Show a toast notification for blacklisting
+ */
+function showBlacklistToast(sellerName) {
+    const toast = document.createElement('div');
+    toast.className = 'cleanplaats-blacklist-toast';
+    
+    toast.innerHTML = `
+        <div class="cleanplaats-blacklist-toast-content">
+            <span class="cleanplaats-toast-icon">👁</span>
+            <div class="cleanplaats-toast-message">
+                <strong>${sellerName} verborgen</strong>
+                <span>Beheer verborgen verkopers via het paneel</span>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('visible'));
+
+    setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+/**
+ * Remove a seller from the blacklist
+ */
+function removeSellerFromBlacklist(sellerName) {
+    CLEANPLAATS.settings.blacklistedSellers = CLEANPLAATS.settings.blacklistedSellers.filter(s => s !== sellerName);
+    saveSettings().then(() => {
+        // Show all listings from this seller immediately
+        document.querySelectorAll('.hz-Listing').forEach(listing => {
+            const sellerNameEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-link');
+            if (!sellerNameEl) return;
+            if (sellerNameEl.textContent.trim() === sellerName) {
+                listing.removeAttribute('data-cleanplaats-hidden');
+                listing.style.display = '';
+            }
+        });
+        performCleanup();
+        injectBlacklistButtons();
+        updateBlacklistModal(); // Update modal dynamically
+    });
+}
+
+/**
+ * Inject blacklist buttons under seller names
+ */
+function injectBlacklistButtons() {
+    document.querySelectorAll('.hz-Listing').forEach(listing => {
+        // Remove any existing button to avoid duplicates
+        const oldBtn = listing.querySelector('.cleanplaats-blacklist-btn-row');
+        if (oldBtn) oldBtn.remove();
+
+        // Find the seller name container and link
+        const sellerNameContainer = listing.querySelector('.hz-Listing-seller-name-container');
+        if (!sellerNameContainer) return;
+        const sellerLink = sellerNameContainer.querySelector('a');
+        if (!sellerLink) return;
+        const sellerNameEl = sellerLink.querySelector('.hz-Listing-seller-name');
+        if (!sellerNameEl) return;
+        const sellerName = sellerNameEl.textContent.trim();
+        if (!sellerName) return;
+
+        // Hide if already blacklisted
+        if (CLEANPLAATS.settings.blacklistedSellers.includes(sellerName)) {
+            listing.setAttribute('data-cleanplaats-hidden', 'true');
+            listing.style.display = 'none';
+        }
+
+        // Create the button row
+        const btnRow = document.createElement('div');
+        btnRow.className = 'cleanplaats-blacklist-btn-row';
+
+        // Create the button
+        const btn = document.createElement('button');
+        btn.className = 'cleanplaats-blacklist-btn';
+        btn.textContent = 'Verkoper verbergen';
+        btn.type = 'button';
+        btn.tabIndex = 0;
+
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            addSellerToBlacklist(sellerName);
+        });
+
+        btnRow.appendChild(btn);
+
+        // Insert the button row AFTER the seller name container (not inside the link!)
+        if (sellerNameContainer.parentNode) {
+            sellerNameContainer.parentNode.insertBefore(btnRow, sellerNameContainer.nextSibling);
+        }
+    });
+}
+
+/**
+ * Show the blacklist management modal
+ */
+function showBlacklistModal() {
+    const modal = document.getElementById('cleanplaats-blacklist-modal');
+    if (!modal) return;
+
+    const sellers = CLEANPLAATS.settings.blacklistedSellers;
+
+    modal.innerHTML = `
+        <div class="cleanplaats-blacklist-modal-content">
+            <h4>Verborgen verkopers</h4>
+            <ul id="cleanplaats-blacklist-list">
+                ${sellers.length === 0 ? '<li><em>Geen verborgen verkopers</em></li>' : sellers.map(seller => `
+                    <li>
+                        <span>${seller}</span>
+                        <button class="cleanplaats-unblacklist-btn" data-seller="${seller}">Verborgen</button>
+                    </li>
+                `).join('')}
+            </ul>
+            <button id="cleanplaats-blacklist-close" style="margin-top:10px;">Sluiten</button>
+        </div>
+    `;
+    modal.style.display = 'block';
+
+    // Close modal
+    document.getElementById('cleanplaats-blacklist-close').onclick = () => {
+        modal.style.display = 'none';
+    };
+
+    // Add hover effect and unblacklist functionality
+    setupBlacklistModalButtons();
+}
+
+/**
+ * Update the blacklist modal dynamically
+ */
+function updateBlacklistModal() {
+    const modal = document.getElementById('cleanplaats-blacklist-modal');
+    if (!modal || modal.style.display === 'none') return;
+
+    const sellers = CLEANPLAATS.settings.blacklistedSellers;
+    const list = document.getElementById('cleanplaats-blacklist-list');
+
+    if (list) {
+        list.innerHTML = sellers.length === 0
+            ? '<li><em>Geen verborgen verkopers</em></li>'
+            : sellers.map(seller => `
+                <li>
+                    <span>${seller}</span>
+                    <button class="cleanplaats-unblacklist-btn" data-seller="${seller}">Verborgen</button>
+                </li>
+            `).join('');
+
+        setupBlacklistModalButtons();
+    }
+}
+
+/**
+ * Set up hover effects and unblacklist functionality for modal buttons
+ */
+function setupBlacklistModalButtons() {
+    document.querySelectorAll('.cleanplaats-unblacklist-btn').forEach(btn => {
+        btn.onmouseover = () => {
+            btn.style.background = 'green';
+            btn.textContent = 'Opheffen';
+        };
+        btn.onmouseout = () => {
+            btn.style.background = 'red';
+            btn.textContent = 'Verborgen';
+        };
+        btn.style.background = 'red';
+        btn.style.color = 'white';
+        btn.onclick = () => {
+            const sellerName = btn.dataset.seller;
+            showUnblacklistToast(sellerName);
+            removeSellerFromBlacklist(sellerName);
+        };
+    });
+}
+
+/**
+ * Show a toast notification for unblacklisting
+ */
+function showUnblacklistToast(sellerName) {
+    const toast = document.createElement('div');
+    toast.className = 'cleanplaats-blacklist-toast';
+    
+    toast.innerHTML = `
+        <div class="cleanplaats-blacklist-toast-content">
+            <span class="cleanplaats-toast-icon">👁</span>
+            <div class="cleanplaats-toast-message">
+                <strong>${sellerName} niet meer verborgen</strong>
+                <span>Deze verkoper is weer zichtbaar in de resultaten</span>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('visible'));
+
+    setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+/* ======================
  OBSERVATION & NAVIGATION
  ====================== */
+
+/**
+ * Add keyboard navigation for carousel images
+ */
+let keyboardNavigationSetup = false; // Flag to track if keyboard navigation is already set up
+
+function setupKeyboardNavigation() {
+    if (keyboardNavigationSetup) {
+        // Remove the existing event listener
+        document.removeEventListener('keydown', keyboardNavigationHandler);
+    }
+
+    // Define the event listener function
+    keyboardNavigationHandler = function(event) {
+        if (document.querySelector('.Carousel-navigationContainer')) {
+            let nextButton = document.querySelector('.Carousel-navigationContainer button[aria-label="Volgende foto"]');
+            let prevButton = document.querySelector('.Carousel-navigationContainer button[aria-label="Vorige foto"]');
+
+            if (event.key === 'ArrowRight' && nextButton) {
+                event.preventDefault(); // Prevent default arrow key behavior
+                nextButton.focus(); // Focus the button
+                nextButton.click(); // Trigger the click
+            } else if (event.key === 'ArrowLeft' && prevButton) {
+                event.preventDefault(); // Prevent default arrow key behavior
+                prevButton.focus(); // Focus the button
+                prevButton.click(); // Trigger the click
+            }
+        }
+    };
+
+    document.addEventListener('keydown', keyboardNavigationHandler);
+    keyboardNavigationSetup = true; // Set the flag to true after setting up
+}
+
+/**
+ * Perform cleanup and check for empty page
+ */
+function performCleanupAndCheckForEmptyPage() {
+    // Remove the notification on navigation
+    const existingNotification = document.getElementById('cleanplaats-empty-notification');
+    if (existingNotification) {
+        existingNotification.remove();
+        notificationVisible = false;
+    }
+
+    // Clear the bubble notification
+    clearBubbleNotification();
+
+    // Immediately reapply filters when new content loads
+    const checkContentLoaded = setInterval(() => {
+        if (document.querySelector('.hz-Listing') || document.querySelector('#adsense-container')) {
+            clearInterval(checkContentLoaded);
+            console.log('Cleanplaats: Running cleanup after navigation');
+            performCleanup();
+            injectBlacklistButtons();
+            // Delay the check for empty page to ensure DOM is fully updated
+            setTimeout(checkForEmptyPage, 500);
+            setupKeyboardNavigation(); // Initialize keyboard navigation
+        }
+    }, 100);
+}
 
 /**
  * Set up a combined mutation observer for DOM and URL changes
@@ -955,9 +1207,6 @@ function setupObservers() {
             lastUrl = location.href;
             performCleanupAndCheckForEmptyPage();
         }
-
-        // Don't process mutations if filtering is paused
-        if (CLEANPLAATS.settings.pauseFiltering) return;
 
         let shouldCleanup = false;
 
@@ -987,6 +1236,7 @@ function setupObservers() {
         // Run cleanup if needed, but don't reset stats since we want to accumulate
         if (shouldCleanup) {
             performCleanup();
+            injectBlacklistButtons();
         }
     });
 
@@ -998,31 +1248,6 @@ function setupObservers() {
 
     // Store the observer
     CLEANPLAATS.observers.mutation = observer;
-}
-
-/**
- * Perform cleanup and check for empty page
- */
-function performCleanupAndCheckForEmptyPage() {
-    // Remove the notification on navigation
-    const existingNotification = document.getElementById('cleanplaats-empty-notification');
-    if (existingNotification) {
-        existingNotification.remove();
-        notificationVisible = false;
-    }
-
-    // Immediately reapply filters when new content loads
-    const checkContentLoaded = setInterval(() => {
-        if (document.querySelector('.hz-Listing') || document.querySelector('#adsense-container')) {
-            clearInterval(checkContentLoaded);
-            if (!CLEANPLAATS.settings.pauseFiltering) {
-                console.log('Cleanplaats: Running cleanup after navigation');
-                performCleanup();
-                // Delay the check for empty page to ensure DOM is fully updated
-                setTimeout(checkForEmptyPage, 500);
-            }
-        }
-    }, 100);
 }
 
 /**
@@ -1067,7 +1292,11 @@ function setupNavigationDetection() {
 function setupAllObservers() {
     setupObservers();
     setupNavigationDetection();
+    setupKeyboardNavigation(); // Initialize keyboard navigation on initial setup
 }
+
+// Initialize keyboard navigation on initial page load
+setupKeyboardNavigation();
 
 /**
  * Get the current page number from the URL
