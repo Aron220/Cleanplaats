@@ -92,50 +92,68 @@ function initCleanplaats() {
  */
 function checkFirstRun() {
     return new Promise(resolve => {
-        const firstRun = localStorage.getItem('firstRun');
-        const isFirstRun = firstRun === null ? true : JSON.parse(firstRun);
+        chrome.storage.local.get('firstRun', (items) => {
+            let isFirstRun;
+            if (items.firstRun === undefined) {
+                isFirstRun = true;
+            } else {
+                isFirstRun = items.firstRun;
+            }
 
-        // If it's the first run, set firstRun to false for next time
-        if (isFirstRun) {
-            localStorage.setItem('firstRun', JSON.stringify(false));
-        }
-
-        resolve(isFirstRun);
+            // If it's the first run, set firstRun to false for next time
+            if (isFirstRun) {
+                chrome.storage.local.set({ 'firstRun': false }, () => {
+                    resolve(isFirstRun);
+                });
+            } else {
+                resolve(isFirstRun);
+            }
+        });
     });
 }
 
 /**
- * Load settings from localStorage
+ * Load settings from chrome.storage.local
  */
 function loadSettings() {
     return new Promise((resolve, reject) => {
-        try {
-            const storedSettings = localStorage.getItem('cleanplaatsSettings');
-            if (storedSettings) {
-                const items = JSON.parse(storedSettings);
-                if (items.panelState) {
-                    CLEANPLAATS.panelState = items.panelState;
+        chrome.storage.local.get(['cleanplaatsSettings', 'panelState'], (items) => {
+            try {
+                const storedSettings = items.cleanplaatsSettings;
+                const storedPanelState = items.panelState;
+
+                if (storedSettings) {
+                    const settings = JSON.parse(storedSettings);
+                    Object.assign(CLEANPLAATS.settings, settings);
                 }
-                Object.assign(CLEANPLAATS.settings, items);
+
+                if (storedPanelState) {
+                    CLEANPLAATS.panelState = JSON.parse(storedPanelState);
+                }
+
+                resolve();
+            } catch (error) {
+                console.error('Cleanplaats: Failed to load settings from chrome.storage.local', error);
+                reject(error);
             }
-            resolve();
-        } catch (error) {
-            console.error('Cleanplaats: Failed to load settings from localStorage', error);
-            reject(error);
-        }
+        });
     });
 }
 
 /**
- * Save settings to localStorage
+ * Save settings and panel state to chrome.storage.local
  */
 function saveSettings() {
     return new Promise((resolve, reject) => {
         try {
-            localStorage.setItem('cleanplaatsSettings', JSON.stringify(CLEANPLAATS.settings));
-            resolve();
+            chrome.storage.local.set({
+                cleanplaatsSettings: JSON.stringify(CLEANPLAATS.settings),
+                panelState: JSON.stringify(CLEANPLAATS.panelState)
+            }, () => {
+                resolve();
+            });
         } catch (error) {
-            console.error('Cleanplaats: Failed to save settings to localStorage', error);
+            console.error('Cleanplaats: Failed to save settings to chrome.storage.local', error);
             reject(error);
         }
     });
@@ -519,7 +537,7 @@ function setupEventListeners() {
             toggle.textContent = CLEANPLAATS.panelState.isCollapsed ? '▼' : '▲';
 
             // Save panel state
-            localStorage.setItem('cleanplaatsSettings', JSON.stringify(CLEANPLAATS.settings));
+            saveSettings();
         });
     }
 
