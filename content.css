@@ -790,10 +790,9 @@ input:checked + .cleanplaats-switch-slider:before {
     border-radius: 6px;
     cursor: pointer;
     font-size: 13px;
-    transition: all 0.3s ease; /* Increased duration for smoother effect */
+    transition: all 0.3s ease;
     white-space: nowrap;
     position: relative;
-    overflow: hidden;
 }
 
 .cleanplaats-unblacklist-btn::before {
@@ -801,7 +800,7 @@ input:checked + .cleanplaats-switch-slider:before {
     font-size: 14px;
     text-decoration: line-through;
     margin-right: 4px;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .cleanplaats-unblacklist-btn:hover {
@@ -809,20 +808,8 @@ input:checked + .cleanplaats-switch-slider:before {
     transform: translateY(-1px);
 }
 
-.cleanplaats-unblacklist-btn::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
-    transform: translateX(-100%);
-    transition: transform 0.6s ease;
-}
-
-.cleanplaats-unblacklist-btn:hover::after {
-    transform: translateX(100%);
+.cleanplaats-unblacklist-btn:hover::before {
+    text-decoration: none;
 }
 
 /* Close button style */
@@ -984,6 +971,12 @@ input:checked + .cleanplaats-switch-slider:before {
     gap: 8px;
 }
 
+.cleanplaats-terms-modal-content h4::before {
+    content: "✏️";
+    font-size: 18px;
+    margin-right: 6px;
+}
+
 .cleanplaats-terms-modal-content ul {
     list-style: none;
     padding: 0;
@@ -1041,12 +1034,23 @@ input:checked + .cleanplaats-switch-slider:before {
     transition: all 0.3s ease;
     white-space: nowrap;
     position: relative;
-    overflow: hidden;
+}
+
+.cleanplaats-unblacklist-term-btn::before {
+    content: "👁";
+    font-size: 14px;
+    text-decoration: line-through;
+    margin-right: 4px;
+    transition: all 0.3s ease;
 }
 
 .cleanplaats-unblacklist-term-btn:hover {
     background: #4CAF50;
     transform: translateY(-1px);
+}
+
+.cleanplaats-unblacklist-term-btn:hover::before {
+    text-decoration: none;
 }
 
 /* Close button style for terms modal */

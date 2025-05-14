@@ -353,6 +353,12 @@ function showTermsModal() {
     const modal = document.getElementById('cleanplaats-terms-modal');
     if (!modal) return;
 
+    // Close the blacklist modal if it's open
+    const blacklistModal = document.getElementById('cleanplaats-blacklist-modal');
+    if (blacklistModal) {
+        blacklistModal.style.display = 'none';
+    }
+
     // Toggle modal visibility
     if (modal.style.display === 'block') {
         modal.style.display = 'none';
@@ -1335,6 +1341,12 @@ function showBlacklistModal() {
     const modal = document.getElementById('cleanplaats-blacklist-modal');
     if (!modal) return;
 
+    // Close the terms modal if it's open
+    const termsModal = document.getElementById('cleanplaats-terms-modal');
+    if (termsModal) {
+        termsModal.style.display = 'none';
+    }
+
     // Toggle modal visibility
     if (modal.style.display === 'block') {
         modal.style.display = 'none';
@@ -1404,10 +1416,10 @@ function setupBlacklistModalButtons() {
             btn.textContent = 'Opheffen';
         };
         btn.onmouseout = () => {
-            btn.style.background = 'red';
+            btn.style.background = '#ff4d4d';
             btn.textContent = 'Verborgen';
         };
-        btn.style.background = 'red';
+        btn.style.background = '#ff4d4d';
         btn.style.color = 'white';
         btn.onclick = () => {
             const sellerName = btn.dataset.seller;
