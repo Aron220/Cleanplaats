@@ -78,6 +78,7 @@
     max-height: 60vh;
     overflow-y: auto;
     scrollbar-width: thin;
+    overflow-x: hidden;
   }
   
   .cleanplaats-content::-webkit-scrollbar {
@@ -422,7 +423,11 @@
   }
 
   .cleanplaats-toast-icon {
-    font-size: 1.2em;
+    font-size: 18px;
+  }
+
+  .cleanplaats-toast-icon.eye {
+    text-decoration: line-through;
   }
 
   /* Mini toast for immediate feedback */
@@ -532,9 +537,38 @@
 
 /* Buy Me Coffee Button */
 .cleanplaats-bmc-button {
-    display: block;
-    margin-top: 10px;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 12px 0 0 0;
+    padding: 7px 0;
+    background: #fffbe7;
+    color: #a67c00;
+    border: 1px solid #ffe082;
+    border-radius: 5px;
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s, border 0.2s, color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    width: 100%;
+    max-width: 100%;
+    cursor: pointer;
+}
+
+.cleanplaats-bmc-button:hover,
+.cleanplaats-bmc-button:focus {
+    background: #ffe082;
+    color: #7c5a00;
+    border-color: #ffd54f;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.cleanplaats-bmc-emoji {
+    font-size: 1.2em;
+    margin-right: 2px;
 }
 
 /* Loading spinner for aggregated content */
@@ -673,7 +707,7 @@ input:checked + .cleanplaats-switch-slider:before {
 /* Blacklist modal styles */
 .cleanplaats-blacklist-modal {
     position: fixed;
-    bottom: 80px;
+    bottom: 120px;
     right: 20px;
     background: #fff;
     border: none;
@@ -681,8 +715,11 @@ input:checked + .cleanplaats-switch-slider:before {
     padding: 16px;
     box-shadow: 0 2px 15px rgba(0,0,0,0.1);
     border-radius: 8px;
-    width: 280px; /* Match panel width */
-    max-width: 90vw; /* Match panel max-width */
+    width: 280px;
+    max-width: 90vw;
+    transform: translateZ(0); /* Force GPU acceleration */
+    will-change: transform; /* Optimize for animations */
+    backface-visibility: hidden; /* Prevent flickering */
 }
 
 .cleanplaats-blacklist-modal-content h4 {
@@ -879,6 +916,9 @@ input:checked + .cleanplaats-switch-slider:before {
 
 .cleanplaats-toast-icon {
     font-size: 18px;
+}
+
+.cleanplaats-toast-icon.eye {
     text-decoration: line-through;
 }
 
@@ -915,4 +955,189 @@ input:checked + .cleanplaats-switch-slider:before {
 
 #cleanplaats-manage-blacklist:hover {
     background-color: #1976D2; /* Darker blue on hover */
+}
+
+/* Blacklist terms modal styles */
+.cleanplaats-terms-modal {
+    position: fixed;
+    bottom: 170px;
+    right: 20px;
+    background: #fff;
+    border: none;
+    z-index: 9999;
+    padding: 16px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    width: 280px;
+    max-width: 90vw;
+    transform: translateZ(0); /* Force GPU acceleration */
+    will-change: transform; /* Optimize for animations */
+    backface-visibility: hidden; /* Prevent flickering */
+}
+
+.cleanplaats-terms-modal-content h4 {
+    margin: 0 0 16px 0;
+    color: #4a4a4a;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cleanplaats-terms-modal-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.cleanplaats-terms-modal-content ul::-webkit-scrollbar {
+    width: 6px;
+}
+
+.cleanplaats-terms-modal-content ul::-webkit-scrollbar-thumb {
+    background-color: #c1c1c1;
+    border-radius: 3px;
+}
+
+.cleanplaats-terms-modal-content li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    margin-bottom: 4px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.cleanplaats-terms-modal-content li:hover {
+    background: #f0f0f0;
+}
+
+.cleanplaats-terms-modal-content li span {
+    flex: 1;
+    margin-right: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #333;
+    font-size: 14px;
+}
+
+/* Modern button style for blacklist terms */
+.cleanplaats-unblacklist-term-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.cleanplaats-unblacklist-term-btn:hover {
+    background: #4CAF50;
+    transform: translateY(-1px);
+}
+
+/* Close button style for terms modal */
+#cleanplaats-terms-close {
+    width: 100%;
+    margin-top: 12px;
+    padding: 8px;
+    background: #f0f0f0;
+    border: none;
+    border-radius: 6px;
+    color: #666;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+#cleanplaats-terms-close:hover {
+    background: #e0e0e0;
+}
+
+/* Style for the "Beheer blacklist termen" button */
+#cleanplaats-manage-terms {
+    background-color: #2196F3; /* Blue */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;
+    margin-top: 15px;
+    transition: background-color 0.3s ease;
+    font-size: 14px;
+}
+
+#cleanplaats-manage-terms:hover {
+    background-color: #1976D2; /* Darker blue on hover */
+}
+
+/* Ensure removed ads do not leave blank spaces */
+.hz-Listing[data-cleanplaats-hidden] {
+    display: none !important;
+}
+
+.hz-Link[data-cleanplaats-hidden] {
+    display: none !important;
+}
+
+.cleanplaats-terms-input-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.cleanplaats-term-input {
+    flex: 1 1 0;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #333;
+    transition: border-color 0.2s;
+}
+
+.cleanplaats-term-input:focus {
+    outline: none;
+    border-color: #2196F3;
+}
+
+.cleanplaats-add-term-btn {
+    flex: 0 0 auto;
+    box-sizing: border-box;
+    padding: 8px 16px;
+    background: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cleanplaats-add-term-btn:hover {
+    background: #1976D2;
 }

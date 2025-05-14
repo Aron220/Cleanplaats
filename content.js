@@ -12,7 +12,8 @@ const CLEANPLAATS = {
         removePromotedListings: true,
         // removeAds: true, is now always true
         removeOpvalStickers: true,
-        blacklistedSellers: []
+        blacklistedSellers: [],
+        blacklistedTerms: [] // Added blacklisted terms
     },
 
     // Stats tracking
@@ -69,17 +70,45 @@ function initCleanplaats() {
 
                     createControlPanel();
                     setupAllObservers();
-                    applySettings(); // Add this line to apply settings after loading
+                    applySettings();
 
                     // Modified this part to ensure content is loaded
-                    const checkInitialContent = setInterval(() => {
+                    const tryCleanup = () => {
                         if (document.querySelector('.hz-Listing') || document.querySelector('#adsense-container')) {
-                            clearInterval(checkInitialContent);
                             performInitialCleanup();
                             injectBlacklistButtons();
                             setTimeout(checkForEmptyPage, 300);
+
+                            // --- Force ad removal and layout update for Firefox ---
+                            // Run multiple times to catch late-rendered ad containers
+                            let attempts = 0;
+                            const maxAttempts = 10;
+                            const interval = setInterval(() => {
+                                removePersistentGoogleAds();
+
+                                // Also remove #banner-top-dt if present (fixes grid gap in Firefox)
+                                document.querySelectorAll('#banner-top-dt').forEach(banner => {
+                                    if (banner.parentNode) {
+                                        banner.parentNode.removeChild(banner);
+                                    }
+                                });
+
+                                // Force reflow
+                                document.body.offsetHeight;
+                                attempts++;
+                                // Stop after a few tries or if the ad containers are gone
+                                if (
+                                    (!document.querySelector('#banner-right-container') && !document.querySelector('#banner-top-dt')) ||
+                                    attempts >= maxAttempts
+                                ) {
+                                    clearInterval(interval);
+                                }
+                            }, 80);
+                        } else {
+                            setTimeout(tryCleanup, 60);
                         }
-                    }, 100);
+                    };
+                    tryCleanup();
                 });
         })
         .catch(error => {
@@ -208,7 +237,7 @@ function createControlPanel() {
                         Topadvertenties
                         <div class="cleanplaats-tooltip">
                             <span class="cleanplaats-tooltip-icon">?</span>
-                            <span class="cleanplaats-tooltip-text">Verwijdert betaalde "Topadvertenties"</span>
+                            <span class="cleanplaats-tooltip-text">Verwijdert betaalde \"Topadvertenties\"</span>
                         </div>
                     </label>
                 </div>
@@ -221,7 +250,7 @@ function createControlPanel() {
                         Dagtoppers
                         <div class="cleanplaats-tooltip">
                             <span class="cleanplaats-tooltip-icon">?</span>
-                            <span class="cleanplaats-tooltip-text">Verwijdert "Dagtopper" advertenties</span>
+                            <span class="cleanplaats-tooltip-text">Verwijdert \"Dagtopper\" advertenties</span>
                         </div>
                     </label>
                 </div>
@@ -234,7 +263,7 @@ function createControlPanel() {
                         Bedrijfsadvertenties
                         <div class="cleanplaats-tooltip">
                             <span class="cleanplaats-tooltip-icon">?</span>
-                            <span class="cleanplaats-tooltip-text">Verwijdert advertenties van bedrijven met een "Bezoek website" link</span>
+                            <span class="cleanplaats-tooltip-text">Verwijdert advertenties van bedrijven met een \"Bezoek website\" link</span>
                         </div>
                     </label>
                 </div>
@@ -283,11 +312,21 @@ function createControlPanel() {
             </div>
             ` : ''}
 
-            <a href="https://www.buymeacoffee.com/cleanplaats" target="_blank" rel="noopener noreferrer" class="cleanplaats-bmc-button">
-                    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 40px !important;width: 180px !important;">
-            </a>
-            <button id="cleanplaats-manage-blacklist" class="cleanplaats-button cleanplaats-blacklist-manage-btn" style="margin-top:10px;">Beheer verborgen verkopers</button>
+            <button id="cleanplaats-manage-terms" class="cleanplaats-button cleanplaats-blacklist-manage-btn">Beheer blacklist termen</button>
+            <button id="cleanplaats-manage-blacklist" class="cleanplaats-button cleanplaats-blacklist-manage-btn">Beheer verborgen verkopers</button>
             <div id="cleanplaats-blacklist-modal" class="cleanplaats-blacklist-modal" style="display:none;"></div>
+            <div id="cleanplaats-terms-modal" class="cleanplaats-terms-modal" style="display:none;"></div>
+
+            <a
+                href="https://buymeacoffee.com/cleanplaats"
+                class="cleanplaats-bmc-button"
+                target="_blank"
+                rel="noopener"
+                title="Steun Cleanplaats – Buy me a coffee!"
+            >
+                <span class="cleanplaats-bmc-emoji">☕</span>
+                <span class="cleanplaats-bmc-text">Buy me a coffee</span>
+            </a>
         </div>
     `);
 
@@ -298,6 +337,157 @@ function createControlPanel() {
     document.getElementById('cleanplaats-manage-blacklist').addEventListener('click', (e) => {
         e.preventDefault();
         showBlacklistModal();
+    });
+
+    // Blacklist terms management button
+    document.getElementById('cleanplaats-manage-terms').addEventListener('click', (e) => {
+        e.preventDefault();
+        showTermsModal();
+    });
+}
+
+/**
+ * Show the blacklist terms management modal
+ */
+function showTermsModal() {
+    const modal = document.getElementById('cleanplaats-terms-modal');
+    if (!modal) return;
+
+    // Toggle modal visibility
+    if (modal.style.display === 'block') {
+        modal.style.display = 'none';
+        return;
+    }
+
+    const terms = CLEANPLAATS.settings.blacklistedTerms;
+
+    modal.innerHTML = DOMPurify.sanitize(`
+        <div class="cleanplaats-terms-modal-content">
+            <h4>Blacklist termen</h4>
+            <ul id="cleanplaats-terms-list">
+                ${terms.length === 0 ? '<li><em>Geen termen toegevoegd</em></li>' : terms.map(term => `
+                    <li>
+                        <span>${term}</span>
+                        <button class="cleanplaats-unblacklist-term-btn" data-term="${term}">Verborgen</button>
+                    </li>
+                `).join('')}
+            </ul>
+            <div class="cleanplaats-terms-input-row">
+                <input type="text" id="cleanplaats-term-input" class="cleanplaats-term-input" placeholder="Voer een term in">
+                <button id="cleanplaats-add-term" class="cleanplaats-add-term-btn">Toevoegen</button>
+            </div>
+            <button id="cleanplaats-terms-close" style="margin-top:12px;">Sluiten</button>
+        </div>
+    `);
+    modal.style.display = 'block';
+
+    // Close modal
+    document.getElementById('cleanplaats-terms-close').onclick = () => {
+        modal.style.display = 'none';
+    };
+
+    // Add term logic
+    const addTerm = () => {
+        const input = document.getElementById('cleanplaats-term-input');
+        const term = input.value.trim();
+        if (term && !CLEANPLAATS.settings.blacklistedTerms.includes(term)) {
+            CLEANPLAATS.settings.blacklistedTerms.push(term);
+            saveSettings().then(() => {
+                input.value = '';
+                updateTermsModal();
+                performCleanup();
+                showBlacklistTermToast(term);
+            });
+        }
+    };
+
+    // Add term on button click
+    document.getElementById('cleanplaats-add-term').onclick = addTerm;
+
+    // Add term on Enter key
+    document.getElementById('cleanplaats-term-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addTerm();
+        }
+    });
+
+    // Remove term
+    setupTermsModalButtons();
+}
+
+/**
+ * Update the blacklist terms modal dynamically
+ */
+function updateTermsModal() {
+    const modal = document.getElementById('cleanplaats-terms-modal');
+    if (!modal || modal.style.display === 'none') return;
+
+    const terms = CLEANPLAATS.settings.blacklistedTerms;
+    const list = document.getElementById('cleanplaats-terms-list');
+
+    if (list) {
+        list.innerHTML = DOMPurify.sanitize(
+            terms.length === 0
+                ? '<li><em>Geen termen toegevoegd</em></li>'
+                : terms.map(term => `
+                    <li>
+                        <span>${term}</span>
+                        <button class="cleanplaats-unblacklist-term-btn" data-term="${term}">Verborgen</button>
+                    </li>
+                `).join('')
+        );
+
+        setupTermsModalButtons();
+    }
+}
+
+/**
+ * Set up hover effects and remove functionality for terms modal buttons
+ */
+function setupTermsModalButtons() {
+    document.querySelectorAll('.cleanplaats-unblacklist-term-btn').forEach(btn => {
+        btn.onmouseover = () => {
+            btn.style.background = 'green';
+            btn.textContent = 'Opheffen';
+        };
+        btn.onmouseout = () => {
+            btn.style.background = '#ff4d4d';
+            btn.textContent = 'Verborgen';
+        };
+        btn.style.background = '#ff4d4d';
+        btn.style.color = 'white';
+        btn.onclick = () => {
+            const term = btn.dataset.term;
+            CLEANPLAATS.settings.blacklistedTerms = CLEANPLAATS.settings.blacklistedTerms.filter(t => t !== term);
+            saveSettings().then(() => {
+                updateTermsModal();
+                unhideListingsByTerm(term);
+                performCleanup();
+                showUnblacklistTermToast(term);
+            });
+        };
+    });
+}
+
+/**
+ * Unhide listings that match a removed blacklist term
+ */
+function unhideListingsByTerm(term) {
+    // Unhide .hz-Link (in je buurt tab) and .hz-Listing (normal)
+    document.querySelectorAll('.hz-Link').forEach(link => {
+        const titleEl = link.querySelector('.hz-Listing-title');
+        if (titleEl && titleEl.textContent.toLowerCase().includes(term.toLowerCase())) {
+            link.removeAttribute('data-cleanplaats-hidden');
+            link.style.display = '';
+        }
+    });
+    document.querySelectorAll('.hz-Listing').forEach(listing => {
+        const titleEl = listing.querySelector('.hz-Listing-title');
+        if (titleEl && titleEl.textContent.toLowerCase().includes(term.toLowerCase())) {
+            listing.removeAttribute('data-cleanplaats-hidden');
+            listing.style.display = '';
+        }
     });
 }
 
@@ -532,6 +722,12 @@ function setupEventListeners() {
                 return;
             }
 
+            // Close any open modals before toggling panel
+            const blacklistModal = document.getElementById('cleanplaats-blacklist-modal');
+            const termsModal = document.getElementById('cleanplaats-terms-modal');
+            if (blacklistModal) blacklistModal.style.display = 'none';
+            if (termsModal) termsModal.style.display = 'none';
+
             CLEANPLAATS.panelState.isCollapsed = !CLEANPLAATS.panelState.isCollapsed;
             panel.classList.toggle('collapsed', CLEANPLAATS.panelState.isCollapsed);
             toggle.textContent = CLEANPLAATS.panelState.isCollapsed ? '▼' : '▲';
@@ -658,6 +854,7 @@ function updateElementText(id, value) {
 function performInitialCleanup() {
     try {
         performCleanup();
+        // No need to remove #banner-top-dt-container here, it's handled in removePersistentGoogleAds
     } catch (error) {
         console.error('Cleanplaats: Initial cleanup failed', error);
     }
@@ -686,6 +883,32 @@ function performCleanup() {
             listing.setAttribute('data-cleanplaats-hidden', 'true');
             listing.style.display = 'none';
         }
+    });
+
+    // Handle blacklisted terms in titles
+    // For "in je buurt" tab: hide the <a.hz-Link> if the title matches
+    document.querySelectorAll('.hz-Link').forEach(link => {
+        const titleEl = link.querySelector('.hz-Listing-title');
+        if (!titleEl) return;
+        const title = titleEl.textContent.trim().toLowerCase();
+        CLEANPLAATS.settings.blacklistedTerms.forEach(term => {
+            if (title.includes(term.toLowerCase())) {
+                link.setAttribute('data-cleanplaats-hidden', 'true');
+                link.style.display = 'none';
+            }
+        });
+    });
+    // For normal listings: hide the .hz-Listing
+    document.querySelectorAll('.hz-Listing').forEach(listing => {
+        const titleEl = listing.querySelector('.hz-Listing-title');
+        if (!titleEl) return;
+        const title = titleEl.textContent.trim().toLowerCase();
+        CLEANPLAATS.settings.blacklistedTerms.forEach(term => {
+            if (title.includes(term.toLowerCase())) {
+                listing.setAttribute('data-cleanplaats-hidden', 'true');
+                listing.style.display = 'none';
+            }
+        });
     });
 
     updateStatsDisplay();
@@ -805,6 +1028,17 @@ function removeAllAds() {
         }
     }
 
+    // First handle homepage ads with overlay label
+    document.querySelectorAll('.hz-Listing-imageOverlayLabel').forEach(overlay => {
+        if (overlay.textContent.trim() === 'Homepagina-advertentie') {
+            const link = overlay.closest('.hz-Link.hz-Link--block');
+            if (link && !link.hasAttribute('data-cleanplaats-hidden')) {
+                hideElement(link);
+                count++;
+            }
+        }
+    });
+
     const adSelectors = [
         '#adsense-container',
         '#adsense-container-bottom-lazy',
@@ -843,31 +1077,56 @@ function removeAllAds() {
 }
 
 /**
- * Remove persistent Google ads that resist normal hiding
+ * Remove persistent Google ads and empty ad containers that resist normal hiding.
+ * This is called on every cleanup and navigation, so grid gaps are always collapsed.
  */
 function removePersistentGoogleAds() {
     let count = 0;
-    
-    // Target the main ad container
-    const selectors = [
-        '.creative', // The container you're trying to remove
-        'div[id^="google_ads_iframe"]', // Google ad iframes
-        'div[data-google-query-id]', // Google ad markers
-        'div[aria-label="Advertisement"]' // Generic ad markers
-    ];
-
-    selectors.forEach(selector => {
-        document.querySelectorAll(selector).forEach(ad => {
-            try {
-                // Completely remove the ad from DOM rather than just hiding it
-                if (ad.parentNode) {
-                    ad.parentNode.removeChild(ad);
-                    count++;
-                }
-            } catch (error) {
-                console.error('Cleanplaats: Error removing persistent ad', error);
+    // Remove large ad containers in the grid (e.g. in je buurt tab)
+    document.querySelectorAll('.creative, div[id^="google_ads_iframe"], div[data-google-query-id], div[aria-label="Advertisement"]').forEach(ad => {
+        try {
+            const gridItem = ad.closest('.hz-Link.hz-Link--block');
+            if (gridItem && gridItem.parentNode) {
+                gridItem.parentNode.removeChild(gridItem);
+                count++;
+                return;
             }
-        });
+            if (ad.parentNode) {
+                ad.parentNode.removeChild(ad);
+                count++;
+            }
+        } catch (error) {
+            console.error('Cleanplaats: Error removing persistent ad', error);
+        }
+    });
+
+    // Remove banner-right-container and its children (fix grid gap)
+    document.querySelectorAll('#banner-right-container').forEach(banner => {
+        if (banner.parentNode) {
+            banner.parentNode.removeChild(banner);
+            count++;
+        }
+    });
+
+    // Remove #banner-top-dt-container (and its children) if present (fixes grid gap instantly on tab switch)
+    document.querySelectorAll('#banner-top-dt-container').forEach(container => {
+        if (container.parentNode) {
+            container.parentNode.removeChild(container);
+            count++;
+        }
+    });
+
+    // Remove empty banner containers that cause grid gaps
+    document.querySelectorAll('.hz-FeedBannerBlock, .Banners-bannerFeedItem').forEach(banner => {
+        if (
+            banner.childElementCount === 0 ||
+            Array.from(banner.children).every(child => child.offsetParent === null)
+        ) {
+            if (banner.parentNode) {
+                banner.parentNode.removeChild(banner);
+                count++;
+            }
+        }
     });
 
     CLEANPLAATS.stats.otherAdsRemoved += count;
@@ -948,7 +1207,7 @@ function showBlacklistToast(sellerName) {
     
     toast.innerHTML = DOMPurify.sanitize(`
         <div class="cleanplaats-blacklist-toast-content">
-            <span class="cleanplaats-toast-icon">👁</span>
+            <span class="cleanplaats-toast-icon eye">👁</span>
             <div class="cleanplaats-toast-message">
                 <strong>${sellerName} verborgen</strong>
                 <span>Beheer verborgen verkopers via het paneel</span>
@@ -977,7 +1236,7 @@ function showUnblacklistToast(sellerName) {
     
     toast.innerHTML = DOMPurify.sanitize(`
         <div class="cleanplaats-blacklist-toast-content">
-            <span class="cleanplaats-toast-icon">👁</span>
+            <span class="cleanplaats-toast-icon eye">👁</span>
             <div class="cleanplaats-toast-message">
                 <strong>${sellerName} niet meer verborgen</strong>
                 <span>Deze verkoper is weer zichtbaar in de resultaten</span>
@@ -1076,6 +1335,12 @@ function showBlacklistModal() {
     const modal = document.getElementById('cleanplaats-blacklist-modal');
     if (!modal) return;
 
+    // Toggle modal visibility
+    if (modal.style.display === 'block') {
+        modal.style.display = 'none';
+        return;
+    }
+
     const sellers = CLEANPLAATS.settings.blacklistedSellers;
 
     modal.innerHTML = DOMPurify.sanitize(`
@@ -1150,6 +1415,52 @@ function setupBlacklistModalButtons() {
             removeSellerFromBlacklist(sellerName);
         };
     });
+}
+
+/**
+ * Show a toast notification for blacklisting a term
+ */
+function showBlacklistTermToast(term) {
+    const toast = document.createElement('div');
+    toast.className = 'cleanplaats-blacklist-toast';
+    toast.innerHTML = DOMPurify.sanitize(`
+        <div class="cleanplaats-blacklist-toast-content">
+            <span class="cleanplaats-toast-icon">🔎</span>
+            <div class="cleanplaats-toast-message">
+                <strong>'${term}' verborgen</strong>
+                <span>Alle advertenties met de term '${term}' zijn nu verborgen.</span>
+            </div>
+        </div>
+    `);
+    document.body.appendChild(toast);
+    setTimeout(() => { requestAnimationFrame(() => toast.classList.add('visible')); }, 50);
+    setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+/**
+ * Show a toast notification for unblacklisting a term
+ */
+function showUnblacklistTermToast(term) {
+    const toast = document.createElement('div');
+    toast.className = 'cleanplaats-blacklist-toast';
+    toast.innerHTML = DOMPurify.sanitize(`
+        <div class="cleanplaats-blacklist-toast-content">
+            <span class="cleanplaats-toast-icon">🔎</span>
+            <div class="cleanplaats-toast-message">
+                <strong>'${term}' niet meer verborgen</strong>
+                <span>Advertenties met de term '${term}' worden weer getoond.</span>
+            </div>
+        </div>
+    `);
+    document.body.appendChild(toast);
+    setTimeout(() => { requestAnimationFrame(() => toast.classList.add('visible')); }, 50);
+    setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
 
 /* ======================
