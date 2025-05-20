@@ -1207,3 +1207,57 @@ input:checked + .cleanplaats-switch-slider:before {
 .cleanplaats-panel.animating .cleanplaats-content::-webkit-scrollbar {
     display: none; /* Chrome, Safari */
 }
+
+/* Mobile seller topright row and hide button */
+@media (max-width: 700px) {
+  .cleanplaats-seller-topright-mobile {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #888;
+    background: rgba(255,255,255,0.85);
+    border-radius: 6px;
+    padding: 2px 8px 2px 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    margin-bottom: 4px;
+  }
+  .cleanplaats-seller-name-mobile {
+    color: #666;
+    font-size: 12px;
+    font-weight: 500;
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cleanplaats-blacklist-btn-mobile {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    transition: background 0.2s;
+  }
+  .cleanplaats-blacklist-btn-mobile svg {
+    display: inline-block;
+    vertical-align: middle;
+    stroke: #888;
+    fill: none;
+    width: 18px;
+    height: 18px;
+    transition: stroke 0.2s;
+  }
+  .cleanplaats-blacklist-btn-mobile:hover {
+    background: #f0f0f0;
+  }
+  .cleanplaats-blacklist-btn-mobile:active svg,
+  .cleanplaats-blacklist-btn-mobile:hover svg {
+    stroke: #555;
+  }
+}

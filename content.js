@@ -1356,7 +1356,55 @@ function injectBlacklistButtons() {
         // Remove any existing button to avoid duplicates
         const oldBtn = listing.querySelector('.cleanplaats-blacklist-btn-row');
         if (oldBtn) oldBtn.remove();
+        const oldTopRight = listing.querySelector('.cleanplaats-seller-topright-mobile');
+        if (oldTopRight) oldTopRight.remove();
 
+        // --- MOBILE ONLY: Seller + hide button in top right ---
+        if (window.innerWidth < 700) {
+            const sellerNameContainer = listing.querySelector('.hz-Listing-seller-name-container');
+            let sellerName = null;
+            if (sellerNameContainer) {
+                const sellerLink = sellerNameContainer.querySelector('a');
+                if (sellerLink) {
+                    const sellerNameEl = sellerLink.querySelector('.hz-Listing-seller-name');
+                    if (sellerNameEl) sellerName = sellerNameEl.textContent.trim();
+                }
+            }
+            if (sellerName) {
+                // Create the top row container
+                const topRow = document.createElement('div');
+                topRow.className = 'cleanplaats-seller-topright-mobile';
+                topRow.innerHTML = `
+                    <span class="cleanplaats-seller-name-mobile">${sellerName}</span>
+                    <button class="cleanplaats-blacklist-btn-mobile" title="Verberg deze verkoper" aria-label="Verberg deze verkoper">
+                      <svg xmlns="http://www.w3.org/2000/svg" height="18" width="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17.94 17.94A10.06 10.06 0 0 1 12 20C7 20 2.73 16.11 1 12c.74-1.61 1.81-3.09 3.06-4.31"/>
+                        <path d="M22.54 12.88A10.06 10.06 0 0 0 12 4c-1.61 0-3.16.31-4.59.88"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </button>
+                `;
+                // Insert as first child of the main content column
+                const content = listing.querySelector('.hz-Listing-listview-content');
+                if (content && content.firstChild) {
+                    content.insertBefore(topRow, content.firstChild);
+                } else if (content) {
+                    content.appendChild(topRow);
+                }
+                // Add click handler
+                topRow.querySelector('.cleanplaats-blacklist-btn-mobile').onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (confirm(`Wil je alle advertenties van ${sellerName} verbergen?`)) {
+                        addSellerToBlacklist(sellerName);
+                    }
+                };
+            }
+            // Do NOT inject the desktop button on mobile
+            return;
+        }
+        // --- DESKTOP: original logic ---
         // Find the seller name container and link
         const sellerNameContainer = listing.querySelector('.hz-Listing-seller-name-container');
         if (!sellerNameContainer) return;
