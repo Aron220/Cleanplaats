@@ -215,6 +215,7 @@ function createControlPanel() {
 
     if (CLEANPLAATS.featureFlags.autoCollapse || CLEANPLAATS.panelState.isCollapsed) {
         panel.classList.add('collapsed');
+        panel.classList.add('collapsed-ready');
     }
 
     panel.innerHTML = DOMPurify.sanitize(`
@@ -717,37 +718,101 @@ function clearBubbleNotification() {
  */
 function setupEventListeners() {
     // Panel toggle
-    const header = document.getElementById('cleanplaats-header');
-    const toggle = document.getElementById('cleanplaats-toggle');
-    const panel = document.getElementById('cleanplaats-panel');
+    const panel = document.getElementById('cleanplaats-panel'); // Target the panel
+    const toggle = document.getElementById('cleanplaats-toggle'); // Chevron button
 
-    if (header && panel) {
-        header.addEventListener('click', (e) => {
-            // Prevent toggling when clicking checkboxes
-            if (e.target.tagName === 'INPUT' || e.target.closest('.cleanplaats-tooltip')) {
+    if (panel) { // Listen on the panel itself
+        panel.addEventListener('click', (e) => {
+            // Block toggling while animating
+            if (panel.classList.contains('animating')) {
+                // Optionally, you could log or provide feedback here
                 return;
             }
 
-            // Close any open modals before toggling panel
-            const blacklistModal = document.getElementById('cleanplaats-blacklist-modal');
-            const termsModal = document.getElementById('cleanplaats-terms-modal');
-            if (blacklistModal) blacklistModal.style.display = 'none';
-            if (termsModal) termsModal.style.display = 'none';
+            const isPanelCollapsed = panel.classList.contains('collapsed');
+            let canToggle = false;
 
-            CLEANPLAATS.panelState.isCollapsed = !CLEANPLAATS.panelState.isCollapsed;
-            panel.classList.toggle('collapsed', CLEANPLAATS.panelState.isCollapsed);
-            toggle.textContent = CLEANPLAATS.panelState.isCollapsed ? '▼' : '▲';
+            // Determine if the click should trigger a toggle
+            if (isPanelCollapsed) {
+                // If collapsed (icon mode), any click directly on the panel/icon should expand it.
+                if (e.target === panel) {
+                    canToggle = true;
+                }
+            } else {
+                // If expanded, toggle only if the click is on the header area,
+                // but not on other specific interactive elements (inputs, buttons, links, tooltips, switches).
+                const header = document.getElementById('cleanplaats-header');
+                if (header && header.contains(e.target)) { // Click is within the header
+                    if (
+                        e.target.id === 'cleanplaats-toggle' ||
+                        !e.target.closest('input, button, a, .cleanplaats-tooltip, .cleanplaats-switch')
+                    ) {
+                        canToggle = true;
+                    }
+                }
+            }
 
-            // Save panel state
-            saveSettings();
+            if (canToggle) {
+                e.preventDefault(); // Prevent default action if 'a' tag was somehow involved in header
+                e.stopPropagation(); // Stop event from bubbling further
+
+                // Close any open modals before toggling panel
+                const blacklistModal = document.getElementById('cleanplaats-blacklist-modal');
+                const termsModal = document.getElementById('cleanplaats-terms-modal');
+                if (blacklistModal && blacklistModal.style.display === 'block') {
+                    blacklistModal.style.display = 'none';
+                }
+                if (termsModal && termsModal.style.display === 'block') {
+                    termsModal.style.display = 'none';
+                }
+
+                // --- Begin new logic for collapsed-ready and animating ---
+                // Remove collapsed-ready immediately before any toggle
+                panel.classList.remove('collapsed-ready');
+                // Add animating class before starting transition
+                panel.classList.add('animating');
+
+                CLEANPLAATS.panelState.isCollapsed = !CLEANPLAATS.panelState.isCollapsed;
+                panel.classList.toggle('collapsed', CLEANPLAATS.panelState.isCollapsed);
+
+                if (toggle) {
+                    toggle.textContent = CLEANPLAATS.panelState.isCollapsed ? '▲' : '▼';
+                }
+
+                // Fallback timeout in case transitionend is missed
+                let fallbackTimeout = setTimeout(() => {
+                    panel.classList.remove('animating');
+                    if (CLEANPLAATS.panelState.isCollapsed) {
+                        panel.classList.add('collapsed-ready');
+                    }
+                }, 600); // Slightly longer than the longest transition (0.4s)
+
+                // If collapsing, add collapsed-ready after width transition, remove animating after width transition
+                // If expanding, remove animating after max-height transition
+                const onTransitionEnd = (event) => {
+                    if (CLEANPLAATS.panelState.isCollapsed && event.propertyName === 'width') {
+                        panel.classList.add('collapsed-ready');
+                        panel.classList.remove('animating');
+                        panel.removeEventListener('transitionend', onTransitionEnd);
+                        clearTimeout(fallbackTimeout);
+                    } else if (!CLEANPLAATS.panelState.isCollapsed && event.propertyName === 'max-height') {
+                        panel.classList.remove('animating');
+                        panel.removeEventListener('transitionend', onTransitionEnd);
+                        clearTimeout(fallbackTimeout);
+                    }
+                };
+                panel.addEventListener('transitionend', onTransitionEnd);
+
+                saveSettings();
+            }
         });
     }
 
-    // Apply button
-    const applyBtn = document.getElementById('cleanplaats-apply');
-    if (applyBtn) {
-        applyBtn.addEventListener('click', applySettings);
-    }
+    // Apply button (This seems to be missing from original code, or was 'cleanplaats-apply'?)
+    // const applyBtn = document.getElementById('cleanplaats-apply');
+    // if (applyBtn) {
+    //     applyBtn.addEventListener('click', applySettings);
+    // }
 
     // Setup checkbox change listeners
     ['removeTopAds', 'removeDagtoppers', 'removePromotedListings',
