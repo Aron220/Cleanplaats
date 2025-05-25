@@ -28,23 +28,31 @@
 
   /* Collapsed state */
   .cleanplaats-panel.collapsed {
-    transform: none !important;
-    width: 48px !important;
-    min-width: 48px !important;
+    transform: none;
+    width: 48px;
+    min-width: 48px;
     min-height: 48px;
     max-height: 48px;
     background-color: transparent;
     box-shadow: 0 2px 8px rgba(0,0,0,0.25);
     border-radius: 50%;
-    padding: 0 !important;
+    padding: 0;
     cursor: pointer;
   }
   
   .cleanplaats-panel.collapsed.collapsed-ready {
-    background-image: url('chrome-extension://__MSG_@@extension_id__/icons/icon48.png');
+    /* background-image: url('chrome-extension://__MSG_@@extension_id__/icons/icon48.png'); */
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
+    transition: box-shadow 0.25s cubic-bezier(0.4,0,0.2,1), transform 0.22s cubic-bezier(0.4,0,0.2,1);
+    will-change: transform;
+  }
+  
+  .cleanplaats-panel.collapsed.collapsed-ready:hover {
+    box-shadow: 0 4px 24px 0 rgba(44, 62, 80, 0.22), 0 1.5px 8px 0 rgba(44,62,80,0.10);
+    transform: scale(1.18);
+    cursor: pointer;
   }
   
   .cleanplaats-panel.collapsed .cleanplaats-header,
@@ -1259,5 +1267,9 @@ input:checked + .cleanplaats-switch-slider:before {
   .cleanplaats-blacklist-btn-mobile:active svg,
   .cleanplaats-blacklist-btn-mobile:hover svg {
     stroke: #555;
+  }
+  .cleanplaats-panel.collapsed.collapsed-ready:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    transform: none;
   }
 }

@@ -216,6 +216,8 @@ function createControlPanel() {
     if (CLEANPLAATS.featureFlags.autoCollapse || CLEANPLAATS.panelState.isCollapsed) {
         panel.classList.add('collapsed');
         panel.classList.add('collapsed-ready');
+        // Set background image for minimized state (cross-browser)
+        panel.style.backgroundImage = `url('${chrome.runtime.getURL('icons/icon48.png')}')`;
     }
 
     panel.innerHTML = DOMPurify.sanitize(`
@@ -769,6 +771,8 @@ function setupEventListeners() {
                 // --- Begin new logic for collapsed-ready and animating ---
                 // Remove collapsed-ready immediately before any toggle
                 panel.classList.remove('collapsed-ready');
+                // Remove background image when not collapsed-ready
+                panel.style.backgroundImage = '';
                 // Add animating class before starting transition
                 panel.classList.add('animating');
 
@@ -784,6 +788,8 @@ function setupEventListeners() {
                     panel.classList.remove('animating');
                     if (CLEANPLAATS.panelState.isCollapsed) {
                         panel.classList.add('collapsed-ready');
+                        // Set background image for minimized state (cross-browser)
+                        panel.style.backgroundImage = `url('${chrome.runtime.getURL('icons/icon48.png')}')`;
                     }
                 }, 600); // Slightly longer than the longest transition (0.4s)
 
@@ -792,11 +798,15 @@ function setupEventListeners() {
                 const onTransitionEnd = (event) => {
                     if (CLEANPLAATS.panelState.isCollapsed && event.propertyName === 'width') {
                         panel.classList.add('collapsed-ready');
+                        // Set background image for minimized state (cross-browser)
+                        panel.style.backgroundImage = `url('${chrome.runtime.getURL('icons/icon48.png')}')`;
                         panel.classList.remove('animating');
                         panel.removeEventListener('transitionend', onTransitionEnd);
                         clearTimeout(fallbackTimeout);
                     } else if (!CLEANPLAATS.panelState.isCollapsed && event.propertyName === 'max-height') {
                         panel.classList.remove('animating');
+                        // Remove background image when expanded
+                        panel.style.backgroundImage = '';
                         panel.removeEventListener('transitionend', onTransitionEnd);
                         clearTimeout(fallbackTimeout);
                     }
