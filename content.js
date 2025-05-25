@@ -244,7 +244,7 @@ function createControlPanel() {
                         ${topAdLabel}
                         <div class="cleanplaats-tooltip">
                             <span class="cleanplaats-tooltip-icon">?</span>
-                            <span class="cleanplaats-tooltip-text">Verwijdert betaalde \"${topAdLabel}\" advertenties</span>
+                            <span class="cleanplaats-tooltip-text">Verwijdert betaalde "${topAdLabel}" advertenties</span>
                         </div>
                     </label>
                 </div>
@@ -257,7 +257,7 @@ function createControlPanel() {
                         Dagtoppers
                         <div class="cleanplaats-tooltip">
                             <span class="cleanplaats-tooltip-icon">?</span>
-                            <span class="cleanplaats-tooltip-text">Verwijdert \"Dagtopper\" advertenties</span>
+                            <span class="cleanplaats-tooltip-text">Verwijdert "Dagtopper" advertenties</span>
                         </div>
                     </label>
                 </div>
@@ -270,7 +270,7 @@ function createControlPanel() {
                         Bedrijfsadvertenties
                         <div class="cleanplaats-tooltip">
                             <span class="cleanplaats-tooltip-icon">?</span>
-                            <span class="cleanplaats-tooltip-text">Verwijdert advertenties van bedrijven met een \"Bezoek website\" link</span>
+                            <span class="cleanplaats-tooltip-text">Verwijdert advertenties van bedrijven met een "Bezoek website" link</span>
                         </div>
                     </label>
                 </div>
@@ -293,7 +293,7 @@ function createControlPanel() {
             <div class="cleanplaats-stats" id="cleanplaats-stats">
                 <div class="cleanplaats-section-title">Verwijderde items</div>
                 <div class="cleanplaats-stat-item">
-                    <span class="cleanplaats-stat-label">Topadvertenties:</span>
+                    <span class="cleanplaats-stat-label">${topAdLabel}:</span>
                     <span class="cleanplaats-stat-value" id="cleanplaats-topads-count">0</span>
                 </div>
                 <div class="cleanplaats-stat-item">
