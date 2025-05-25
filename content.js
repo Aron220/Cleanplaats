@@ -13,7 +13,8 @@ const CLEANPLAATS = {
         // removeAds: true, is now always true
         removeOpvalStickers: true,
         blacklistedSellers: [],
-        blacklistedTerms: [] // Added blacklisted terms
+        blacklistedTerms: [], // Added blacklisted terms
+        resultsPerPage: 30 // Nieuw: aantal resultaten per pagina
     },
 
     // Stats tracking
@@ -71,6 +72,9 @@ function initCleanplaats() {
                     createControlPanel();
                     setupAllObservers();
                     applySettings();
+
+                    // Enforce limit in hash for search results pages
+                    enforceLimitInHash();
 
                     // Modified this part to ensure content is loaded
                     const tryCleanup = () => {
@@ -287,13 +291,21 @@ function createControlPanel() {
                         </div>
                     </label>
                 </div>
+                <div class="cleanplaats-option cleanplaats-results-dropdown-row">
+                    <label for="cleanplaats-results-dropdown" class="cleanplaats-option-label" style="min-width:120px;">Resultaten per pagina:</label>
+                    <select id="cleanplaats-results-dropdown" class="cleanplaats-results-dropdown">
+                        <option value="30" ${CLEANPLAATS.settings.resultsPerPage == 30 ? 'selected' : ''}>30</option>
+                        <option value="50" ${CLEANPLAATS.settings.resultsPerPage == 50 ? 'selected' : ''}>50</option>
+                        <option value="100" ${CLEANPLAATS.settings.resultsPerPage == 100 ? 'selected' : ''}>100</option>
+                    </select>
+                </div>
             </div>
 
             ${CLEANPLAATS.featureFlags.showStats ? `
-            <div class="cleanplaats-stats" id="cleanplaats-stats">
+            <div class="cleanplaats-stats cleanplaats-stats-compact" id="cleanplaats-stats">
                 <div class="cleanplaats-section-title">Verwijderde items</div>
                 <div class="cleanplaats-stat-item">
-                    <span class="cleanplaats-stat-label">${topAdLabel}:</span>
+                    <span class="cleanplaats-stat-label">Top:</span>
                     <span class="cleanplaats-stat-value" id="cleanplaats-topads-count">0</span>
                 </div>
                 <div class="cleanplaats-stat-item">
@@ -301,15 +313,15 @@ function createControlPanel() {
                     <span class="cleanplaats-stat-value" id="cleanplaats-dagtoppers-count">0</span>
                 </div>
                 <div class="cleanplaats-stat-item">
-                    <span class="cleanplaats-stat-label">Bedrijfsadvertenties:</span>
+                    <span class="cleanplaats-stat-label">Bedrijf:</span>
                     <span class="cleanplaats-stat-value" id="cleanplaats-promoted-count">0</span>
                 </div>
                 <div class="cleanplaats-stat-item">
-                    <span class="cleanplaats-stat-label">Opvalstickers:</span>
+                    <span class="cleanplaats-stat-label">Stickers:</span>
                     <span class="cleanplaats-stat-value" id="cleanplaats-stickers-count">0</span>
                 </div>
                 <div class="cleanplaats-stat-item">
-                    <span class="cleanplaats-stat-label">Andere advertenties:</span>
+                    <span class="cleanplaats-stat-label">Overig:</span>
                     <span class="cleanplaats-stat-value" id="cleanplaats-otherads-count">0</span>
                 </div>
                 <div class="cleanplaats-stat-item">
@@ -827,12 +839,6 @@ function setupEventListeners() {
         });
     }
 
-    // Apply button (This seems to be missing from original code, or was 'cleanplaats-apply'?)
-    // const applyBtn = document.getElementById('cleanplaats-apply');
-    // if (applyBtn) {
-    //     applyBtn.addEventListener('click', applySettings);
-    // }
-
     // Setup checkbox change listeners
     ['removeTopAds', 'removeDagtoppers', 'removePromotedListings',
         'removeOpvalStickers'].forEach(id => {
@@ -841,6 +847,9 @@ function setupEventListeners() {
                 checkbox.addEventListener('change', handleCheckboxChange);
             }
         });
+
+    // Setup results dropdown listener
+    setupResultsDropdownListener();
 }
 
 /**
@@ -1667,6 +1676,14 @@ function performCleanupAndCheckForEmptyPage() {
             console.log('Cleanplaats: Running cleanup after navigation');
             performCleanup();
             injectBlacklistButtons();
+            
+            // Enforce limit in hash for search results pages
+            setTimeout(() => {
+                if (!isUpdatingHash) {
+                    enforceLimitInHash();
+                }
+            }, 200);
+            
             // Delay the check for empty page to ensure DOM is fully updated
             setTimeout(checkForEmptyPage, 500);
             setupKeyboardNavigation(); // Initialize keyboard navigation
@@ -1783,10 +1800,180 @@ function setupAllObservers() {
 // Initialize keyboard navigation on initial page load
 setupKeyboardNavigation();
 
-/**
- * Get the current page number from the URL
- */
-function getCurrentPage() {
-    const match = window.location.pathname.match(/\/p\/(\d+)/);
-    return match ? parseInt(match[1]) : 1;
+// 2. Hash logica toevoegen:
+let isUpdatingHash = false; // Guard to prevent infinite loops
+
+function parseMarktplaatsHash(hashStr) {
+    // #key1:val1|key2:val2
+    const options = {};
+    if (!hashStr || hashStr.length < 2) return options;
+    
+    const hashKeysValues = hashStr.substring(1).split("|");
+    
+    for (let i = 0; i < hashKeysValues.length; ++i) {
+        const keyValue = hashKeysValues[i].split(":");
+        
+        if (keyValue.length !== 2) {
+            continue;
+        }
+        
+        options[keyValue[0]] = keyValue[1];
+    }
+    
+    return options;
 }
+
+function buildMarktplaatsHash(options) {
+    const entries = Object.entries(options).filter(([k, v]) => v && v !== '');
+    if (entries.length === 0) return '';
+    
+    let hashStr = "#";
+    for (let key in options) {
+        if (options[key] && options[key] !== '') {
+            hashStr += key + ":" + options[key] + "|";
+        }
+    }
+    // remove trailing `|`
+    hashStr = hashStr.substring(0, hashStr.length - 1);
+    return hashStr;
+}
+
+function isSearchResultsPage() {
+    return /\/q\//.test(window.location.pathname) || /\/l\//.test(window.location.pathname);
+}
+
+function enforceLimitInHash() {
+    // Prevent infinite loops
+    if (isUpdatingHash || !isSearchResultsPage()) return;
+    
+    const dropdown = document.getElementById('cleanplaats-results-dropdown');
+    if (!dropdown) return;
+    
+    const currentOptions = parseMarktplaatsHash(window.location.hash);
+    const currentLimit = currentOptions['limit'] ? parseInt(currentOptions['limit'], 10) : 30;
+    const dropdownLimit = parseInt(dropdown.value, 10);
+    
+    // If dropdown value differs from hash, update hash to match dropdown
+    if (dropdownLimit !== currentLimit) {
+        console.log(`Cleanplaats: Dropdown (${dropdownLimit}) differs from hash (${currentLimit}), updating hash...`);
+        
+        isUpdatingHash = true;
+        
+        if (dropdownLimit === 30) {
+            // Remove limit parameter for default value
+            if ('limit' in currentOptions) {
+                delete currentOptions['limit'];
+                const newHash = buildMarktplaatsHash(currentOptions);
+                console.log('Cleanplaats: Removing limit from hash:', newHash);
+                window.location.hash = newHash;
+                setTimeout(() => {
+                    isUpdatingHash = false;
+                    window.location.reload();
+                }, 50);
+            } else {
+                isUpdatingHash = false;
+            }
+        } else {
+            // Add/update limit parameter
+            currentOptions['limit'] = String(dropdownLimit);
+            const newHash = buildMarktplaatsHash(currentOptions);
+            console.log('Cleanplaats: Adding limit to hash:', newHash);
+            window.location.hash = newHash;
+            setTimeout(() => {
+                isUpdatingHash = false;
+                window.location.reload();
+            }, 50);
+        }
+    }
+}
+
+function setupResultsDropdownListener() {
+    console.log('Cleanplaats: Setting up results dropdown listener...');
+    const dropdown = document.getElementById('cleanplaats-results-dropdown');
+    console.log('Cleanplaats: Dropdown found:', dropdown);
+    if (!dropdown) return;
+    
+    dropdown.addEventListener('change', (e) => {
+        const value = parseInt(e.target.value, 10);
+        console.log('Cleanplaats: Dropdown changed to:', value);
+        console.log('Cleanplaats: Current pathname:', window.location.pathname);
+        console.log('Cleanplaats: Is search results page:', isSearchResultsPage());
+        
+        CLEANPLAATS.settings.resultsPerPage = value;
+        saveSettings();
+        
+        // Only modify hash on search results pages
+        if (isSearchResultsPage()) {
+            console.log('Cleanplaats: Modifying hash for search results page');
+            
+            // Set guard to prevent infinite loops
+            isUpdatingHash = true;
+            
+            const currentOptions = parseMarktplaatsHash(window.location.hash);
+            console.log('Cleanplaats: Current hash options:', currentOptions);
+            
+            if (value === 30) {
+                // Remove limit parameter for default value
+                if ('limit' in currentOptions) {
+                    delete currentOptions['limit'];
+                    const newHash = buildMarktplaatsHash(currentOptions);
+                    console.log('Cleanplaats: Setting new hash (removing limit):', newHash);
+                    window.location.hash = newHash;
+                    setTimeout(() => {
+                        isUpdatingHash = false;
+                        window.location.reload();
+                    }, 50);
+                } else {
+                    isUpdatingHash = false;
+                }
+            } else {
+                // Add/update limit parameter
+                currentOptions['limit'] = String(value);
+                const newHash = buildMarktplaatsHash(currentOptions);
+                console.log('Cleanplaats: Setting new hash (adding limit):', newHash);
+                window.location.hash = newHash;
+                setTimeout(() => {
+                    isUpdatingHash = false;
+                    window.location.reload();
+                }, 50);
+            }
+        } else {
+            console.log('Cleanplaats: Not a search results page, skipping hash modification');
+        }
+        
+        // Show feedback
+        const header = document.querySelector('.cleanplaats-header');
+        if (header) {
+            const feedback = document.createElement('div');
+            feedback.className = 'cleanplaats-feedback';
+            feedback.textContent = '✓';
+            header.querySelectorAll('.cleanplaats-feedback').forEach(el => el.remove());
+            header.appendChild(feedback);
+            requestAnimationFrame(() => feedback.classList.add('cleanplaats-feedback-show'));
+            setTimeout(() => feedback.remove(), 1500);
+        }
+    });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    // Small delay to ensure everything is loaded
+    setTimeout(() => {
+        if (!isUpdatingHash) {
+            enforceLimitInHash();
+        }
+    }, 100);
+});
+
+// Listen for hash changes and navigation
+window.addEventListener('hashchange', () => {
+    if (!isUpdatingHash) {
+        setTimeout(() => enforceLimitInHash(), 100);
+    }
+});
+
+window.addEventListener('popstate', () => {
+    if (!isUpdatingHash) {
+        setTimeout(() => enforceLimitInHash(), 100);
+    }
+});
