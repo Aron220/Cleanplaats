@@ -5,10 +5,16 @@
     "description": "Zelf in de hand wat je wel én niet wil zien op Marktplaats door te filteren",
     "author": "",
     "permissions": ["storage"],
-    "host_permissions": ["*://*.marktplaats.nl/*"],
+    "host_permissions": [
+      "*://*.marktplaats.nl/*",
+      "*://*.2dehands.be/*"
+    ],
     "content_scripts": [
       {
-        "matches": ["*://*.marktplaats.nl/*"],
+        "matches": [
+          "*://*.marktplaats.nl/*",
+          "*://*.2dehands.be/*"
+        ],
         "js": ["purify.min.js", "content.js"],
         "css": ["content.css"],
         "run_at": "document_end"
@@ -22,7 +28,10 @@
     "web_accessible_resources": [
       {
         "resources": ["icons/*"],
-        "matches": ["*://*.marktplaats.nl/*"]
+        "matches": [
+          "*://*.marktplaats.nl/*",
+          "*://*.2dehands.be/*"
+        ]
       }
     ],
     "action": {
@@ -34,12 +43,12 @@
       }
     },
     "browser_specific_settings": {
-  "gecko": {
-    "id": "cleanplaats@cleanplaats.dev",
-    "strict_min_version": "102.0"
-  },
-  "gecko_android": {
-    "strict_min_version": "110.0"
-  }
-}
+      "gecko": {
+        "id": "cleanplaats@cleanplaats.dev",
+        "strict_min_version": "102.0"
+      },
+      "gecko_android": {
+        "strict_min_version": "110.0"
+      }
+    }
 }
