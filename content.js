@@ -217,12 +217,13 @@ function createControlPanel() {
         panel.classList.add('collapsed');
         panel.classList.add('collapsed-ready');
         // Set background image for minimized state (cross-browser)
-        panel.style.backgroundImage = `url('${chrome.runtime.getURL('icons/icon48.png')}')`;
+        panel.style.backgroundImage = `url('${chrome.runtime.getURL('icons/icon128.png')}')`;
     }
 
     panel.innerHTML = DOMPurify.sanitize(`
         <div class="cleanplaats-header" id="cleanplaats-header">
             <h3>
+                <img id="cleanplaats-header-logo" class="cleanplaats-header-logo" alt="Cleanplaats logo" />
                 Cleanplaats
                 <span class="cleanplaats-badge" id="cleanplaats-total-count">0</span>
             </h3>
@@ -334,6 +335,11 @@ function createControlPanel() {
     `);
 
     document.body.appendChild(panel);
+    // Set logo src after DOM insertion to avoid DOMPurify issues
+    const logoImg = panel.querySelector('#cleanplaats-header-logo');
+    if (logoImg) {
+      logoImg.src = chrome.runtime.getURL('icons/icon128.png');
+    }
     setupEventListeners();
 
     // Blacklist management button
@@ -789,7 +795,7 @@ function setupEventListeners() {
                     if (CLEANPLAATS.panelState.isCollapsed) {
                         panel.classList.add('collapsed-ready');
                         // Set background image for minimized state (cross-browser)
-                        panel.style.backgroundImage = `url('${chrome.runtime.getURL('icons/icon48.png')}')`;
+                        panel.style.backgroundImage = `url('${chrome.runtime.getURL('icons/icon128.png')}')`;
                     }
                 }, 600); // Slightly longer than the longest transition (0.4s)
 
@@ -799,7 +805,7 @@ function setupEventListeners() {
                     if (CLEANPLAATS.panelState.isCollapsed && event.propertyName === 'width') {
                         panel.classList.add('collapsed-ready');
                         // Set background image for minimized state (cross-browser)
-                        panel.style.backgroundImage = `url('${chrome.runtime.getURL('icons/icon48.png')}')`;
+                        panel.style.backgroundImage = `url('${chrome.runtime.getURL('icons/icon128.png')}')`;
                         panel.classList.remove('animating');
                         panel.removeEventListener('transitionend', onTransitionEnd);
                         clearTimeout(fallbackTimeout);

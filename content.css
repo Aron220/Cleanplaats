@@ -97,12 +97,19 @@
   }
   
   .cleanplaats-header h3::before {
-    content: "";
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    background-color: #4CAF50;
+    display: none !important;
+  }
+  
+  .cleanplaats-header-logo {
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 10px;
+    box-shadow: 0 0 0 1px #e0e0e0;
+    background: white;
+    object-fit: cover;
   }
   
   .cleanplaats-badge {
