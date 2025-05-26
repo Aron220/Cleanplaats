@@ -73,9 +73,6 @@ function initCleanplaats() {
                     setupAllObservers();
                     applySettings();
 
-                    // Enforce limit in hash for search results pages
-                    enforceLimitInHash();
-
                     // Modified this part to ensure content is loaded
                     const tryCleanup = () => {
                         if (document.querySelector('.hz-Listing') || document.querySelector('#adsense-container')) {
@@ -1677,13 +1674,6 @@ function performCleanupAndCheckForEmptyPage() {
             performCleanup();
             injectBlacklistButtons();
             
-            // Enforce limit in hash for search results pages
-            setTimeout(() => {
-                if (!isUpdatingHash) {
-                    enforceLimitInHash();
-                }
-            }, 200);
-            
             // Delay the check for empty page to ensure DOM is fully updated
             setTimeout(checkForEmptyPage, 500);
             setupKeyboardNavigation(); // Initialize keyboard navigation
@@ -1800,146 +1790,15 @@ function setupAllObservers() {
 // Initialize keyboard navigation on initial page load
 setupKeyboardNavigation();
 
-// 2. Hash logica toevoegen:
-let isUpdatingHash = false; // Guard to prevent infinite loops
-
-function parseMarktplaatsHash(hashStr) {
-    // #key1:val1|key2:val2
-    const options = {};
-    if (!hashStr || hashStr.length < 2) return options;
-    
-    const hashKeysValues = hashStr.substring(1).split("|");
-    
-    for (let i = 0; i < hashKeysValues.length; ++i) {
-        const keyValue = hashKeysValues[i].split(":");
-        
-        if (keyValue.length !== 2) {
-            continue;
-        }
-        
-        options[keyValue[0]] = keyValue[1];
-    }
-    
-    return options;
-}
-
-function buildMarktplaatsHash(options) {
-    const entries = Object.entries(options).filter(([k, v]) => v && v !== '');
-    if (entries.length === 0) return '';
-    
-    let hashStr = "#";
-    for (let key in options) {
-        if (options[key] && options[key] !== '') {
-            hashStr += key + ":" + options[key] + "|";
-        }
-    }
-    // remove trailing `|`
-    hashStr = hashStr.substring(0, hashStr.length - 1);
-    return hashStr;
-}
-
-function isSearchResultsPage() {
-    return /\/q\//.test(window.location.pathname) || /\/l\//.test(window.location.pathname);
-}
-
-function enforceLimitInHash() {
-    // Prevent infinite loops
-    if (isUpdatingHash || !isSearchResultsPage()) return;
-    
-    const dropdown = document.getElementById('cleanplaats-results-dropdown');
-    if (!dropdown) return;
-    
-    const currentOptions = parseMarktplaatsHash(window.location.hash);
-    const currentLimit = currentOptions['limit'] ? parseInt(currentOptions['limit'], 10) : 30;
-    const dropdownLimit = parseInt(dropdown.value, 10);
-    
-    // If dropdown value differs from hash, update hash to match dropdown
-    if (dropdownLimit !== currentLimit) {
-        console.log(`Cleanplaats: Dropdown (${dropdownLimit}) differs from hash (${currentLimit}), updating hash...`);
-        
-        isUpdatingHash = true;
-        
-        if (dropdownLimit === 30) {
-            // Remove limit parameter for default value
-            if ('limit' in currentOptions) {
-                delete currentOptions['limit'];
-                const newHash = buildMarktplaatsHash(currentOptions);
-                console.log('Cleanplaats: Removing limit from hash:', newHash);
-                window.location.hash = newHash;
-                setTimeout(() => {
-                    isUpdatingHash = false;
-                    window.location.reload();
-                }, 50);
-            } else {
-                isUpdatingHash = false;
-            }
-        } else {
-            // Add/update limit parameter
-            currentOptions['limit'] = String(dropdownLimit);
-            const newHash = buildMarktplaatsHash(currentOptions);
-            console.log('Cleanplaats: Adding limit to hash:', newHash);
-            window.location.hash = newHash;
-            setTimeout(() => {
-                isUpdatingHash = false;
-                window.location.reload();
-            }, 50);
-        }
-    }
-}
-
 function setupResultsDropdownListener() {
-    console.log('Cleanplaats: Setting up results dropdown listener...');
     const dropdown = document.getElementById('cleanplaats-results-dropdown');
-    console.log('Cleanplaats: Dropdown found:', dropdown);
     if (!dropdown) return;
     
     dropdown.addEventListener('change', (e) => {
         const value = parseInt(e.target.value, 10);
-        console.log('Cleanplaats: Dropdown changed to:', value);
-        console.log('Cleanplaats: Current pathname:', window.location.pathname);
-        console.log('Cleanplaats: Is search results page:', isSearchResultsPage());
         
         CLEANPLAATS.settings.resultsPerPage = value;
         saveSettings();
-        
-        // Only modify hash on search results pages
-        if (isSearchResultsPage()) {
-            console.log('Cleanplaats: Modifying hash for search results page');
-            
-            // Set guard to prevent infinite loops
-            isUpdatingHash = true;
-            
-            const currentOptions = parseMarktplaatsHash(window.location.hash);
-            console.log('Cleanplaats: Current hash options:', currentOptions);
-            
-            if (value === 30) {
-                // Remove limit parameter for default value
-                if ('limit' in currentOptions) {
-                    delete currentOptions['limit'];
-                    const newHash = buildMarktplaatsHash(currentOptions);
-                    console.log('Cleanplaats: Setting new hash (removing limit):', newHash);
-                    window.location.hash = newHash;
-                    setTimeout(() => {
-                        isUpdatingHash = false;
-                        window.location.reload();
-                    }, 50);
-                } else {
-                    isUpdatingHash = false;
-                }
-            } else {
-                // Add/update limit parameter
-                currentOptions['limit'] = String(value);
-                const newHash = buildMarktplaatsHash(currentOptions);
-                console.log('Cleanplaats: Setting new hash (adding limit):', newHash);
-                window.location.hash = newHash;
-                setTimeout(() => {
-                    isUpdatingHash = false;
-                    window.location.reload();
-                }, 50);
-            }
-        } else {
-            console.log('Cleanplaats: Not a search results page, skipping hash modification');
-        }
         
         // Show feedback
         const header = document.querySelector('.cleanplaats-header');
@@ -1954,26 +1813,3 @@ function setupResultsDropdownListener() {
         }
     });
 }
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
-    // Small delay to ensure everything is loaded
-    setTimeout(() => {
-        if (!isUpdatingHash) {
-            enforceLimitInHash();
-        }
-    }, 100);
-});
-
-// Listen for hash changes and navigation
-window.addEventListener('hashchange', () => {
-    if (!isUpdatingHash) {
-        setTimeout(() => enforceLimitInHash(), 100);
-    }
-});
-
-window.addEventListener('popstate', () => {
-    if (!isUpdatingHash) {
-        setTimeout(() => enforceLimitInHash(), 100);
-    }
-});
