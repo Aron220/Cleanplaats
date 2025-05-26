@@ -3,6 +3,9 @@
  * Version: 1.1.0
  */
 
+// Cross-browser compatibility
+const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
+
 // State management
 const CLEANPLAATS = {
     // Configuration with defaults
@@ -14,7 +17,8 @@ const CLEANPLAATS = {
         removeOpvalStickers: true,
         blacklistedSellers: [],
         blacklistedTerms: [], // Added blacklisted terms
-        resultsPerPage: 30 // Nieuw: aantal resultaten per pagina
+        resultsPerPage: 30, // Nieuw: aantal resultaten per pagina
+        defaultSortMode: 'standard' // Nieuw: standaard sorteermodus
     },
 
     // Stats tracking
@@ -79,6 +83,9 @@ function initCleanplaats() {
                             performInitialCleanup();
                             injectBlacklistButtons();
                             setTimeout(checkForEmptyPage, 300);
+                            
+                            // Update badge with initial count
+                            setTimeout(updateStatsDisplay, 500);
 
                             // --- Force ad removal and layout update for Firefox ---
                             // Run multiple times to catch late-rendered ad containers
@@ -122,7 +129,13 @@ function initCleanplaats() {
  */
 function checkFirstRun() {
     return new Promise(resolve => {
-        chrome.storage.local.get('firstRun', (items) => {
+        browserAPI.storage.local.get('firstRun', (items) => {
+            if (browserAPI.runtime.lastError) {
+                console.error('Cleanplaats: Error checking first run:', browserAPI.runtime.lastError);
+                resolve(true); // Default to first run on error
+                return;
+            }
+            
             let isFirstRun;
             if (items.firstRun === undefined) {
                 isFirstRun = true;
@@ -132,7 +145,10 @@ function checkFirstRun() {
 
             // If it's the first run, set firstRun to false for next time
             if (isFirstRun) {
-                chrome.storage.local.set({ 'firstRun': false }, () => {
+                browserAPI.storage.local.set({ 'firstRun': false }, () => {
+                    if (browserAPI.runtime.lastError) {
+                        console.error('Cleanplaats: Error setting first run flag:', browserAPI.runtime.lastError);
+                    }
                     resolve(isFirstRun);
                 });
             } else {
@@ -147,7 +163,13 @@ function checkFirstRun() {
  */
 function loadSettings() {
     return new Promise((resolve, reject) => {
-        chrome.storage.local.get(['cleanplaatsSettings', 'panelState'], (items) => {
+        browserAPI.storage.local.get(['cleanplaatsSettings', 'panelState'], (items) => {
+            if (browserAPI.runtime.lastError) {
+                console.error('Cleanplaats: Failed to load settings from storage', browserAPI.runtime.lastError);
+                reject(browserAPI.runtime.lastError);
+                return;
+            }
+            
             try {
                 const storedSettings = items.cleanplaatsSettings;
                 const storedPanelState = items.panelState;
@@ -163,7 +185,7 @@ function loadSettings() {
 
                 resolve();
             } catch (error) {
-                console.error('Cleanplaats: Failed to load settings from chrome.storage.local', error);
+                console.error('Cleanplaats: Failed to parse settings from storage', error);
                 reject(error);
             }
         });
@@ -176,14 +198,19 @@ function loadSettings() {
 function saveSettings() {
     return new Promise((resolve, reject) => {
         try {
-            chrome.storage.local.set({
+            browserAPI.storage.local.set({
                 cleanplaatsSettings: JSON.stringify(CLEANPLAATS.settings),
                 panelState: JSON.stringify(CLEANPLAATS.panelState)
             }, () => {
+                if (browserAPI.runtime.lastError) {
+                    console.error('Cleanplaats: Failed to save settings to storage', browserAPI.runtime.lastError);
+                    reject(browserAPI.runtime.lastError);
+                    return;
+                }
                 resolve();
             });
         } catch (error) {
-            console.error('Cleanplaats: Failed to save settings to chrome.storage.local', error);
+            console.error('Cleanplaats: Failed to save settings to storage', error);
             reject(error);
         }
     });
@@ -218,7 +245,7 @@ function createControlPanel() {
         panel.classList.add('collapsed');
         panel.classList.add('collapsed-ready');
         // Set background image for minimized state (cross-browser)
-        panel.style.backgroundImage = `url('${chrome.runtime.getURL('icons/icon128.png')}')`;
+        panel.style.backgroundImage = `url('${browserAPI.runtime.getURL('icons/icon128.png')}')`;
     }
 
     const is2dehands = location.hostname.includes('2dehands.be');
@@ -296,6 +323,17 @@ function createControlPanel() {
                         <option value="100" ${CLEANPLAATS.settings.resultsPerPage == 100 ? 'selected' : ''}>100</option>
                     </select>
                 </div>
+                <div class="cleanplaats-option cleanplaats-results-dropdown-row">
+                    <label for="cleanplaats-sort-dropdown" class="cleanplaats-option-label" style="min-width:120px;">Standaard sortering:</label>
+                    <select id="cleanplaats-sort-dropdown" class="cleanplaats-results-dropdown">
+                        <option value="standard" ${CLEANPLAATS.settings.defaultSortMode == 'standard' ? 'selected' : ''}>Standaard</option>
+                        <option value="date_new_old" ${CLEANPLAATS.settings.defaultSortMode == 'date_new_old' ? 'selected' : ''}>Nieuw eerst</option>
+                        <option value="date_old_new" ${CLEANPLAATS.settings.defaultSortMode == 'date_old_new' ? 'selected' : ''}>Oud eerst</option>
+                        <option value="price_low_high" ${CLEANPLAATS.settings.defaultSortMode == 'price_low_high' ? 'selected' : ''}>Prijs ↑</option>
+                        <option value="price_high_low" ${CLEANPLAATS.settings.defaultSortMode == 'price_high_low' ? 'selected' : ''}>Prijs ↓</option>
+                        <option value="distance" ${CLEANPLAATS.settings.defaultSortMode == 'distance' ? 'selected' : ''}>Afstand</option>
+                    </select>
+                </div>
             </div>
 
             ${CLEANPLAATS.featureFlags.showStats ? `
@@ -350,7 +388,7 @@ function createControlPanel() {
     // Set logo src after DOM insertion to avoid DOMPurify issues
     const logoImg = panel.querySelector('#cleanplaats-header-logo');
     if (logoImg) {
-      logoImg.src = chrome.runtime.getURL('icons/icon128.png');
+      logoImg.src = browserAPI.runtime.getURL('icons/icon128.png');
     }
     setupEventListeners();
 
@@ -807,7 +845,7 @@ function setupEventListeners() {
                     if (CLEANPLAATS.panelState.isCollapsed) {
                         panel.classList.add('collapsed-ready');
                         // Set background image for minimized state (cross-browser)
-                        panel.style.backgroundImage = `url('${chrome.runtime.getURL('icons/icon128.png')}')`;
+                        panel.style.backgroundImage = `url('${browserAPI.runtime.getURL('icons/icon128.png')}')`;
                     }
                 }, 600); // Slightly longer than the longest transition (0.4s)
 
@@ -817,7 +855,7 @@ function setupEventListeners() {
                     if (CLEANPLAATS.panelState.isCollapsed && event.propertyName === 'width') {
                         panel.classList.add('collapsed-ready');
                         // Set background image for minimized state (cross-browser)
-                        panel.style.backgroundImage = `url('${chrome.runtime.getURL('icons/icon128.png')}')`;
+                        panel.style.backgroundImage = `url('${browserAPI.runtime.getURL('icons/icon128.png')}')`;
                         panel.classList.remove('animating');
                         panel.removeEventListener('transitionend', onTransitionEnd);
                         clearTimeout(fallbackTimeout);
@@ -847,6 +885,9 @@ function setupEventListeners() {
 
     // Setup results dropdown listener
     setupResultsDropdownListener();
+    
+    // Setup sort dropdown listener
+    setupSortDropdownListener();
 }
 
 /**
@@ -886,6 +927,9 @@ function handleCheckboxChange(event) {
 
             // Check for empty page after applying filters
             checkForEmptyPage();
+            
+            // Update badge immediately after applying filters
+            updateStatsDisplay();
         })
         .catch(error => {
             console.error('Cleanplaats: Failed to apply setting', error);
@@ -1790,6 +1834,18 @@ function setupAllObservers() {
 // Initialize keyboard navigation on initial page load
 setupKeyboardNavigation();
 
+/**
+ * Check if we're currently on a search results page
+ * Uses the same logic as the background script's matchUrl function
+ */
+function isSearchResultsPage() {
+    const url = window.location.href;
+    return url.includes('marktplaats.nl/l/') || 
+           url.includes('marktplaats.nl/q/') ||
+           url.includes('2dehands.be/l/') || 
+           url.includes('2dehands.be/q/');
+}
+
 function setupResultsDropdownListener() {
     const dropdown = document.getElementById('cleanplaats-results-dropdown');
     if (!dropdown) return;
@@ -1798,18 +1854,60 @@ function setupResultsDropdownListener() {
         const value = parseInt(e.target.value, 10);
         
         CLEANPLAATS.settings.resultsPerPage = value;
-        saveSettings();
         
-        // Show feedback
-        const header = document.querySelector('.cleanplaats-header');
-        if (header) {
-            const feedback = document.createElement('div');
-            feedback.className = 'cleanplaats-feedback';
-            feedback.textContent = '✓';
-            header.querySelectorAll('.cleanplaats-feedback').forEach(el => el.remove());
-            header.appendChild(feedback);
-            requestAnimationFrame(() => feedback.classList.add('cleanplaats-feedback-show'));
-            setTimeout(() => feedback.remove(), 1500);
-        }
+        // Save settings - this will trigger the background script to update
+        saveSettings().then(() => {
+            // Show feedback
+            const header = document.querySelector('.cleanplaats-header');
+            if (header) {
+                const feedback = document.createElement('div');
+                feedback.className = 'cleanplaats-feedback';
+                feedback.textContent = '✓';
+                header.querySelectorAll('.cleanplaats-feedback').forEach(el => el.remove());
+                header.appendChild(feedback);
+                requestAnimationFrame(() => feedback.classList.add('cleanplaats-feedback-show'));
+                setTimeout(() => feedback.remove(), 1500);
+            }
+            
+            // Only reload if we're on a search results page
+            if (isSearchResultsPage()) {
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            }
+        });
+    });
+}
+
+function setupSortDropdownListener() {
+    const dropdown = document.getElementById('cleanplaats-sort-dropdown');
+    if (!dropdown) return;
+    
+    dropdown.addEventListener('change', (e) => {
+        const value = e.target.value;
+        
+        CLEANPLAATS.settings.defaultSortMode = value;
+        
+        // Save settings - this will trigger the background script to update
+        saveSettings().then(() => {
+            // Show feedback
+            const header = document.querySelector('.cleanplaats-header');
+            if (header) {
+                const feedback = document.createElement('div');
+                feedback.className = 'cleanplaats-feedback';
+                feedback.textContent = '✓';
+                header.querySelectorAll('.cleanplaats-feedback').forEach(el => el.remove());
+                header.appendChild(feedback);
+                requestAnimationFrame(() => feedback.classList.add('cleanplaats-feedback-show'));
+                setTimeout(() => feedback.remove(), 1500);
+            }
+            
+            // Only reload if we're on a search results page
+            if (isSearchResultsPage()) {
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            }
+        });
     });
 }
