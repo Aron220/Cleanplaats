@@ -1,20 +1,22 @@
 {
-    "manifest_version": 2,
+    "manifest_version": 3,
     "name": "Cleanplaats - Marktplaats zonder spam",
     "version": "1.1.4",
     "description": "Zelf in de hand wat je wel én niet wil zien op Marktplaats door te filteren",
     "author": "",
     "permissions": [
-      "storage", 
-      "webRequest", 
-      "webRequestBlocking",
+      "storage",
       "tabs",
+      "webNavigation",
+      "declarativeNetRequest",
+      "alarms"
+    ],
+    "host_permissions": [
       "*://*.marktplaats.nl/*",
       "*://*.2dehands.be/*"
     ],
     "background": {
-      "scripts": ["background.js"],
-      "persistent": true
+      "service_worker": "background.js"
     },
     "content_scripts": [
       {
@@ -33,9 +35,12 @@
       "128": "icons/icon128.png"
     },
     "web_accessible_resources": [
-      "icons/*"
+      {
+        "resources": ["icons/*"],
+        "matches": ["*://*.marktplaats.nl/*", "*://*.2dehands.be/*"]
+      }
     ],
-    "browser_action": {
+    "action": {
       "default_title": "Cleanplaats",
       "default_icon": {
         "16": "icons/icon16.png",
