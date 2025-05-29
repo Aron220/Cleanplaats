@@ -1760,33 +1760,7 @@ function showUnblacklistTermToast(term) {
  */
 let keyboardNavigationSetup = false; // Flag to track if keyboard navigation is already set up
 
-function setupKeyboardNavigation() {
-    if (keyboardNavigationSetup) {
-        // Remove the existing event listener
-        document.removeEventListener('keydown', keyboardNavigationHandler);
-    }
-
-    // Define the event listener function
-    keyboardNavigationHandler = function(event) {
-        if (document.querySelector('.Carousel-navigationContainer')) {
-            let nextButton = document.querySelector('.Carousel-navigationContainer button[aria-label="Volgende foto"]');
-            let prevButton = document.querySelector('.Carousel-navigationContainer button[aria-label="Vorige foto"]');
-
-            if (event.key === 'ArrowRight' && nextButton) {
-                event.preventDefault(); // Prevent default arrow key behavior
-                nextButton.focus(); // Focus the button
-                nextButton.click(); // Trigger the click
-            } else if (event.key === 'ArrowLeft' && prevButton) {
-                event.preventDefault(); // Prevent default arrow key behavior
-                prevButton.focus(); // Focus the button
-                prevButton.click(); // Trigger the click
-            }
-        }
-    };
-
-    document.addEventListener('keydown', keyboardNavigationHandler);
-    keyboardNavigationSetup = true; // Set the flag to true after setting up
-}
+// --- Keyboard navigation for carousel images is now handled natively by Marktplaats.\n// The following function and its invocations are commented out to prevent double-advancing/skipping images.\n// If Marktplaats removes their native support in the future, you can re-enable this code.\n/*\nfunction setupKeyboardNavigation() {\n    if (keyboardNavigationSetup) {\n        // Remove the existing event listener\n        document.removeEventListener('keydown', keyboardNavigationHandler);\n    }\n\n    // Define the event listener function\n    keyboardNavigationHandler = function(event) {\n        if (document.querySelector('.Carousel-navigationContainer')) {\n            let nextButton = document.querySelector('.Carousel-navigationContainer button[aria-label="Volgende foto"]');\n            let prevButton = document.querySelector('.Carousel-navigationContainer button[aria-label="Vorige foto"]');\n\n            if (event.key === 'ArrowRight' && nextButton) {\n                event.preventDefault(); // Prevent default arrow key behavior\n                nextButton.focus(); // Focus the button\n                nextButton.click(); // Trigger the click\n            } else if (event.key === 'ArrowLeft' && prevButton) {\n                event.preventDefault(); // Prevent default arrow key behavior\n                prevButton.focus(); // Focus the button\n                prevButton.click(); // Trigger the click\n            }\n        }\n    };\n\n    document.addEventListener('keydown', keyboardNavigationHandler);\n    keyboardNavigationSetup = true; // Set the flag to true after setting up\n}\n*/\n
 
 /**
  * Perform cleanup and check for empty page
@@ -1812,7 +1786,6 @@ function performCleanupAndCheckForEmptyPage() {
             
             // Delay the check for empty page to ensure DOM is fully updated
             setTimeout(checkForEmptyPage, 500);
-            setupKeyboardNavigation(); // Initialize keyboard navigation
         }
     }, 100);
 }
@@ -1922,11 +1895,7 @@ function setupNavigationDetection() {
 function setupAllObservers() {
     setupObservers();
     setupNavigationDetection();
-    setupKeyboardNavigation(); // Initialize keyboard navigation on initial setup
 }
-
-// Initialize keyboard navigation on initial page load
-setupKeyboardNavigation();
 
 /**
  * Check if we're currently on a search results page
