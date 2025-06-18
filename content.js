@@ -1635,7 +1635,7 @@ function showBlacklistModal() {
         <div class="cleanplaats-blacklist-modal-content">
             <h4>Verborgen verkopers</h4>
             <ul id="cleanplaats-blacklist-list">
-                ${sellers.length === 0 ? '<li><em>Geen verborgen verkopers</em></li>' : sellers.map(seller => `
+                ${sellers.length === 0 ? '<li><em>Nog geen verkopers verborgen. Gebruik de knop onder een naam in de zoekresultaten</em></li>' : sellers.map(seller => `
                     <li>
                         <span>${seller}</span>
                         <button class="cleanplaats-unblacklist-btn" data-seller="${seller}">Verborgen</button>
@@ -1669,7 +1669,7 @@ function updateBlacklistModal() {
     if (list) {
         list.innerHTML = DOMPurify.sanitize(
             sellers.length === 0
-                ? '<li><em>Geen verborgen verkopers</em></li>'
+                ? '<li><em>Nog geen verkopers verborgen. Gebruik de knop onder een naam in de zoekresultaten.</em></li>'
                 : sellers.map(seller => `
                     <li>
                         <span>${seller}</span>
