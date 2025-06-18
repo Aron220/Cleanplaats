@@ -2,6 +2,8 @@
  * Cleanplaats - A browser extension to remove ads from Marktplaats
  * Version: 1.1.0
  */
+// TODO:
+// - Add functionality to let users hide Verified sellers (zakelijke verkopers is nogal lastig)
 
 // Cross-browser compatibility
 const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
