@@ -96,14 +96,14 @@ function setupPeriodicWakeUp() {
     // Only for Firefox (browser API exists)
     if (typeof browser !== 'undefined') {
         console.log('Cleanplaats: Setting up periodic background wake-up for Firefox');
-        
+
         // Wake up background script every 30 seconds when on search pages
         setInterval(() => {
             if (isSearchResultsPage()) {
                 wakeUpBackground();
             }
         }, 30000);
-        
+
         // Also wake up on user activity
         ['click', 'scroll', 'keydown'].forEach(eventType => {
             document.addEventListener(eventType, () => {
@@ -125,7 +125,7 @@ function initCleanplaats() {
 
     // Wake up background script on page load
     wakeUpBackground();
-    
+
     // Set up periodic wake-up for Firefox
     setupPeriodicWakeUp();
 
@@ -134,7 +134,7 @@ function initCleanplaats() {
             checkFirstRun()
                 .then(isFirstRun => {
                     CLEANPLAATS.featureFlags.firstRun = isFirstRun;
-                    
+
                     // Always show onboarding/welcome message
                     showOnboarding();
 
@@ -148,7 +148,7 @@ function initCleanplaats() {
                             performInitialCleanup();
                             injectBlacklistButtons();
                             setTimeout(checkForEmptyPage, 300);
-                            
+
                             // Update badge with initial count
                             setTimeout(updateStatsDisplay, 500);
 
@@ -200,7 +200,7 @@ function checkFirstRun() {
                 resolve(true); // Default to first run on error
                 return;
             }
-            
+
             let isFirstRun;
             if (items.firstRun === undefined) {
                 isFirstRun = true;
@@ -234,7 +234,7 @@ function loadSettings() {
                 reject(browserAPI.runtime.lastError);
                 return;
             }
-            
+
             try {
                 const storedSettings = items.cleanplaatsSettings;
                 const storedPanelState = items.panelState;
@@ -441,7 +441,7 @@ function createControlPanel() {
     // Set logo src after DOM insertion to avoid DOMPurify issues
     const logoImg = panel.querySelector('#cleanplaats-header-logo');
     if (logoImg) {
-      logoImg.src = browserAPI.runtime.getURL('icons/icon128.png');
+        logoImg.src = browserAPI.runtime.getURL('icons/icon128.png');
     }
     setupEventListeners();
 
@@ -472,7 +472,7 @@ function setupGlobalTooltip() {
     const tooltip = document.getElementById('cleanplaats-global-tooltip');
     if (!tooltip) return;
     document.querySelectorAll('.cleanplaats-tooltip-icon').forEach(icon => {
-        icon.addEventListener('mouseenter', function(e) {
+        icon.addEventListener('mouseenter', function (e) {
             const text = icon.getAttribute('data-tooltip');
             if (!text) return;
             tooltip.textContent = text;
@@ -492,7 +492,7 @@ function setupGlobalTooltip() {
             tooltip.style.top = top + 'px';
             tooltip.style.opacity = '1';
         });
-        icon.addEventListener('mouseleave', function() {
+        icon.addEventListener('mouseleave', function () {
             tooltip.style.opacity = '0';
             tooltip.style.display = 'none';
         });
@@ -694,7 +694,7 @@ function showFirstTimeOnboarding() {
     `);
 
     document.body.appendChild(onboarding);
-    
+
     // Setup event listeners
     ['cleanplaats-onboarding-close', 'cleanplaats-onboarding-got-it'].forEach(id => {
         document.getElementById(id)?.addEventListener('click', () => {
@@ -717,8 +717,8 @@ function showFirstTimeOnboarding() {
  */
 function showWelcomeToast() {
     // Only show on main page and if not already shown
-    if (CLEANPLAATS.panelState.hasShownWelcomeToast || 
-        location.pathname !== '/' || 
+    if (CLEANPLAATS.panelState.hasShownWelcomeToast ||
+        location.pathname !== '/' ||
         location.hostname !== 'www.marktplaats.nl') {
         return;
     }
@@ -729,7 +729,7 @@ function showWelcomeToast() {
 
     // Add removed count if available
     const totalRemoved = CLEANPLAATS.stats.totalRemoved;
-    const message = totalRemoved > 0 
+    const message = totalRemoved > 0
         ? `Cleanplaats is actief (${totalRemoved} items verwijderd)`
         : 'Cleanplaats is actief';
 
@@ -767,12 +767,12 @@ function checkForEmptyPage() {
     notificationTimeout = setTimeout(() => {
         // Force a final check of all elements that should be hidden
         performCleanup();
-        
+
         // Now check the final state
         const visibleListings = document.querySelectorAll('.hz-Listing:not([data-cleanplaats-hidden])');
         const totalListings = document.querySelectorAll('.hz-Listing');
         const hiddenCount = totalListings.length - visibleListings.length;
-        
+
         // Only show notification if we actually removed something
         if (hiddenCount === 0) return;
 
@@ -979,7 +979,7 @@ function setupEventListeners() {
 
     // Setup results dropdown listener
     setupResultsDropdownListener();
-    
+
     // Setup sort dropdown listener
     setupSortDropdownListener();
 }
@@ -1000,7 +1000,7 @@ function handleCheckboxChange(event) {
             // Reset previous changes and reapply filters
             resetPreviousChanges();
             performCleanup();
-            
+
             // Clear the bubble notification
             clearBubbleNotification();
 
@@ -1009,19 +1009,19 @@ function handleCheckboxChange(event) {
             const feedback = document.createElement('div');
             feedback.className = 'cleanplaats-feedback';
             feedback.textContent = '✓';
-            
+
             // Remove any existing feedback
             header.querySelectorAll('.cleanplaats-feedback').forEach(el => el.remove());
-            
+
             header.appendChild(feedback);
             requestAnimationFrame(() => feedback.classList.add('cleanplaats-feedback-show'));
-            
+
             // Remove after animation
             setTimeout(() => feedback.remove(), 1500);
 
             // Check for empty page after applying filters
             checkForEmptyPage();
-            
+
             // Update badge immediately after applying filters
             updateStatsDisplay();
         })
@@ -1110,7 +1110,7 @@ function performCleanup() {
 
     // Handle blacklisted sellers
     document.querySelectorAll('.hz-Listing').forEach(listing => {
-        const sellerNameEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-link');
+        const sellerNameEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-link, .hz-Listing-sellerName');
         if (!sellerNameEl) return;
         const sellerName = sellerNameEl.textContent.trim();
         if (CLEANPLAATS.settings.blacklistedSellers.includes(sellerName)) {
@@ -1193,20 +1193,28 @@ function removeDagtoppers() {
 function removePromotedListings() {
     let count = 0;
 
-    document.querySelectorAll('.hz-Listing-seller-link').forEach(sellerLink => {
-        try {
-            const hasVisitWebsite = Array.from(sellerLink.querySelectorAll('span, a'))
-                .some(el => el.textContent?.trim() === 'Bezoek website');
+    // Check both regular listings and car listings
+    const selectors = [
+        '.hz-Listing-seller-link',           // Regular listings
+        '.hz-Listing-seller-external-link'   // Car listings
+    ];
 
-            if (hasVisitWebsite) {
-                const listing = sellerLink.closest('.hz-Listing');
-                if (listing && !listing.hasAttribute('data-cleanplaats-hidden') && hideElement(listing)) {
-                    count++;
+    selectors.forEach(selector => {
+        document.querySelectorAll(selector).forEach(sellerLink => {
+            try {
+                const hasVisitWebsite = Array.from(sellerLink.querySelectorAll('span, a'))
+                    .some(el => el.textContent?.trim() === 'Bezoek website');
+
+                if (hasVisitWebsite) {
+                    const listing = sellerLink.closest('.hz-Listing');
+                    if (listing && !listing.hasAttribute('data-cleanplaats-hidden') && hideElement(listing)) {
+                        count++;
+                    }
                 }
+            } catch (error) {
+                console.error('Cleanplaats: Error processing promoted listing', error);
             }
-        } catch (error) {
-            console.error('Cleanplaats: Error processing promoted listing', error);
-        }
+        });
     });
 
     CLEANPLAATS.stats.promotedListingsRemoved += count;
@@ -1252,7 +1260,7 @@ function removeAllAds() {
                 if (!el.hasAttribute('data-cleanplaats-hidden') && hideElement(el)) {
                     count++;
                 }
-                
+
                 // Also hide the parent li if it's a banner container
                 const parentLi = el.closest('li.bannerContainerLoading');
                 if (parentLi && !parentLi.hasAttribute('data-cleanplaats-hidden')) {
@@ -1427,7 +1435,7 @@ function addSellerToBlacklist(sellerName) {
             performCleanup();
             injectBlacklistButtons();
             updateBlacklistModal();
-            
+
             // Show toast notification
             showBlacklistToast(sellerName);
         });
@@ -1440,7 +1448,7 @@ function addSellerToBlacklist(sellerName) {
 function showBlacklistToast(sellerName) {
     const toast = document.createElement('div');
     toast.className = 'cleanplaats-blacklist-toast';
-    
+
     toast.innerHTML = DOMPurify.sanitize(`
         <div class="cleanplaats-blacklist-toast-content">
             <span class="cleanplaats-toast-icon eye">👁</span>
@@ -1469,7 +1477,7 @@ function showBlacklistToast(sellerName) {
 function showUnblacklistToast(sellerName) {
     const toast = document.createElement('div');
     toast.className = 'cleanplaats-blacklist-toast';
-    
+
     toast.innerHTML = DOMPurify.sanitize(`
         <div class="cleanplaats-blacklist-toast-content">
             <span class="cleanplaats-toast-icon eye">👁</span>
@@ -1500,7 +1508,7 @@ function removeSellerFromBlacklist(sellerName) {
     saveSettings().then(() => {
         // Show all listings from this seller immediately
         document.querySelectorAll('.hz-Listing').forEach(listing => {
-            const sellerNameEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-link');
+            const sellerNameEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-link, .hz-Listing-sellerName');
             if (!sellerNameEl) return;
             if (sellerNameEl.textContent.trim() === sellerName) {
                 listing.removeAttribute('data-cleanplaats-hidden');
@@ -1523,91 +1531,133 @@ function injectBlacklistButtons() {
         if (oldBtn) oldBtn.remove();
         const oldTopRight = listing.querySelector('.cleanplaats-seller-topright-mobile');
         if (oldTopRight) oldTopRight.remove();
+        // Remove any existing inline buttons from car adverts
+        const oldInlineBtn = listing.querySelector('.cleanplaats-inline-btn');
+        if (oldInlineBtn) oldInlineBtn.remove();
 
-        // --- MOBILE ONLY: Seller + hide button in top right ---
-        if (window.innerWidth < 700) {
+        // Try to find seller name using different structures
+        let sellerName = null;
+        let sellerElement = null;
+        let isCarAdvert = false;
+
+        // First try car advert structure (.hz-Listing-sellerName)
+        const carSellerElement = listing.querySelector('.hz-Listing-sellerName');
+        if (carSellerElement) {
+            sellerName = carSellerElement.textContent.trim();
+            sellerElement = carSellerElement;
+            isCarAdvert = true;
+        } else {
+            // Try normal advert structure (.hz-Listing-seller-name-container)
             const sellerNameContainer = listing.querySelector('.hz-Listing-seller-name-container');
-            let sellerName = null;
             if (sellerNameContainer) {
                 const sellerLink = sellerNameContainer.querySelector('a');
                 if (sellerLink) {
                     const sellerNameEl = sellerLink.querySelector('.hz-Listing-seller-name');
-                    if (sellerNameEl) sellerName = sellerNameEl.textContent.trim();
-                }
-            }
-            if (sellerName) {
-                // Create the top row container
-                const topRow = document.createElement('div');
-                topRow.className = 'cleanplaats-seller-topright-mobile';
-                topRow.innerHTML = `
-                    <span class="cleanplaats-seller-name-mobile">${sellerName}</span>
-                    <button class="cleanplaats-blacklist-btn-mobile" title="Verberg deze verkoper" aria-label="Verberg deze verkoper">
-                      <svg xmlns="http://www.w3.org/2000/svg" height="18" width="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17.94 17.94A10.06 10.06 0 0 1 12 20C7 20 2.73 16.11 1 12c.74-1.61 1.81-3.09 3.06-4.31"/>
-                        <path d="M22.54 12.88A10.06 10.06 0 0 0 12 4c-1.61 0-3.16.31-4.59.88"/>
-                        <line x1="1" y1="1" x2="23" y2="23"/>
-                        <circle cx="12" cy="12" r="3"/>
-                      </svg>
-                    </button>
-                `;
-                // Insert as first child of the main content column
-                const content = listing.querySelector('.hz-Listing-listview-content');
-                if (content && content.firstChild) {
-                    content.insertBefore(topRow, content.firstChild);
-                } else if (content) {
-                    content.appendChild(topRow);
-                }
-                // Add click handler
-                topRow.querySelector('.cleanplaats-blacklist-btn-mobile').onclick = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (confirm(`Wil je alle advertenties van ${sellerName} verbergen?`)) {
-                        addSellerToBlacklist(sellerName);
+                    if (sellerNameEl) {
+                        sellerName = sellerNameEl.textContent.trim();
+                        sellerElement = sellerNameContainer;
+                        isCarAdvert = false;
                     }
-                };
+                }
             }
-            // Do NOT inject the desktop button on mobile
-            return;
         }
-        // --- DESKTOP: original logic ---
-        // Find the seller name container and link
-        const sellerNameContainer = listing.querySelector('.hz-Listing-seller-name-container');
-        if (!sellerNameContainer) return;
-        const sellerLink = sellerNameContainer.querySelector('a');
-        if (!sellerLink) return;
-        const sellerNameEl = sellerLink.querySelector('.hz-Listing-seller-name');
-        if (!sellerNameEl) return;
-        const sellerName = sellerNameEl.textContent.trim();
-        if (!sellerName) return;
+
+        if (!sellerName || !sellerElement) return;
 
         // Hide if already blacklisted
         if (CLEANPLAATS.settings.blacklistedSellers.includes(sellerName)) {
             listing.setAttribute('data-cleanplaats-hidden', 'true');
             listing.style.display = 'none';
+            return;
         }
 
-        // Create the button row
-        const btnRow = document.createElement('div');
-        btnRow.className = 'cleanplaats-blacklist-btn-row';
+        // --- MOBILE ONLY: Seller + hide button in top right ---
+        if (window.innerWidth < 700) {
+            // Create the top row container
+            const topRow = document.createElement('div');
+            topRow.className = 'cleanplaats-seller-topright-mobile';
+            topRow.innerHTML = `
+                <span class="cleanplaats-seller-name-mobile">${sellerName}</span>
+                <button class="cleanplaats-blacklist-btn-mobile" title="Verberg deze verkoper" aria-label="Verberg deze verkoper">
+                  <svg xmlns="http://www.w3.org/2000/svg" height="18" width="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.06 10.06 0 0 1 12 20C7 20 2.73 16.11 1 12c.74-1.61 1.81-3.09 3.06-4.31"/>
+                    <path d="M22.54 12.88A10.06 10.06 0 0 0 12 4c-1.61 0-3.16.31-4.59.88"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+            `;
+            // Insert as first child of the main content column
+            const content = listing.querySelector('.hz-Listing-listview-content');
+            if (content && content.firstChild) {
+                content.insertBefore(topRow, content.firstChild);
+            } else if (content) {
+                content.appendChild(topRow);
+            }
+            // Add click handler
+            topRow.querySelector('.cleanplaats-blacklist-btn-mobile').onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (confirm(`Wil je alle advertenties van ${sellerName} verbergen?`)) {
+                    addSellerToBlacklist(sellerName);
+                }
+            };
+            // Do NOT inject the desktop button on mobile
+            return;
+        }
 
-        // Create the button
-        const btn = document.createElement('button');
-        btn.className = 'cleanplaats-blacklist-btn';
-        btn.textContent = 'Verkoper verbergen';
-        btn.type = 'button';
-        btn.tabIndex = 0;
+        // --- DESKTOP: Handle different advert types ---
+        if (isCarAdvert) {
+            // Car advert: Direct inline modification
+            // Store original content
+            const originalContent = carSellerElement.innerHTML;
 
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            addSellerToBlacklist(sellerName);
-        });
+            // Convert span to inline-flex and add button
+            carSellerElement.style.display = 'inline-flex';
+            carSellerElement.style.alignItems = 'center';
+            carSellerElement.style.gap = '8px';
 
-        btnRow.appendChild(btn);
+            // Create the button
+            const btn = document.createElement('button');
+            btn.className = 'cleanplaats-blacklist-btn cleanplaats-inline-btn';
+            btn.textContent = 'Verkoper verbergen';
+            btn.type = 'button';
+            btn.tabIndex = 0;
+            btn.style.marginLeft = '8px';
 
-        // Insert the button row AFTER the seller name container (not inside the link!)
-        if (sellerNameContainer.parentNode) {
-            sellerNameContainer.parentNode.insertBefore(btnRow, sellerNameContainer.nextSibling);
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                addSellerToBlacklist(sellerName);
+            });
+
+            // Add button to the seller name span
+            carSellerElement.appendChild(btn);
+        } else {
+            // Normal advert: original logic
+            // Create the button row
+            const btnRow = document.createElement('div');
+            btnRow.className = 'cleanplaats-blacklist-btn-row';
+
+            // Create the button
+            const btn = document.createElement('button');
+            btn.className = 'cleanplaats-blacklist-btn';
+            btn.textContent = 'Verkoper verbergen';
+            btn.type = 'button';
+            btn.tabIndex = 0;
+
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                addSellerToBlacklist(sellerName);
+            });
+
+            btnRow.appendChild(btn);
+
+            // Insert the button row AFTER the seller name container (not inside the link!)
+            if (sellerElement.parentNode) {
+                sellerElement.parentNode.insertBefore(btnRow, sellerElement.nextSibling);
+            }
         }
     });
 }
@@ -1785,7 +1835,7 @@ function performCleanupAndCheckForEmptyPage() {
             console.log('Cleanplaats: Running cleanup after navigation');
             performCleanup();
             injectBlacklistButtons();
-            
+
             // Delay the check for empty page to ensure DOM is fully updated
             setTimeout(checkForEmptyPage, 500);
         }
@@ -1905,24 +1955,24 @@ function setupAllObservers() {
  */
 function isSearchResultsPage() {
     const url = window.location.href;
-    return url.includes('marktplaats.nl/l/') || 
-           url.includes('marktplaats.nl/q/') ||
-           url.includes('2dehands.be/l/') || 
-           url.includes('2dehands.be/q/');
+    return url.includes('marktplaats.nl/l/') ||
+        url.includes('marktplaats.nl/q/') ||
+        url.includes('2dehands.be/l/') ||
+        url.includes('2dehands.be/q/');
 }
 
 function setupResultsDropdownListener() {
     const dropdown = document.getElementById('cleanplaats-results-dropdown');
     if (!dropdown) return;
-    
+
     dropdown.addEventListener('change', (e) => {
         const value = parseInt(e.target.value, 10);
-        
+
         CLEANPLAATS.settings.resultsPerPage = value;
-        
+
         // Wake up background script before saving settings
         wakeUpBackground();
-        
+
         // Save settings - this will trigger the background script to update
         saveSettings().then(() => {
             // Show feedback
@@ -1936,7 +1986,7 @@ function setupResultsDropdownListener() {
                 requestAnimationFrame(() => feedback.classList.add('cleanplaats-feedback-show'));
                 setTimeout(() => feedback.remove(), 1500);
             }
-            
+
             // Only reload if we're on a search results page
             if (isSearchResultsPage()) {
                 setTimeout(() => {
@@ -1950,15 +2000,15 @@ function setupResultsDropdownListener() {
 function setupSortDropdownListener() {
     const dropdown = document.getElementById('cleanplaats-sort-dropdown');
     if (!dropdown) return;
-    
+
     dropdown.addEventListener('change', (e) => {
         const value = e.target.value;
-        
+
         CLEANPLAATS.settings.defaultSortMode = value;
-        
+
         // Wake up background script before saving settings
         wakeUpBackground();
-        
+
         // Save settings - this will trigger the background script to update
         saveSettings().then(() => {
             // Show feedback
@@ -1972,7 +2022,7 @@ function setupSortDropdownListener() {
                 requestAnimationFrame(() => feedback.classList.add('cleanplaats-feedback-show'));
                 setTimeout(() => feedback.remove(), 1500);
             }
-            
+
             // Only reload if we're on a search results page
             if (isSearchResultsPage()) {
                 setTimeout(() => {

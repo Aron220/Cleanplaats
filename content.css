@@ -778,6 +778,31 @@
     max-width: none;
   }
 
+  /* Inline button for car adverts */
+  .cleanplaats-inline-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    background: #f8f9fa !important;
+    color: #666 !important;
+    border: none !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 12px !important;
+    transition: all 0.2s ease !important;
+    width: auto !important;
+    min-width: auto !important;
+    max-width: none !important;
+    margin-left: 8px !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    margin-right: 0 !important;
+    vertical-align: middle !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
   /* Add eye icon */
   .cleanplaats-blacklist-btn::before {
     content: "👁";
@@ -794,6 +819,22 @@
   /* Hover effect for the eye icon */
   .cleanplaats-blacklist-btn:hover::before {
     text-decoration: line-through;
+  }
+
+  /* Inline button hover effects */
+  .cleanplaats-inline-btn::before {
+    content: "👁" !important;
+    font-size: 12px !important;
+  }
+
+  .cleanplaats-inline-btn:hover {
+    background: #ff4d4d !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+  }
+
+  .cleanplaats-inline-btn:hover::before {
+    text-decoration: line-through !important;
   }
 
   /* Blacklist toast notification */
