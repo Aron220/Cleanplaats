@@ -1596,7 +1596,7 @@ function injectBlacklistButtons() {
             // Create the top row container
             const topRow = document.createElement('div');
             topRow.className = 'cleanplaats-seller-topright-mobile';
-            topRow.innerHTML = `
+            topRow.innerHTML = DOMPurify.sanitize(`
                 <span class="cleanplaats-seller-name-mobile">${sellerName}</span>
                 <button class="cleanplaats-blacklist-btn-mobile" title="Verberg deze verkoper" aria-label="Verberg deze verkoper">
                   <svg xmlns="http://www.w3.org/2000/svg" height="18" width="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1606,7 +1606,7 @@ function injectBlacklistButtons() {
                     <circle cx="12" cy="12" r="3"/>
                   </svg>
                 </button>
-            `;
+            `);
             // Insert as first child of the main content column
             const content = listing.querySelector('.hz-Listing-listview-content');
             if (content && content.firstChild) {
