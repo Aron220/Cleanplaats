@@ -17,6 +17,7 @@ const CLEANPLAATS = {
         removePromotedListings: true,
         // removeAds: true, is now always true
         removeOpvalStickers: true,
+        removeReservedListings: false,
         blacklistedSellers: [],
         blacklistedTerms: [], // Added blacklisted terms
         resultsPerPage: 30, // Nieuw: aantal resultaten per pagina
@@ -366,6 +367,16 @@ function createControlPanel() {
                     <label for="removeOpvalStickers" class="cleanplaats-option-label">
                         Opvalstickers
                         <span class="cleanplaats-tooltip-icon" data-tooltip="Verwijdert advertenties met opvalstickers">?</span>
+                    </label>
+                </div>
+                <div class="cleanplaats-option">
+                    <label class="cleanplaats-switch">
+                        <input type="checkbox" id="removeReservedListings" ${CLEANPLAATS.settings.removeReservedListings ? 'checked' : ''}>
+                        <span class="cleanplaats-switch-slider"></span>
+                    </label>
+                    <label for="removeReservedListings" class="cleanplaats-option-label">
+                        Gereserveerde
+                        <span class="cleanplaats-tooltip-icon" data-tooltip="Verbergt advertenties die 'Gereserveerd' zijn">?</span>
                     </label>
                 </div>
                 <div class="cleanplaats-option cleanplaats-results-dropdown-row">
@@ -970,7 +981,7 @@ function setupEventListeners() {
 
     // Setup checkbox change listeners
     ['removeTopAds', 'removeDagtoppers', 'removePromotedListings',
-        'removeOpvalStickers'].forEach(id => {
+        'removeOpvalStickers', 'removeReservedListings'].forEach(id => {
             const checkbox = document.getElementById(id);
             if (checkbox) {
                 checkbox.addEventListener('change', handleCheckboxChange);
@@ -1107,6 +1118,7 @@ function performCleanup() {
     if (CLEANPLAATS.settings.removeDagtoppers) removeDagtoppers();
     if (CLEANPLAATS.settings.removePromotedListings) removePromotedListings();
     if (CLEANPLAATS.settings.removeOpvalStickers) removeOpvalStickerListings();
+    if (CLEANPLAATS.settings.removeReservedListings) removeReservedListings();
 
     // Handle blacklisted sellers
     document.querySelectorAll('.hz-Listing').forEach(listing => {
@@ -1244,6 +1256,14 @@ function removeOpvalStickerListings() {
     });
 
     CLEANPLAATS.stats.opvalStickersRemoved += count;
+}
+
+/**
+ * Remove listings that are marked as reserved (price label 'Gereserveerd')
+ */
+function removeReservedListings() {
+    const count = findAndHideListings('.hz-Listing-price', 'Gereserveerd');
+    CLEANPLAATS.stats.otherAdsRemoved += count;
 }
 
 /**
