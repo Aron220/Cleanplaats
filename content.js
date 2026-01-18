@@ -646,14 +646,15 @@ function setupTermsModalButtons() {
 function unhideListingsByTerm(term) {
     // Unhide .hz-Link (in je buurt tab) and .hz-Listing (normal)
     document.querySelectorAll('.hz-Link').forEach(link => {
-        const titleEl = link.querySelector('.hz-Listing-title');
+        const titleEl = link.querySelector('.hz-StructuredListing-title, .hz-Listing-title');
         if (titleEl && titleEl.textContent.toLowerCase().includes(term.toLowerCase())) {
-            link.removeAttribute('data-cleanplaats-hidden');
-            link.style.display = '';
+            const listingEl = link.closest('.hz-StructuredListing') || link;
+            listingEl.removeAttribute('data-cleanplaats-hidden');
+            listingEl.style.display = '';
         }
     });
     document.querySelectorAll('.hz-Listing').forEach(listing => {
-        const titleEl = listing.querySelector('.hz-Listing-title');
+        const titleEl = listing.querySelector('.hz-StructuredListing-title, .hz-Listing-title');
         if (titleEl && titleEl.textContent.toLowerCase().includes(term.toLowerCase())) {
             listing.removeAttribute('data-cleanplaats-hidden');
             listing.style.display = '';
@@ -1134,19 +1135,20 @@ function performCleanup() {
     // Handle blacklisted terms in titles
     // For "in je buurt" tab: hide the <a.hz-Link> if the title matches
     document.querySelectorAll('.hz-Link').forEach(link => {
-        const titleEl = link.querySelector('.hz-Listing-title');
+        const titleEl = link.querySelector('.hz-StructuredListing-title, .hz-Listing-title');
         if (!titleEl) return;
         const title = titleEl.textContent.trim().toLowerCase();
         CLEANPLAATS.settings.blacklistedTerms.forEach(term => {
             if (title.includes(term.toLowerCase())) {
-                link.setAttribute('data-cleanplaats-hidden', 'true');
-                link.style.display = 'none';
+                const listingEl = link.closest('.hz-StructuredListing') || link;
+                listingEl.setAttribute('data-cleanplaats-hidden', 'true');
+                listingEl.style.display = 'none';
             }
         });
     });
     // For normal listings: hide the .hz-Listing
     document.querySelectorAll('.hz-Listing').forEach(listing => {
-        const titleEl = listing.querySelector('.hz-Listing-title');
+        const titleEl = listing.querySelector('.hz-StructuredListing-title, .hz-Listing-title');
         if (!titleEl) return;
         const title = titleEl.textContent.trim().toLowerCase();
         CLEANPLAATS.settings.blacklistedTerms.forEach(term => {
