@@ -1288,6 +1288,12 @@ function removeAllAds() {
                 if (parentLi && !parentLi.hasAttribute('data-cleanplaats-hidden')) {
                     hideElement(parentLi);
                 }
+
+                // Hide feed banner wrappers to avoid grid gaps
+                const feedBanner = el.closest('.hz-FeedBannerBlock, .Banners-bannerFeedItem');
+                if (feedBanner && !feedBanner.hasAttribute('data-cleanplaats-hidden')) {
+                    hideElement(feedBanner);
+                }
             });
         } catch (error) {
             console.log('Cleanplaats: Error hiding ads', error);
@@ -1312,6 +1318,8 @@ function removeAllAds() {
         '.hz-Banner',
         '.hz-Banner--fluid',
         '#banner-rubrieks-dt',
+        '#banner-top-dt',
+        '#banner-top-dt-container',
         '[data-google-query-id]',
         '[id*="google_ads_iframe"]',
         '[id*="google_ads_top_frame"]',
@@ -1896,12 +1904,28 @@ function setupObservers() {
                             node.querySelector?.('.hz-Listing') ||
                             node.id?.includes('ad') ||
                             node.classList?.contains('hz-Banner') ||
-                            node.querySelector?.('[data-google-query-id]')
+                            node.querySelector?.('[data-google-query-id]') ||
+                            node.classList?.contains('hz-FeedBannerBlock') ||
+                            node.classList?.contains('Banners-bannerFeedItem') ||
+                            node.id === 'banner-top-dt-container' ||
+                            node.querySelector?.('#banner-top-dt, #banner-top-dt-container')
                         ) {
                             shouldCleanup = true;
                             break;
                         }
                     }
+                }
+            }
+
+            if (mutation.type === 'attributes') {
+                const target = mutation.target;
+                if (
+                    target?.classList?.contains('hz-FeedBannerBlock') ||
+                    target?.classList?.contains('Banners-bannerFeedItem') ||
+                    target?.id === 'banner-right-container' ||
+                    target?.id === 'banner-top-dt-container'
+                ) {
+                    shouldCleanup = true;
                 }
             }
 
@@ -1918,7 +1942,9 @@ function setupObservers() {
     // Start observing the entire document
     observer.observe(document, {
         childList: true,
-        subtree: true
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['class', 'style', 'hidden', 'aria-hidden']
     });
 
     // Store the observer
