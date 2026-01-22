@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Cleanplaats - Marktplaats zonder spam",
-    "version": "1.1.8",
+    "version": "1.1.9",
     "description": "Zelf in de hand wat je wel én niet wil zien op Marktplaats door te filteren",
     "author": "",
     "permissions": [

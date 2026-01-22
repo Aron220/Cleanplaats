@@ -1,6 +1,6 @@
 /**
  * Cleanplaats - A browser extension to remove ads from Marktplaats
- * Version: 1.1.0
+ * Version: 1.1.8
  */
 // TODO:
 // - Add functionality to let users hide Verified sellers (zakelijke verkopers is nogal lastig)
@@ -646,7 +646,7 @@ function setupTermsModalButtons() {
 function unhideListingsByTerm(term) {
     // Unhide .hz-Link (in je buurt tab) and .hz-Listing (normal)
     document.querySelectorAll('.hz-Link').forEach(link => {
-        const titleEl = link.querySelector('.hz-StructuredListing-title, .hz-Listing-title');
+        const titleEl = link.querySelector('.hz-StructuredListing-title, .hz-Listing-title, .hz-Listing-group--title-description, .hz-StructuredListing-body');
         if (titleEl && titleEl.textContent.toLowerCase().includes(term.toLowerCase())) {
             const listingEl = link.closest('.hz-StructuredListing') || link;
             listingEl.removeAttribute('data-cleanplaats-hidden');
@@ -654,7 +654,7 @@ function unhideListingsByTerm(term) {
         }
     });
     document.querySelectorAll('.hz-Listing').forEach(listing => {
-        const titleEl = listing.querySelector('.hz-StructuredListing-title, .hz-Listing-title');
+        const titleEl = listing.querySelector('.hz-StructuredListing-title, .hz-Listing-title, .hz-Listing-group--title-description, .hz-StructuredListing-body');
         if (titleEl && titleEl.textContent.toLowerCase().includes(term.toLowerCase())) {
             listing.removeAttribute('data-cleanplaats-hidden');
             listing.style.display = '';
@@ -1123,7 +1123,7 @@ function performCleanup() {
 
     // Handle blacklisted sellers
     document.querySelectorAll('.hz-Listing').forEach(listing => {
-        const sellerNameEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-link, .hz-Listing-sellerName');
+        const sellerNameEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-name-new, .hz-Listing-seller-link, .hz-Listing-sellerName, .hz-Listing-sellerName-new');
         if (!sellerNameEl) return;
         const sellerName = sellerNameEl.textContent.trim();
         if (CLEANPLAATS.settings.blacklistedSellers.includes(sellerName)) {
@@ -1135,7 +1135,7 @@ function performCleanup() {
     // Handle blacklisted terms in titles
     // For "in je buurt" tab: hide the <a.hz-Link> if the title matches
     document.querySelectorAll('.hz-Link').forEach(link => {
-        const titleEl = link.querySelector('.hz-StructuredListing-title, .hz-Listing-title');
+        const titleEl = link.querySelector('.hz-StructuredListing-title, .hz-Listing-title, .hz-Listing-group--title-description, .hz-StructuredListing-body');
         if (!titleEl) return;
         const title = titleEl.textContent.trim().toLowerCase();
         CLEANPLAATS.settings.blacklistedTerms.forEach(term => {
@@ -1148,7 +1148,7 @@ function performCleanup() {
     });
     // For normal listings: hide the .hz-Listing
     document.querySelectorAll('.hz-Listing').forEach(listing => {
-        const titleEl = listing.querySelector('.hz-StructuredListing-title, .hz-Listing-title');
+        const titleEl = listing.querySelector('.hz-StructuredListing-title, .hz-Listing-title, .hz-Listing-group--title-description, .hz-StructuredListing-body');
         if (!titleEl) return;
         const title = titleEl.textContent.trim().toLowerCase();
         CLEANPLAATS.settings.blacklistedTerms.forEach(term => {
@@ -1189,7 +1189,7 @@ function resetPreviousChanges() {
 function removeTopAdvertisements() {
     const is2dehands = location.hostname.includes('2dehands.be');
     const label = is2dehands ? 'Topzoekertje' : 'Topadvertentie';
-    const removedCount = findAndHideListings('.hz-Listing-priority span', label);
+    const removedCount = findAndHideListings('.hz-Listing-priority span, .hz-Listing-priority-new', label);
     CLEANPLAATS.stats.topAdsRemoved += removedCount;
 }
 
@@ -1197,7 +1197,7 @@ function removeTopAdvertisements() {
  * Remove dagtoppers
  */
 function removeDagtoppers() {
-    const removedCount = findAndHideListings('.hz-Listing-priority span', 'Dagtopper');
+    const removedCount = findAndHideListings('.hz-Listing-priority span, .hz-Listing-priority-new', 'Dagtopper');
     CLEANPLAATS.stats.dagtoppersRemoved += removedCount;
 }
 
@@ -1240,7 +1240,7 @@ function removePromotedListings() {
 function removeOpvalStickerListings() {
     let count = 0;
     const stickerSelectors = [
-        '.hz-Listing-Opvalsticker-wrapper',
+        '.hz-Listing-Opvalsticker-wrapper, .hz-Listing-Opvalsticker-wrapper-new',
         '[data-testid="listing-opval-sticker"]'
     ];
 
@@ -1538,7 +1538,7 @@ function removeSellerFromBlacklist(sellerName) {
     saveSettings().then(() => {
         // Show all listings from this seller immediately
         document.querySelectorAll('.hz-Listing').forEach(listing => {
-            const sellerNameEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-link, .hz-Listing-sellerName');
+            const sellerNameEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-name-new, .hz-Listing-seller-link, .hz-Listing-sellerName, .hz-Listing-sellerName-new');
             if (!sellerNameEl) return;
             if (sellerNameEl.textContent.trim() === sellerName) {
                 listing.removeAttribute('data-cleanplaats-hidden');
@@ -1571,18 +1571,18 @@ function injectBlacklistButtons() {
         let isCarAdvert = false;
 
         // First try car advert structure (.hz-Listing-sellerName)
-        const carSellerElement = listing.querySelector('.hz-Listing-sellerName');
+        const carSellerElement = listing.querySelector('.hz-Listing-sellerName, .hz-Listing-sellerName-new');
         if (carSellerElement) {
             sellerName = carSellerElement.textContent.trim();
             sellerElement = carSellerElement;
             isCarAdvert = true;
         } else {
             // Try normal advert structure (.hz-Listing-seller-name-container)
-            const sellerNameContainer = listing.querySelector('.hz-Listing-seller-name-container');
+            const sellerNameContainer = listing.querySelector('.hz-Listing-seller-name-container, .hz-Listing-seller-name-container-new');
             if (sellerNameContainer) {
                 const sellerLink = sellerNameContainer.querySelector('a');
                 if (sellerLink) {
-                    const sellerNameEl = sellerLink.querySelector('.hz-Listing-seller-name');
+                    const sellerNameEl = sellerLink.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-name-new');
                     if (sellerNameEl) {
                         sellerName = sellerNameEl.textContent.trim();
                         sellerElement = sellerNameContainer;
@@ -1618,7 +1618,7 @@ function injectBlacklistButtons() {
                 </button>
             `);
             // Insert as first child of the main content column
-            const content = listing.querySelector('.hz-Listing-listview-content');
+            const content = listing.querySelector('.hz-Listing-listview-content, .hz-Listing-listview-content-new');
             if (content && content.firstChild) {
                 content.insertBefore(topRow, content.firstChild);
             } else if (content) {
