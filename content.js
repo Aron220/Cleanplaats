@@ -1577,18 +1577,14 @@ function injectBlacklistButtons() {
             sellerElement = carSellerElement;
             isCarAdvert = true;
         } else {
-            // Try normal advert structure (.hz-Listing-seller-name-container)
-            const sellerNameContainer = listing.querySelector('.hz-Listing-seller-name-container, .hz-Listing-seller-name-container-new');
-            if (sellerNameContainer) {
-                const sellerLink = sellerNameContainer.querySelector('a');
-                if (sellerLink) {
-                    const sellerNameEl = sellerLink.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-name-new');
-                    if (sellerNameEl) {
-                        sellerName = sellerNameEl.textContent.trim();
-                        sellerElement = sellerNameContainer;
-                        isCarAdvert = false;
-                    }
-                }
+            // Normal advert structure: rely on stable seller-name classes.
+            // Marktplaats now often wraps these in CSS-module container classes.
+            const sellerNameEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-name-new');
+            if (sellerNameEl) {
+                sellerName = sellerNameEl.textContent.trim();
+                const sellerLink = sellerNameEl.closest('a');
+                sellerElement = sellerLink ? (sellerLink.parentElement || sellerLink) : sellerNameEl;
+                isCarAdvert = false;
             }
         }
 
