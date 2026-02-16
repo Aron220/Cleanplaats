@@ -315,7 +315,10 @@ function createControlPanel() {
     }
 
     const is2dehands = location.hostname.includes('2dehands.be');
-    const topAdLabel = is2dehands ? 'Topzoekertjes' : 'Topadvertenties';
+    const topAdLabel = 'Topadvertenties';
+    const topAdTooltip = is2dehands
+        ? "Verbergt 'Topadvertentie' en 'Topzoekertje' listings"
+        : "Verwijdert betaalde 'Topadvertentie' advertenties";
 
     panel.innerHTML = DOMPurify.sanitize(`
         <div class="cleanplaats-header" id="cleanplaats-header">
@@ -336,7 +339,7 @@ function createControlPanel() {
                     </label>
                     <label for="removeTopAds" class="cleanplaats-option-label">
                         ${topAdLabel}
-                        <span class="cleanplaats-tooltip-icon" data-tooltip="Verwijdert betaalde '${topAdLabel}' advertenties">?</span>
+                        <span class="cleanplaats-tooltip-icon" data-tooltip="${topAdTooltip}">?</span>
                     </label>
                 </div>
                 <div class="cleanplaats-option">
@@ -1188,8 +1191,10 @@ function resetPreviousChanges() {
  */
 function removeTopAdvertisements() {
     const is2dehands = location.hostname.includes('2dehands.be');
-    const label = is2dehands ? 'Topzoekertje' : 'Topadvertentie';
-    const removedCount = findAndHideListings('.hz-Listing-priority span, .hz-Listing-priority-new', label);
+    const labels = is2dehands ? ['Topzoekertje', 'Topadvertentie'] : ['Topadvertentie'];
+    const removedCount = labels.reduce((total, label) => {
+        return total + findAndHideListings('.hz-Listing-priority span, .hz-Listing-priority-new', label);
+    }, 0);
     CLEANPLAATS.stats.topAdsRemoved += removedCount;
 }
 
