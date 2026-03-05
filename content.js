@@ -1192,8 +1192,13 @@ function resetPreviousChanges() {
 function removeTopAdvertisements() {
     const is2dehands = location.hostname.includes('2dehands.be');
     const labels = is2dehands ? ['Topzoekertje', 'Topadvertentie'] : ['Topadvertentie'];
+    const priorityBadgeSelector = [
+        '.hz-Listing-priority span',
+        '.hz-Listing-priority-new',
+        '[class*="hz-Listing-priority-new"]'
+    ].join(', ');
     const removedCount = labels.reduce((total, label) => {
-        return total + findAndHideListings('.hz-Listing-priority span, .hz-Listing-priority-new', label);
+        return total + findAndHideListings(priorityBadgeSelector, label);
     }, 0);
     CLEANPLAATS.stats.topAdsRemoved += removedCount;
 }
@@ -1202,7 +1207,12 @@ function removeTopAdvertisements() {
  * Remove dagtoppers
  */
 function removeDagtoppers() {
-    const removedCount = findAndHideListings('.hz-Listing-priority span, .hz-Listing-priority-new', 'Dagtopper');
+    const priorityBadgeSelector = [
+        '.hz-Listing-priority span',
+        '.hz-Listing-priority-new',
+        '[class*="hz-Listing-priority-new"]'
+    ].join(', ');
+    const removedCount = findAndHideListings(priorityBadgeSelector, 'Dagtopper');
     CLEANPLAATS.stats.dagtoppersRemoved += removedCount;
 }
 
