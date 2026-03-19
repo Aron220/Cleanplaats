@@ -1,6 +1,6 @@
 /**
  * Cleanplaats - A browser extension to remove ads from Marktplaats
- * Version: 1.1.8
+ * Version: 2.0.2
  */
 // TODO:
 // - Add functionality to let users hide Verified sellers (zakelijke verkopers is nogal lastig)
@@ -50,7 +50,29 @@ const CLEANPLAATS = {
     // Panel state
     panelState: {
         isCollapsed: false,
-        hasShownWelcomeToast: false
+        hasShownWelcomeToast: false,
+        lastSeenVersion: ''
+    }
+};
+
+const CLEANPLAATS_UPDATE_NOTES = {
+    '2.0.2': {
+        intro: 'Cleanplaats is bijgewerkt met een paar gerichte verbeteringen voor het paneel en advertentiefilters.',
+        highlights: [
+            'Bovenin het paneel staat nu een directe link naar GitHub issues voor bugs en functieverzoeken.',
+            'De filters voor Topadvertenties en Dagtoppers zijn bijgewerkt voor recente wijzigingen in de site.',
+            'Kleine onderhoudsverbeteringen maken de extensie consistenter op actuele resultaatpagina’s.'
+        ],
+        note: 'Gebruik de GitHub-link in het paneel als je een bug wilt melden of een idee wilt delen.'
+    },
+    '2.0.0': {
+        intro: 'Deze update legt een sterkere basis voor de vernieuwde Marktplaats- en 2dehands-pagina’s.',
+        highlights: [
+            'De ondersteuning voor 2dehands en bijgewerkte Marktplaats-selectors is uitgebreid.',
+            'Blacklist-knoppen en seller-detectie werken betrouwbaarder op meer listing-varianten.',
+            'Diverse layout- en filterfixes zorgen voor stabielere opschoning van resultaten.'
+        ],
+        note: 'Zie je nog iets doorheen glippen? Meld het via GitHub issues in het paneel.'
     }
 };
 
@@ -124,6 +146,8 @@ function setupPeriodicWakeUp() {
 function initCleanplaats() {
     console.log('Cleanplaats: Initializing...');
 
+    const currentVersion = getExtensionVersion();
+
     // Wake up background script on page load
     wakeUpBackground();
 
@@ -136,12 +160,10 @@ function initCleanplaats() {
                 .then(isFirstRun => {
                     CLEANPLAATS.featureFlags.firstRun = isFirstRun;
 
-                    // Always show onboarding/welcome message
-                    showOnboarding();
-
                     createControlPanel();
                     setupAllObservers();
                     applySettings();
+                    showOnboarding(currentVersion);
 
                     // Modified this part to ensure content is loaded
                     const tryCleanup = () => {
@@ -222,6 +244,24 @@ function checkFirstRun() {
             }
         });
     });
+}
+
+/**
+ * Get the current extension version from the manifest
+ */
+function getExtensionVersion() {
+    try {
+        if (browserAPI?.runtime?.getManifest) {
+            const manifest = browserAPI.runtime.getManifest();
+            if (manifest && typeof manifest.version === 'string') {
+                return manifest.version;
+            }
+        }
+    } catch (error) {
+        console.error('Cleanplaats: Failed to read extension version', error);
+    }
+
+    return '';
 }
 
 /**
@@ -477,6 +517,14 @@ function createControlPanel() {
     if (logoImg) {
         logoImg.src = browserAPI.runtime.getURL('icons/icon128.png');
     }
+    const githubIssuesLink = panel.querySelector('.cleanplaats-contact');
+    if (githubIssuesLink) {
+        githubIssuesLink.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            window.open(githubIssuesLink.href, '_blank', 'noopener,noreferrer');
+        });
+    }
     setupEventListeners();
 
     // Blacklist management button
@@ -688,12 +736,35 @@ function unhideListingsByTerm(term) {
 /**
  * Show the onboarding notification for first-time users
  */
-function showOnboarding() {
+function showOnboarding(currentVersion = '') {
     if (CLEANPLAATS.featureFlags.firstRun) {
+        if (currentVersion) {
+            CLEANPLAATS.panelState.lastSeenVersion = currentVersion;
+            saveSettings().catch(error => {
+                console.error('Cleanplaats: Failed to store initial version state', error);
+            });
+        }
         showFirstTimeOnboarding();
+    } else if (shouldShowUpdatePopup(currentVersion)) {
+        CLEANPLAATS.panelState.lastSeenVersion = currentVersion;
+        saveSettings().catch(error => {
+            console.error('Cleanplaats: Failed to store seen update version', error);
+        });
+        showUpdatePopup(currentVersion);
     } else {
         showWelcomeToast();
     }
+}
+
+/**
+ * Check whether the update popup should be shown for this version
+ */
+function shouldShowUpdatePopup(currentVersion) {
+    if (!currentVersion) {
+        return false;
+    }
+
+    return CLEANPLAATS.panelState.lastSeenVersion !== currentVersion;
 }
 
 /**
@@ -745,6 +816,80 @@ function showFirstTimeOnboarding() {
             setTimeout(() => onboarding.remove(), 300);
         }
     }, 15000);
+}
+
+/**
+ * Show a "Wat is er nieuw" popup for updated versions
+ */
+function showUpdatePopup(version) {
+    const existingPopup = document.getElementById('cleanplaats-update-popup');
+    if (existingPopup) {
+        existingPopup.remove();
+    }
+
+    const updateContent = CLEANPLAATS_UPDATE_NOTES[version] || {
+        intro: 'Cleanplaats heeft een nieuwe update gekregen met verbeteringen en onderhoud aan de extensie.',
+        highlights: [
+            'Diverse verbeteringen en fixes voor de huidige resultaatpagina’s.',
+            'Kleine verfijningen aan het paneel en de filtering.',
+            'Onderhoudswerk om Cleanplaats stabiel te houden op nieuwe sitewijzigingen.'
+        ],
+        note: 'Zie je een probleem of heb je een idee? Gebruik de GitHub-link in het paneel.'
+    };
+
+    const popup = document.createElement('div');
+    popup.className = 'cleanplaats-info-overlay cleanplaats-info-overlay--visible';
+    popup.id = 'cleanplaats-update-popup';
+    popup.setAttribute('role', 'dialog');
+    popup.setAttribute('aria-modal', 'true');
+    popup.setAttribute('aria-hidden', 'false');
+
+    const stepsMarkup = updateContent.highlights
+        .map(step => `<li>${step}</li>`)
+        .join('');
+
+    popup.innerHTML = DOMPurify.sanitize(`
+        <div class="cleanplaats-info-card">
+            <div class="cleanplaats-info-header">
+                <img id="cleanplaats-update-popup-logo" class="cleanplaats-info-logo" alt="Cleanplaats">
+                <span class="cleanplaats-info-eyebrow">Nieuwe update</span>
+                <h3 class="cleanplaats-info-title">Wat is er nieuw? (${version})</h3>
+                <p class="cleanplaats-info-intro">${updateContent.intro}</p>
+            </div>
+            <ol class="cleanplaats-info-steps">${stepsMarkup}</ol>
+            <p class="cleanplaats-info-note">${updateContent.note}</p>
+            <div class="cleanplaats-info-footer">
+                <button type="button" id="cleanplaats-update-popup-close" class="cleanplaats-info-button">Top, bedankt</button>
+            </div>
+        </div>
+    `);
+
+    const closePopup = () => {
+        popup.classList.remove('cleanplaats-info-overlay--visible');
+        popup.setAttribute('aria-hidden', 'true');
+        setTimeout(() => popup.remove(), 200);
+        document.removeEventListener('keydown', handleKeydown);
+    };
+
+    const handleKeydown = (event) => {
+        if (event.key === 'Escape') {
+            closePopup();
+        }
+    };
+
+    popup.addEventListener('click', (event) => {
+        if (event.target === popup) {
+            closePopup();
+        }
+    });
+
+    document.addEventListener('keydown', handleKeydown);
+    document.body.appendChild(popup);
+    const popupLogo = document.getElementById('cleanplaats-update-popup-logo');
+    if (popupLogo) {
+        popupLogo.src = browserAPI.runtime.getURL('icons/icon128.png');
+    }
+    document.getElementById('cleanplaats-update-popup-close')?.addEventListener('click', closePopup);
 }
 
 /**

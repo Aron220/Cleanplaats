@@ -537,6 +537,152 @@
     background: #45a049;
   }
 
+  .cleanplaats-info-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 2147483647;
+  }
+
+  .cleanplaats-info-overlay--visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .cleanplaats-info-card {
+    width: min(92vw, 420px);
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px 22px;
+    box-shadow: 0 22px 50px rgba(15, 23, 42, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    font-family: Arial, sans-serif;
+  }
+
+  .cleanplaats-info-header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+    padding-right: 104px;
+  }
+
+  .cleanplaats-info-logo {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 84px;
+    height: 84px;
+    object-fit: cover;
+    border-radius: 18px;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18);
+    background: #f8fafc;
+  }
+
+  .cleanplaats-info-eyebrow {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #16a34a;
+  }
+
+  .cleanplaats-info-title {
+    margin: 0;
+    font-size: 1.35rem;
+    color: #0f172a;
+  }
+
+  .cleanplaats-info-intro {
+    margin: 0;
+    color: #475569;
+    line-height: 1.4;
+  }
+
+  .cleanplaats-info-steps {
+    margin: 0;
+    padding-left: 18px;
+    color: #1f2937;
+    line-height: 1.5;
+    display: grid;
+    gap: 6px;
+  }
+
+  .cleanplaats-info-note {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.92rem;
+  }
+
+  .cleanplaats-info-footer {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .cleanplaats-info-button {
+    min-width: 132px;
+    padding: 11px 16px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 700;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .cleanplaats-info-button:hover,
+  .cleanplaats-info-button:focus {
+    background: #15803d;
+  }
+
+  .cleanplaats-info-button:focus-visible {
+    outline: 2px solid #7ccaf3;
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 520px) {
+    .cleanplaats-info-card {
+      padding: 18px;
+    }
+
+    .cleanplaats-info-header {
+      padding-right: 0;
+    }
+
+    .cleanplaats-info-logo {
+      position: static;
+      width: 64px;
+      height: 64px;
+      margin-bottom: 4px;
+    }
+
+    .cleanplaats-info-footer {
+      justify-content: stretch;
+    }
+
+    .cleanplaats-info-button {
+      width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cleanplaats-info-overlay,
+    .cleanplaats-info-button {
+      transition: none;
+    }
+  }
+
   /* Welcome toast */
   .cleanplaats-toast {
     position: fixed;
