@@ -70,21 +70,29 @@
   /* Header Styling */
   .cleanplaats-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
     padding: 12px 15px;
     border-bottom: 1px solid #f0f0f0;
     cursor: pointer;
     user-select: none;
     opacity: 1;
     visibility: visible;
-    max-height: 60px;
+    max-height: 120px;
     overflow: hidden;
     transition: opacity 0.25s ease-out,
                 max-height 0.35s ease-in-out,
                 padding-top 0.35s ease-in-out, padding-bottom 0.35s ease-in-out,
                 margin-top 0.35s ease-in-out, margin-bottom 0.35s ease-in-out,
                 border-width 0.35s ease-in-out;
+  }
+
+  .cleanplaats-header-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
   }
   
   .cleanplaats-header h3 {
@@ -134,6 +142,71 @@
   
   .cleanplaats-panel.collapsed .cleanplaats-toggle {
     transform: rotate(180deg);
+  }
+
+  .cleanplaats-contact {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
+    color: #4a4a4a;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .cleanplaats-contact:hover,
+  .cleanplaats-contact:focus {
+    color: #0b5cab;
+    text-decoration: none;
+  }
+
+  .cleanplaats-contact:focus-visible {
+    outline: 2px solid #7ccaf3;
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  .cleanplaats-contact-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    background: #eef4fb;
+    color: #1f2937;
+    flex-shrink: 0;
+  }
+
+  .cleanplaats-contact-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .cleanplaats-contact-title {
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .cleanplaats-contact-text {
+    font-size: 11px;
+    line-height: 1.25;
+    color: #757575;
+  }
+
+  .cleanplaats-contact-action {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    color: #0b5cab;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
   }
   
   /* Content Area */
