@@ -4,13 +4,15 @@
     bottom: 20px;
     right: 20px;
     z-index: 2147483647;
+    display: flex;
+    flex-direction: column;
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 15px rgba(0,0,0,0.2);
     font-family: Arial, sans-serif;
     width: 280px;
     max-width: 90vw;
-    max-height: 70vh;
+    max-height: 82vh;
     transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
                 max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
                 min-width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
@@ -144,12 +146,19 @@
     transform: rotate(180deg);
   }
 
+  .cleanplaats-contact-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
+  }
+
   .cleanplaats-contact {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding-top: 8px;
-    border-top: 1px solid #f0f0f0;
+    gap: 8px;
+    min-width: 0;
     color: #4a4a4a;
     text-decoration: none;
     transition: color 0.2s ease;
@@ -171,12 +180,13 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     border-radius: 999px;
     background: #eef4fb;
     color: #1f2937;
     flex-shrink: 0;
+    font-size: 12px;
   }
 
   .cleanplaats-contact-copy {
@@ -188,31 +198,23 @@
   }
 
   .cleanplaats-contact-title {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     line-height: 1.25;
   }
 
   .cleanplaats-contact-text {
-    font-size: 11px;
+    font-size: 10px;
     line-height: 1.25;
     color: #757575;
   }
 
-  .cleanplaats-contact-action {
-    display: inline-flex;
-    align-items: center;
-    flex-shrink: 0;
-    color: #0b5cab;
-    font-size: 11px;
-    font-weight: 700;
-    white-space: nowrap;
-  }
-  
   /* Content Area */
   .cleanplaats-content {
     padding: 12px 15px;
-    max-height: 60vh;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: calc(82vh - 120px);
     opacity: 1;
     visibility: visible;
     overflow-y: auto;
@@ -334,7 +336,7 @@
   .cleanplaats-button.secondary:hover {
     background: #e8e8e8;
   }
-  
+
   /* Stats Area */
   .cleanplaats-stats {
     font-size: 13px;
