@@ -1,6 +1,6 @@
 /**
  * Cleanplaats - A browser extension to remove ads from Marktplaats
- * Version: 2.0.2
+ * Version: 2.0.3
  */
 // TODO:
 // - Add functionality to let users hide Verified sellers (zakelijke verkopers is nogal lastig)
@@ -57,14 +57,15 @@ const CLEANPLAATS = {
 };
 
 const CLEANPLAATS_UPDATE_NOTES = {
-    '2.0.2': {
-        intro: 'Cleanplaats lost een probleem op met wisselen tussen sorteermodi op Marktplaats.',
+    '2.0.3': {
+        intro: 'Cleanplaats lost problemen op met sorteren en filtert bedrijfsadvertenties nu ook  op de homepage.',
         highlights: [
             'Wisselen tussen bijvoorbeeld "Datum (nieuw-oud)" en "Prijs (laag-hoog)" werkt nu betrouwbaarder.',
             'De extensie zet je gekozen sortering niet meer onbedoeld terug bij verversen of pagineren.',
-            'Daardoor hoef je een andere sorteermodus niet meer twee keer aan te klikken.'
+            'Daardoor hoef je een andere sorteermodus niet meer twee keer aan te klikken.',
+            'De filter "Bedrijfsadvertenties" verbergt nu ook alle bedrijfs- en winkeladvertenties op de homepage bij "Voor jou" en "In je buurt", zoals bijv. Catawiki.'
         ],
-        note: 'Zie je nog iets vreemds met sorteren op resultaatpagina’s? Meld het via GitHub issues in het paneel.'
+        note: 'Zie je nog iets vreemds met sorteren of homepage-filters? Meld het via GitHub issues in het paneel.'
     },
     '2.0.0': {
         intro: 'Deze update legt een sterkere basis voor de vernieuwde Marktplaats- en 2dehands-pagina’s.',
