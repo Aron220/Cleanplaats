@@ -485,7 +485,7 @@ function createControlPanel() {
                     </label>
                     <label for="removePromotedListings" class="cleanplaats-option-label">
                         Bedrijfsadvertenties
-                        <span class="cleanplaats-tooltip-icon" data-tooltip="Verwijdert advertenties van bedrijven met een 'Bezoek website' link">?</span>
+                        <span class="cleanplaats-tooltip-icon" data-tooltip="Verbergt advertenties van bedrijven en winkels, zoals Catawiki, ook op de homepage bij 'Voor jou' en 'In je buurt'">?</span>
                     </label>
                 </div>
                 <div class="cleanplaats-option">
@@ -1480,7 +1480,29 @@ function removePromotedListings() {
         });
     });
 
+    document.querySelectorAll('.hz-StructuredListing').forEach(listing => {
+        try {
+            if (listing.hasAttribute('data-cleanplaats-hidden') || !isHomepagePartnerListing(listing)) {
+                return;
+            }
+
+            if (hideElement(listing)) {
+                count++;
+            }
+        } catch (error) {
+            console.error('Cleanplaats: Error processing homepage partner listing', error);
+        }
+    });
+
     CLEANPLAATS.stats.promotedListingsRemoved += count;
+}
+
+function isHomepagePartnerListing(listing) {
+    const hrefs = Array.from(listing.querySelectorAll('a[href]'))
+        .map(link => link.href || link.getAttribute('href') || '')
+        .filter(Boolean);
+
+    return hrefs.some(href => /\/a\d+(?:[-/?]|$)/i.test(href));
 }
 
 /**
