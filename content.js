@@ -491,6 +491,16 @@ function createControlPanel() {
             </div>
         </div>
         <div class="cleanplaats-content">
+            <a
+                href="https://buymeacoffee.com/cleanplaats"
+                class="cleanplaats-bmc-button"
+                target="_blank"
+                rel="noopener"
+                title="Steun Cleanplaats met een kleine bijdrage"
+            >
+                <span class="cleanplaats-bmc-emoji">☕</span>
+                <span class="cleanplaats-bmc-text">Steun Cleanplaats</span>
+            </a>
             <div class="cleanplaats-options">
                 <div class="cleanplaats-section-title">Filteropties</div>
                 <div class="cleanplaats-option">
@@ -598,17 +608,6 @@ function createControlPanel() {
             <button id="cleanplaats-manage-blacklist" class="cleanplaats-button cleanplaats-blacklist-manage-btn">Beheer verborgen verkopers</button>
             <div id="cleanplaats-blacklist-modal" class="cleanplaats-blacklist-modal" style="display:none;"></div>
             <div id="cleanplaats-terms-modal" class="cleanplaats-terms-modal" style="display:none;"></div>
-
-            <a
-                href="https://buymeacoffee.com/cleanplaats"
-                class="cleanplaats-bmc-button"
-                target="_blank"
-                rel="noopener"
-                title="Steun Cleanplaats met een kleine bijdrage"
-            >
-                <span class="cleanplaats-bmc-emoji">☕</span>
-                <span class="cleanplaats-bmc-text">Steun Cleanplaats</span>
-            </a>
         </div>
     `);
 
