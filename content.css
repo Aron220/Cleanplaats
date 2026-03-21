@@ -728,33 +728,36 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    margin: 12px 0 0 0;
-    padding: 7px 0;
-    background: #fffbe7;
-    color: #a67c00;
-    border: 1px solid #ffe082;
-    border-radius: 5px;
+    box-sizing: border-box;
+    margin: 16px 0 0 0;
+    padding: 10px 12px;
+    background: linear-gradient(180deg, #fff2c6 0%, #ffe29a 100%);
+    color: #6f4b00;
+    border: 1px solid #f2c14e;
+    border-radius: 8px;
     font-size: 15px;
-    font-weight: 500;
+    font-weight: 700;
     text-decoration: none;
-    transition: background 0.2s, border 0.2s, color 0.2s, box-shadow 0.2s;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    transition: background 0.2s, border 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
+    box-shadow: 0 6px 14px rgba(242, 193, 78, 0.22);
     width: 100%;
     max-width: 100%;
+    min-width: 0;
     cursor: pointer;
   }
 
   .cleanplaats-bmc-button:hover,
   .cleanplaats-bmc-button:focus {
-    background: #ffe082;
-    color: #7c5a00;
-    border-color: #ffd54f;
+    background: linear-gradient(180deg, #ffe9b3 0%, #ffd873 100%);
+    color: #5d3f00;
+    border-color: #e3ae2d;
     text-decoration: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: 0 8px 18px rgba(242, 193, 78, 0.3);
+    transform: translateY(-1px);
   }
 
   .cleanplaats-bmc-emoji {
-    font-size: 1.2em;
+    font-size: 1.25em;
     margin-right: 2px;
   }
 

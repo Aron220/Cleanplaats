@@ -604,10 +604,10 @@ function createControlPanel() {
                 class="cleanplaats-bmc-button"
                 target="_blank"
                 rel="noopener"
-                title="Steun Cleanplaats – Buy me a coffee!"
+                title="Steun Cleanplaats met een kleine bijdrage"
             >
                 <span class="cleanplaats-bmc-emoji">☕</span>
-                <span class="cleanplaats-bmc-text">Buy me a coffee</span>
+                <span class="cleanplaats-bmc-text">Steun Cleanplaats</span>
             </a>
         </div>
     `);
