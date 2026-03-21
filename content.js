@@ -80,7 +80,9 @@ const CLEANPLAATS_UPDATE_NOTES = {
             'Wisselen tussen bijvoorbeeld "Datum (nieuw-oud)" en "Prijs (laag-hoog)" werkt nu betrouwbaarder.',
             'De extensie zet je gekozen sortering niet meer onbedoeld terug bij verversen of pagineren.',
             'Daardoor hoef je een andere sorteermodus niet meer twee keer aan te klikken.',
-            'De filter "Bedrijfsadvertenties" verbergt nu ook alle bedrijfs- en winkeladvertenties op de homepage bij "Voor jou" en "In je buurt", zoals bijv. Catawiki.'
+            'De filter "Bedrijfsadvertenties" verbergt nu ook alle bedrijfs- en winkeladvertenties op de homepage bij "Voor jou" en "In je buurt", zoals bijv. Catawiki.',
+            'De knop om een verkoper te verbergen blijft nu ook op mobiel zichtbaar op listingpagina’s.',
+            'Bij "Beheer verborgen verkopers" kun je nu ook zelf verkopers toevoegen, inclusief meerdere namen tegelijk met komma’s of puntkomma’s.'
         ],
         note: 'Zie je nog iets vreemds met sorteren of homepage-filters? Meld het via GitHub issues in het paneel.'
     },
@@ -1762,17 +1764,34 @@ function hideElement(element) {
  * Add a seller to the blacklist
  */
 function addSellerToBlacklist(sellerName) {
-    if (!CLEANPLAATS.settings.blacklistedSellers.includes(sellerName)) {
-        CLEANPLAATS.settings.blacklistedSellers.push(sellerName);
-        saveSettings().then(() => {
-            performCleanup();
-            injectBlacklistButtons();
-            updateBlacklistModal();
+    addSellersToBlacklist([sellerName]);
+}
 
-            // Show toast notification
-            showBlacklistToast(sellerName);
-        });
-    }
+/**
+ * Add one or more sellers to the blacklist
+ */
+function addSellersToBlacklist(sellerNames) {
+    const normalizedSellerNames = sellerNames
+        .map(name => name.trim())
+        .filter(Boolean)
+        .filter((name, index, arr) => arr.indexOf(name) === index)
+        .filter(name => !CLEANPLAATS.settings.blacklistedSellers.includes(name));
+
+    if (normalizedSellerNames.length === 0) return;
+
+    CLEANPLAATS.settings.blacklistedSellers.push(...normalizedSellerNames);
+    saveSettings().then(() => {
+        performCleanup();
+        injectBlacklistButtons();
+        updateBlacklistModal();
+
+        if (normalizedSellerNames.length === 1) {
+            showBlacklistToast(normalizedSellerNames[0]);
+            return;
+        }
+
+        showBulkBlacklistToast(normalizedSellerNames.length);
+    });
 }
 
 /**
@@ -1794,6 +1813,34 @@ function showBlacklistToast(sellerName) {
 
     document.body.appendChild(toast);
     // Add a small delay before adding the 'visible' class
+    setTimeout(() => {
+        requestAnimationFrame(() => toast.classList.add('visible'));
+    }, 50);
+
+    setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+/**
+ * Show a toast notification for blacklisting multiple sellers
+ */
+function showBulkBlacklistToast(count) {
+    const toast = document.createElement('div');
+    toast.className = 'cleanplaats-blacklist-toast';
+
+    toast.innerHTML = DOMPurify.sanitize(`
+        <div class="cleanplaats-blacklist-toast-content">
+            <span class="cleanplaats-toast-icon eye">👁</span>
+            <div class="cleanplaats-toast-message">
+                <strong>${count} verkopers verborgen</strong>
+                <span>Beheer verborgen verkopers via het paneel</span>
+            </div>
+        </div>
+    `);
+
+    document.body.appendChild(toast);
     setTimeout(() => {
         requestAnimationFrame(() => toast.classList.add('visible'));
     }, 50);
@@ -2032,13 +2079,18 @@ function showBlacklistModal() {
         <div class="cleanplaats-blacklist-modal-content">
             <h4>Verborgen verkopers</h4>
             <ul id="cleanplaats-blacklist-list">
-                ${sellers.length === 0 ? '<li><em>Nog geen verkopers verborgen. Gebruik de knop onder een naam in de zoekresultaten</em></li>' : sellers.map(seller => `
+                ${sellers.length === 0 ? '<li><em>Geen verkopers toegevoegd</em></li>' : sellers.map(seller => `
                     <li>
                         <span>${seller}</span>
                         <button class="cleanplaats-unblacklist-btn" data-seller="${seller}">Verborgen</button>
                     </li>
                 `).join('')}
             </ul>
+            <div class="cleanplaats-terms-input-row">
+                <input type="text" id="cleanplaats-seller-input" class="cleanplaats-term-input" placeholder="bijv. Catawiki">
+                <button id="cleanplaats-add-seller" class="cleanplaats-add-term-btn">Toevoegen</button>
+            </div>
+            <div class="cleanplaats-input-help">Wil je meerdere namen tegelijk toevoegen? Scheid ze dan met komma's of puntkomma's.</div>
             <button id="cleanplaats-blacklist-close" style="margin-top:10px;">Sluiten</button>
         </div>
     `);
@@ -2048,6 +2100,28 @@ function showBlacklistModal() {
     document.getElementById('cleanplaats-blacklist-close').onclick = () => {
         modal.style.display = 'none';
     };
+
+    const addSeller = () => {
+        const input = document.getElementById('cleanplaats-seller-input');
+        const sellerNames = input.value
+            .split(/[;,]+/)
+            .map(name => name.trim())
+            .filter(Boolean);
+
+        if (sellerNames.length === 0) return;
+
+        addSellersToBlacklist(sellerNames);
+        input.value = '';
+    };
+
+    document.getElementById('cleanplaats-add-seller').onclick = addSeller;
+
+    document.getElementById('cleanplaats-seller-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addSeller();
+        }
+    });
 
     // Add hover effect and unblacklist functionality
     setupBlacklistModalButtons();
@@ -2066,7 +2140,7 @@ function updateBlacklistModal() {
     if (list) {
         list.innerHTML = DOMPurify.sanitize(
             sellers.length === 0
-                ? '<li><em>Nog geen verkopers verborgen. Gebruik de knop onder een naam in de zoekresultaten.</em></li>'
+                ? '<li><em>Geen verkopers toegevoegd</em></li>'
                 : sellers.map(seller => `
                     <li>
                         <span>${seller}</span>

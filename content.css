@@ -1330,6 +1330,13 @@
     background: #1976D2;
   }
 
+  .cleanplaats-input-help {
+    margin-top: 8px;
+    color: #666;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
   .cleanplaats-panel.animating .cleanplaats-content {
     scrollbar-width: none; /* Firefox */
   }
