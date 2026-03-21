@@ -2284,6 +2284,18 @@ function setupObservers() {
         // Check if any relevant elements were added
         for (const mutation of mutations) {
             if (mutation.type === 'childList' && mutation.addedNodes.length) {
+                const listingMutationTarget = mutation.target?.nodeType === Node.ELEMENT_NODE
+                    ? mutation.target.closest?.('.hz-Listing')
+                    : null;
+
+                // On mobile, Marktplaats often rewrites the inside of an existing listing
+                // instead of replacing the listing node itself. When that happens, our
+                // injected seller row is removed and must be re-inserted.
+                if (window.innerWidth < 700 && listingMutationTarget) {
+                    shouldCleanup = true;
+                    break;
+                }
+
                 for (const node of mutation.addedNodes) {
                     if (node.nodeType === Node.ELEMENT_NODE) {
                         // Check if any ads or listings were added
