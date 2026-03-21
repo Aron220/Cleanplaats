@@ -1859,17 +1859,12 @@ function removeSellerFromBlacklist(sellerName) {
  */
 function injectBlacklistButtons() {
     document.querySelectorAll('.hz-Listing').forEach(listing => {
-        // Remove any existing button to avoid duplicates
         const oldBtn = listing.querySelector('.cleanplaats-blacklist-btn-row');
-        if (oldBtn) oldBtn.remove();
         const oldTopRight = listing.querySelector('.cleanplaats-seller-topright-mobile');
-        if (oldTopRight) oldTopRight.remove();
-        // Remove any existing inline buttons from car adverts
         const oldInlineBtn = listing.querySelector('.cleanplaats-inline-btn');
-        if (oldInlineBtn) oldInlineBtn.remove();
 
         // Try to find seller name using different structures
-        let sellerName = null;
+        let sellerName = listing.dataset.cleanplaatsSellerName || null;
         let sellerElement = null;
         let isCarAdvert = false;
 
@@ -1891,7 +1886,11 @@ function injectBlacklistButtons() {
             }
         }
 
-        if (!sellerName || !sellerElement) return;
+        if (sellerName) {
+            listing.dataset.cleanplaatsSellerName = sellerName;
+        }
+
+        if (!sellerName) return;
 
         // Hide if already blacklisted
         if (CLEANPLAATS.settings.blacklistedSellers.includes(sellerName)) {
@@ -1902,9 +1901,19 @@ function injectBlacklistButtons() {
 
         // --- MOBILE ONLY: Seller + hide button in top right ---
         if (window.innerWidth < 700) {
+            if (oldTopRight && oldTopRight.dataset.cleanplaatsSellerName === sellerName) {
+                return;
+            }
+
+            // Remove any desktop buttons before inserting the mobile row.
+            if (oldBtn) oldBtn.remove();
+            if (oldInlineBtn) oldInlineBtn.remove();
+            if (oldTopRight) oldTopRight.remove();
+
             // Create the top row container
             const topRow = document.createElement('div');
             topRow.className = 'cleanplaats-seller-topright-mobile';
+            topRow.dataset.cleanplaatsSellerName = sellerName;
             topRow.innerHTML = DOMPurify.sanitize(`
                 <span class="cleanplaats-seller-name-mobile">${sellerName}</span>
                 <button class="cleanplaats-blacklist-btn-mobile" title="Verberg deze verkoper" aria-label="Verberg deze verkoper">
@@ -1934,6 +1943,13 @@ function injectBlacklistButtons() {
             // Do NOT inject the desktop button on mobile
             return;
         }
+
+        if (!sellerElement) return;
+
+        // Remove any existing button to avoid duplicates now that we know we can rebuild.
+        if (oldBtn) oldBtn.remove();
+        if (oldTopRight) oldTopRight.remove();
+        if (oldInlineBtn) oldInlineBtn.remove();
 
         // --- DESKTOP: Handle different advert types ---
         if (isCarAdvert) {
