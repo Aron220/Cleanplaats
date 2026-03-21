@@ -21,7 +21,8 @@ const CLEANPLAATS = {
         blacklistedSellers: [],
         blacklistedTerms: [], // Added blacklisted terms
         resultsPerPage: 30, // Nieuw: aantal resultaten per pagina
-        defaultSortMode: 'standard' // Nieuw: standaard sorteermodus
+        defaultSortMode: 'standard', // Nieuw: standaard sorteermodus
+        sortPreferenceSource: 'cleanplaats'
     },
 
     // Stats tracking
@@ -57,13 +58,13 @@ const CLEANPLAATS = {
 
 const CLEANPLAATS_UPDATE_NOTES = {
     '2.0.2': {
-        intro: 'Cleanplaats is bijgewerkt met een paar gerichte verbeteringen voor het paneel en advertentiefilters.',
+        intro: 'Cleanplaats lost een probleem op met wisselen tussen sorteermodi op Marktplaats.',
         highlights: [
-            'Bovenin het paneel staat nu een directe link naar GitHub issues voor bugs en functieverzoeken.',
-            'De filters voor Topadvertenties en Dagtoppers zijn bijgewerkt voor recente wijzigingen in de site.',
-            'Kleine onderhoudsverbeteringen maken de extensie consistenter op actuele resultaatpagina’s.'
+            'Wisselen tussen bijvoorbeeld "Datum (nieuw-oud)" en "Prijs (laag-hoog)" werkt nu betrouwbaarder.',
+            'De extensie zet je gekozen sortering niet meer onbedoeld terug bij verversen of pagineren.',
+            'Daardoor hoef je een andere sorteermodus niet meer twee keer aan te klikken.'
         ],
-        note: 'Gebruik de GitHub-link in het paneel als je een bug wilt melden of een idee wilt delen.'
+        note: 'Zie je nog iets vreemds met sorteren op resultaatpagina’s? Meld het via GitHub issues in het paneel.'
     },
     '2.0.0': {
         intro: 'Deze update legt een sterkere basis voor de vernieuwde Marktplaats- en 2dehands-pagina’s.',
@@ -75,6 +76,71 @@ const CLEANPLAATS_UPDATE_NOTES = {
         note: 'Zie je nog iets doorheen glippen? Meld het via GitHub issues in het paneel.'
     }
 };
+
+const MARKTPLAATS_SORT_LABEL_TO_MODE = {
+    'standaard': 'standard',
+    'datum (nieuw-oud)': 'date_new_old',
+    'datum (oud-nieuw)': 'date_old_new',
+    'prijs (laag-hoog)': 'price_low_high',
+    'prijs (hoog-laag)': 'price_high_low',
+    'afstand': 'distance'
+};
+
+function normalizeSortLabel(label) {
+    return (label || '').trim().toLowerCase();
+}
+
+function getSortModeFromLabel(label) {
+    return MARKTPLAATS_SORT_LABEL_TO_MODE[normalizeSortLabel(label)] || null;
+}
+
+function isMarketplaceSortDropdown(element) {
+    if (!(element instanceof HTMLSelectElement)) return false;
+
+    const ariaLabel = normalizeSortLabel(element.getAttribute('aria-label'));
+    if (ariaLabel === 'sorteer op') return true;
+
+    return Array.from(element.options || []).some(option => {
+        return normalizeSortLabel(option.textContent) === 'datum (nieuw-oud)';
+    });
+}
+
+function syncCleanplaatsSortMode(sortMode) {
+    if (!sortMode) return;
+
+    const modeChanged = CLEANPLAATS.settings.defaultSortMode !== sortMode;
+    const sourceChanged = CLEANPLAATS.settings.sortPreferenceSource !== 'marketplace';
+    if (!modeChanged && !sourceChanged) return;
+
+    CLEANPLAATS.settings.defaultSortMode = sortMode;
+    CLEANPLAATS.settings.sortPreferenceSource = 'marketplace';
+
+    const cleanplaatsDropdown = document.getElementById('cleanplaats-sort-dropdown');
+    if (cleanplaatsDropdown && cleanplaatsDropdown.value !== sortMode) {
+        cleanplaatsDropdown.value = sortMode;
+    }
+
+    wakeUpBackground();
+    saveSettings().catch(error => {
+        console.error('Cleanplaats: Failed to sync sort mode from page selection', error);
+    });
+}
+
+function setupMarketplaceSortSync() {
+    if (document.body?.dataset.cleanplaatsSortSyncBound === 'true') return;
+    if (document.body) {
+        document.body.dataset.cleanplaatsSortSyncBound = 'true';
+    }
+
+    document.addEventListener('change', (event) => {
+        const target = event.target;
+        if (!isMarketplaceSortDropdown(target)) return;
+
+        const selectedOption = target.options[target.selectedIndex];
+        const sortMode = getSortModeFromLabel(selectedOption?.textContent || target.value);
+        syncCleanplaatsSortMode(sortMode);
+    }, true);
+}
 
 // Initialize when page loads
 if (document.readyState === 'loading') {
@@ -1162,6 +1228,9 @@ function setupEventListeners() {
 
     // Setup sort dropdown listener
     setupSortDropdownListener();
+
+    // Sync the Cleanplaats sort preference when the native page sort changes
+    setupMarketplaceSortSync();
 }
 
 /**
@@ -2229,6 +2298,7 @@ function setupSortDropdownListener() {
         const value = e.target.value;
 
         CLEANPLAATS.settings.defaultSortMode = value;
+        CLEANPLAATS.settings.sortPreferenceSource = 'cleanplaats';
 
         // Wake up background script before saving settings
         wakeUpBackground();

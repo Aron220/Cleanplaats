@@ -10,6 +10,7 @@ const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
 
 let resultsPerPage = "30"; // Default value, will be overwritten by storage
 let defaultSortMode = "standard"; // Default value, will be overwritten by storage
+let sortPreferenceSource = "cleanplaats"; // Tracks whether the active sort was chosen in Cleanplaats or on the marketplace page
 
 // Sort mode mapping
 const SORT_MODES = {
@@ -76,39 +77,41 @@ function buildHashOptions(options) {
 /**
  * Given a URL string, checks if its hash needs modification based on current
  * resultsPerPage and defaultSortMode settings (passed as arguments).
+ *
+ * Sort behavior depends on who last changed it:
+ * - Cleanplaats panel changes should keep applying the selected default sort,
+ *   even when the current URL already has sort params from a prior rewrite.
+ * - Native marketplace dropdown changes should be respected as user-owned, so
+ *   existing sort params are left alone.
+ *
  * Returns the modified URL string if changes are needed, otherwise null.
  */
-function getModifiedUrlIfNeeded(urlString, currentResultsPerPage, currentDefaultSortMode) {
+function getModifiedUrlIfNeeded(urlString, currentResultsPerPage, currentDefaultSortMode, currentSortPreferenceSource) {
     const url = new URL(urlString);
     let options = parseHashOptions(url.hash);
     let needsRewrite = false;
+    const hasExplicitSort = Boolean(options.sortBy && options.sortOrder);
+    const shouldApplyCleanplaatsSort = currentSortPreferenceSource !== 'marketplace';
 
     if (!options.hasOwnProperty("limit") || options["limit"] !== currentResultsPerPage) {
         options["limit"] = currentResultsPerPage;
         needsRewrite = true;
     }
 
-    if (currentDefaultSortMode !== 'standard') {
+    if (shouldApplyCleanplaatsSort && currentDefaultSortMode !== 'standard') {
         const sortConfig = SORT_MODES[currentDefaultSortMode];
-        if (sortConfig && (!options.hasOwnProperty("sortBy") || options["sortBy"] !== sortConfig.sortBy || options["sortOrder"] !== sortConfig.sortOrder)) {
+        if (sortConfig && (!hasExplicitSort || options["sortBy"] !== sortConfig.sortBy || options["sortOrder"] !== sortConfig.sortOrder)) {
             options["sortBy"] = sortConfig.sortBy;
             options["sortOrder"] = sortConfig.sortOrder;
             needsRewrite = true;
         }
-    } else {
-        // If mode is standard, and sort params are present that look like ours, remove them.
-        // This is a simplification; ideally, we'd only remove params we know we added.
-        if (options.hasOwnProperty("sortBy") && Object.values(SORT_MODES).find(m => m.sortBy === options["sortBy"])) {
-            delete options["sortBy"];
-            delete options["sortOrder"];
-            needsRewrite = true; // Needs rewrite to remove them
-        }
+    } else if (shouldApplyCleanplaatsSort && currentDefaultSortMode === 'standard' && hasExplicitSort) {
+        delete options["sortBy"];
+        delete options["sortOrder"];
+        needsRewrite = true;
     }
-    // Rebuild options to ensure clean hash if sort was removed
-    if(needsRewrite && currentDefaultSortMode === 'standard'){
-         url.hash = buildHashOptions(options); // options will not have sortBy/Order here
-         return url.href;
-    } else if (needsRewrite) {
+
+    if (needsRewrite) {
         url.hash = buildHashOptions(options);
         return url.href;
     }
@@ -122,7 +125,9 @@ async function updateApiRequestRules(currentResultsPerPage, currentDefaultSortMo
     console.log(`Cleanplaats: updateApiRequestRules called with RPP: ${currentResultsPerPage}, Sort: ${currentDefaultSortMode}`);
     const rulesToRemove = [API_RULE_ID];
     const rulesToAdd = [];
-    const shouldModifyApi = currentResultsPerPage !== "30" || currentDefaultSortMode !== "standard";
+    // Only force the page size at the network layer. Sort stays in the URL hash
+    // so manual sort changes on the page are not overwritten by background rules.
+    const shouldModifyApi = currentResultsPerPage !== "30";
 
     if (shouldModifyApi) {
         const rule = {
@@ -132,14 +137,6 @@ async function updateApiRequestRules(currentResultsPerPage, currentDefaultSortMo
         };
         if (currentResultsPerPage !== "30") {
             rule.action.redirect.transform.queryTransform.addOrReplaceParams.push({ key: "limit", value: currentResultsPerPage });
-        }
-        if (currentDefaultSortMode !== 'standard') {
-            const sortConfig = SORT_MODES[currentDefaultSortMode];
-            if (sortConfig) {
-                rule.action.redirect.transform.queryTransform.addOrReplaceParams.push(
-                    { key: "sortBy", value: sortConfig.sortBy }, { key: "sortOrder", value: sortConfig.sortOrder }
-                );
-            }
         }
         rulesToAdd.push(rule);
         console.log('Cleanplaats: Adding declarativeNetRequest rule:', JSON.parse(JSON.stringify(rule)));
@@ -170,7 +167,7 @@ function handleHashNavigation(details) {
     
     // Critical: resultsPerPage and defaultSortMode must be up-to-date here.
     // This handler runs after initialize() has repopulated them from storage (due to listener registration timing).
-    const newUrl = getModifiedUrlIfNeeded(details.url, resultsPerPage, defaultSortMode);
+    const newUrl = getModifiedUrlIfNeeded(details.url, resultsPerPage, defaultSortMode, sortPreferenceSource);
     console.log(`Cleanplaats: handleHashNavigation - Original URL: ${details.url}, Processed newUrl: ${newUrl}`);
 
     if (newUrl && newUrl !== details.url) {
@@ -211,7 +208,7 @@ function handleHistoryStateUpdated(details) {
     }
 
     // Critical: resultsPerPage and defaultSortMode must be up-to-date here.
-    const newUrl = getModifiedUrlIfNeeded(details.url, resultsPerPage, defaultSortMode);
+    const newUrl = getModifiedUrlIfNeeded(details.url, resultsPerPage, defaultSortMode, sortPreferenceSource);
     console.log(`Cleanplaats: handleHistoryStateUpdated - Original URL: ${details.url}, Processed newUrl: ${newUrl}`);
 
     if (newUrl && newUrl !== details.url) {
@@ -231,6 +228,7 @@ async function handleStorageChanges(changes, areaName) {
         const newSettingsData = JSON.parse(changes.cleanplaatsSettings.newValue || '{}');
         const newResultsPerPage = newSettingsData.resultsPerPage?.toString() || "30";
         const newDefaultSortMode = newSettingsData.defaultSortMode || "standard";
+        const newSortPreferenceSource = newSettingsData.sortPreferenceSource || "cleanplaats";
 
         let settingsActuallyChanged = false;
         if (newResultsPerPage !== resultsPerPage) {
@@ -241,6 +239,11 @@ async function handleStorageChanges(changes, areaName) {
         if (newDefaultSortMode !== defaultSortMode) {
             console.log(`Cleanplaats: Default sort mode changed from ${defaultSortMode} to ${newDefaultSortMode}`);
             defaultSortMode = newDefaultSortMode;
+            settingsActuallyChanged = true;
+        }
+        if (newSortPreferenceSource !== sortPreferenceSource) {
+            console.log(`Cleanplaats: Sort preference source changed from ${sortPreferenceSource} to ${newSortPreferenceSource}`);
+            sortPreferenceSource = newSortPreferenceSource;
             settingsActuallyChanged = true;
         }
 
@@ -271,6 +274,7 @@ async function initialize() {
                     const settings = JSON.parse(result.cleanplaatsSettings);
                     resultsPerPage = settings.resultsPerPage?.toString() || "30";
                     defaultSortMode = settings.defaultSortMode || "standard";
+                    sortPreferenceSource = settings.sortPreferenceSource || "cleanplaats";
                 }
                 // If settings are undefined/corrupt, resultsPerPage & defaultSortMode retain their script-defined defaults.
             } catch (error) {
@@ -279,7 +283,7 @@ async function initialize() {
             }
         }
 
-        console.log(`Cleanplaats: Initialized with settings - RPP: ${resultsPerPage}, Sort: ${defaultSortMode}`);
+        console.log(`Cleanplaats: Initialized with settings - RPP: ${resultsPerPage}, Sort: ${defaultSortMode}, SortSource: ${sortPreferenceSource}`);
 
         // Update declarativeNetRequest rules with the now loaded (or default) settings.
         // Pass the current values of globals to ensure it uses the settings loaded in *this* init cycle.
@@ -417,6 +421,7 @@ async function refreshSettingsAndRules() {
             const settings = JSON.parse(result.cleanplaatsSettings);
             const newResultsPerPage = settings.resultsPerPage?.toString() || "30";
             const newDefaultSortMode = settings.defaultSortMode || "standard";
+            const newSortPreferenceSource = settings.sortPreferenceSource || "cleanplaats";
             
             let settingsChanged = false;
             if (newResultsPerPage !== resultsPerPage) {
@@ -427,6 +432,11 @@ async function refreshSettingsAndRules() {
             if (newDefaultSortMode !== defaultSortMode) {
                 console.log(`Cleanplaats: Refreshing sort mode from ${defaultSortMode} to ${newDefaultSortMode}`);
                 defaultSortMode = newDefaultSortMode;
+                settingsChanged = true;
+            }
+            if (newSortPreferenceSource !== sortPreferenceSource) {
+                console.log(`Cleanplaats: Refreshing sort source from ${sortPreferenceSource} to ${newSortPreferenceSource}`);
+                sortPreferenceSource = newSortPreferenceSource;
                 settingsChanged = true;
             }
             
