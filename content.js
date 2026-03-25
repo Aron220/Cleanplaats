@@ -1848,6 +1848,12 @@ function removeReservedListings() {
  */
 function removeAllAds() {
     let count = 0;
+    const isMarktplaatsSponsoredNotice = element => {
+        if (!element) return false;
+
+        const text = (element.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+        return text.includes('de volgorde van de resultaten wordt mede bepaald door betaalde opvalmogelijkheden');
+    };
 
     function safeHide(selector) {
         try {
@@ -1896,6 +1902,8 @@ function removeAllAds() {
         '#adsense-container',
         '#adsense-container-bottom-lazy',
         '#adBlock',
+        '.ndfc-wrapper[data-testid="ndfc-generic-text"]',
+        '[data-testid="ndfc-close"]',
         '.hz-Banner',
         '.hz-Banner--fluid',
         '.BannerTop-root',
@@ -1928,6 +1936,12 @@ function removeAllAds() {
 
     adSelectors.forEach(selector => {
         safeHide(selector);
+    });
+
+    document.querySelectorAll('.ndfc-wrapper, [data-testid="ndfc-generic-text"]').forEach(notice => {
+        if (isMarktplaatsSponsoredNotice(notice) && hideElement(notice)) {
+            count++;
+        }
     });
 
     CLEANPLAATS.stats.otherAdsRemoved += count;

@@ -1422,10 +1422,16 @@
     background: #fafafa;
     color: #333;
     min-width: 70px;
+    color-scheme: light;
   }
   .cleanplaats-results-dropdown:focus {
     outline: none;
     border-color: #2196F3;
+  }
+
+  .cleanplaats-results-dropdown option {
+    background: #fafafa;
+    color: #333;
   }
 
   /* Verbeterde statistieken styling */

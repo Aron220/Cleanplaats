@@ -955,6 +955,18 @@ html.cleanplaats-dark-mode img {
   border-color: var(--cleanplaats-dark-border);
 }
 
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-results-dropdown {
+  color-scheme: dark;
+  background: var(--cleanplaats-dark-bg-soft);
+  color: var(--cleanplaats-dark-text);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-results-dropdown option,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-results-dropdown optgroup {
+  background: var(--cleanplaats-dark-bg-elevated);
+  color: var(--cleanplaats-dark-text);
+}
+
 .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-bmc-button {
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
 }
