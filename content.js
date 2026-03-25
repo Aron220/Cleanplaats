@@ -1854,6 +1854,16 @@ function removeAllAds() {
         const text = (element.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
         return text.includes('de volgorde van de resultaten wordt mede bepaald door betaalde opvalmogelijkheden');
     };
+    const isMarktplaatsMarketingBanner = element => {
+        if (!element) return false;
+
+        if (element.matches?.('.MpCard-mpCardBanner')) {
+            return true;
+        }
+
+        const bannerImage = element.querySelector?.('img[alt="Marktplaats Marketing Banner"]');
+        return Boolean(bannerImage);
+    };
 
     function safeHide(selector) {
         try {
@@ -1904,6 +1914,8 @@ function removeAllAds() {
         '#adBlock',
         '.ndfc-wrapper[data-testid="ndfc-generic-text"]',
         '[data-testid="ndfc-close"]',
+        '.MpCard-mpCardBanner',
+        'img[alt="Marktplaats Marketing Banner"]',
         '.hz-Banner',
         '.hz-Banner--fluid',
         '.BannerTop-root',
@@ -1940,6 +1952,13 @@ function removeAllAds() {
 
     document.querySelectorAll('.ndfc-wrapper, [data-testid="ndfc-generic-text"]').forEach(notice => {
         if (isMarktplaatsSponsoredNotice(notice) && hideElement(notice)) {
+            count++;
+        }
+    });
+
+    document.querySelectorAll('.MpCard-mpCardBanner, img[alt="Marktplaats Marketing Banner"]').forEach(banner => {
+        const bannerCard = banner.closest('.MpCard-mpCardBanner') || banner;
+        if (isMarktplaatsMarketingBanner(bannerCard) && hideElement(bannerCard)) {
             count++;
         }
     });
