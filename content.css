@@ -569,22 +569,29 @@
   /* First-time onboarding */
   .cleanplaats-onboarding {
     position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 10000;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
-    width: 90%;
-    max-width: 480px;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 2147483647;
+    background: rgba(15, 23, 42, 0.55);
     font-family: Arial, sans-serif;
     opacity: 1;
-    transition: opacity 0.3s, transform 0.3s;
+    transition: opacity 0.3s ease;
   }
 
   .cleanplaats-onboarding-content {
+    width: min(90vw, 480px);
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
     padding: 24px;
+  }
+
+  .cleanplaats-onboarding.cleanplaats-fade-out {
+    opacity: 0;
+    pointer-events: none;
   }
 
   .cleanplaats-onboarding-header {

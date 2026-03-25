@@ -34,6 +34,7 @@ function showTermsModal() {
                 <input type="text" id="cleanplaats-term-input" class="cleanplaats-term-input" placeholder="${panelText.termInputPlaceholder}">
                 <button id="cleanplaats-add-term" class="cleanplaats-add-term-btn">${panelText.addButton}</button>
             </div>
+            <div class="cleanplaats-input-help">${panelText.termInputHelp}</div>
             <button id="cleanplaats-terms-close" style="margin-top:12px;">${panelText.closeButton}</button>
         </div>
     `);
