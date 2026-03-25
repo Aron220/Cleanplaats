@@ -364,6 +364,68 @@ html.cleanplaats-dark-mode .hz-Action {
   color: var(--cleanplaats-dark-text) !important;
 }
 
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--action-image,
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--icon-button[aria-label*="favoriet"],
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--icon-button[aria-label*="Favoriet"] {
+  background: rgba(28, 39, 52, 0.98) !important;
+  border: 1px solid rgba(236, 244, 252, 0.48) !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.38),
+    0 0 0 1px rgba(14, 20, 28, 0.42) !important;
+  backdrop-filter: blur(6px) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Action-icon .hz-SvgIconHeart,
+html.cleanplaats-dark-mode .hz-Action-icon .hz-SvgIconHeart::before,
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--action-image .hz-Icon,
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--icon-button[aria-label*="favoriet"] .hz-Icon,
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--icon-button[aria-label*="Favoriet"] .hz-Icon {
+  color: #ffffff !important;
+  opacity: 1 !important;
+  font-size: 1.12em !important;
+  -webkit-text-stroke: 0.6px rgba(255, 255, 255, 1) !important;
+  filter: brightness(0) invert(1) drop-shadow(0 0 1px rgba(255, 255, 255, 0.9)) !important;
+  text-shadow:
+    0 0 1px rgba(255, 255, 255, 1),
+    0 0 12px rgba(255, 255, 255, 0.18) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--action-image:hover,
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--action-image:focus-visible,
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--icon-button[aria-label*="favoriet"]:hover,
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--icon-button[aria-label*="favoriet"]:focus-visible,
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--icon-button[aria-label*="Favoriet"]:hover,
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--icon-button[aria-label*="Favoriet"]:focus-visible {
+  background: rgba(38, 52, 68, 1) !important;
+  border-color: rgba(255, 255, 255, 0.72) !important;
+  color: #ffffff !important;
+}
+
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--action-image:hover .hz-Icon,
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--action-image:focus-visible .hz-Icon,
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--icon-button[aria-label*="favoriet"]:hover .hz-Icon,
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--icon-button[aria-label*="favoriet"]:focus-visible .hz-Icon,
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--icon-button[aria-label*="Favoriet"]:hover .hz-Icon,
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--icon-button[aria-label*="Favoriet"]:focus-visible .hz-Icon {
+  color: #ffffff !important;
+  -webkit-text-stroke: 0.7px rgba(255, 255, 255, 1) !important;
+  filter: brightness(0) invert(1) drop-shadow(0 0 2px rgba(255, 255, 255, 0.95)) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--icon-button[aria-label*="Verwijder uit favorieten"],
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--icon-button[aria-label*="verwijder uit favorieten"] {
+  background: rgba(30, 56, 82, 0.98) !important;
+  border-color: rgba(150, 214, 255, 0.7) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--icon-button[aria-label*="Verwijder uit favorieten"] .hz-Icon,
+html.cleanplaats-dark-mode .hz-Action-icon .hz-Button--icon-button[aria-label*="verwijder uit favorieten"] .hz-Icon {
+  color: #c5ebff !important;
+  -webkit-text-stroke: 0.65px rgba(197, 235, 255, 1) !important;
+  filter: brightness(0) saturate(100%) invert(88%) sepia(18%) saturate(1044%) hue-rotate(176deg) brightness(102%) contrast(101%) !important;
+}
+
 html.cleanplaats-dark-mode .hz-TextField-input,
 html.cleanplaats-dark-mode .hz-TextField-input::placeholder,
 html.cleanplaats-dark-mode .hz-Header-navBar a,
