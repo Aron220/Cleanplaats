@@ -96,6 +96,13 @@
     align-items: center;
     gap: 10px;
   }
+
+  .cleanplaats-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
   
   .cleanplaats-header h3 {
     margin: 0;
@@ -140,6 +147,113 @@
     padding: 5px;
     color: #757575;
     transition: transform 0.3s ease;
+  }
+
+  .cleanplaats-theme-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    min-width: 52px;
+    height: 26px;
+    padding: 0;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    cursor: pointer;
+    color: #4b5f77;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .cleanplaats-theme-toggle:focus-visible {
+    outline: 2px solid #7ccaf3;
+    outline-offset: 2px;
+  }
+
+  .cleanplaats-theme-toggle-track {
+    position: relative;
+    display: block;
+    width: 52px;
+    height: 26px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #1a2330 0%, #28384a 100%);
+    box-shadow: inset 0 0 0 1px rgba(8, 14, 22, 0.18);
+    transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  }
+
+  .cleanplaats-theme-toggle-icon,
+  .cleanplaats-theme-toggle-thumb-icon {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+  }
+
+  .cleanplaats-theme-toggle-icon svg,
+  .cleanplaats-theme-toggle-thumb-icon svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .cleanplaats-theme-toggle-icon-moon {
+    left: 7px;
+    top: 6px;
+    color: rgba(223, 233, 244, 0.82);
+  }
+
+  .cleanplaats-theme-toggle-icon-sun {
+    right: 7px;
+    top: 6px;
+    color: rgba(244, 199, 88, 0.95);
+  }
+
+  .cleanplaats-theme-toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #eff4fb 0%, #dbe6f2 100%);
+    box-shadow: 0 2px 7px rgba(7, 15, 23, 0.28);
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+                background 0.28s ease,
+                box-shadow 0.28s ease;
+  }
+
+  .cleanplaats-theme-toggle-thumb-icon {
+    inset: 4px;
+    width: 14px;
+    height: 14px;
+    opacity: 0;
+    transform: scale(0.8) rotate(-18deg);
+    transition: opacity 0.22s ease, transform 0.28s ease;
+  }
+
+  .cleanplaats-theme-toggle[data-theme="dark"] .cleanplaats-theme-toggle-thumb-icon-moon,
+  .cleanplaats-theme-toggle[data-theme="light"] .cleanplaats-theme-toggle-thumb-icon-sun {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+
+  .cleanplaats-theme-toggle[data-theme="dark"] .cleanplaats-theme-toggle-thumb {
+    transform: translateX(0);
+    background: linear-gradient(180deg, #dce6f1 0%, #bdcbdb 100%);
+  }
+
+  .cleanplaats-theme-toggle[data-theme="light"] .cleanplaats-theme-toggle-track {
+    background: linear-gradient(135deg, #6fbbff 0%, #f5d878 100%);
+    box-shadow: inset 0 0 0 1px rgba(103, 136, 174, 0.18);
+  }
+
+  .cleanplaats-theme-toggle[data-theme="light"] .cleanplaats-theme-toggle-thumb {
+    transform: translateX(26px);
+    background: linear-gradient(180deg, #fff6d6 0%, #ffd25f 100%);
+    box-shadow: 0 2px 7px rgba(125, 87, 0, 0.24);
   }
   
   .cleanplaats-panel.collapsed .cleanplaats-toggle {
@@ -812,44 +926,6 @@
 
   input:checked + .cleanplaats-switch-slider:before {
     transform: translateX(16px);
-  }
-
-  /* Feedback indicator */
-  .cleanplaats-feedback {
-    position: absolute;
-    top: 12px;
-    right: 40px;
-    background: #4CAF50;
-    color: white;
-    font-size: 12px;
-    padding: 2px 8px;
-    border-radius: 12px;
-    opacity: 0;
-    transform: translateY(-2px);
-    pointer-events: none;
-  }
-
-  @keyframes feedbackAnimation {
-    0% { 
-        opacity: 0;
-        transform: translateY(-2px);
-    }
-    20% { 
-        opacity: 1;
-        transform: translateY(0);
-    }
-    80% { 
-        opacity: 1;
-        transform: translateY(0);
-    }
-    100% { 
-        opacity: 0;
-        transform: translateY(2px);
-    }
-  }
-
-  .cleanplaats-feedback-show {
-    animation: feedbackAnimation 1.5s ease forwards;
   }
 
   /* Blacklist modal styles */

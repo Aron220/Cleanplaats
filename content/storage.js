@@ -20,6 +20,8 @@ function registerSettingsStorageSync() {
                 CLEANPLAATS.settings.darkMode = darkModeEnabled;
                 applyDarkModeToDocument(darkModeEnabled);
                 syncDarkModeToggle(darkModeEnabled);
+            } else {
+                persistDarkModePreference(darkModeEnabled);
             }
         } catch (error) {
             console.error('Cleanplaats: Failed to sync dark mode from storage', error);
@@ -47,6 +49,15 @@ function loadSettings() {
                     Object.assign(CLEANPLAATS.settings, settings);
                 }
 
+                try {
+                    const storedDarkMode = window.localStorage.getItem(CLEANPLAATS_THEME_STORAGE_KEY);
+                    if (storedDarkMode === 'true' || storedDarkMode === 'false') {
+                        CLEANPLAATS.settings.darkMode = storedDarkMode === 'true';
+                    }
+                } catch (error) {
+                    console.warn('Cleanplaats: Failed to read dark mode from localStorage', error);
+                }
+
                 if (storedPanelState) {
                     CLEANPLAATS.panelState = JSON.parse(storedPanelState);
                 }
@@ -63,6 +74,7 @@ function loadSettings() {
 function saveSettings() {
     return new Promise((resolve, reject) => {
         try {
+            persistDarkModePreference(Boolean(CLEANPLAATS.settings.darkMode));
             browserAPI.storage.local.set({
                 cleanplaatsSettings: JSON.stringify(CLEANPLAATS.settings),
                 panelState: JSON.stringify(CLEANPLAATS.panelState)

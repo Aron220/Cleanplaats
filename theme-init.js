@@ -1,6 +1,7 @@
 (() => {
     const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
     const DARK_MODE_CLASS = 'cleanplaats-dark-mode';
+    const THEME_STORAGE_KEY = 'cleanplaats:darkMode';
     const STORAGE_KEY = 'cleanplaatsSettings';
     const EARLY_STYLE_ID = 'cleanplaats-early-dark-mode';
     const EARLY_DARK_MODE_CSS = `
@@ -76,6 +77,19 @@ html.cleanplaats-dark-mode [class*="Skeleton-withAnimation"]::before {
         ensureEarlyDarkModeStyle(isEnabled);
     }
 
+    function readDarkModePreference() {
+        try {
+            const storedDarkMode = window.localStorage.getItem(THEME_STORAGE_KEY);
+            if (storedDarkMode === 'true' || storedDarkMode === 'false') {
+                return storedDarkMode === 'true';
+            }
+        } catch (error) {
+            console.warn('Cleanplaats: Failed to read dark mode from localStorage during startup', error);
+        }
+
+        return false;
+    }
+
     function registerStorageSync() {
         if (!browserAPI?.storage?.onChanged?.addListener) {
             return;
@@ -95,6 +109,6 @@ html.cleanplaats-dark-mode [class*="Skeleton-withAnimation"]::before {
         });
     }
 
-    applyDarkMode(true);
+    applyDarkMode(readDarkModePreference());
     registerStorageSync();
 })();

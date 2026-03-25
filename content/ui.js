@@ -27,7 +27,47 @@ function createControlPanel() {
                     Cleanplaats
                     <span class="cleanplaats-badge" id="cleanplaats-total-count">0</span>
                 </h3>
-                <button id="cleanplaats-toggle" class="cleanplaats-toggle">▲</button>
+                <div class="cleanplaats-header-actions">
+                    <button
+                        id="cleanplaats-theme-toggle"
+                        class="cleanplaats-theme-toggle"
+                        type="button"
+                        role="switch"
+                        aria-label="${panelText.darkModeLabel}"
+                        aria-checked="${CLEANPLAATS.settings.darkMode ? 'true' : 'false'}"
+                        aria-pressed="${CLEANPLAATS.settings.darkMode ? 'true' : 'false'}"
+                        data-theme="${CLEANPLAATS.settings.darkMode ? 'dark' : 'light'}"
+                        title="${panelText.darkModeTooltip}"
+                    >
+                        <span class="cleanplaats-theme-toggle-track" aria-hidden="true">
+                            <span class="cleanplaats-theme-toggle-icon cleanplaats-theme-toggle-icon-moon">
+                                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                                    <path d="M14.8 2.2a.75.75 0 0 1 .79 1.07A8.25 8.25 0 1 0 20.73 8.4a.75.75 0 0 1 1.07.79A9.75 9.75 0 1 1 14.8 2.2Z" fill="currentColor"></path>
+                                </svg>
+                            </span>
+                            <span class="cleanplaats-theme-toggle-icon cleanplaats-theme-toggle-icon-sun">
+                                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="4.25" fill="currentColor"></circle>
+                                    <path d="M12 1.75a.75.75 0 0 1 .75.75v2a.75.75 0 0 1-1.5 0v-2a.75.75 0 0 1 .75-.75Zm0 17.75a.75.75 0 0 1 .75.75v2a.75.75 0 0 1-1.5 0v-2a.75.75 0 0 1 .75-.75Zm10.25-7.5a.75.75 0 0 1-.75.75h-2a.75.75 0 0 1 0-1.5h2a.75.75 0 0 1 .75.75ZM4.5 12.75h-2a.75.75 0 0 1 0-1.5h2a.75.75 0 0 1 0 1.5Zm14.42 6.73a.75.75 0 0 1-1.06 0l-1.42-1.41a.75.75 0 0 1 1.06-1.06l1.42 1.41a.75.75 0 0 1 0 1.06Zm-11.36-11.36a.75.75 0 0 1-1.06 0L5.08 6.7a.75.75 0 1 1 1.06-1.06l1.42 1.42a.75.75 0 0 1 0 1.06Zm0 9.94-1.42 1.41a.75.75 0 1 1-1.06-1.06l1.42-1.41a.75.75 0 0 1 1.06 1.06Zm11.36-11.36-1.42 1.42a.75.75 0 0 1-1.06-1.06l1.42-1.42a.75.75 0 1 1 1.06 1.06Z" fill="currentColor"></path>
+                                </svg>
+                            </span>
+                            <span class="cleanplaats-theme-toggle-thumb">
+                                <span class="cleanplaats-theme-toggle-thumb-icon cleanplaats-theme-toggle-thumb-icon-moon">
+                                    <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                                        <path d="M14.8 2.2a.75.75 0 0 1 .79 1.07A8.25 8.25 0 1 0 20.73 8.4a.75.75 0 0 1 1.07.79A9.75 9.75 0 1 1 14.8 2.2Z" fill="currentColor"></path>
+                                    </svg>
+                                </span>
+                                <span class="cleanplaats-theme-toggle-thumb-icon cleanplaats-theme-toggle-thumb-icon-sun">
+                                    <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="4.25" fill="currentColor"></circle>
+                                        <path d="M12 1.75a.75.75 0 0 1 .75.75v2a.75.75 0 0 1-1.5 0v-2a.75.75 0 0 1 .75-.75Zm0 17.75a.75.75 0 0 1 .75.75v2a.75.75 0 0 1-1.5 0v-2a.75.75 0 0 1 .75-.75Zm10.25-7.5a.75.75 0 0 1-.75.75h-2a.75.75 0 0 1 0-1.5h2a.75.75 0 0 1 .75.75ZM4.5 12.75h-2a.75.75 0 0 1 0-1.5h2a.75.75 0 0 1 0 1.5Zm14.42 6.73a.75.75 0 0 1-1.06 0l-1.42-1.41a.75.75 0 0 1 1.06-1.06l1.42 1.41a.75.75 0 0 1 0 1.06Zm-11.36-11.36a.75.75 0 0 1-1.06 0L5.08 6.7a.75.75 0 1 1 1.06-1.06l1.42 1.42a.75.75 0 0 1 0 1.06Zm0 9.94-1.42 1.41a.75.75 0 1 1-1.06-1.06l1.42-1.41a.75.75 0 0 1 1.06 1.06Zm11.36-11.36-1.42 1.42a.75.75 0 0 1-1.06-1.06l1.42-1.42a.75.75 0 1 1 1.06 1.06Z" fill="currentColor"></path>
+                                    </svg>
+                                </span>
+                            </span>
+                        </span>
+                    </button>
+                    <button id="cleanplaats-toggle" class="cleanplaats-toggle" type="button" aria-label="Paneel inklappen of uitklappen">▲</button>
+                </div>
             </div>
             <div class="cleanplaats-contact-grid">
                 <a
@@ -125,16 +165,6 @@ function createControlPanel() {
                         <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.reservedTooltip}">?</span>
                     </label>
                 </div>
-                <div class="cleanplaats-option">
-                    <label class="cleanplaats-switch">
-                        <input type="checkbox" id="darkMode" ${CLEANPLAATS.settings.darkMode ? 'checked' : ''}>
-                        <span class="cleanplaats-switch-slider"></span>
-                    </label>
-                    <label for="darkMode" class="cleanplaats-option-label">
-                        ${panelText.darkModeLabel}
-                        <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.darkModeTooltip}">?</span>
-                    </label>
-                </div>
                 <div class="cleanplaats-option cleanplaats-results-dropdown-row">
                     <label for="cleanplaats-results-dropdown" class="cleanplaats-option-label" style="min-width:120px;">${panelText.resultsPerPageLabel}</label>
                     <select id="cleanplaats-results-dropdown" class="cleanplaats-results-dropdown">
@@ -206,6 +236,7 @@ function createControlPanel() {
         });
     });
     setupEventListeners();
+    syncDarkModeToggle(CLEANPLAATS.settings.darkMode);
 
     document.getElementById('cleanplaats-manage-blacklist').addEventListener('click', (e) => {
         e.preventDefault();
@@ -339,16 +370,44 @@ function setupEventListeners() {
     }
 
     ['removeTopAds', 'removeDagtoppers', 'removePromotedListings',
-        'removeOpvalStickers', 'removeReservedListings', 'darkMode'].forEach(id => {
+        'removeOpvalStickers', 'removeReservedListings'].forEach(id => {
         const checkbox = document.getElementById(id);
         if (checkbox) {
             checkbox.addEventListener('change', handleCheckboxChange);
         }
     });
 
+    const themeToggle = document.getElementById('cleanplaats-theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', handleThemeToggle);
+        themeToggle.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+            event.preventDefault();
+            handleThemeToggle();
+        });
+    }
+
     setupResultsDropdownListener();
     setupSortDropdownListener();
     setupMarketplaceSortSync();
+}
+
+function handleThemeToggle() {
+    const nextValue = !CLEANPLAATS.settings.darkMode;
+    CLEANPLAATS.settings.darkMode = nextValue;
+    applyDarkModeToDocument(nextValue);
+    syncDarkModeToggle(nextValue);
+
+    saveSettings()
+        .then(() => {
+            showSettingFeedback();
+        })
+        .catch(error => {
+            console.error('Cleanplaats: Failed to apply dark mode', error);
+            CLEANPLAATS.settings.darkMode = !nextValue;
+            applyDarkModeToDocument(!nextValue);
+            syncDarkModeToggle(!nextValue);
+        });
 }
 
 function handleCheckboxChange(event) {

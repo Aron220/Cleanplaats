@@ -2,6 +2,14 @@
  * Content-script dark mode and sort synchronization helpers.
  */
 
+function persistDarkModePreference(enabled) {
+    try {
+        window.localStorage.setItem(CLEANPLAATS_THEME_STORAGE_KEY, enabled ? 'true' : 'false');
+    } catch (error) {
+        console.warn('Cleanplaats: Failed to persist dark mode in localStorage', error);
+    }
+}
+
 function syncCleanplaatsSortMode(sortMode) {
     if (!sortMode) return;
 
@@ -42,6 +50,7 @@ function setupMarketplaceSortSync() {
 function applyDarkModeToDocument(enabled) {
     const isEnabled = Boolean(enabled);
     document.documentElement.classList.toggle(CLEANPLAATS_DARK_MODE_CLASS, isEnabled);
+    persistDarkModePreference(isEnabled);
     syncHeaderLogoForDarkMode(isEnabled);
 
     const panel = document.getElementById('cleanplaats-panel');
@@ -93,10 +102,13 @@ function updateCollapsedPanelIcon(panel = document.getElementById('cleanplaats-p
 }
 
 function syncDarkModeToggle(enabled) {
-    const checkbox = document.getElementById('darkMode');
-    if (checkbox) {
-        checkbox.checked = Boolean(enabled);
-    }
+    const toggle = document.getElementById('cleanplaats-theme-toggle');
+    if (!toggle) return;
+
+    const isEnabled = Boolean(enabled);
+    toggle.setAttribute('aria-pressed', isEnabled ? 'true' : 'false');
+    toggle.setAttribute('aria-checked', isEnabled ? 'true' : 'false');
+    toggle.dataset.theme = isEnabled ? 'dark' : 'light';
 }
 
 function isElementVisuallyVisible(element) {

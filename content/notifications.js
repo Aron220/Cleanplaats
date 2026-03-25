@@ -268,17 +268,7 @@ function clearBubbleNotification() {
 }
 
 function showSettingFeedback() {
-    const header = document.querySelector('.cleanplaats-header');
-    if (!header) return;
-
-    const feedback = document.createElement('div');
-    feedback.className = 'cleanplaats-feedback';
-    feedback.textContent = '✓';
-
-    header.querySelectorAll('.cleanplaats-feedback').forEach(el => el.remove());
-    header.appendChild(feedback);
-    requestAnimationFrame(() => feedback.classList.add('cleanplaats-feedback-show'));
-    setTimeout(() => feedback.remove(), 1500);
+    return;
 }
 
 function showBlacklistToast(sellerName) {
