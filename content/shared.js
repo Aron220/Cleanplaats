@@ -204,7 +204,7 @@ var CLEANPLAATS = {
 
 var CLEANPLAATS_UPDATE_NOTES = {
     '2.0.4': {
-        intro: 'Cleanplaats 2.0.4 brengt een grote opschoning onder de motorkap, samen met zichtbare verbeteringen aan dark mode en de ondersteuning aan 2ememain.',
+        intro: 'Cleanplaats 2.0.4 brengt een grote opschoning onder de motorkap, samen met de additie van dark mode en ondersteuning voor 2ememain.',
         highlights: [
             'Nieuwe feature: Dark mode is toegevoegd! Met een nieuwe thema-schakelaar bovenin het paneel. Probeer het eens!',
             'De extensie is intern opgesplitst in overzichtelijkere modules, wat zorgt voor een stabielere basis voor toekomstige updates.',

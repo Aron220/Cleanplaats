@@ -124,7 +124,10 @@ function showUpdatePopup(version) {
     if (popupLogo) {
         popupLogo.src = browserAPI.runtime.getURL('icons/icon128.png');
     }
-    document.getElementById('cleanplaats-update-popup-close')?.addEventListener('click', closePopup);
+    document.getElementById('cleanplaats-update-popup-close')?.addEventListener('click', () => {
+        closePopup();
+        showBubbleNotification(`Veel plezier met ${version}`);
+    });
 }
 
 function showWelcomeToast() {
