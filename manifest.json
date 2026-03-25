@@ -29,6 +29,7 @@
           "*://*.2dehands.be/*",
           "*://*.2ememain.be/*"
         ],
+        "js": ["theme-init.js"],
         "css": ["dark-mode.css"],
         "run_at": "document_start"
       },
