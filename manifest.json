@@ -38,7 +38,19 @@
           "*://*.2dehands.be/*",
           "*://*.2ememain.be/*"
         ],
-        "js": ["purify.min.js", "content.js"],
+        "js": [
+          "purify.min.js",
+          "content/shared.js",
+          "content/theme.js",
+          "content/storage.js",
+          "content/notifications.js",
+          "content/cleanup.js",
+          "content/blacklist.js",
+          "content/ui.js",
+          "content/observers.js",
+          "content/init.js",
+          "content.js"
+        ],
         "css": ["content.css"],
         "run_at": "document_end"
       }
