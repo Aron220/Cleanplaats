@@ -208,7 +208,7 @@ var CLEANPLAATS_UPDATE_NOTES = {
         highlights: [
             'Nieuwe feature: Dark mode is toegevoegd! Met een nieuwe thema-schakelaar bovenin het paneel. Probeer het eens!',
             'De extensie is intern opgesplitst in overzichtelijkere modules, wat zorgt voor een stabielere basis voor toekomstige updates.',
-            'De ondersteuning voor 2dehands is verbeterd en ondersteuning voor 2ememains is toegevoegd. Inclusief verwerking van Franse benamingen.',
+            'De ondersteuning voor 2dehands is verbeterd en ondersteuning voor 2ememain is toegevoegd. Inclusief verwerking van Franse benamingen.',
             'Blacklist-termen werken nu betrouwbaarder op de vernieuwde resultaatpagina’s.',
             'Storende elementen zoals marketingbanners en bepaalde gesponsorde meldingen zijn verder opgeruimd voor een rustigere ervaring.'
         ],
