@@ -219,6 +219,184 @@ html.cleanplaats-dark-mode .hz-LoginNudge .hz-LoginNudge-closeIcon:focus-visible
   color: #ffffff !important;
 }
 
+html.cleanplaats-dark-mode .gm-fullscreen-control,
+html.cleanplaats-dark-mode button.gm-control-active.gm-fullscreen-control {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border: 1px solid var(--cleanplaats-dark-border) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35) !important;
+}
+
+html.cleanplaats-dark-mode .gm-fullscreen-control:hover,
+html.cleanplaats-dark-mode .gm-fullscreen-control:focus-visible,
+html.cleanplaats-dark-mode button.gm-control-active.gm-fullscreen-control:hover,
+html.cleanplaats-dark-mode button.gm-control-active.gm-fullscreen-control:focus-visible {
+  background: var(--cleanplaats-dark-bg-soft-hover) !important;
+  border-color: rgba(140, 200, 255, 0.28) !important;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.42) !important;
+}
+
+html.cleanplaats-dark-mode .gm-fullscreen-control img,
+html.cleanplaats-dark-mode button.gm-control-active.gm-fullscreen-control img {
+  filter: invert(0.92) sepia(0.06) saturate(3) hue-rotate(175deg)
+    brightness(1.04) contrast(0.96) !important;
+  opacity: 1 !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root,
+html.cleanplaats-dark-mode .LoginComponent-root .hz-Card,
+html.cleanplaats-dark-mode .LoginComponent-root .LoginComponent-card {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.36) !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root .LoginComponent-header,
+html.cleanplaats-dark-mode .LoginComponent-root .LoginComponent-passwordBlock,
+html.cleanplaats-dark-mode .LoginComponent-root .LoginComponent-remember,
+html.cleanplaats-dark-mode .LoginComponent-root .hz-ButtonsBlock,
+html.cleanplaats-dark-mode .LoginComponent-root .hz-UtilsBlock,
+html.cleanplaats-dark-mode .LoginComponent-root .hz-Divider {
+  background: transparent !important;
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root,
+html.cleanplaats-dark-mode .LoginComponent-root span,
+html.cleanplaats-dark-mode .LoginComponent-root div,
+html.cleanplaats-dark-mode .LoginComponent-root label,
+html.cleanplaats-dark-mode .LoginComponent-root strong,
+html.cleanplaats-dark-mode .LoginComponent-root .hz-Text,
+html.cleanplaats-dark-mode .LoginComponent-root .u-colorTextPrimary,
+html.cleanplaats-dark-mode .LoginComponent-root .input-label {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root .hz-Divider,
+html.cleanplaats-dark-mode .LoginComponent-root .hz-Text--bodySmall,
+html.cleanplaats-dark-mode .LoginComponent-root .LoginComponent-passwordRecoveryLink,
+html.cleanplaats-dark-mode .LoginComponent-root .hz-TextField-footer,
+html.cleanplaats-dark-mode .LoginComponent-root .hz-TextField-footer * {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root a,
+html.cleanplaats-dark-mode .LoginComponent-root .hz-Link {
+  color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root .hz-TextField,
+html.cleanplaats-dark-mode .LoginComponent-root .hz-TextField-footer,
+html.cleanplaats-dark-mode .LoginComponent-root .hz-TextField-formControl {
+  background: transparent !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root .hz-TextField-formControl {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border: 1px solid var(--cleanplaats-dark-border) !important;
+  border-radius: 8px !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root .hz-TextField-formControl:focus-within {
+  border-color: rgba(140, 200, 255, 0.42) !important;
+  box-shadow: inset 0 0 0 1px rgba(140, 200, 255, 0.24) !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root .hz-TextField-input,
+html.cleanplaats-dark-mode .LoginComponent-root .hz-TextField-input::placeholder {
+  background: transparent !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root .hz-TextField-suffix,
+html.cleanplaats-dark-mode .LoginComponent-root .hz-TextField-suffix button {
+  background: transparent !important;
+  color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root .hz-Button--primary,
+html.cleanplaats-dark-mode .LoginComponent-root .LoginGoogleButton-googleButton {
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root .hz-Button--primary {
+  background: var(--cleanplaats-dark-accent) !important;
+  border: 1px solid var(--cleanplaats-dark-accent) !important;
+  color: #ffffff !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root .hz-Button--primary:hover,
+html.cleanplaats-dark-mode .LoginComponent-root .hz-Button--primary:focus-visible {
+  background: #2892eb !important;
+  border-color: #2892eb !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root .LoginGoogleButton-googleButton {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border: 1px solid var(--cleanplaats-dark-border) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root .LoginGoogleButton-googleButtonIcon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18) !important;
+  overflow: visible !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root .LoginGoogleButton-googleButton:hover,
+html.cleanplaats-dark-mode .LoginComponent-root .LoginGoogleButton-googleButton:focus-visible {
+  background: var(--cleanplaats-dark-bg-soft-hover) !important;
+  border-color: rgba(140, 200, 255, 0.24) !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root .hz-SelectionInput-InputContainer {
+  background: transparent !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root .hz-SelectionInput-Input {
+  border: 1px solid rgba(226, 235, 244, 0.72) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root .hz-SelectionInput-Input:hover,
+html.cleanplaats-dark-mode .LoginComponent-root .hz-SelectionInput-Input:focus {
+  border-color: rgba(140, 200, 255, 0.42) !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root .hz-SelectionInput-Input:checked {
+  background: var(--cleanplaats-dark-link) !important;
+  border-color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root .hz-SvgIconCheckmark {
+  opacity: 1 !important;
+  filter: invert(0.9) sepia(0.08) saturate(2.4) hue-rotate(178deg)
+    brightness(1.03) contrast(0.94) !important;
+}
+
+html.cleanplaats-dark-mode .LoginComponent-root .LoginGoogleButton-googleButtonLogo,
+html.cleanplaats-dark-mode .LoginComponent-root .hz-SvgAssetSocialBadgeGoogle {
+  filter: none !important;
+  opacity: 1 !important;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+}
+
 html.cleanplaats-dark-mode .LinksBlock-root .LinksBlock-icon .hz-SvgIcon,
 html.cleanplaats-dark-mode .LinksBlock-root .LinksBlock-icon .hz-Icon {
   opacity: 1 !important;
@@ -1183,6 +1361,15 @@ html.cleanplaats-dark-mode .hz-Header-logo {
   color: var(--cleanplaats-dark-text-muted);
 }
 
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-stats .cleanplaats-section-title {
+  color: rgba(226, 232, 240, 0.82);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-stats .cleanplaats-stat-label {
+  color: rgba(226, 232, 240, 0.74);
+  font-weight: 500;
+}
+
 .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-theme-toggle {
   color: var(--cleanplaats-dark-text);
 }
@@ -1302,6 +1489,10 @@ html.cleanplaats-dark-mode .cleanplaats-terms-modal-content {
   background: var(--cleanplaats-dark-bg-elevated) !important;
   color: var(--cleanplaats-dark-text) !important;
   border-color: var(--cleanplaats-dark-border) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-info-overlay {
+  background: rgba(15, 23, 42, 0.55) !important;
 }
 
 html.cleanplaats-dark-mode .cleanplaats-blacklist-modal,

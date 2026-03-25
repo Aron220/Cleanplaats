@@ -201,6 +201,17 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES = {
+    '2.0.4': {
+        intro: 'Cleanplaats 2.0.4 brengt een grote opschoning onder de motorkap, samen met zichtbare verbeteringen aan dark mode en de ondersteuning aan 2ememain.',
+        highlights: [
+            'Nieuwe feature: Dark mode is toegevoegd! Met een nieuwe thema-schakelaar bovenin het paneel. Probeer het eens!',
+            'De extensie is intern opgesplitst in overzichtelijkere modules, wat zorgt voor een stabielere basis voor toekomstige updates.',
+            'De ondersteuning voor 2dehands is verbeterd en ondersteuning voor 2ememains is toegevoegd. Inclusief verwerking van Franse benamingen.',
+            'Blacklist-termen werken nu betrouwbaarder op de vernieuwde resultaatpagina’s.',
+            'Storende elementen zoals marketingbanners en bepaalde gesponsorde meldingen zijn verder opgeruimd voor een rustigere ervaring.'
+        ],
+        note: 'Zie je nog iets dat niet goed wordt meegenomen op Marktplaats, 2dehands of 2ememain? Meld het via GitHub issues in het paneel.'
+    },
     '2.0.3': {
         intro: 'Cleanplaats lost problemen op met sorteren en filtert bedrijfsadvertenties nu ook  op de homepage.',
         highlights: [

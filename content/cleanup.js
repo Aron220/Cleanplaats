@@ -35,7 +35,8 @@ function updateStatsDisplay() {
     stats.totalRemoved = total;
 
     updateElementText('cleanplaats-total-count-stats', total);
-    updateElementText('cleanplaats-total-count', total);
+    // Header total-removed badge disabled for now.
+    // updateElementText('cleanplaats-total-count', total);
 }
 
 function updateElementText(id, value) {
@@ -216,7 +217,10 @@ function removeOpvalStickerListings() {
 }
 
 function removeReservedListings() {
-    const count = findAndHideListings('.hz-Listing-price', 'Gereserveerd');
+    const count = findAndHideListings('.hz-Listing-price, [class*="ListingPrice_hz-Listing-price"]', [
+        'gereserveerd',
+        'réservé'
+    ]);
     CLEANPLAATS.stats.otherAdsRemoved += count;
 }
 
@@ -409,10 +413,14 @@ function removePersistentGoogleAds() {
 
 function findAndHideListings(selector, textContent) {
     let count = 0;
+    const expectedTexts = Array.isArray(textContent)
+        ? textContent.map(text => text.trim().toLowerCase())
+        : [textContent.trim().toLowerCase()];
 
     try {
         document.querySelectorAll(selector).forEach(el => {
-            if (el.textContent?.trim() === textContent) {
+            const elementText = el.textContent?.trim().toLowerCase();
+            if (elementText && expectedTexts.includes(elementText)) {
                 const listing = el.closest('.hz-Listing');
                 if (listing && !listing.hasAttribute('data-cleanplaats-hidden') && hideElement(listing)) {
                     count++;

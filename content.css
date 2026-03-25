@@ -129,6 +129,7 @@
     object-fit: cover;
   }
   
+  /* Total removed badge disabled for now.
   .cleanplaats-badge {
     background: #e8f5e9;
     color: #2e7d32;
@@ -138,6 +139,7 @@
     font-weight: bold;
     margin-left: 8px;
   }
+  */
   
   .cleanplaats-toggle {
     background: none;

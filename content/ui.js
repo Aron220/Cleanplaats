@@ -25,7 +25,9 @@ function createControlPanel() {
                 <h3>
                     <img id="cleanplaats-header-logo" class="cleanplaats-header-logo" alt="Cleanplaats logo" />
                     Cleanplaats
+                    <!-- Total removed badge disabled for now.
                     <span class="cleanplaats-badge" id="cleanplaats-total-count">0</span>
+                    -->
                 </h3>
                 <div class="cleanplaats-header-actions">
                     <button
