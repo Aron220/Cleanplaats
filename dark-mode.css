@@ -52,6 +52,13 @@ html.cleanplaats-dark-mode .hz-TabNextButton {
   color: var(--cleanplaats-dark-link) !important;
 }
 
+html.cleanplaats-dark-mode .hz-SvgIcon,
+html.cleanplaats-dark-mode .hz-Icon.hz-SvgIcon {
+  opacity: 1 !important;
+  filter: invert(0.72) sepia(0.08) saturate(3) hue-rotate(175deg)
+    brightness(1.05) contrast(0.92) !important;
+}
+
 html.cleanplaats-dark-mode header,
 html.cleanplaats-dark-mode footer,
 html.cleanplaats-dark-mode .hz-Header,
@@ -145,6 +152,13 @@ html.cleanplaats-dark-mode .hz-Header-searchBar .hz-dropdown-trigger {
   height: 33.4px !important;
 }
 
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-dropdown-trigger .hz-SvgIconArrowDown,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-dropdown-trigger .hz-Icon {
+  opacity: 1 !important;
+  filter: invert(0.82) sepia(0.06) saturate(3) hue-rotate(175deg)
+    brightness(1.08) contrast(0.96) !important;
+}
+
 html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Nav-dropdown-toggle:hover,
 html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Custom-dropdown-container:hover,
 html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Button:hover,
@@ -172,6 +186,58 @@ html.cleanplaats-dark-mode [data-testid="vip-content"] {
   box-shadow: none !important;
 }
 
+html.cleanplaats-dark-mode .hz-LoginNudge,
+html.cleanplaats-dark-mode .hz-LoginNudge article,
+html.cleanplaats-dark-mode .hz-LoginNudge .hz-LoginNudge-body,
+html.cleanplaats-dark-mode .hz-LoginNudge .hz-LoginNudge-ctaBlock {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-LoginNudge article {
+  border: 1px solid var(--cleanplaats-dark-border) !important;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.34) !important;
+}
+
+html.cleanplaats-dark-mode .hz-LoginNudge .hz-LoginNudge-body {
+  border-bottom: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode .hz-LoginNudge .hz-LoginNudge-arrowPointer {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  border-color: var(--cleanplaats-dark-bg-elevated) !important;
+}
+
+html.cleanplaats-dark-mode .hz-LoginNudge .hz-LoginNudge-closeIcon,
+html.cleanplaats-dark-mode .hz-LoginNudge .hz-LoginNudge-closeIcon .hz-Icon,
+html.cleanplaats-dark-mode .hz-LoginNudge .hz-LoginNudge-listItem .hz-Icon {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-LoginNudge .hz-LoginNudge-closeIcon:hover,
+html.cleanplaats-dark-mode .hz-LoginNudge .hz-LoginNudge-closeIcon:focus-visible {
+  color: #ffffff !important;
+}
+
+html.cleanplaats-dark-mode .LinksBlock-root .LinksBlock-icon .hz-SvgIcon,
+html.cleanplaats-dark-mode .LinksBlock-root .LinksBlock-icon .hz-Icon {
+  opacity: 1 !important;
+  filter: invert(0.72) sepia(0.08) saturate(3) hue-rotate(175deg)
+    brightness(1.05) contrast(0.92) !important;
+}
+
+html.cleanplaats-dark-mode .hz-LoginNudge .hz-Button--primary {
+  background: var(--cleanplaats-dark-accent) !important;
+  border-color: transparent !important;
+  color: #f7fbff !important;
+}
+
+html.cleanplaats-dark-mode .hz-LoginNudge .hz-Button--primary:hover,
+html.cleanplaats-dark-mode .hz-LoginNudge .hz-Button--primary:focus-visible {
+  background: #2b8fe2 !important;
+  color: #ffffff !important;
+}
+
 html.cleanplaats-dark-mode .hz-StructuredListing,
 html.cleanplaats-dark-mode .hz-Listing,
 html.cleanplaats-dark-mode article.hz-StructuredListing {
@@ -179,6 +245,49 @@ html.cleanplaats-dark-mode article.hz-StructuredListing {
   border-color: var(--cleanplaats-dark-border) !important;
   color: var(--cleanplaats-dark-text) !important;
   box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-Listing-title,
+html.cleanplaats-dark-mode .hz-StructuredListing-title,
+html.cleanplaats-dark-mode .hz-Listing-group--title-description,
+html.cleanplaats-dark-mode .hz-Listing-group--title-description *,
+html.cleanplaats-dark-mode .hz-Listing-coverLink .hz-Listing-title,
+html.cleanplaats-dark-mode .hz-Listing-coverLink-new .hz-Listing-title,
+html.cleanplaats-dark-mode .hz-StructuredListing-body .hz-StructuredListing-title,
+html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink > h1,
+html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink > h2,
+html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink > h3,
+html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink > h4,
+html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink > h5,
+html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink > h6,
+html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink-new > h1,
+html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink-new > h2,
+html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink-new > h3,
+html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink-new > h4,
+html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink-new > h5,
+html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink-new > h6 {
+  color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Listing-price,
+html.cleanplaats-dark-mode .hz-StructuredListing .hz-Title,
+html.cleanplaats-dark-mode .hz-StructuredListing .hz-Title *,
+html.cleanplaats-dark-mode .hz-Listing-priority,
+html.cleanplaats-dark-mode .hz-Listing-priority span {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Listing-description,
+html.cleanplaats-dark-mode .hz-Listing-attributes,
+html.cleanplaats-dark-mode .hz-Listing-attributes *,
+html.cleanplaats-dark-mode .hz-Listing-seller-name,
+html.cleanplaats-dark-mode .hz-Listing-seller-name-new,
+html.cleanplaats-dark-mode .hz-Listing-sellerName,
+html.cleanplaats-dark-mode .hz-Listing-sellerName-new,
+html.cleanplaats-dark-mode .hz-StructuredListing-subtitle,
+html.cleanplaats-dark-mode .hz-StructuredListing-body > div:not(.hz-Title),
+html.cleanplaats-dark-mode .hz-StructuredListing-body > span:not(.hz-StructuredListing-title) {
+  color: var(--cleanplaats-dark-text-muted) !important;
 }
 
 html.cleanplaats-dark-mode .hz-StructuredListing .hz-Image-container,
@@ -332,6 +441,21 @@ html.cleanplaats-dark-mode .hz-TabNextButton:focus-visible *,
 html.cleanplaats-dark-mode [role="tab"]:hover *,
 html.cleanplaats-dark-mode [role="tab"]:focus-visible * {
   color: inherit !important;
+}
+
+html.cleanplaats-dark-mode .CarAttributes-root,
+html.cleanplaats-dark-mode .CarAttributesTabs-panelContainer,
+html.cleanplaats-dark-mode .CarAttributesTabs-itemLabel,
+html.cleanplaats-dark-mode .CarAttributesTabs-itemValue,
+html.cleanplaats-dark-mode .CarAttributesTabs-valueWithoutLabel {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .CarAttributesTabs-itemLabel,
+html.cleanplaats-dark-mode .CarAttributesTabs-itemValue,
+html.cleanplaats-dark-mode .CarAttributesTabs-valueWithoutLabel {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
 }
 
 html.cleanplaats-dark-mode .hz-TabNext--active:hover,
@@ -492,6 +616,17 @@ html.cleanplaats-dark-mode .hz-CategoryMenuBar-foldout i {
   color: var(--cleanplaats-dark-text-muted) !important;
 }
 
+html.cleanplaats-dark-mode .hz-CategoryMenuBar .hz-SvgIcon,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar .hz-Icon,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-foldout .hz-SvgIcon,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-foldout .hz-Icon,
+html.cleanplaats-dark-mode .hz-Nav-dropdown-menu .hz-SvgIcon,
+html.cleanplaats-dark-mode .hz-Nav-dropdown-menu .hz-Icon {
+  opacity: 1 !important;
+  filter: invert(0.72) sepia(0.08) saturate(3) hue-rotate(175deg)
+    brightness(1.05) contrast(0.92) !important;
+}
+
 html.cleanplaats-dark-mode .hz-CategoryMenuBar-Item:hover,
 html.cleanplaats-dark-mode .hz-CategoryMenuBar-expandToggle:hover,
 html.cleanplaats-dark-mode .hz-CategoryMenuBar-listItem:hover {
@@ -602,7 +737,7 @@ html.cleanplaats-dark-mode .hz-Nav-dropdown-menu .hz-Nav-pill--api strong {
 html.cleanplaats-dark-mode .hz-Nav-dropdown-menu .hz-Icon,
 html.cleanplaats-dark-mode .hz-Nav-dropdown-menu [class*="Icon"] {
   color: var(--cleanplaats-dark-text-muted) !important;
-  opacity: 0.8 !important;
+  opacity: 1 !important;
 }
 
 html.cleanplaats-dark-mode input::placeholder,
@@ -652,12 +787,62 @@ html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink-new:hover,
 html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink:hover,
 html.cleanplaats-dark-mode .hz-StructuredListing .hz-Link--block:hover {
   background: transparent !important;
-  color: inherit !important;
 }
 
-html.cleanplaats-dark-mode .hz-Listing a:hover *,
-html.cleanplaats-dark-mode .hz-StructuredListing a:hover * {
-  color: inherit !important;
+html.cleanplaats-dark-mode .cleanplaats-seller-topright-mobile {
+  background: rgba(31, 42, 54, 0.88) !important;
+  border: 1px solid rgba(120, 143, 166, 0.18) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-seller-name-mobile,
+html.cleanplaats-dark-mode .cleanplaats-blacklist-btn-mobile,
+html.cleanplaats-dark-mode .cleanplaats-blacklist-btn-mobile svg {
+  color: var(--cleanplaats-dark-text-muted) !important;
+  stroke: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-blacklist-btn-mobile:hover {
+  background: rgba(140, 200, 255, 0.08) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-blacklist-btn-mobile:hover svg,
+html.cleanplaats-dark-mode .cleanplaats-blacklist-btn-mobile:active svg {
+  stroke: var(--cleanplaats-dark-text) !important;
+}
+
+@media (hover: none), (pointer: coarse) {
+  html.cleanplaats-dark-mode .hz-Listing a:hover,
+  html.cleanplaats-dark-mode .hz-StructuredListing a:hover,
+  html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink-new:hover,
+  html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink:hover,
+  html.cleanplaats-dark-mode .hz-StructuredListing .hz-Link--block:hover,
+  html.cleanplaats-dark-mode .cleanplaats-blacklist-btn-mobile:hover {
+    background: transparent !important;
+    border-color: inherit !important;
+    box-shadow: none !important;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-blacklist-btn-mobile:hover svg {
+    stroke: inherit !important;
+  }
+}
+
+@media (max-width: 700px) {
+  html.cleanplaats-dark-mode .hz-Listing a:hover,
+  html.cleanplaats-dark-mode .hz-StructuredListing a:hover,
+  html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink-new:hover,
+  html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink:hover,
+  html.cleanplaats-dark-mode .hz-StructuredListing .hz-Link--block:hover,
+  html.cleanplaats-dark-mode .cleanplaats-blacklist-btn-mobile:hover {
+    background: transparent !important;
+    border-color: inherit !important;
+    box-shadow: none !important;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-blacklist-btn-mobile:hover svg {
+    stroke: inherit !important;
+  }
 }
 
 html.cleanplaats-dark-mode .hz-Filters,
@@ -949,6 +1134,21 @@ html.cleanplaats-dark-mode .hz-SuggestedSearches .hz-Link.hz-Link--standalone:fo
 
 html.cleanplaats-dark-mode img {
   opacity: 0.96;
+}
+
+html.cleanplaats-dark-mode .hz-Header-logo img,
+html.cleanplaats-dark-mode .hz-Header-logo .hz-Header-logo-desktop,
+html.cleanplaats-dark-mode .hz-Header-logo .hz-Header-logo-mobile {
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-Header-logo {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
 }
 
 .cleanplaats-panel.cleanplaats-dark-mode {

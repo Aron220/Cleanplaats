@@ -9,6 +9,8 @@
 const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
 const CLEANPLAATS_DARK_MODE_CLASS = 'cleanplaats-dark-mode';
 const CLEANPLAATS_FLOATING_OFFSET_VAR = '--cleanplaats-floating-offset';
+const MARKTPLAATS_DESKTOP_LOGO_MATCH = /\/tenant--nlnl(?:\.[a-z0-9]+)?\.svg$/i;
+const CLEANPLAATS_DARK_LOGO_PATH = 'icons/marktplaats-logo-darkmode.svg';
 let cleanplaatsStorageSyncRegistered = false;
 
 function getReviewCTAConfig() {
@@ -53,7 +55,7 @@ function getPanelLocaleText() {
             reservedLabel: 'Réservées',
             reservedTooltip: "Masque les annonces marquées 'Réservé'",
             darkModeLabel: 'Mode sombre',
-            darkModeTooltip: 'Active un thème sombre pour 2ememain et le panneau Cleanplaats',
+            darkModeTooltip: 'Active un thème sombre pour 2ememain et le panneau Cleanplaats. Expérimental: si la visibilité pose problème, désactivez-le.',
             resultsPerPageLabel: 'Résultats par page :',
             defaultSortLabel: 'Tri par défaut :',
             sortOptions: {
@@ -115,7 +117,7 @@ function getPanelLocaleText() {
         reservedLabel: 'Gereserveerde',
         reservedTooltip: "Verbergt advertenties die 'Gereserveerd' zijn",
         darkModeLabel: 'Donkere modus',
-        darkModeTooltip: 'Schakelt een donker thema in voor Marktplaats en het Cleanplaats-paneel',
+        darkModeTooltip: 'Schakelt een donker thema in voor Marktplaats en het Cleanplaats-paneel. Experimenteel: werkt meestal goed, maar zet het uit als iets slecht leesbaar is.',
         resultsPerPageLabel: 'Resultaten per pagina:',
         defaultSortLabel: 'Standaard sortering:',
         sortOptions: {
@@ -298,6 +300,7 @@ function setupMarketplaceSortSync() {
 function applyDarkModeToDocument(enabled) {
     const isEnabled = Boolean(enabled);
     document.documentElement.classList.toggle(CLEANPLAATS_DARK_MODE_CLASS, isEnabled);
+    syncHeaderLogoForDarkMode(isEnabled);
 
     const panel = document.getElementById('cleanplaats-panel');
     if (panel) {
@@ -309,6 +312,31 @@ function applyDarkModeToDocument(enabled) {
 function getCollapsedPanelIconUrl() {
     const iconPath = CLEANPLAATS.settings.darkMode ? 'icons/darkmode_icon_128.png' : 'icons/icon128.png';
     return browserAPI.runtime.getURL(iconPath);
+}
+
+function syncHeaderLogoForDarkMode(enabled) {
+    document.querySelectorAll('.hz-Header-logo-desktop').forEach(img => {
+        if (!(img instanceof HTMLImageElement)) return;
+
+        const currentSource = img.getAttribute('src') || '';
+        const originalSource = img.dataset.cleanplaatsOriginalSrc || currentSource;
+
+        if (!img.dataset.cleanplaatsOriginalSrc) {
+            img.dataset.cleanplaatsOriginalSrc = currentSource;
+        }
+
+        if (!MARKTPLAATS_DESKTOP_LOGO_MATCH.test(originalSource)) {
+            return;
+        }
+
+        const nextSource = enabled
+            ? browserAPI.runtime.getURL(CLEANPLAATS_DARK_LOGO_PATH)
+            : originalSource;
+
+        if (currentSource !== nextSource) {
+            img.setAttribute('src', nextSource);
+        }
+    });
 }
 
 function updateCollapsedPanelIcon(panel = document.getElementById('cleanplaats-panel')) {
@@ -1923,6 +1951,10 @@ function removeAllAds() {
         '#adsense-root',
         '#adsense-container',
         '#adsense-container-bottom-lazy',
+        '#similar-items-root',
+        '.AdmarktSimilarItemsContainer',
+        '.AdmarktSimilarItems-root',
+        '.AdmarktSimilarItems-headerTitle',
         '#adBlock',
         '.ndfc-wrapper[data-testid="ndfc-generic-text"]',
         '[data-testid="ndfc-close"]',
@@ -2576,13 +2608,6 @@ function showUnblacklistTermToast(term) {
  ====================== */
 
 /**
- * Add keyboard navigation for carousel images
- */
-let keyboardNavigationSetup = false; // Flag to track if keyboard navigation is already set up
-
-// --- Keyboard navigation for carousel images is now handled natively by Marktplaats.\n// The following function and its invocations are commented out to prevent double-advancing/skipping images.\n// If Marktplaats removes their native support in the future, you can re-enable this code.\n/*\nfunction setupKeyboardNavigation() {\n    if (keyboardNavigationSetup) {\n        // Remove the existing event listener\n        document.removeEventListener('keydown', keyboardNavigationHandler);\n    }\n\n    // Define the event listener function\n    keyboardNavigationHandler = function(event) {\n        if (document.querySelector('.Carousel-navigationContainer')) {\n            let nextButton = document.querySelector('.Carousel-navigationContainer button[aria-label="Volgende foto"]');\n            let prevButton = document.querySelector('.Carousel-navigationContainer button[aria-label="Vorige foto"]');\n\n            if (event.key === 'ArrowRight' && nextButton) {\n                event.preventDefault(); // Prevent default arrow key behavior\n                nextButton.focus(); // Focus the button\n                nextButton.click(); // Trigger the click\n            } else if (event.key === 'ArrowLeft' && prevButton) {\n                event.preventDefault(); // Prevent default arrow key behavior\n                prevButton.focus(); // Focus the button\n                prevButton.click(); // Trigger the click\n            }\n        }\n    };\n\n    document.addEventListener('keydown', keyboardNavigationHandler);\n    keyboardNavigationSetup = true; // Set the flag to true after setting up\n}\n*/\n
-
-/**
  * Perform cleanup and check for empty page
  */
 function performCleanupAndCheckForEmptyPage() {
@@ -2630,6 +2655,7 @@ function setupObservers() {
         }
 
         let shouldCleanup = false;
+        let shouldSyncHeaderLogo = false;
 
         // Check if any relevant elements were added
         for (const mutation of mutations) {
@@ -2648,11 +2674,20 @@ function setupObservers() {
 
                 for (const node of mutation.addedNodes) {
                     if (node.nodeType === Node.ELEMENT_NODE) {
+                        if (
+                            node.classList?.contains('hz-Header-logo-desktop') ||
+                            node.querySelector?.('.hz-Header-logo-desktop')
+                        ) {
+                            shouldSyncHeaderLogo = true;
+                        }
+
                         // Check if any ads or listings were added
                         if (
                             node.classList?.contains('hz-Listing') ||
                             node.querySelector?.('.hz-Listing') ||
                             node.id?.includes('ad') ||
+                            node.id === 'similar-items-root' ||
+                            node.querySelector?.('#similar-items-root, .AdmarktSimilarItemsContainer, .AdmarktSimilarItems-root') ||
                             node.classList?.contains('hz-Banner') ||
                             node.querySelector?.('[data-google-query-id]') ||
                             node.classList?.contains('hz-FeedBannerBlock') ||
@@ -2672,6 +2707,9 @@ function setupObservers() {
                 if (
                     target?.classList?.contains('hz-FeedBannerBlock') ||
                     target?.classList?.contains('Banners-bannerFeedItem') ||
+                    target?.classList?.contains('AdmarktSimilarItemsContainer') ||
+                    target?.classList?.contains('AdmarktSimilarItems-root') ||
+                    target?.id === 'similar-items-root' ||
                     target?.id === 'banner-right-container' ||
                     target?.id === 'banner-top-dt-container'
                 ) {
@@ -2680,6 +2718,10 @@ function setupObservers() {
             }
 
             if (shouldCleanup) break;
+        }
+
+        if (CLEANPLAATS.settings.darkMode && shouldSyncHeaderLogo) {
+            syncHeaderLogoForDarkMode(true);
         }
 
         // Run cleanup if needed, but don't reset stats since we want to accumulate

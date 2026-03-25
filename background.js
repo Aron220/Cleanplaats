@@ -510,7 +510,6 @@ function rewriteApiRequests_MV2_compat() {}
  * Set up smart keep-alive mechanism for Firefox
  */
 let lastMarktplaatsActivity = Date.now();
-let keepAliveInterval = null;
 
 function setupKeepAlive() {
     // Firefox-specific keep-alive mechanism
