@@ -6,6 +6,7 @@
     "author": "",
     "permissions": [
       "storage",
+      "scripting",
       "tabs",
       "webNavigation",
       "declarativeNetRequest",
@@ -13,7 +14,8 @@
     ],
     "host_permissions": [
       "*://*.marktplaats.nl/*",
-      "*://*.2dehands.be/*"
+      "*://*.2dehands.be/*",
+      "*://*.2ememain.be/*"
     ],
     "background": {
       "service_worker": "background.js",
@@ -24,7 +26,17 @@
       {
         "matches": [
           "*://*.marktplaats.nl/*",
-          "*://*.2dehands.be/*"
+          "*://*.2dehands.be/*",
+          "*://*.2ememain.be/*"
+        ],
+        "css": ["dark-mode.css"],
+        "run_at": "document_start"
+      },
+      {
+        "matches": [
+          "*://*.marktplaats.nl/*",
+          "*://*.2dehands.be/*",
+          "*://*.2ememain.be/*"
         ],
         "js": ["purify.min.js", "content.js"],
         "css": ["content.css"],
@@ -38,8 +50,8 @@
     },
     "web_accessible_resources": [
       {
-        "resources": ["icons/*"],
-        "matches": ["*://*.marktplaats.nl/*", "*://*.2dehands.be/*"]
+        "resources": ["icons/*", "dark-mode.css"],
+        "matches": ["*://*.marktplaats.nl/*", "*://*.2dehands.be/*", "*://*.2ememain.be/*"]
       }
     ],
     "action": {

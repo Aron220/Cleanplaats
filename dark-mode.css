@@ -1,0 +1,1692 @@
+html.cleanplaats-dark-mode {
+  --cleanplaats-dark-bg: #11161d;
+  --cleanplaats-dark-bg-elevated: #18212c;
+  --cleanplaats-dark-bg-soft: #1f2a36;
+  --cleanplaats-dark-bg-soft-hover: #263342;
+  --cleanplaats-dark-border: #314152;
+  --cleanplaats-dark-border-subtle: rgba(120, 143, 166, 0.18);
+  --cleanplaats-dark-text: #e4ebf3;
+  --cleanplaats-dark-text-muted: #aebccc;
+  --cleanplaats-dark-link: #8cc8ff;
+  --cleanplaats-dark-accent: #1f7fd1;
+}
+
+html.cleanplaats-dark-mode,
+html.cleanplaats-dark-mode body,
+html.cleanplaats-dark-mode .hz-Page,
+html.cleanplaats-dark-mode .hz-Page-body,
+html.cleanplaats-dark-mode .hz-Page-element,
+html.cleanplaats-dark-mode #main-container,
+html.cleanplaats-dark-mode #footer-container,
+html.cleanplaats-dark-mode .hz-Accordion,
+html.cleanplaats-dark-mode .hz-Accordion-item,
+html.cleanplaats-dark-mode .hz-Accordion-body,
+html.cleanplaats-dark-mode .FooterLinkWrapper,
+html.cleanplaats-dark-mode .FooterLinkWrapper-listAccordion {
+  background: var(--cleanplaats-dark-bg) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode body,
+html.cleanplaats-dark-mode p,
+html.cleanplaats-dark-mode span,
+html.cleanplaats-dark-mode div,
+html.cleanplaats-dark-mode li,
+html.cleanplaats-dark-mode dt,
+html.cleanplaats-dark-mode dd,
+html.cleanplaats-dark-mode label,
+html.cleanplaats-dark-mode strong,
+html.cleanplaats-dark-mode h1,
+html.cleanplaats-dark-mode h2,
+html.cleanplaats-dark-mode h3,
+html.cleanplaats-dark-mode h4,
+html.cleanplaats-dark-mode h5,
+html.cleanplaats-dark-mode h6 {
+  color: var(--cleanplaats-dark-text);
+}
+
+html.cleanplaats-dark-mode a,
+html.cleanplaats-dark-mode .hz-Link,
+html.cleanplaats-dark-mode .hz-TextLink,
+html.cleanplaats-dark-mode .hz-TabNextButton {
+  color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode header,
+html.cleanplaats-dark-mode footer,
+html.cleanplaats-dark-mode .hz-Header,
+html.cleanplaats-dark-mode .hz-Header-navBar,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-topLevelItems,
+html.cleanplaats-dark-mode .hz-Page-element--full-width,
+html.cleanplaats-dark-mode .hz-Page-element--main,
+html.cleanplaats-dark-mode .hz-Page-element--sidebar {
+  background: var(--cleanplaats-dark-bg) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Header-navBar {
+  border-bottom: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Header-searchBar {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Header-maxWidth,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-SearchForm,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-SearchFieldset-standard,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-SearchFieldset-advanced,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-SearchForm-query,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-SearchForm-category,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-SearchForm-postcode,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-SearchForm-distance,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-SearchForm-options,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Nav-dropdown,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-CustomDropdown,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-TextField,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-TextField-footer {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Nav-dropdown-toggle,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Custom-dropdown-container,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-TextField-formControl,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Button,
+html.cleanplaats-dark-mode .hz-Header-searchBar button {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border: 1px solid var(--cleanplaats-dark-border) !important;
+  box-shadow: none !important;
+  color: var(--cleanplaats-dark-text) !important;
+  height: 35px !important;
+}
+
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Custom-dropdown-container,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Input,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-dropdown-trigger,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-TextField-formControl,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-TextField-input {
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border: 0 !important;
+}
+
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-TextField-formControl,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Custom-dropdown-container {
+  border-left-color: transparent !important;
+  border-radius: 0 !important;
+  padding: 0 8px !important;
+  background: var(--cleanplaats-dark-bg-soft) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Nav-dropdown-toggle {
+  border-radius: 3px 0 0 3px !important;
+  padding: 4px 8px !important;
+}
+
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Button,
+html.cleanplaats-dark-mode .hz-Header-searchBar button {
+  border-left: 1px solid var(--cleanplaats-dark-border) !important;
+  border-radius: 0 3px 3px 0 !important;
+  padding: 8px 12px !important;
+}
+
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Input,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-dropdown-trigger {
+  color: var(--cleanplaats-dark-text) !important;
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 0 0 12px !important;
+  height: 33.4px !important;
+}
+
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Nav-dropdown-toggle:hover,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Custom-dropdown-container:hover,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Button:hover,
+html.cleanplaats-dark-mode .hz-Header-searchBar button:hover {
+  background: var(--cleanplaats-dark-bg-soft-hover) !important;
+  border-color: rgba(140, 200, 255, 0.22) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Nav-dropdown-toggle:focus,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Custom-dropdown-container:focus-within,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-TextField-formControl:focus-within,
+html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Button:focus,
+html.cleanplaats-dark-mode .hz-Header-searchBar button:focus {
+  border-color: rgba(140, 200, 255, 0.42) !important;
+  box-shadow: inset 0 0 0 1px rgba(140, 200, 255, 0.24) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Card,
+html.cleanplaats-dark-mode [class*="Card"]:not(.ListingHeader-actionsContainer):not(.ListingHeader-header):not(.ListingHeader-action),
+html.cleanplaats-dark-mode [role="dialog"],
+html.cleanplaats-dark-mode [data-testid="vip-content"] {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-StructuredListing,
+html.cleanplaats-dark-mode .hz-Listing,
+html.cleanplaats-dark-mode article.hz-StructuredListing {
+  background: transparent !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-StructuredListing .hz-Image-container,
+html.cleanplaats-dark-mode .hz-Listing .hz-Image-container,
+html.cleanplaats-dark-mode article.hz-StructuredListing .hz-Image-container {
+  background: rgba(31, 42, 54, 0.52) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-StructuredListing .hz-Image,
+html.cleanplaats-dark-mode .hz-Listing .hz-Image,
+html.cleanplaats-dark-mode article.hz-StructuredListing .hz-Image {
+  background: transparent !important;
+}
+
+html.cleanplaats-dark-mode .Skeleton-noShadow,
+html.cleanplaats-dark-mode .Skeleton-border,
+html.cleanplaats-dark-mode .Skeleton-base,
+html.cleanplaats-dark-mode .Skeleton-base.Skeleton-text,
+html.cleanplaats-dark-mode [class*="Skeleton"],
+html.cleanplaats-dark-mode [class*="Skeleton-"],
+html.cleanplaats-dark-mode .hz-StructuredListing.Skeleton-noShadow,
+html.cleanplaats-dark-mode .hz-StructuredListing .hz-StructuredListing-image.Skeleton-border {
+  background: rgba(31, 42, 54, 0.52) !important;
+  background-color: rgba(31, 42, 54, 0.52) !important;
+  background-image: none !important;
+  border-color: rgba(120, 143, 166, 0.16) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .Skeleton-base::before,
+html.cleanplaats-dark-mode .Skeleton-base.Skeleton-withAnimation::before,
+html.cleanplaats-dark-mode [class*="Skeleton-base"]::before,
+html.cleanplaats-dark-mode [class*="Skeleton-withAnimation"]::before {
+  background: linear-gradient(
+    90deg,
+    rgba(31, 42, 54, 0) 0,
+    rgba(49, 65, 82, 0.45) 50%,
+    rgba(31, 42, 54, 0.52) 100%
+  ) !important;
+  background-color: rgba(31, 42, 54, 0.52) !important;
+  background-image: linear-gradient(
+    90deg,
+    rgba(31, 42, 54, 0) 0,
+    rgba(49, 65, 82, 0.45) 50%,
+    rgba(31, 42, 54, 0.52) 100%
+  ) !important;
+}
+
+html.cleanplaats-dark-mode .ListingHeader-actionsContainer,
+html.cleanplaats-dark-mode .ListingHeader-header,
+html.cleanplaats-dark-mode .ListingHeader-action,
+html.cleanplaats-dark-mode .ListingHeader-title,
+html.cleanplaats-dark-mode .ListingHeader-price {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .ShippingInformation-deliveryLabel {
+  background: rgba(31, 42, 54, 0.32) !important;
+  border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .ShippingInformation-deliveryLabel:hover {
+  background: rgba(38, 51, 66, 0.42) !important;
+  border-color: rgba(140, 200, 255, 0.18) !important;
+}
+
+html.cleanplaats-dark-mode .ListingHeader-header .ModalLink-shippingModalLink,
+html.cleanplaats-dark-mode .ListingHeader-header .ModalLink-buyerProtectionModalLink {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .ListingHeader-header .ModalLink-shippingModalLink:hover,
+html.cleanplaats-dark-mode .ListingHeader-header .ModalLink-shippingModalLink:focus-visible,
+html.cleanplaats-dark-mode .ListingHeader-header .ModalLink-buyerProtectionModalLink:hover,
+html.cleanplaats-dark-mode .ListingHeader-header .ModalLink-buyerProtectionModalLink:focus-visible {
+  background: rgba(140, 200, 255, 0.05) !important;
+  border: 0 !important;
+  color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode .ListingHeader-action .hz-Link,
+html.cleanplaats-dark-mode .ListingHeader-action .hz-Button {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .ListingHeader-action .hz-Link:hover,
+html.cleanplaats-dark-mode .ListingHeader-action .hz-Link:focus-visible,
+html.cleanplaats-dark-mode .ListingHeader-action .hz-Button:hover,
+html.cleanplaats-dark-mode .ListingHeader-action .hz-Button:focus-visible {
+  background: rgba(140, 200, 255, 0.05) !important;
+  border: 0 !important;
+}
+
+html.cleanplaats-dark-mode button.hz-Link.hz-Link--standalone[type="button"][role="link"],
+html.cleanplaats-dark-mode button.hz-Link.hz-Link--standalone[type="button"][role="link"]:hover,
+html.cleanplaats-dark-mode button.hz-Link.hz-Link--isolated[type="button"][role="link"],
+html.cleanplaats-dark-mode button.hz-Link.hz-Link--isolated[type="button"][role="link"]:hover,
+html.cleanplaats-dark-mode button.hz-Link.hz-Link--standalone[type="button"][role="link"]:focus-visible {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-Breadcrumb .hz-Link,
+html.cleanplaats-dark-mode .hz-Breadcrumb .hz-Link:hover,
+html.cleanplaats-dark-mode .hz-Breadcrumb .hz-Link:focus-visible {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="hz-TabNext"],
+html.cleanplaats-dark-mode [role="tablist"],
+html.cleanplaats-dark-mode [role="tab"],
+html.cleanplaats-dark-mode .hz-TabNext {
+  background: transparent !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .hz-TabNext--active,
+html.cleanplaats-dark-mode .hz-TabNextButton--active,
+html.cleanplaats-dark-mode [role="tab"][aria-selected="true"] {
+  color: var(--cleanplaats-dark-link) !important;
+  border-color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode .hz-TabNext:hover,
+html.cleanplaats-dark-mode .hz-TabNext:focus-visible,
+html.cleanplaats-dark-mode .hz-TabNextButton:hover,
+html.cleanplaats-dark-mode .hz-TabNextButton:focus-visible,
+html.cleanplaats-dark-mode [role="tab"]:hover,
+html.cleanplaats-dark-mode [role="tab"]:focus-visible {
+  background: rgba(140, 200, 255, 0.06) !important;
+  border-color: rgba(140, 200, 255, 0.18) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-TabNext:hover *,
+html.cleanplaats-dark-mode .hz-TabNext:focus-visible *,
+html.cleanplaats-dark-mode .hz-TabNextButton:hover *,
+html.cleanplaats-dark-mode .hz-TabNextButton:focus-visible *,
+html.cleanplaats-dark-mode [role="tab"]:hover *,
+html.cleanplaats-dark-mode [role="tab"]:focus-visible * {
+  color: inherit !important;
+}
+
+html.cleanplaats-dark-mode .hz-TabNext--active:hover,
+html.cleanplaats-dark-mode .hz-TabNext--active:focus-visible,
+html.cleanplaats-dark-mode .hz-TabNextButton--active:hover,
+html.cleanplaats-dark-mode .hz-TabNextButton--active:focus-visible,
+html.cleanplaats-dark-mode [role="tab"][aria-selected="true"]:hover,
+html.cleanplaats-dark-mode [role="tab"][aria-selected="true"]:focus-visible {
+  background: rgba(140, 200, 255, 0.08) !important;
+  border-color: var(--cleanplaats-dark-link) !important;
+  color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode input,
+html.cleanplaats-dark-mode select,
+html.cleanplaats-dark-mode textarea,
+html.cleanplaats-dark-mode .hz-Nav-dropdown-toggle,
+html.cleanplaats-dark-mode .hz-Header-Autocomplete-input,
+html.cleanplaats-dark-mode .hz-TextField-input {
+  background: transparent !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode button,
+html.cleanplaats-dark-mode .hz-Button,
+html.cleanplaats-dark-mode .hz-Action {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-TextField-input,
+html.cleanplaats-dark-mode .hz-TextField-input::placeholder,
+html.cleanplaats-dark-mode .hz-Header-navBar a,
+html.cleanplaats-dark-mode .hz-Header-navBar button,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar a,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar button,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar span {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Header-navBar [class*="Item"],
+html.cleanplaats-dark-mode .hz-CategoryMenuBar [class*="Item"],
+html.cleanplaats-dark-mode .hz-CategoryMenuBar [class*="expandToggle"] {
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode .hz-CategoryMenuBar {
+  border-top: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+  border-right: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-topLevel {
+  border: 0 !important;
+}
+
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-topLevelItems {
+  background: linear-gradient(180deg, rgba(24, 33, 44, 0.72) 0%, rgba(17, 22, 29, 0.92) 100%) !important;
+  border-top: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 0 !important;
+}
+
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-foldout,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-background {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  border-top: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34) !important;
+}
+
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-list,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-listItem {
+  background: transparent !important;
+}
+
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-Item,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-expandToggle {
+  background: transparent !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+}
+
+html.cleanplaats-dark-mode .hz-CategoryMenuBarItem-link,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-expandToggle button,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-expandToggle span,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-listItem a,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-listItem span,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-foldout a,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-foldout span,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-foldout i {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-Item:hover,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-expandToggle:hover,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-listItem:hover {
+  background: rgba(140, 200, 255, 0.04) !important;
+}
+
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-Item:hover .hz-CategoryMenuBarItem-link,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-expandToggle:hover button,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-expandToggle:hover span,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-listItem:hover a,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-listItem:hover span,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-listItem:hover i {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-CategoryMenuBarItem-link:hover,
+html.cleanplaats-dark-mode .hz-CategoryMenuBarItem-link:focus-visible,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-foldout a:hover,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-foldout a:focus-visible,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-expandToggle button:hover,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-expandToggle button:focus-visible {
+  background: rgba(140, 200, 255, 0.08) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-CategoryMenuBarItem-link:hover i,
+html.cleanplaats-dark-mode .hz-CategoryMenuBarItem-link:focus-visible i,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-foldout a:hover i,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-foldout a:focus-visible i,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-expandToggle button:hover i,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-expandToggle button:focus-visible i,
+html.cleanplaats-dark-mode .hz-CategoryMenuBarItem-link:hover span,
+html.cleanplaats-dark-mode .hz-CategoryMenuBarItem-link:focus-visible span,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-foldout a:hover span,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-foldout a:focus-visible span,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-expandToggle button:hover span,
+html.cleanplaats-dark-mode .hz-CategoryMenuBar-expandToggle button:focus-visible span {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Custom-Options-container,
+html.cleanplaats-dark-mode .hz-Options-container,
+html.cleanplaats-dark-mode .hz-Nav-dropdown-menu,
+html.cleanplaats-dark-mode [role="listbox"].hz-Custom-Options-container,
+html.cleanplaats-dark-mode [role="listbox"].hz-Options-container,
+html.cleanplaats-dark-mode [role="listbox"].hz-Nav-dropdown-menu {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border: 1px solid var(--cleanplaats-dark-border) !important;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.42) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Custom-Options-container *,
+html.cleanplaats-dark-mode .hz-Options-container *,
+html.cleanplaats-dark-mode .hz-Nav-dropdown-menu * {
+  color: var(--cleanplaats-dark-text) !important;
+  border-color: transparent !important;
+}
+
+html.cleanplaats-dark-mode .hz-Custom-Options-container [aria-selected="true"],
+html.cleanplaats-dark-mode .hz-Options-container [aria-selected="true"],
+html.cleanplaats-dark-mode .hz-Custom-Options-container [class*="selected"],
+html.cleanplaats-dark-mode .hz-Options-container [class*="selected"],
+html.cleanplaats-dark-mode .hz-Nav-dropdown-menu [aria-selected="true"],
+html.cleanplaats-dark-mode .hz-Nav-dropdown-menu [class*="selected"] {
+  background: rgba(140, 200, 255, 0.12) !important;
+  color: #f5faff !important;
+}
+
+html.cleanplaats-dark-mode .hz-Custom-Options-container [role="option"],
+html.cleanplaats-dark-mode .hz-Options-container [role="option"],
+html.cleanplaats-dark-mode .hz-Custom-Options-container li,
+html.cleanplaats-dark-mode .hz-Options-container li,
+html.cleanplaats-dark-mode .hz-Custom-Options-container [class*="option"],
+html.cleanplaats-dark-mode .hz-Options-container [class*="option"],
+html.cleanplaats-dark-mode .hz-Nav-dropdown-menu li,
+html.cleanplaats-dark-mode .hz-Nav-dropdown-menu [class*="pill"] {
+  background: transparent !important;
+}
+
+html.cleanplaats-dark-mode .hz-Custom-Options-container [role="option"]:hover,
+html.cleanplaats-dark-mode .hz-Options-container [role="option"]:hover,
+html.cleanplaats-dark-mode .hz-Custom-Options-container li:hover,
+html.cleanplaats-dark-mode .hz-Options-container li:hover,
+html.cleanplaats-dark-mode .hz-Custom-Options-container [class*="option"]:hover,
+html.cleanplaats-dark-mode .hz-Options-container [class*="option"]:hover,
+html.cleanplaats-dark-mode .hz-Nav-dropdown-menu li:hover,
+html.cleanplaats-dark-mode .hz-Nav-dropdown-menu [class*="pill"]:hover {
+  background: rgba(140, 200, 255, 0.08) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Nav-dropdown-menu .hz-Nav-pill {
+  border-bottom: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Nav-dropdown-menu .hz-Nav-pill--horizontal {
+  color: var(--cleanplaats-dark-text-muted) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Nav-dropdown-menu .hz-Nav-pill--api,
+html.cleanplaats-dark-mode .hz-Nav-dropdown-menu .hz-Nav-pill--api span,
+html.cleanplaats-dark-mode .hz-Nav-dropdown-menu .hz-Nav-pill--api div,
+html.cleanplaats-dark-mode .hz-Nav-dropdown-menu .hz-Nav-pill--api strong {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Nav-dropdown-menu .hz-Icon,
+html.cleanplaats-dark-mode .hz-Nav-dropdown-menu [class*="Icon"] {
+  color: var(--cleanplaats-dark-text-muted) !important;
+  opacity: 0.8 !important;
+}
+
+html.cleanplaats-dark-mode input::placeholder,
+html.cleanplaats-dark-mode textarea::placeholder {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Dropdown {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-Dropdown-input {
+  background: rgba(31, 42, 54, 0.42) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-Dropdown-input:focus,
+html.cleanplaats-dark-mode .hz-Dropdown-input:focus-visible {
+  border-color: rgba(140, 200, 255, 0.42) !important;
+  box-shadow: inset 0 0 0 1px rgba(140, 200, 255, 0.18) !important;
+  outline: 0 !important;
+}
+
+html.cleanplaats-dark-mode .hz-Link:hover,
+html.cleanplaats-dark-mode .hz-Link:focus-visible,
+html.cleanplaats-dark-mode button.hz-Link:hover,
+html.cleanplaats-dark-mode button.hz-Link:focus-visible {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-Button--primary,
+html.cleanplaats-dark-mode .hz-Button--cta,
+html.cleanplaats-dark-mode .hz-TabNextButton--active:hover {
+  background: var(--cleanplaats-dark-accent) !important;
+  border-color: var(--cleanplaats-dark-accent) !important;
+  color: #f7fbff !important;
+}
+
+html.cleanplaats-dark-mode .hz-Listing a:hover,
+html.cleanplaats-dark-mode .hz-StructuredListing a:hover,
+html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink-new:hover,
+html.cleanplaats-dark-mode .hz-Listing .hz-Listing-coverLink:hover,
+html.cleanplaats-dark-mode .hz-StructuredListing .hz-Link--block:hover {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+html.cleanplaats-dark-mode .hz-Listing a:hover *,
+html.cleanplaats-dark-mode .hz-StructuredListing a:hover * {
+  color: inherit !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters,
+html.cleanplaats-dark-mode .hz-Filters *,
+html.cleanplaats-dark-mode .hz-Filter,
+html.cleanplaats-dark-mode .hz-Filter * {
+  border-color: var(--cleanplaats-dark-border-subtle);
+}
+
+html.cleanplaats-dark-mode .hz-Filters,
+html.cleanplaats-dark-mode .hz-Filters .hz-Filter,
+html.cleanplaats-dark-mode .hz-Filters .hz-Accordion,
+html.cleanplaats-dark-mode .hz-Filters .hz-Accordion-accordionItem,
+html.cleanplaats-dark-mode .hz-Filters .hz-AccordionItem-accordionBody,
+html.cleanplaats-dark-mode .hz-Filters .hz-Filter-fields,
+html.cleanplaats-dark-mode .hz-Filters .hz-Filter-radioSection {
+  background: transparent !important;
+  color: var(--cleanplaats-dark-text) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-Filter-headingSection,
+html.cleanplaats-dark-mode .hz-Filters .hz-Filter-headingSection *,
+html.cleanplaats-dark-mode .hz-Filters .hz-Filter-attribute,
+html.cleanplaats-dark-mode .hz-Filters .hz-Filter-attribute *,
+html.cleanplaats-dark-mode .hz-Filters .hz-AccordionHeader-content,
+html.cleanplaats-dark-mode .hz-Filters .hz-AccordionHeader-content *,
+html.cleanplaats-dark-mode .hz-Filters .category-header {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-AccordionItem-accordionHeader,
+html.cleanplaats-dark-mode .hz-Filters .hz-CollapsibleFilter-header,
+html.cleanplaats-dark-mode .hz-Filters .hz-CollapsibleFilter-headerButton {
+  background: rgba(31, 42, 54, 0.42) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+  box-shadow: none !important;
+  border-radius: 10px !important;
+  padding: 0 14px !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-AccordionItem-accordionHeader:hover,
+html.cleanplaats-dark-mode .hz-Filters .hz-CollapsibleFilter-header:hover,
+html.cleanplaats-dark-mode .hz-Filters .hz-CollapsibleFilter-headerButton:hover {
+  background: rgba(38, 51, 66, 0.62) !important;
+  border-color: rgba(140, 200, 255, 0.18) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-AccordionHeader-expandToggleIcon,
+html.cleanplaats-dark-mode .hz-Filters .hz-AccordionItem-accordionHeader i,
+html.cleanplaats-dark-mode .hz-Filters .hz-CollapsibleFilter-header i {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-AccordionHeader-content {
+  padding-right: 12px !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-TextField-formControl,
+html.cleanplaats-dark-mode .hz-Filters .hz-TextField-footer {
+  background: rgba(31, 42, 54, 0.42) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-TextField,
+html.cleanplaats-dark-mode .hz-Filters .hz-TextField--prefixed {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-TextField-input,
+html.cleanplaats-dark-mode .hz-Filters .hz-TextField-prefix {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-TextField-input,
+html.cleanplaats-dark-mode .hz-Filters .hz-TextField-input::placeholder,
+html.cleanplaats-dark-mode .hz-Filters .hz-TextField-prefix,
+html.cleanplaats-dark-mode .hz-Filters .input-label {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-SelectionInput,
+html.cleanplaats-dark-mode .hz-Filters .hz-Link.hz-Level-one,
+html.cleanplaats-dark-mode .hz-Filters .hz-Link.hz-Level-two {
+  background: transparent !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-SelectionInput:hover,
+html.cleanplaats-dark-mode .hz-Filters .hz-Link.hz-Level-one:hover,
+html.cleanplaats-dark-mode .hz-Filters .hz-Link.hz-Level-two:hover,
+html.cleanplaats-dark-mode .hz-Filters .hz-SelectionInput:focus-within,
+html.cleanplaats-dark-mode .hz-Filters .hz-Link.hz-Level-one:focus-visible,
+html.cleanplaats-dark-mode .hz-Filters .hz-Link.hz-Level-two:focus-visible {
+  background: rgba(140, 200, 255, 0.08) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-SelectionInput *,
+html.cleanplaats-dark-mode .hz-Filters .hz-Link.hz-Level-one *,
+html.cleanplaats-dark-mode .hz-Filters .hz-Link.hz-Level-two * {
+  color: inherit !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-SelectionInput-LabelText,
+html.cleanplaats-dark-mode .hz-Filters .hz-SelectionInput-Container,
+html.cleanplaats-dark-mode .hz-Filters .hz-SelectionInput-Body,
+html.cleanplaats-dark-mode .hz-Filters .hz-Link.hz-Level-one,
+html.cleanplaats-dark-mode .hz-Filters .hz-Link.hz-Level-two {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-SelectionInput-Counter,
+html.cleanplaats-dark-mode .hz-Filters .hz-Filter-attribute-text,
+html.cleanplaats-dark-mode .hz-Filters .hz-Level-two--more,
+html.cleanplaats-dark-mode .hz-Filters .hz-Level-two--more i {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-Level-two--more {
+  background: rgba(31, 42, 54, 0.22) !important;
+  border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+  box-shadow: none !important;
+  border-radius: 10px !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-Level-two--more:hover,
+html.cleanplaats-dark-mode .hz-Filters .hz-Level-two--more:focus-visible {
+  background: rgba(38, 51, 66, 0.52) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border-color: rgba(140, 200, 255, 0.18) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-Level-two--more:hover i,
+html.cleanplaats-dark-mode .hz-Filters .hz-Level-two--more:focus-visible i {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-SelectionInput-Input {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background: transparent !important;
+  border: 1px solid rgba(226, 235, 244, 0.72) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-SelectionInput-Input:hover,
+html.cleanplaats-dark-mode .hz-Filters .hz-SelectionInput-Input:focus {
+  border-color: rgba(140, 200, 255, 0.64) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-SelectionInput-Input:checked {
+  border-color: var(--cleanplaats-dark-link) !important;
+  background:
+    radial-gradient(circle at center, var(--cleanplaats-dark-link) 0 42%, transparent 43%) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-SelectionInput--Checkbox .hz-SelectionInput-Input:checked {
+  background: var(--cleanplaats-dark-link) !important;
+  border-color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-SelectionInput--Checkbox .hz-SelectionInput-Input:checked::after {
+  color: #0f1720 !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-Filter a:hover,
+html.cleanplaats-dark-mode .hz-Filters .hz-Filter button:hover,
+html.cleanplaats-dark-mode .hz-Filters .hz-Filter label:hover,
+html.cleanplaats-dark-mode .hz-Filters .hz-Filter a:hover *,
+html.cleanplaats-dark-mode .hz-Filters .hz-Filter button:hover *,
+html.cleanplaats-dark-mode .hz-Filters .hz-Filter label:hover * {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Filters .hz-Filter a:hover .hz-SelectionInput-Counter,
+html.cleanplaats-dark-mode .hz-Filters .hz-Filter button:hover .hz-SelectionInput-Counter,
+html.cleanplaats-dark-mode .hz-Filters .hz-Filter label:hover .hz-SelectionInput-Counter {
+  color: #d6e3ef !important;
+}
+
+html.cleanplaats-dark-mode .hz-Pills.stickyPills,
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .pillsContainer,
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .chipsSlider,
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .innerWrapper,
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .pillWrapper,
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Link {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Pill,
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Filter-chip {
+  background: rgba(31, 42, 54, 0.42) !important;
+  border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Pill i,
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Filter-chip i {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Pill:hover,
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Pill:focus-visible,
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Filter-chip:hover,
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Filter-chip:focus-visible {
+  background: rgba(38, 51, 66, 0.58) !important;
+  border-color: rgba(140, 200, 255, 0.18) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Pill.is-active,
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Filter-chip.is-active,
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Pill[aria-pressed="true"],
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Filter-chip[aria-pressed="true"] {
+  background: rgba(140, 200, 255, 0.12) !important;
+  border-color: rgba(140, 200, 255, 0.24) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Pill.is-active i,
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Filter-chip.is-active i,
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Pill[aria-pressed="true"] i,
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Filter-chip[aria-pressed="true"] i {
+  color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode .hz-SuggestedSearches,
+html.cleanplaats-dark-mode .hz-SuggestedSearches .hz-Accordion,
+html.cleanplaats-dark-mode .hz-SuggestedSearches .hz-Accordion-accordionItem {
+  background: transparent !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-SuggestedSearches .hz-SuggestedSearches-accordionHeader,
+html.cleanplaats-dark-mode .hz-SuggestedSearches .hz-AccordionItem-accordionHeader {
+  background: rgba(31, 42, 54, 0.42) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-SuggestedSearches .hz-SuggestedSearches-accordionHeader:hover,
+html.cleanplaats-dark-mode .hz-SuggestedSearches .hz-SuggestedSearches-accordionHeader:focus-visible,
+html.cleanplaats-dark-mode .hz-SuggestedSearches .hz-AccordionItem-accordionHeader:hover,
+html.cleanplaats-dark-mode .hz-SuggestedSearches .hz-AccordionItem-accordionHeader:focus-visible {
+  background: rgba(38, 51, 66, 0.58) !important;
+  border-color: rgba(140, 200, 255, 0.18) !important;
+}
+
+html.cleanplaats-dark-mode .hz-SuggestedSearches .hz-AccordionHeader-content,
+html.cleanplaats-dark-mode .hz-SuggestedSearches .hz-AccordionHeader-content *,
+html.cleanplaats-dark-mode .hz-SuggestedSearches .hz-AccordionHeader-expandToggleIcon {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-SuggestedSearches .hz-SuggestedSearches-accordionBody,
+html.cleanplaats-dark-mode .hz-SuggestedSearches .hz-AccordionItem-accordionBody {
+  background: transparent !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode .hz-SuggestedSearches .hz-Link.hz-Link--standalone {
+  background: transparent !important;
+  color: var(--cleanplaats-dark-link) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-SuggestedSearches .hz-Link.hz-Link--standalone:hover,
+html.cleanplaats-dark-mode .hz-SuggestedSearches .hz-Link.hz-Link--standalone:focus-visible {
+  background: transparent !important;
+  color: #9fd1ff !important;
+  text-decoration-color: rgba(159, 209, 255, 0.7) !important;
+}
+
+html.cleanplaats-dark-mode img {
+  opacity: 0.96;
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode {
+  background: var(--cleanplaats-dark-bg-elevated);
+  color: var(--cleanplaats-dark-text);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-header,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-content,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-contact-grid,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-stats,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-blacklist-modal-content,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-terms-modal-content {
+  background: var(--cleanplaats-dark-bg-elevated);
+  color: var(--cleanplaats-dark-text);
+  border-color: var(--cleanplaats-dark-border);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-header h3,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-contact,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-option-label,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-section-title,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-stat-label,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-contact-title {
+  color: var(--cleanplaats-dark-text);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-contact-text,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-toggle,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-stat-label {
+  color: var(--cleanplaats-dark-text-muted);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-contact:hover,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-contact:focus {
+  color: var(--cleanplaats-dark-link);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-contact:hover .cleanplaats-contact-title,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-contact:focus .cleanplaats-contact-title {
+  color: var(--cleanplaats-dark-link);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-contact:hover .cleanplaats-contact-icon,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-contact:focus .cleanplaats-contact-icon {
+  color: var(--cleanplaats-dark-link);
+  border-color: rgba(140, 200, 255, 0.22);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-contact-icon,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-tooltip-icon {
+  background: var(--cleanplaats-dark-bg-soft);
+  color: var(--cleanplaats-dark-text);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-button,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-bmc-button,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-results-dropdown,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-term-input,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-add-term-btn,
+.cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-blacklist-close,
+.cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-terms-close {
+  background: var(--cleanplaats-dark-bg-soft);
+  color: var(--cleanplaats-dark-text);
+  border-color: var(--cleanplaats-dark-border);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-bmc-button {
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-button:hover,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-bmc-button:hover,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-results-dropdown:hover,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-add-term-btn:hover,
+.cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-blacklist-close:hover,
+.cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-terms-close:hover {
+  background: #253240;
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-bmc-button:hover,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-bmc-button:focus {
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.34);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-badge {
+  background: rgba(31, 127, 209, 0.22);
+  color: #b9e0ff;
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-header-logo {
+  background: #f8fafc;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-switch-slider {
+  background-color: #4c5f72;
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-checkbox input:checked + .cleanplaats-switch-slider,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-switch input:checked + .cleanplaats-switch-slider {
+  background-color: var(--cleanplaats-dark-accent);
+}
+
+html.cleanplaats-dark-mode .cleanplaats-onboarding-content,
+html.cleanplaats-dark-mode .cleanplaats-info-card,
+html.cleanplaats-dark-mode .cleanplaats-blacklist-modal-content,
+html.cleanplaats-dark-mode .cleanplaats-terms-modal-content {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-blacklist-modal,
+html.cleanplaats-dark-mode .cleanplaats-terms-modal {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-blacklist-modal-content h4,
+html.cleanplaats-dark-mode .cleanplaats-terms-modal-content h4,
+html.cleanplaats-dark-mode .cleanplaats-blacklist-modal-content em,
+html.cleanplaats-dark-mode .cleanplaats-terms-modal-content em,
+html.cleanplaats-dark-mode .cleanplaats-blacklist-modal-content li span,
+html.cleanplaats-dark-mode .cleanplaats-terms-modal-content li span {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-blacklist-modal-content li,
+html.cleanplaats-dark-mode .cleanplaats-terms-modal-content li {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border: 1px solid var(--cleanplaats-dark-border) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-blacklist-modal-content li:hover,
+html.cleanplaats-dark-mode .cleanplaats-terms-modal-content li:hover {
+  background: #253240 !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-blacklist-modal-content ul::-webkit-scrollbar-thumb,
+html.cleanplaats-dark-mode .cleanplaats-terms-modal-content ul::-webkit-scrollbar-thumb {
+  background-color: #55677a !important;
+}
+
+html.cleanplaats-dark-mode .Listing-root,
+html.cleanplaats-dark-mode .Gallery-root,
+html.cleanplaats-dark-mode .Gallery-container,
+html.cleanplaats-dark-mode .SellerInfoExpanded-root,
+html.cleanplaats-dark-mode .SellerContactOptions-root,
+html.cleanplaats-dark-mode .SellerLocationSection-root,
+html.cleanplaats-dark-mode .hz-Breadcrumbs,
+html.cleanplaats-dark-mode .hz-FooterCategoryLinks,
+html.cleanplaats-dark-mode .hz-FooterCategoryLinks-block {
+  background: transparent !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Breadcrumbs,
+html.cleanplaats-dark-mode .SellerInfoExpanded-root,
+html.cleanplaats-dark-mode .SellerContactOptions-root,
+html.cleanplaats-dark-mode .SellerLocationSection-root,
+html.cleanplaats-dark-mode .hz-FooterCategoryLinks {
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode .hz-BreadcrumbLabel,
+html.cleanplaats-dark-mode .hz-CurrentPage,
+html.cleanplaats-dark-mode .SellerHeader-info p,
+html.cleanplaats-dark-mode .SellerTrustIndicator-body,
+html.cleanplaats-dark-mode .SellerLocationSection-locationText,
+html.cleanplaats-dark-mode .hz-FooterCategoryLinks-title {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .SellerHeader-nameContainer,
+html.cleanplaats-dark-mode .SellerTrustIndicator-title,
+html.cleanplaats-dark-mode .SellerLocationSection-locationName,
+html.cleanplaats-dark-mode .ListingHeader-title,
+html.cleanplaats-dark-mode .ListingHeader-price,
+html.cleanplaats-dark-mode .hz-FooterCategoryLinks-title,
+html.cleanplaats-dark-mode .hz-Title {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .Gallery-container,
+html.cleanplaats-dark-mode .carousel-root.Carousel-component,
+html.cleanplaats-dark-mode .carousel .slide,
+html.cleanplaats-dark-mode .Carousel-container,
+html.cleanplaats-dark-mode .Carousel-image,
+html.cleanplaats-dark-mode .HeroImage,
+html.cleanplaats-dark-mode .HeroImage-root,
+html.cleanplaats-dark-mode .HeroImage-container,
+html.cleanplaats-dark-mode .slider-wrapper,
+html.cleanplaats-dark-mode .slider,
+html.cleanplaats-dark-mode .thumbs-wrapper,
+html.cleanplaats-dark-mode .thumbs,
+html.cleanplaats-dark-mode .thumb {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode .HeroImage-image,
+html.cleanplaats-dark-mode .HeroImage-image.hz-Image--fit,
+html.cleanplaats-dark-mode .HeroImage-image.hz-Image--landscape {
+  background: transparent !important;
+}
+
+html.cleanplaats-dark-mode .carousel-root.Carousel-component {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+
+html.cleanplaats-dark-mode .carousel .control-arrow,
+html.cleanplaats-dark-mode .Carousel-navigationButtons,
+html.cleanplaats-dark-mode .Gallery-zoom,
+html.cleanplaats-dark-mode .FavouriteButton-root {
+  background: rgba(24, 33, 44, 0.88) !important;
+  border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24) !important;
+}
+
+html.cleanplaats-dark-mode .carousel .control-arrow:hover,
+html.cleanplaats-dark-mode .Carousel-navigationButtons:hover,
+html.cleanplaats-dark-mode .Gallery-zoom:hover,
+html.cleanplaats-dark-mode .FavouriteButton-root:hover {
+  background: var(--cleanplaats-dark-bg-soft-hover) !important;
+  border-color: rgba(140, 200, 255, 0.24) !important;
+}
+
+html.cleanplaats-dark-mode .Gallery-carouselIndexContainer,
+html.cleanplaats-dark-mode .hz-Badge,
+html.cleanplaats-dark-mode .hz-Badge--neutral,
+html.cleanplaats-dark-mode .hz-Badge--neutral-inverse {
+  background: rgba(24, 33, 44, 0.92) !important;
+  border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Badge--success {
+  background: rgba(43, 125, 92, 0.24) !important;
+  border: 1px solid rgba(94, 193, 146, 0.28) !important;
+  color: #cbf2de !important;
+}
+
+html.cleanplaats-dark-mode .SellerInfoExpanded-root,
+html.cleanplaats-dark-mode .SellerContactOptions-root,
+html.cleanplaats-dark-mode .SellerLocationSection-root {
+  background: linear-gradient(180deg, rgba(24, 33, 44, 0.78) 0%, rgba(20, 28, 37, 0.92) 100%) !important;
+  border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .SellerInfoExpanded-root {
+  background: transparent !important;
+  border-top: 1px solid rgba(120, 143, 166, 0.12) !important;
+  border-right: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 0 !important;
+  border-radius: 0 !important;
+}
+
+html.cleanplaats-dark-mode .SellerLocationSection-root {
+  background: transparent !important;
+  border-top: 1px solid rgba(120, 143, 166, 0.12) !important;
+  border-right: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 0 !important;
+  border-radius: 0 !important;
+}
+
+html.cleanplaats-dark-mode .SellerInfoExpanded-contentWrapper,
+html.cleanplaats-dark-mode .SellerTrustIndicators-root,
+html.cleanplaats-dark-mode .SellerTrustIndicator-root,
+html.cleanplaats-dark-mode .SellerHeader-root,
+html.cleanplaats-dark-mode .SellerHeader-infoContainer,
+html.cleanplaats-dark-mode .SellerLocationSection-locationInfo,
+html.cleanplaats-dark-mode .SellerLocationSection-locationMap,
+html.cleanplaats-dark-mode .SellerOtherItemsContainer,
+html.cleanplaats-dark-mode .SellerOtherItems-item {
+  background: transparent !important;
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode .SellerTrustIndicator-root + .SellerTrustIndicator-root,
+html.cleanplaats-dark-mode .SellerOtherItems-item + .SellerOtherItems-item {
+  border-top: 1px solid rgba(120, 143, 166, 0.08) !important;
+}
+
+html.cleanplaats-dark-mode .SellerTrustIndicator-iconWrapper,
+html.cleanplaats-dark-mode .SellerProfilePicture-avatarContainer {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .SellerTrustIndicator-iconWrapper .hz-Icon,
+html.cleanplaats-dark-mode .SellerTrustIndicator-iconWrapper [class*="SvgIcon"],
+html.cleanplaats-dark-mode .SellerProfilePicture-avatarContainer .hz-Image {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .SellerHeader-root,
+html.cleanplaats-dark-mode .SellerTrustIndicator-root {
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .SellerHeader-root a,
+html.cleanplaats-dark-mode .SellerTrustIndicator-root a {
+  background: transparent !important;
+  border: 0 !important;
+}
+
+html.cleanplaats-dark-mode .SellerInfoExpanded-root .hz-Button--secondary,
+html.cleanplaats-dark-mode .OneStepBidding-bidButton,
+html.cleanplaats-dark-mode .SellerContactOptions-button,
+html.cleanplaats-dark-mode .SellerOtherItems-header .hz-Button,
+html.cleanplaats-dark-mode .SellerLocationSection-root .hz-Button {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border: 1px solid var(--cleanplaats-dark-border) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .SellerInfoExpanded-root .hz-Button--secondary:hover,
+html.cleanplaats-dark-mode .OneStepBidding-bidButton:hover,
+html.cleanplaats-dark-mode .SellerContactOptions-button:hover,
+html.cleanplaats-dark-mode .SellerOtherItems-header .hz-Button:hover,
+html.cleanplaats-dark-mode .SellerLocationSection-root .hz-Button:hover {
+  background: var(--cleanplaats-dark-bg-soft-hover) !important;
+  border-color: rgba(140, 200, 255, 0.24) !important;
+}
+
+html.cleanplaats-dark-mode .SellerContactOptions-root .hz-Button--primary {
+  background: var(--cleanplaats-dark-accent) !important;
+  border-color: var(--cleanplaats-dark-accent) !important;
+  color: #f7fbff !important;
+}
+
+html.cleanplaats-dark-mode .SellerContactOptions-root .hz-TextField,
+html.cleanplaats-dark-mode .SellerContactOptions-root .hz-TextField--prefixed,
+html.cleanplaats-dark-mode .SellerContactOptions-root .hz-TextField-footer {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .SellerContactOptions-root .hz-TextField-formControl {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border: 1px solid var(--cleanplaats-dark-border) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .SellerContactOptions-root .hz-TextField-input,
+html.cleanplaats-dark-mode .SellerContactOptions-root .hz-TextField-prefix {
+  background: transparent !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border: 0 !important;
+}
+
+html.cleanplaats-dark-mode .SellerContactOptions-root .hz-TextField-formControl:focus-within {
+  border-color: rgba(140, 200, 255, 0.42) !important;
+  box-shadow: inset 0 0 0 1px rgba(140, 200, 255, 0.2) !important;
+}
+
+html.cleanplaats-dark-mode .SellerLocationSection-locationMap,
+html.cleanplaats-dark-mode .Map-root,
+html.cleanplaats-dark-mode .gm-style {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+}
+
+html.cleanplaats-dark-mode .SellerLocationSection-locationMap {
+  border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+html.cleanplaats-dark-mode .hz-FooterCategoryLink,
+html.cleanplaats-dark-mode .SellerInfoExpanded-root a,
+html.cleanplaats-dark-mode .SellerLocationSection-root a,
+html.cleanplaats-dark-mode .SellerOtherItemsContainer a,
+html.cleanplaats-dark-mode .hz-Breadcrumbs a {
+  color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode .pageRoot,
+html.cleanplaats-dark-mode #messagingClientRoot,
+html.cleanplaats-dark-mode [class*="Messaging-module-root"] {
+  background: var(--cleanplaats-dark-bg) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationListView-module-leftUnitInner"],
+html.cleanplaats-dark-mode [class*="ConversationListView-module-rightUnitInner"],
+html.cleanplaats-dark-mode [class*="ConversationView-module-conversationMessages"],
+html.cleanplaats-dark-mode [class*="ConversationListView-module-conversationListTop"],
+html.cleanplaats-dark-mode [class*="ConversationListView-module-conversationsList"] {
+  background: var(--cleanplaats-dark-bg) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode [class*="ContentPlaceholder-module-root"],
+html.cleanplaats-dark-mode [class*="ContentPlaceholder-module-rootInner"],
+html.cleanplaats-dark-mode [class*="ContentPlaceholder-module-iconUnit"] {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="ContentPlaceholder-module-text"] {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode [class*="ContentPlaceholder-module-iconUnit"] .hz-Icon,
+html.cleanplaats-dark-mode [class*="ContentPlaceholder-module-iconUnit"] [class*="Icon"] {
+  color: var(--cleanplaats-dark-text-muted) !important;
+  opacity: 0.85 !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationListView-module-conversationListTop"],
+html.cleanplaats-dark-mode [class*="ConversationListView-module-conversationsList"],
+html.cleanplaats-dark-mode [class*="ConversationView-module-conversationMessages"] {
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationListView-module-conversationListTop"] .hz-TextField,
+html.cleanplaats-dark-mode [class*="ConversationListView-module-conversationListTop"] .hz-TextField-footer {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationListView-module-conversationListTop"] .hz-TextField-formControl {
+  background: rgba(31, 42, 54, 0.52) !important;
+  border: 1px solid var(--cleanplaats-dark-border) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationListView-module-conversationListTop"] .hz-TextField-formControl:focus-within {
+  border-color: rgba(140, 200, 255, 0.42) !important;
+  box-shadow: inset 0 0 0 1px rgba(140, 200, 255, 0.18) !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationListView-module-conversationListTop"] .hz-TextField-input,
+html.cleanplaats-dark-mode [class*="ConversationListView-module-conversationListTop"] .hz-TextField-input::placeholder,
+html.cleanplaats-dark-mode [class*="ConversationListView-module-conversationListTop"] .hz-TextField-prefix,
+html.cleanplaats-dark-mode [class*="ConversationListView-module-conversationListTop"] .hz-Icon {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationsList-module-listRoot"] {
+  background: transparent !important;
+  border: 0 !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationsList-module-listItem"] {
+  background: transparent !important;
+  border-top: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 1px solid rgba(120, 143, 166, 0.12) !important;
+  border-left: 0 !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationItem-module-root"] {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationItem-module-rootOpen"],
+html.cleanplaats-dark-mode [class*="ConversationItem-module-root"]:hover,
+html.cleanplaats-dark-mode [class*="ConversationItem-module-root"]:focus-within {
+  background: transparent !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationItem-module-root"] a,
+html.cleanplaats-dark-mode [class*="ConversationItem-module-root"] a:hover,
+html.cleanplaats-dark-mode [class*="ConversationItem-module-root"] a:focus-visible {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationItem-module-adTitle"],
+html.cleanplaats-dark-mode [class*="ConversationItem-module-meta"] strong,
+html.cleanplaats-dark-mode [class*="ConversationItem-module-receivedDateUnit"],
+html.cleanplaats-dark-mode [class*="MessageReadStatus-module-textStatus"] {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationItem-module-rightUnit"],
+html.cleanplaats-dark-mode [class*="ConversationItem-module-body"],
+html.cleanplaats-dark-mode [class*="ConversationItem-module-latestMessageWrapper"],
+html.cleanplaats-dark-mode [class*="ConversationItem-module-receivedDateUnit"],
+html.cleanplaats-dark-mode [class*="ConversationItem-module-root"] footer {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationItem-module-body"],
+html.cleanplaats-dark-mode [class*="ConversationItem-module-latestMessageWrapper"],
+html.cleanplaats-dark-mode [class*="ConversationItem-module-meta"],
+html.cleanplaats-dark-mode [class*="ConversationItem-module-meta"] div,
+html.cleanplaats-dark-mode [class*="MessageReadStatus-module-root"],
+html.cleanplaats-dark-mode [class*="MessageReadStatus-module-root"] * {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationItem-module-receivedDateUnit"],
+html.cleanplaats-dark-mode [class*="ConversationItem-module-receivedDateUnit"] *,
+html.cleanplaats-dark-mode [class*="MessageElement-module-meta"],
+html.cleanplaats-dark-mode [class*="MessageElement-module-meta"] *,
+html.cleanplaats-dark-mode [class*="MessageReadStatus-module-root"],
+html.cleanplaats-dark-mode [class*="MessageReadStatus-module-root"] * {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationItem-module-receivedDateUnit"],
+html.cleanplaats-dark-mode [class*="ConversationItem-module-receivedDateUnit"] strong,
+html.cleanplaats-dark-mode [class*="ConversationItem-module-receivedDateUnit"] span,
+html.cleanplaats-dark-mode [class*="MessageElement-module-meta"],
+html.cleanplaats-dark-mode [class*="MessageElement-module-meta"] span,
+html.cleanplaats-dark-mode [class*="MessageReadStatus-module-textStatus"] {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationItem-module-thumbnailUnit"],
+html.cleanplaats-dark-mode [class*="ConversationItem-module-thumbnailProfilePictureUnit"],
+html.cleanplaats-dark-mode [class*="Thumbnail-module-root"] {
+  background: rgba(31, 42, 54, 0.52) !important;
+  border-color: rgba(120, 143, 166, 0.16) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationItem-module-thumbnailProfilePictureUnit"] *,
+html.cleanplaats-dark-mode [class*="ConversationItem-module-thumbnailUnit"] h1,
+html.cleanplaats-dark-mode [class*="ConversationItem-module-thumbnailUnit"] h2,
+html.cleanplaats-dark-mode [class*="ConversationItem-module-thumbnailUnit"] h3,
+html.cleanplaats-dark-mode [class*="ConversationItem-module-thumbnailUnit"] h4,
+html.cleanplaats-dark-mode [class*="ConversationItem-module-thumbnailUnit"] h5,
+html.cleanplaats-dark-mode [class*="ConversationItem-module-thumbnailUnit"] span,
+html.cleanplaats-dark-mode [class*="ConversationItem-module-thumbnailUnit"] strong {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode [class*="ProfilePicture-module-root"] {
+  background: rgba(49, 65, 82, 0.95) !important;
+  border: 1px solid rgba(120, 143, 166, 0.18) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationItem-module-badgeTrashcanWrapper"] .hz-Button,
+html.cleanplaats-dark-mode [class*="ConversationItem-module-trashcan"] {
+  background: rgba(31, 42, 54, 0.6) !important;
+  border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+  color: var(--cleanplaats-dark-text-muted) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationItem-module-badgeTrashcanWrapper"] .hz-Button:hover,
+html.cleanplaats-dark-mode [class*="ConversationItem-module-trashcan"]:hover {
+  background: rgba(38, 51, 66, 0.72) !important;
+  border-color: rgba(140, 200, 255, 0.24) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationItem-module-checkbox"] .hz-SelectionInput-Input {
+  border: 1px solid rgba(226, 235, 244, 0.72) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationItem-module-checkbox"] .hz-SelectionInput-Input:checked {
+  background: var(--cleanplaats-dark-link) !important;
+  border-color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationTopic-module-root"] {
+  background: var(--cleanplaats-dark-bg) !important;
+  border-bottom: 1px solid rgba(120, 143, 166, 0.12) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationTopic-module-root"] a,
+html.cleanplaats-dark-mode [class*="ConversationTopic-module-root"] span,
+html.cleanplaats-dark-mode [class*="ConversationTopic-module-root"] div,
+html.cleanplaats-dark-mode [class*="ConversationTopic-module-root"] i {
+  color: inherit !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationTopic-module-backLinkUnit"],
+html.cleanplaats-dark-mode [class*="ConversationTopic-module-userOptionsLink"] {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode [class*="ConversationTopic-module-backLinkUnit"]:hover,
+html.cleanplaats-dark-mode [class*="ConversationTopic-module-userOptionsLink"]:hover {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode [class*="AdvertisementSnippet-module-root"] {
+  background: rgba(31, 42, 54, 0.44) !important;
+  border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="AdvertisementSnippet-module-root"]:hover,
+html.cleanplaats-dark-mode [class*="AdvertisementSnippet-module-root"]:focus-visible {
+  background: rgba(38, 51, 66, 0.58) !important;
+  border-color: rgba(140, 200, 255, 0.22) !important;
+}
+
+html.cleanplaats-dark-mode [class*="AdvertisementSnippet-module-title"],
+html.cleanplaats-dark-mode [class*="AdvertisementSnippet-module-leftTextUnit"] {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode [class*="AdvertisementSnippet-module-secondaryInfo"] {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode [class*="ChatBanner-module-root"] {
+  background: rgba(31, 42, 54, 0.38) !important;
+  border: 1px solid rgba(120, 143, 166, 0.14) !important;
+  border-radius: 14px !important;
+}
+
+html.cleanplaats-dark-mode [class*="ChatBanner-module-message"],
+html.cleanplaats-dark-mode [class*="ChatBanner-module-legalText"] {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode [class*="ChatBanner-module-footer"] {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode [class*="ChatBanner-module-icon"] .hz-Icon,
+html.cleanplaats-dark-mode [class*="ChatBanner-module-icon"] [class*="SvgIcon"] {
+  color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode [class*="Messages-module-group"] {
+  background: transparent !important;
+}
+
+html.cleanplaats-dark-mode [class*="Messages-module-listItem"] {
+  background: transparent !important;
+}
+
+html.cleanplaats-dark-mode [class*="Messages-module-listItem"] [class*="MessageElement-module-container"],
+html.cleanplaats-dark-mode [class*="Messages-module-listItem"] [class*="MessageElement-module-wrapperCard"] {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode ol[class*="Messages-module-listRoot"] li[class*="Messages-module-listItem"] div[class*="MessageElement-module-wrapperCard"],
+html.cleanplaats-dark-mode ol[class*="Messages-module-listRoot"] li[class*="Messages-module-listItem"] div[class*="MessageElement-module-container"] div[class*="MessageElement-module-wrapperCard"] {
+  background: none !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="Messages-module-listItemFromMe"] > *,
+html.cleanplaats-dark-mode [class*="Messages-module-listItemFromOtherParticipant"] > * {
+  background: transparent !important;
+}
+
+html.cleanplaats-dark-mode [class*="Messages-module-listItem"] header,
+html.cleanplaats-dark-mode [class*="Messages-module-listItem"] footer,
+html.cleanplaats-dark-mode [class*="Messages-module-listItem"] [class*="meta"],
+html.cleanplaats-dark-mode [class*="Messages-module-listItem"] [class*="timestamp"],
+html.cleanplaats-dark-mode [class*="Messages-module-listItem"] [class*="status"] {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="Messages-module-listItemFromMe"] [class*="message"],
+html.cleanplaats-dark-mode [class*="Messages-module-listItemFromMe"] [class*="bubble"],
+html.cleanplaats-dark-mode [class*="Messages-module-listItemFromMe"] [class*="content"],
+html.cleanplaats-dark-mode [class*="Messages-module-listItemFromOtherParticipant"] [class*="message"],
+html.cleanplaats-dark-mode [class*="Messages-module-listItemFromOtherParticipant"] [class*="bubble"],
+html.cleanplaats-dark-mode [class*="Messages-module-listItemFromOtherParticipant"] [class*="content"] {
+  background: transparent !important;
+}
+
+html.cleanplaats-dark-mode [class*="Messages-module-listItem"] time,
+html.cleanplaats-dark-mode [class*="Messages-module-listItem"] [class*="timestamp"],
+html.cleanplaats-dark-mode [class*="Messages-module-listItem"] [class*="status"],
+html.cleanplaats-dark-mode [class*="Messages-module-listItem"] [class*="sender"],
+html.cleanplaats-dark-mode [class*="Messages-module-listItem"] [class*="meta"] {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode [class*="Messages-module-listItem"] p,
+html.cleanplaats-dark-mode [class*="Messages-module-listItem"] span,
+html.cleanplaats-dark-mode [class*="Messages-module-listItem"] div {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode [class*="MessageElement-module-root"] {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  display: inline-block !important;
+  width: auto !important;
+  max-width: 100% !important;
+}
+
+html.cleanplaats-dark-mode [class*="MessageElement-module-body"] {
+  background: rgba(31, 42, 54, 0.42) !important;
+  border: 1px solid rgba(120, 143, 166, 0.12) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border-radius: 18px !important;
+  box-shadow: none !important;
+  display: inline-block !important;
+  width: auto !important;
+  max-width: 100% !important;
+  padding: 10px 14px !important;
+  box-sizing: border-box !important;
+  white-space: normal !important;
+}
+
+html.cleanplaats-dark-mode [class*="MessageElement-module-fromOtherParticipant"] [class*="MessageElement-module-body"] {
+  background: rgba(31, 42, 54, 0.42) !important;
+  border-color: rgba(120, 143, 166, 0.12) !important;
+}
+
+html.cleanplaats-dark-mode [class*="MessageElement-module-fromMe"] [class*="MessageElement-module-body"] {
+  background: rgba(140, 200, 255, 0.08) !important;
+  border-color: rgba(140, 200, 255, 0.16) !important;
+}
+
+html.cleanplaats-dark-mode [class*="MessageElement-module-messageIcon"] {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="MessageElement-module-profileIcon"] {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode [class*="MessageComposer-module-root"] {
+  background: var(--cleanplaats-dark-bg) !important;
+  border-top: 1px solid rgba(120, 143, 166, 0.12) !important;
+}
+
+html.cleanplaats-dark-mode [class*="MessageComposer-module-root"] .hz-TextField,
+html.cleanplaats-dark-mode [class*="MessageComposer-module-root"] .hz-TextField-footer {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="MessageComposer-module-root"] .hz-TextField-formControl,
+html.cleanplaats-dark-mode [class*="MessageComposer-module-root"] textarea,
+html.cleanplaats-dark-mode [class*="MessageComposer-module-root"] input[type="text"] {
+  background: rgba(31, 42, 54, 0.58) !important;
+  border: 1px solid var(--cleanplaats-dark-border) !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode [class*="MessageComposer-module-root"] .hz-TextField-input,
+html.cleanplaats-dark-mode [class*="MessageComposer-module-root"] textarea::placeholder,
+html.cleanplaats-dark-mode [class*="MessageComposer-module-root"] input::placeholder,
+html.cleanplaats-dark-mode [class*="MessageComposer-module-root"] .hz-TextField-input::placeholder {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode [class*="MessageComposer-module-send"] {
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="DropdownMenu-module-root"] [aria-haspopup],
+html.cleanplaats-dark-mode [class*="DropdownMenu-module-root"] button {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode [class*="DropdownMenu-module-root"] [aria-haspopup]:hover,
+html.cleanplaats-dark-mode [class*="DropdownMenu-module-root"] button:hover {
+  color: var(--cleanplaats-dark-text) !important;
+}

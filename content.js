@@ -7,6 +7,9 @@
 
 // Cross-browser compatibility
 const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
+const CLEANPLAATS_DARK_MODE_CLASS = 'cleanplaats-dark-mode';
+const CLEANPLAATS_FLOATING_OFFSET_VAR = '--cleanplaats-floating-offset';
+let cleanplaatsStorageSyncRegistered = false;
 
 function getReviewCTAConfig() {
     const runtimeUrl = browserAPI?.runtime?.getURL ? browserAPI.runtime.getURL('') : '';
@@ -25,6 +28,134 @@ function getReviewCTAConfig() {
     };
 }
 
+function is2ememainLocale() {
+    return location.hostname.includes('2ememain.be');
+}
+
+function getPanelLocaleText() {
+    if (is2ememainLocale()) {
+        return {
+            feedbackLabel: 'Retour',
+            feedbackText: 'Issues GitHub',
+            feedbackAriaLabel: 'Ouvrir GitHub issues pour les demandes de fonctionnalité, modifications et bugs',
+            reviewAriaLabel: linkLabel => `Laisser un avis sur Cleanplaats sur ${linkLabel}`,
+            supportTitle: 'Soutenir Cleanplaats',
+            supportButton: 'Soutenir Cleanplaats',
+            optionsTitle: 'Options de filtrage',
+            topAdLabel: 'Pub au top',
+            topAdTooltip: "Masque les annonces marquées 'Pub au top'",
+            dagtoppersLabel: 'Tops du jour',
+            dagtoppersTooltip: "Supprime les annonces marquées 'Top du jour'",
+            promotedListingsLabel: 'Annonces professionnelles',
+            promotedListingsTooltip: "Masque les annonces de boutiques et d'entreprises, y compris sur la page d'accueil dans 'Pour vous' et 'Près de chez vous'",
+            stickersLabel: 'Autocollants promotionnels',
+            stickersTooltip: 'Supprime les annonces avec des autocollants promotionnels',
+            reservedLabel: 'Réservées',
+            reservedTooltip: "Masque les annonces marquées 'Réservé'",
+            darkModeLabel: 'Mode sombre',
+            darkModeTooltip: 'Active un thème sombre pour 2ememain et le panneau Cleanplaats',
+            resultsPerPageLabel: 'Résultats par page :',
+            defaultSortLabel: 'Tri par défaut :',
+            sortOptions: {
+                standard: 'Standard',
+                date_new_old: 'Plus récentes',
+                date_old_new: 'Plus anciennes',
+                price_low_high: 'Prix ↑',
+                price_high_low: 'Prix ↓',
+                distance: 'Distance'
+            },
+            statsTitle: 'Éléments supprimés',
+            statsTop: 'Top :',
+            statsDagtoppers: 'Tops du jour :',
+            statsBusiness: 'Professionnel :',
+            statsStickers: 'Autocollants :',
+            statsOther: 'Autres :',
+            statsTotal: 'Total :',
+            manageTerms: 'Gérer les termes masqués',
+            manageSellers: 'Gérer les vendeurs masqués',
+            termsModalTitle: 'Termes masqués',
+            termsEmpty: 'Aucun terme ajouté',
+            hiddenButton: 'Masqué',
+            unhideButton: 'Afficher',
+            termInputPlaceholder: 'Saisissez un terme',
+            addButton: 'Ajouter',
+            closeButton: 'Fermer',
+            sellersModalTitle: 'Vendeurs masqués',
+            sellersEmpty: 'Aucun vendeur ajouté',
+            sellerInputPlaceholder: 'ex. Catawiki',
+            sellerInputHelp: 'Vous voulez ajouter plusieurs noms à la fois ? Séparez-les avec des virgules ou des points-virgules.',
+            blacklistToastHint: 'Gérez les vendeurs masqués via le panneau',
+            blacklistToastHiddenSuffix: 'masqué',
+            blacklistToastHiddenPluralSuffix: 'vendeurs masqués',
+            blacklistToastShownSuffix: "n'est plus masqué",
+            blacklistToastShownHint: 'Ce vendeur est à nouveau visible dans les résultats',
+            termToastHidden: term => `Toutes les annonces contenant le terme '${term}' sont désormais masquées.`,
+            termToastShown: term => `Les annonces contenant le terme '${term}' sont à nouveau affichées.`
+        };
+    }
+
+    return {
+        feedbackLabel: 'Feedback',
+        feedbackText: 'GitHub issues',
+        feedbackAriaLabel: 'Open GitHub issues voor functieverzoeken, wijzigingen en bugs',
+        reviewAriaLabel: linkLabel => `Laat een review achter voor Cleanplaats op ${linkLabel}`,
+        supportTitle: 'Steun Cleanplaats met een kleine bijdrage',
+        supportButton: 'Steun Cleanplaats',
+        optionsTitle: 'Filteropties',
+        topAdLabel: 'Topadvertenties',
+        topAdTooltip: location.hostname.includes('2dehands.be')
+            ? "Verbergt 'Topadvertentie' en 'Topzoekertje' listings"
+            : "Verwijdert betaalde 'Topadvertentie' advertenties",
+        dagtoppersLabel: 'Dagtoppers',
+        dagtoppersTooltip: "Verwijdert 'Dagtopper' advertenties",
+        promotedListingsLabel: 'Bedrijfsadvertenties',
+        promotedListingsTooltip: "Verbergt advertenties van bedrijven en winkels, zoals Catawiki, ook op de homepage bij 'Voor jou' en 'In je buurt'",
+        stickersLabel: 'Opvalstickers',
+        stickersTooltip: 'Verwijdert advertenties met opvalstickers',
+        reservedLabel: 'Gereserveerde',
+        reservedTooltip: "Verbergt advertenties die 'Gereserveerd' zijn",
+        darkModeLabel: 'Donkere modus',
+        darkModeTooltip: 'Schakelt een donker thema in voor Marktplaats en het Cleanplaats-paneel',
+        resultsPerPageLabel: 'Resultaten per pagina:',
+        defaultSortLabel: 'Standaard sortering:',
+        sortOptions: {
+            standard: 'Standaard',
+            date_new_old: 'Nieuw eerst',
+            date_old_new: 'Oud eerst',
+            price_low_high: 'Prijs ↑',
+            price_high_low: 'Prijs ↓',
+            distance: 'Afstand'
+        },
+        statsTitle: 'Verwijderde items',
+        statsTop: 'Top:',
+        statsDagtoppers: 'Dagtoppers:',
+        statsBusiness: 'Bedrijf:',
+        statsStickers: 'Stickers:',
+        statsOther: 'Overig:',
+        statsTotal: 'Totaal:',
+        manageTerms: 'Beheer blacklist termen',
+        manageSellers: 'Beheer verborgen verkopers',
+        termsModalTitle: 'Blacklist termen',
+        termsEmpty: 'Geen termen toegevoegd',
+        hiddenButton: 'Verborgen',
+        unhideButton: 'Opheffen',
+        termInputPlaceholder: 'Voer een term in',
+        addButton: 'Toevoegen',
+        closeButton: 'Sluiten',
+        sellersModalTitle: 'Verborgen verkopers',
+        sellersEmpty: 'Geen verkopers toegevoegd',
+        sellerInputPlaceholder: 'bijv. Catawiki',
+        sellerInputHelp: "Wil je meerdere namen tegelijk toevoegen? Scheid ze dan met komma's of puntkomma's.",
+        blacklistToastHint: 'Beheer verborgen verkopers via het paneel',
+        blacklistToastHiddenSuffix: 'verborgen',
+        blacklistToastHiddenPluralSuffix: 'verkopers verborgen',
+        blacklistToastShownSuffix: 'niet meer verborgen',
+        blacklistToastShownHint: 'Deze verkoper is weer zichtbaar in de resultaten',
+        termToastHidden: term => `Alle advertenties met de term '${term}' zijn nu verborgen.`,
+        termToastShown: term => `Advertenties met de term '${term}' worden weer getoond.`
+    };
+}
+
 // State management
 const CLEANPLAATS = {
     // Configuration with defaults
@@ -35,6 +166,7 @@ const CLEANPLAATS = {
         // removeAds: true, is now always true
         removeOpvalStickers: true,
         removeReservedListings: false,
+        darkMode: false,
         blacklistedSellers: [],
         blacklistedTerms: [], // Added blacklisted terms
         resultsPerPage: 30, // Nieuw: aantal resultaten per pagina
@@ -55,7 +187,8 @@ const CLEANPLAATS = {
     // Runtime variables
     observers: {
         mutation: null,
-        ads: null
+        ads: null,
+        webchat: null
     },
 
     // Feature flags
@@ -162,6 +295,115 @@ function setupMarketplaceSortSync() {
     }, true);
 }
 
+function applyDarkModeToDocument(enabled) {
+    const isEnabled = Boolean(enabled);
+    document.documentElement.classList.toggle(CLEANPLAATS_DARK_MODE_CLASS, isEnabled);
+
+    const panel = document.getElementById('cleanplaats-panel');
+    if (panel) {
+        panel.classList.toggle(CLEANPLAATS_DARK_MODE_CLASS, isEnabled);
+    }
+}
+
+function syncDarkModeToggle(enabled) {
+    const checkbox = document.getElementById('darkMode');
+    if (checkbox) {
+        checkbox.checked = Boolean(enabled);
+    }
+}
+
+function isElementVisuallyVisible(element) {
+    if (!(element instanceof Element)) return false;
+
+    const style = window.getComputedStyle(element);
+    if (
+        style.display === 'none' ||
+        style.visibility === 'hidden' ||
+        style.opacity === '0'
+    ) {
+        return false;
+    }
+
+    const rect = element.getBoundingClientRect();
+    return rect.width > 0 &&
+        rect.height > 0 &&
+        rect.bottom > 0 &&
+        rect.right > 0 &&
+        rect.top < window.innerHeight &&
+        rect.left < window.innerWidth;
+}
+
+function updateFloatingUiOffsetForWebchat() {
+    const webchatToggle = document.querySelector(
+        '[data-cognigy-webchat-toggle="true"], #webchatWindowToggleButton'
+    );
+
+    let offset = 0;
+
+    if (isElementVisuallyVisible(webchatToggle)) {
+        const rect = webchatToggle.getBoundingClientRect();
+        const gap = 16;
+        offset = Math.max(0, Math.ceil(rect.height + gap));
+    }
+
+    document.documentElement.style.setProperty(CLEANPLAATS_FLOATING_OFFSET_VAR, `${offset}px`);
+}
+
+function setupWebchatCollisionAvoidance() {
+    updateFloatingUiOffsetForWebchat();
+
+    if (CLEANPLAATS.observers.webchat) {
+        CLEANPLAATS.observers.webchat.disconnect();
+    }
+
+    let rafId = 0;
+    const scheduleOffsetUpdate = () => {
+        if (rafId) return;
+        rafId = window.requestAnimationFrame(() => {
+            rafId = 0;
+            updateFloatingUiOffsetForWebchat();
+        });
+    };
+
+    const observer = new MutationObserver(scheduleOffsetUpdate);
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style', 'class', 'hidden', 'aria-hidden']
+    });
+
+    window.addEventListener('resize', scheduleOffsetUpdate, { passive: true });
+    CLEANPLAATS.observers.webchat = observer;
+}
+
+function registerSettingsStorageSync() {
+    if (cleanplaatsStorageSyncRegistered || !browserAPI?.storage?.onChanged?.addListener) {
+        return;
+    }
+
+    browserAPI.storage.onChanged.addListener((changes, areaName) => {
+        if (areaName !== 'local' || !changes.cleanplaatsSettings?.newValue) {
+            return;
+        }
+
+        try {
+            const nextSettings = JSON.parse(changes.cleanplaatsSettings.newValue);
+            const darkModeEnabled = Boolean(nextSettings?.darkMode);
+
+            if (CLEANPLAATS.settings.darkMode !== darkModeEnabled) {
+                CLEANPLAATS.settings.darkMode = darkModeEnabled;
+                applyDarkModeToDocument(darkModeEnabled);
+                syncDarkModeToggle(darkModeEnabled);
+            }
+        } catch (error) {
+            console.error('Cleanplaats: Failed to sync dark mode from storage', error);
+        }
+    });
+
+    cleanplaatsStorageSyncRegistered = true;
+}
+
 // Initialize when page loads
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initCleanplaats);
@@ -242,11 +484,15 @@ function initCleanplaats() {
 
     loadSettings()
         .then(() => {
+            registerSettingsStorageSync();
+            applyDarkModeToDocument(CLEANPLAATS.settings.darkMode);
+
             checkFirstRun()
                 .then(isFirstRun => {
                     CLEANPLAATS.featureFlags.firstRun = isFirstRun;
 
                     createControlPanel();
+                    setupWebchatCollisionAvoidance();
                     setupAllObservers();
                     applySettings();
                     showOnboarding(currentVersion);
@@ -432,6 +678,7 @@ function createControlPanel() {
     const panel = document.createElement('div');
     panel.id = 'cleanplaats-panel';
     panel.className = 'cleanplaats-panel';
+    panel.classList.toggle(CLEANPLAATS_DARK_MODE_CLASS, CLEANPLAATS.settings.darkMode);
 
     if (CLEANPLAATS.featureFlags.autoCollapse || CLEANPLAATS.panelState.isCollapsed) {
         panel.classList.add('collapsed');
@@ -440,11 +687,7 @@ function createControlPanel() {
         panel.style.backgroundImage = `url('${browserAPI.runtime.getURL('icons/icon128.png')}')`;
     }
 
-    const is2dehands = location.hostname.includes('2dehands.be');
-    const topAdLabel = 'Topadvertenties';
-    const topAdTooltip = is2dehands
-        ? "Verbergt 'Topadvertentie' en 'Topzoekertje' listings"
-        : "Verwijdert betaalde 'Topadvertentie' advertenties";
+    const panelText = getPanelLocaleText();
     const reviewCTA = getReviewCTAConfig();
 
     panel.innerHTML = DOMPurify.sanitize(`
@@ -463,7 +706,7 @@ function createControlPanel() {
                     class="cleanplaats-contact cleanplaats-external-link"
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label="Open GitHub issues voor functieverzoeken, wijzigingen en bugs"
+                    aria-label="${panelText.feedbackAriaLabel}"
                 >
                     <span class="cleanplaats-contact-icon" aria-hidden="true">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
@@ -471,8 +714,8 @@ function createControlPanel() {
                         </svg>
                     </span>
                     <span class="cleanplaats-contact-copy">
-                        <span class="cleanplaats-contact-title">Feedback</span>
-                        <span class="cleanplaats-contact-text">GitHub issues</span>
+                        <span class="cleanplaats-contact-title">${panelText.feedbackLabel}</span>
+                        <span class="cleanplaats-contact-text">${panelText.feedbackText}</span>
                     </span>
                 </a>
                 <a
@@ -480,7 +723,7 @@ function createControlPanel() {
                     class="cleanplaats-contact cleanplaats-external-link"
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label="Laat een review achter voor Cleanplaats op ${reviewCTA.linkLabel}"
+                    aria-label="${panelText.reviewAriaLabel(reviewCTA.linkLabel)}"
                 >
                     <span class="cleanplaats-contact-icon" aria-hidden="true">★</span>
                     <span class="cleanplaats-contact-copy">
@@ -496,21 +739,21 @@ function createControlPanel() {
                 class="cleanplaats-bmc-button"
                 target="_blank"
                 rel="noopener"
-                title="Steun Cleanplaats met een kleine bijdrage"
+                title="${panelText.supportTitle}"
             >
                 <span class="cleanplaats-bmc-emoji">☕</span>
-                <span class="cleanplaats-bmc-text">Steun Cleanplaats</span>
+                <span class="cleanplaats-bmc-text">${panelText.supportButton}</span>
             </a>
             <div class="cleanplaats-options">
-                <div class="cleanplaats-section-title">Filteropties</div>
+                <div class="cleanplaats-section-title">${panelText.optionsTitle}</div>
                 <div class="cleanplaats-option">
                     <label class="cleanplaats-switch">
                         <input type="checkbox" id="removeTopAds" ${CLEANPLAATS.settings.removeTopAds ? 'checked' : ''}>
                         <span class="cleanplaats-switch-slider"></span>
                     </label>
                     <label for="removeTopAds" class="cleanplaats-option-label">
-                        ${topAdLabel}
-                        <span class="cleanplaats-tooltip-icon" data-tooltip="${topAdTooltip}">?</span>
+                        ${panelText.topAdLabel}
+                        <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.topAdTooltip}">?</span>
                     </label>
                 </div>
                 <div class="cleanplaats-option">
@@ -519,8 +762,8 @@ function createControlPanel() {
                         <span class="cleanplaats-switch-slider"></span>
                     </label>
                     <label for="removeDagtoppers" class="cleanplaats-option-label">
-                        Dagtoppers
-                        <span class="cleanplaats-tooltip-icon" data-tooltip="Verwijdert 'Dagtopper' advertenties">?</span>
+                        ${panelText.dagtoppersLabel}
+                        <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.dagtoppersTooltip}">?</span>
                     </label>
                 </div>
                 <div class="cleanplaats-option">
@@ -529,8 +772,8 @@ function createControlPanel() {
                         <span class="cleanplaats-switch-slider"></span>
                     </label>
                     <label for="removePromotedListings" class="cleanplaats-option-label">
-                        Bedrijfsadvertenties
-                        <span class="cleanplaats-tooltip-icon" data-tooltip="Verbergt advertenties van bedrijven en winkels, zoals Catawiki, ook op de homepage bij 'Voor jou' en 'In je buurt'">?</span>
+                        ${panelText.promotedListingsLabel}
+                        <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.promotedListingsTooltip}">?</span>
                     </label>
                 </div>
                 <div class="cleanplaats-option">
@@ -539,8 +782,8 @@ function createControlPanel() {
                         <span class="cleanplaats-switch-slider"></span>
                     </label>
                     <label for="removeOpvalStickers" class="cleanplaats-option-label">
-                        Opvalstickers
-                        <span class="cleanplaats-tooltip-icon" data-tooltip="Verwijdert advertenties met opvalstickers">?</span>
+                        ${panelText.stickersLabel}
+                        <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.stickersTooltip}">?</span>
                     </label>
                 </div>
                 <div class="cleanplaats-option">
@@ -549,12 +792,22 @@ function createControlPanel() {
                         <span class="cleanplaats-switch-slider"></span>
                     </label>
                     <label for="removeReservedListings" class="cleanplaats-option-label">
-                        Gereserveerde
-                        <span class="cleanplaats-tooltip-icon" data-tooltip="Verbergt advertenties die 'Gereserveerd' zijn">?</span>
+                        ${panelText.reservedLabel}
+                        <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.reservedTooltip}">?</span>
+                    </label>
+                </div>
+                <div class="cleanplaats-option">
+                    <label class="cleanplaats-switch">
+                        <input type="checkbox" id="darkMode" ${CLEANPLAATS.settings.darkMode ? 'checked' : ''}>
+                        <span class="cleanplaats-switch-slider"></span>
+                    </label>
+                    <label for="darkMode" class="cleanplaats-option-label">
+                        ${panelText.darkModeLabel}
+                        <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.darkModeTooltip}">?</span>
                     </label>
                 </div>
                 <div class="cleanplaats-option cleanplaats-results-dropdown-row">
-                    <label for="cleanplaats-results-dropdown" class="cleanplaats-option-label" style="min-width:120px;">Resultaten per pagina:</label>
+                    <label for="cleanplaats-results-dropdown" class="cleanplaats-option-label" style="min-width:120px;">${panelText.resultsPerPageLabel}</label>
                     <select id="cleanplaats-results-dropdown" class="cleanplaats-results-dropdown">
                         <option value="30" ${CLEANPLAATS.settings.resultsPerPage == 30 ? 'selected' : ''}>30</option>
                         <option value="50" ${CLEANPLAATS.settings.resultsPerPage == 50 ? 'selected' : ''}>50</option>
@@ -562,50 +815,50 @@ function createControlPanel() {
                     </select>
                 </div>
                 <div class="cleanplaats-option cleanplaats-results-dropdown-row">
-                    <label for="cleanplaats-sort-dropdown" class="cleanplaats-option-label" style="min-width:120px;">Standaard sortering:</label>
+                    <label for="cleanplaats-sort-dropdown" class="cleanplaats-option-label" style="min-width:120px;">${panelText.defaultSortLabel}</label>
                     <select id="cleanplaats-sort-dropdown" class="cleanplaats-results-dropdown">
-                        <option value="standard" ${CLEANPLAATS.settings.defaultSortMode == 'standard' ? 'selected' : ''}>Standaard</option>
-                        <option value="date_new_old" ${CLEANPLAATS.settings.defaultSortMode == 'date_new_old' ? 'selected' : ''}>Nieuw eerst</option>
-                        <option value="date_old_new" ${CLEANPLAATS.settings.defaultSortMode == 'date_old_new' ? 'selected' : ''}>Oud eerst</option>
-                        <option value="price_low_high" ${CLEANPLAATS.settings.defaultSortMode == 'price_low_high' ? 'selected' : ''}>Prijs ↑</option>
-                        <option value="price_high_low" ${CLEANPLAATS.settings.defaultSortMode == 'price_high_low' ? 'selected' : ''}>Prijs ↓</option>
-                        <option value="distance" ${CLEANPLAATS.settings.defaultSortMode == 'distance' ? 'selected' : ''}>Afstand</option>
+                        <option value="standard" ${CLEANPLAATS.settings.defaultSortMode == 'standard' ? 'selected' : ''}>${panelText.sortOptions.standard}</option>
+                        <option value="date_new_old" ${CLEANPLAATS.settings.defaultSortMode == 'date_new_old' ? 'selected' : ''}>${panelText.sortOptions.date_new_old}</option>
+                        <option value="date_old_new" ${CLEANPLAATS.settings.defaultSortMode == 'date_old_new' ? 'selected' : ''}>${panelText.sortOptions.date_old_new}</option>
+                        <option value="price_low_high" ${CLEANPLAATS.settings.defaultSortMode == 'price_low_high' ? 'selected' : ''}>${panelText.sortOptions.price_low_high}</option>
+                        <option value="price_high_low" ${CLEANPLAATS.settings.defaultSortMode == 'price_high_low' ? 'selected' : ''}>${panelText.sortOptions.price_high_low}</option>
+                        <option value="distance" ${CLEANPLAATS.settings.defaultSortMode == 'distance' ? 'selected' : ''}>${panelText.sortOptions.distance}</option>
                     </select>
                 </div>
             </div>
 
             ${CLEANPLAATS.featureFlags.showStats ? `
             <div class="cleanplaats-stats cleanplaats-stats-compact" id="cleanplaats-stats">
-                <div class="cleanplaats-section-title">Verwijderde items</div>
+                <div class="cleanplaats-section-title">${panelText.statsTitle}</div>
                 <div class="cleanplaats-stat-item">
-                    <span class="cleanplaats-stat-label">Top:</span>
+                    <span class="cleanplaats-stat-label">${panelText.statsTop}</span>
                     <span class="cleanplaats-stat-value" id="cleanplaats-topads-count">0</span>
                 </div>
                 <div class="cleanplaats-stat-item">
-                    <span class="cleanplaats-stat-label">Dagtoppers:</span>
+                    <span class="cleanplaats-stat-label">${panelText.statsDagtoppers}</span>
                     <span class="cleanplaats-stat-value" id="cleanplaats-dagtoppers-count">0</span>
                 </div>
                 <div class="cleanplaats-stat-item">
-                    <span class="cleanplaats-stat-label">Bedrijf:</span>
+                    <span class="cleanplaats-stat-label">${panelText.statsBusiness}</span>
                     <span class="cleanplaats-stat-value" id="cleanplaats-promoted-count">0</span>
                 </div>
                 <div class="cleanplaats-stat-item">
-                    <span class="cleanplaats-stat-label">Stickers:</span>
+                    <span class="cleanplaats-stat-label">${panelText.statsStickers}</span>
                     <span class="cleanplaats-stat-value" id="cleanplaats-stickers-count">0</span>
                 </div>
                 <div class="cleanplaats-stat-item">
-                    <span class="cleanplaats-stat-label">Overig:</span>
+                    <span class="cleanplaats-stat-label">${panelText.statsOther}</span>
                     <span class="cleanplaats-stat-value" id="cleanplaats-otherads-count">0</span>
                 </div>
                 <div class="cleanplaats-stat-item">
-                    <span class="cleanplaats-stat-label">Totaal:</span>
+                    <span class="cleanplaats-stat-label">${panelText.statsTotal}</span>
                     <span class="cleanplaats-stat-value" id="cleanplaats-total-count-stats">0</span>
                 </div>
             </div>
             ` : ''}
 
-            <button id="cleanplaats-manage-terms" class="cleanplaats-button cleanplaats-blacklist-manage-btn">Beheer blacklist termen</button>
-            <button id="cleanplaats-manage-blacklist" class="cleanplaats-button cleanplaats-blacklist-manage-btn">Beheer verborgen verkopers</button>
+            <button id="cleanplaats-manage-terms" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageTerms}</button>
+            <button id="cleanplaats-manage-blacklist" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageSellers}</button>
             <div id="cleanplaats-blacklist-modal" class="cleanplaats-blacklist-modal" style="display:none;"></div>
             <div id="cleanplaats-terms-modal" class="cleanplaats-terms-modal" style="display:none;"></div>
         </div>
@@ -686,6 +939,7 @@ function setupGlobalTooltip() {
 function showTermsModal() {
     const modal = document.getElementById('cleanplaats-terms-modal');
     if (!modal) return;
+    const panelText = getPanelLocaleText();
 
     // Close the blacklist modal if it's open
     const blacklistModal = document.getElementById('cleanplaats-blacklist-modal');
@@ -703,20 +957,20 @@ function showTermsModal() {
 
     modal.innerHTML = DOMPurify.sanitize(`
         <div class="cleanplaats-terms-modal-content">
-            <h4>Blacklist termen</h4>
+            <h4>${panelText.termsModalTitle}</h4>
             <ul id="cleanplaats-terms-list">
-                ${terms.length === 0 ? '<li><em>Geen termen toegevoegd</em></li>' : terms.map(term => `
+                ${terms.length === 0 ? `<li><em>${panelText.termsEmpty}</em></li>` : terms.map(term => `
                     <li>
                         <span>${term}</span>
-                        <button class="cleanplaats-unblacklist-term-btn" data-term="${term}">Verborgen</button>
+                        <button class="cleanplaats-unblacklist-term-btn" data-term="${term}">${panelText.hiddenButton}</button>
                     </li>
                 `).join('')}
             </ul>
             <div class="cleanplaats-terms-input-row">
-                <input type="text" id="cleanplaats-term-input" class="cleanplaats-term-input" placeholder="Voer een term in">
-                <button id="cleanplaats-add-term" class="cleanplaats-add-term-btn">Toevoegen</button>
+                <input type="text" id="cleanplaats-term-input" class="cleanplaats-term-input" placeholder="${panelText.termInputPlaceholder}">
+                <button id="cleanplaats-add-term" class="cleanplaats-add-term-btn">${panelText.addButton}</button>
             </div>
-            <button id="cleanplaats-terms-close" style="margin-top:12px;">Sluiten</button>
+            <button id="cleanplaats-terms-close" style="margin-top:12px;">${panelText.closeButton}</button>
         </div>
     `);
     modal.style.display = 'block';
@@ -762,6 +1016,7 @@ function showTermsModal() {
 function updateTermsModal() {
     const modal = document.getElementById('cleanplaats-terms-modal');
     if (!modal || modal.style.display === 'none') return;
+    const panelText = getPanelLocaleText();
 
     const terms = CLEANPLAATS.settings.blacklistedTerms;
     const list = document.getElementById('cleanplaats-terms-list');
@@ -769,11 +1024,11 @@ function updateTermsModal() {
     if (list) {
         list.innerHTML = DOMPurify.sanitize(
             terms.length === 0
-                ? '<li><em>Geen termen toegevoegd</em></li>'
+                ? `<li><em>${panelText.termsEmpty}</em></li>`
                 : terms.map(term => `
                     <li>
                         <span>${term}</span>
-                        <button class="cleanplaats-unblacklist-term-btn" data-term="${term}">Verborgen</button>
+                        <button class="cleanplaats-unblacklist-term-btn" data-term="${term}">${panelText.hiddenButton}</button>
                     </li>
                 `).join('')
         );
@@ -786,14 +1041,15 @@ function updateTermsModal() {
  * Set up hover effects and remove functionality for terms modal buttons
  */
 function setupTermsModalButtons() {
+    const panelText = getPanelLocaleText();
     document.querySelectorAll('.cleanplaats-unblacklist-term-btn').forEach(btn => {
         btn.onmouseover = () => {
             btn.style.background = 'green';
-            btn.textContent = 'Opheffen';
+            btn.textContent = panelText.unhideButton;
         };
         btn.onmouseout = () => {
             btn.style.background = '#ff4d4d';
-            btn.textContent = 'Verborgen';
+            btn.textContent = panelText.hiddenButton;
         };
         btn.style.background = '#ff4d4d';
         btn.style.color = 'white';
@@ -1249,7 +1505,7 @@ function setupEventListeners() {
 
     // Setup checkbox change listeners
     ['removeTopAds', 'removeDagtoppers', 'removePromotedListings',
-        'removeOpvalStickers', 'removeReservedListings'].forEach(id => {
+        'removeOpvalStickers', 'removeReservedListings', 'darkMode'].forEach(id => {
             const checkbox = document.getElementById(id);
             if (checkbox) {
                 checkbox.addEventListener('change', handleCheckboxChange);
@@ -1279,27 +1535,19 @@ function handleCheckboxChange(event) {
     // Save settings and apply changes immediately
     saveSettings()
         .then(() => {
+            if (setting === 'darkMode') {
+                applyDarkModeToDocument(value);
+                showSettingFeedback();
+                return;
+            }
+
             // Reset previous changes and reapply filters
             resetPreviousChanges();
             performCleanup();
 
             // Clear the bubble notification
             clearBubbleNotification();
-
-            // Show feedback in header
-            const header = document.querySelector('.cleanplaats-header');
-            const feedback = document.createElement('div');
-            feedback.className = 'cleanplaats-feedback';
-            feedback.textContent = '✓';
-
-            // Remove any existing feedback
-            header.querySelectorAll('.cleanplaats-feedback').forEach(el => el.remove());
-
-            header.appendChild(feedback);
-            requestAnimationFrame(() => feedback.classList.add('cleanplaats-feedback-show'));
-
-            // Remove after animation
-            setTimeout(() => feedback.remove(), 1500);
+            showSettingFeedback();
 
             // Check for empty page after applying filters
             checkForEmptyPage();
@@ -1310,7 +1558,25 @@ function handleCheckboxChange(event) {
         .catch(error => {
             console.error('Cleanplaats: Failed to apply setting', error);
             event.target.checked = !value;
+            if (setting === 'darkMode') {
+                CLEANPLAATS.settings[setting] = !value;
+                applyDarkModeToDocument(!value);
+            }
         });
+}
+
+function showSettingFeedback() {
+    const header = document.querySelector('.cleanplaats-header');
+    if (!header) return;
+
+    const feedback = document.createElement('div');
+    feedback.className = 'cleanplaats-feedback';
+    feedback.textContent = '✓';
+
+    header.querySelectorAll('.cleanplaats-feedback').forEach(el => el.remove());
+    header.appendChild(feedback);
+    requestAnimationFrame(() => feedback.classList.add('cleanplaats-feedback-show'));
+    setTimeout(() => feedback.remove(), 1500);
 }
 
 /**
@@ -1319,6 +1585,7 @@ function handleCheckboxChange(event) {
 function applySettings() {
     saveSettings()
         .then(() => {
+            applyDarkModeToDocument(CLEANPLAATS.settings.darkMode);
             resetPreviousChanges();
             performCleanup();
         })
@@ -1458,7 +1725,8 @@ function resetPreviousChanges() {
  */
 function removeTopAdvertisements() {
     const is2dehands = location.hostname.includes('2dehands.be');
-    const labels = is2dehands ? ['Topzoekertje', 'Topadvertentie'] : ['Topadvertentie'];
+    const is2ememain = location.hostname.includes('2ememain.be');
+    const labels = is2ememain ? ['Pub au top'] : is2dehands ? ['Topzoekertje', 'Topadvertentie'] : ['Topadvertentie'];
     const priorityBadgeSelector = [
         '.hz-Listing-priority span',
         '.hz-Listing-priority-new',
@@ -1488,6 +1756,9 @@ function removeDagtoppers() {
  */
 function removePromotedListings() {
     let count = 0;
+    const visitWebsiteLabels = location.hostname.includes('2ememain.be')
+        ? ['Visiter le site internet']
+        : ['Bezoek website'];
 
     // Check both regular listings and car listings
     const selectors = [
@@ -1499,7 +1770,7 @@ function removePromotedListings() {
         document.querySelectorAll(selector).forEach(sellerLink => {
             try {
                 const hasVisitWebsite = Array.from(sellerLink.querySelectorAll('span, a'))
-                    .some(el => el.textContent?.trim() === 'Bezoek website');
+                    .some(el => visitWebsiteLabels.includes(el.textContent?.trim()));
 
                 if (hasVisitWebsite) {
                     const listing = sellerLink.closest('.hz-Listing');
@@ -1598,6 +1869,11 @@ function removeAllAds() {
                 if (feedBanner && !feedBanner.hasAttribute('data-cleanplaats-hidden')) {
                     hideElement(feedBanner);
                 }
+
+                const topBanner = el.closest('.BannerTop-root, #top-banner-root');
+                if (topBanner && !topBanner.hasAttribute('data-cleanplaats-hidden')) {
+                    hideElement(topBanner);
+                }
             });
         } catch (error) {
             console.log('Cleanplaats: Error hiding ads', error);
@@ -1616,14 +1892,17 @@ function removeAllAds() {
     });
 
     const adSelectors = [
+        '#adsense-root',
         '#adsense-container',
         '#adsense-container-bottom-lazy',
         '#adBlock',
         '.hz-Banner',
         '.hz-Banner--fluid',
+        '.BannerTop-root',
         '#banner-rubrieks-dt',
         '#banner-top-dt',
         '#banner-top-dt-container',
+        '#top-banner-root',
         '[data-google-query-id]',
         '[id*="google_ads_iframe"]',
         '[id*="google_ads_top_frame"]',
@@ -1661,7 +1940,7 @@ function removeAllAds() {
 function removePersistentGoogleAds() {
     let count = 0;
     // Remove large ad containers in the grid (e.g. in je buurt tab)
-    document.querySelectorAll('.creative, div[id^="google_ads_iframe"], div[data-google-query-id], div[aria-label="Advertisement"]').forEach(ad => {
+    document.querySelectorAll('#adsense-root, .creative, div[id^="google_ads_iframe"], div[data-google-query-id], div[aria-label="Advertisement"]').forEach(ad => {
         try {
             const gridItem = ad.closest('.hz-Link.hz-Link--block');
             if (gridItem && gridItem.parentNode) {
@@ -1689,6 +1968,24 @@ function removePersistentGoogleAds() {
     // Remove #banner-top-dt-container (and its children) if present (fixes grid gap instantly on tab switch)
     document.querySelectorAll('#banner-top-dt-container').forEach(container => {
         if (container.parentNode) {
+            container.parentNode.removeChild(container);
+            count++;
+        }
+    });
+
+    document.querySelectorAll('.BannerTop-root').forEach(banner => {
+        const hasAdContent = banner.querySelector(
+            '.hz-Banner, .hz-Banner--fluid, iframe, [data-google-query-id], [id*="google_ads_iframe"], ins.adsbygoogle'
+        );
+        if (!hasAdContent && banner.parentNode) {
+            banner.parentNode.removeChild(banner);
+            count++;
+        }
+    });
+
+    document.querySelectorAll('#top-banner-root').forEach(container => {
+        const hasVisibleContent = Array.from(container.children).some(child => child.offsetParent !== null);
+        if (!hasVisibleContent && container.parentNode) {
             container.parentNode.removeChild(container);
             count++;
         }
@@ -1797,6 +2094,7 @@ function addSellersToBlacklist(sellerNames) {
  * Show a toast notification for blacklisting
  */
 function showBlacklistToast(sellerName) {
+    const panelText = getPanelLocaleText();
     const toast = document.createElement('div');
     toast.className = 'cleanplaats-blacklist-toast';
 
@@ -1804,8 +2102,8 @@ function showBlacklistToast(sellerName) {
         <div class="cleanplaats-blacklist-toast-content">
             <span class="cleanplaats-toast-icon eye">👁</span>
             <div class="cleanplaats-toast-message">
-                <strong>${sellerName} verborgen</strong>
-                <span>Beheer verborgen verkopers via het paneel</span>
+                <strong>${sellerName} ${panelText.blacklistToastHiddenSuffix}</strong>
+                <span>${panelText.blacklistToastHint}</span>
             </div>
         </div>
     `);
@@ -1826,6 +2124,7 @@ function showBlacklistToast(sellerName) {
  * Show a toast notification for blacklisting multiple sellers
  */
 function showBulkBlacklistToast(count) {
+    const panelText = getPanelLocaleText();
     const toast = document.createElement('div');
     toast.className = 'cleanplaats-blacklist-toast';
 
@@ -1833,8 +2132,8 @@ function showBulkBlacklistToast(count) {
         <div class="cleanplaats-blacklist-toast-content">
             <span class="cleanplaats-toast-icon eye">👁</span>
             <div class="cleanplaats-toast-message">
-                <strong>${count} verkopers verborgen</strong>
-                <span>Beheer verborgen verkopers via het paneel</span>
+                <strong>${count} ${panelText.blacklistToastHiddenPluralSuffix}</strong>
+                <span>${panelText.blacklistToastHint}</span>
             </div>
         </div>
     `);
@@ -1854,6 +2153,7 @@ function showBulkBlacklistToast(count) {
  * Show a toast notification for unblacklisting
  */
 function showUnblacklistToast(sellerName) {
+    const panelText = getPanelLocaleText();
     const toast = document.createElement('div');
     toast.className = 'cleanplaats-blacklist-toast';
 
@@ -1861,8 +2161,8 @@ function showUnblacklistToast(sellerName) {
         <div class="cleanplaats-blacklist-toast-content">
             <span class="cleanplaats-toast-icon eye">👁</span>
             <div class="cleanplaats-toast-message">
-                <strong>${sellerName} niet meer verborgen</strong>
-                <span>Deze verkoper is weer zichtbaar in de resultaten</span>
+                <strong>${sellerName} ${panelText.blacklistToastShownSuffix}</strong>
+                <span>${panelText.blacklistToastShownHint}</span>
             </div>
         </div>
     `);
@@ -2059,6 +2359,7 @@ function injectBlacklistButtons() {
 function showBlacklistModal() {
     const modal = document.getElementById('cleanplaats-blacklist-modal');
     if (!modal) return;
+    const panelText = getPanelLocaleText();
 
     // Close the terms modal if it's open
     const termsModal = document.getElementById('cleanplaats-terms-modal');
@@ -2076,21 +2377,21 @@ function showBlacklistModal() {
 
     modal.innerHTML = DOMPurify.sanitize(`
         <div class="cleanplaats-blacklist-modal-content">
-            <h4>Verborgen verkopers</h4>
+            <h4>${panelText.sellersModalTitle}</h4>
             <ul id="cleanplaats-blacklist-list">
-                ${sellers.length === 0 ? '<li><em>Geen verkopers toegevoegd</em></li>' : sellers.map(seller => `
+                ${sellers.length === 0 ? `<li><em>${panelText.sellersEmpty}</em></li>` : sellers.map(seller => `
                     <li>
                         <span>${seller}</span>
-                        <button class="cleanplaats-unblacklist-btn" data-seller="${seller}">Verborgen</button>
+                        <button class="cleanplaats-unblacklist-btn" data-seller="${seller}">${panelText.hiddenButton}</button>
                     </li>
                 `).join('')}
             </ul>
             <div class="cleanplaats-terms-input-row">
-                <input type="text" id="cleanplaats-seller-input" class="cleanplaats-term-input" placeholder="bijv. Catawiki">
-                <button id="cleanplaats-add-seller" class="cleanplaats-add-term-btn">Toevoegen</button>
+                <input type="text" id="cleanplaats-seller-input" class="cleanplaats-term-input" placeholder="${panelText.sellerInputPlaceholder}">
+                <button id="cleanplaats-add-seller" class="cleanplaats-add-term-btn">${panelText.addButton}</button>
             </div>
-            <div class="cleanplaats-input-help">Wil je meerdere namen tegelijk toevoegen? Scheid ze dan met komma's of puntkomma's.</div>
-            <button id="cleanplaats-blacklist-close" style="margin-top:10px;">Sluiten</button>
+            <div class="cleanplaats-input-help">${panelText.sellerInputHelp}</div>
+            <button id="cleanplaats-blacklist-close" style="margin-top:10px;">${panelText.closeButton}</button>
         </div>
     `);
     modal.style.display = 'block';
@@ -2132,6 +2433,7 @@ function showBlacklistModal() {
 function updateBlacklistModal() {
     const modal = document.getElementById('cleanplaats-blacklist-modal');
     if (!modal || modal.style.display === 'none') return;
+    const panelText = getPanelLocaleText();
 
     const sellers = CLEANPLAATS.settings.blacklistedSellers;
     const list = document.getElementById('cleanplaats-blacklist-list');
@@ -2139,11 +2441,11 @@ function updateBlacklistModal() {
     if (list) {
         list.innerHTML = DOMPurify.sanitize(
             sellers.length === 0
-                ? '<li><em>Geen verkopers toegevoegd</em></li>'
+                ? `<li><em>${panelText.sellersEmpty}</em></li>`
                 : sellers.map(seller => `
                     <li>
                         <span>${seller}</span>
-                        <button class="cleanplaats-unblacklist-btn" data-seller="${seller}">Verborgen</button>
+                        <button class="cleanplaats-unblacklist-btn" data-seller="${seller}">${panelText.hiddenButton}</button>
                     </li>
                 `).join('')
         );
@@ -2156,14 +2458,15 @@ function updateBlacklistModal() {
  * Set up hover effects and unblacklist functionality for modal buttons
  */
 function setupBlacklistModalButtons() {
+    const panelText = getPanelLocaleText();
     document.querySelectorAll('.cleanplaats-unblacklist-btn').forEach(btn => {
         btn.onmouseover = () => {
             btn.style.background = 'green';
-            btn.textContent = 'Opheffen';
+            btn.textContent = panelText.unhideButton;
         };
         btn.onmouseout = () => {
             btn.style.background = '#ff4d4d';
-            btn.textContent = 'Verborgen';
+            btn.textContent = panelText.hiddenButton;
         };
         btn.style.background = '#ff4d4d';
         btn.style.color = 'white';
@@ -2179,14 +2482,15 @@ function setupBlacklistModalButtons() {
  * Show a toast notification for blacklisting a term
  */
 function showBlacklistTermToast(term) {
+    const panelText = getPanelLocaleText();
     const toast = document.createElement('div');
     toast.className = 'cleanplaats-blacklist-toast';
     toast.innerHTML = DOMPurify.sanitize(`
         <div class="cleanplaats-blacklist-toast-content">
             <span class="cleanplaats-toast-icon">🔎</span>
             <div class="cleanplaats-toast-message">
-                <strong>'${term}' verborgen</strong>
-                <span>Alle advertenties met de term '${term}' zijn nu verborgen.</span>
+                <strong>'${term}' ${panelText.blacklistToastHiddenSuffix}</strong>
+                <span>${panelText.termToastHidden(term)}</span>
             </div>
         </div>
     `);
@@ -2202,14 +2506,15 @@ function showBlacklistTermToast(term) {
  * Show a toast notification for unblacklisting a term
  */
 function showUnblacklistTermToast(term) {
+    const panelText = getPanelLocaleText();
     const toast = document.createElement('div');
     toast.className = 'cleanplaats-blacklist-toast';
     toast.innerHTML = DOMPurify.sanitize(`
         <div class="cleanplaats-blacklist-toast-content">
             <span class="cleanplaats-toast-icon">🔎</span>
             <div class="cleanplaats-toast-message">
-                <strong>'${term}' niet meer verborgen</strong>
-                <span>Advertenties met de term '${term}' worden weer getoond.</span>
+                <strong>'${term}' ${panelText.blacklistToastShownSuffix}</strong>
+                <span>${panelText.termToastShown(term)}</span>
             </div>
         </div>
     `);
@@ -2406,7 +2711,9 @@ function isSearchResultsPage() {
     return url.includes('marktplaats.nl/l/') ||
         url.includes('marktplaats.nl/q/') ||
         url.includes('2dehands.be/l/') ||
-        url.includes('2dehands.be/q/');
+        url.includes('2dehands.be/q/') ||
+        url.includes('2ememain.be/l/') ||
+        url.includes('2ememain.be/q/');
 }
 
 function setupResultsDropdownListener() {

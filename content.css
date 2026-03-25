@@ -1,7 +1,7 @@
 /* Base Panel Styling */
 .cleanplaats-panel {
     position: fixed;
-    bottom: 20px;
+    bottom: calc(20px + var(--cleanplaats-floating-offset, 0px));
     right: 20px;
     z-index: 2147483647;
     display: flex;
@@ -381,7 +381,9 @@
   /* Add this to your existing CSS */
   .bannerContainerLoading[data-cleanplaats-hidden],
   .hz-Banner[data-cleanplaats-hidden],
-  .hz-Banner--fluid[data-cleanplaats-hidden] {
+  .hz-Banner--fluid[data-cleanplaats-hidden],
+  .BannerTop-root[data-cleanplaats-hidden],
+  #top-banner-root[data-cleanplaats-hidden] {
       display: none !important;
       margin: 0 !important;
       padding: 0 !important;
@@ -853,7 +855,7 @@
   /* Blacklist modal styles */
   .cleanplaats-blacklist-modal {
     position: fixed;
-    bottom: 120px;
+    bottom: calc(120px + var(--cleanplaats-floating-offset, 0px));
     right: 20px;
     background: #fff;
     border: none;
@@ -1134,7 +1136,7 @@
   /* Blacklist terms modal styles */
   .cleanplaats-terms-modal {
     position: fixed;
-    bottom: 170px;
+    bottom: calc(170px + var(--cleanplaats-floating-offset, 0px));
     right: 20px;
     background: #fff;
     border: none;

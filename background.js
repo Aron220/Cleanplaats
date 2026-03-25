@@ -27,18 +27,28 @@ const HASH_URL_PATTERNS = [
     "https://www.marktplaats.nl/l/",
     "https://www.marktplaats.nl/q/",
     "https://www.2dehands.be/l/",
-    "https://www.2dehands.be/q/"
+    "https://www.2dehands.be/q/",
+    "https://www.2ememain.be/l/",
+    "https://www.2ememain.be/q/"
 ];
 const API_URL_PATTERNS = [
     "https://www.marktplaats.nl/lrp/api/search*",
-    "https://www.2dehands.be/lrp/api/search*"
+    "https://www.2dehands.be/lrp/api/search*",
+    "https://www.2ememain.be/lrp/api/search*"
+];
+const THEME_INIT_SCRIPT_ID = 'cleanplaats-theme-init';
+const THEME_MATCH_PATTERNS = [
+    "*://*.marktplaats.nl/*",
+    "*://*.2dehands.be/*",
+    "*://*.2ememain.be/*"
 ];
 
 // Use simpler filters for webNavigation listener registration to maximize wake-up chance.
 // Precise filtering will happen inside the handlers.
 const WAKEUP_NAVIGATION_FILTERS = [
     { hostSuffix: 'marktplaats.nl' }, 
-    { hostSuffix: '2dehands.be' }
+    { hostSuffix: '2dehands.be' },
+    { hostSuffix: '2ememain.be' }
 ];
 
 /**
@@ -151,6 +161,37 @@ async function updateApiRequestRules(currentResultsPerPage, currentDefaultSortMo
     }
 }
 
+async function updateDarkModeStartupScript(enabled) {
+    if (!browserAPI.scripting?.registerContentScripts || !browserAPI.scripting?.unregisterContentScripts) {
+        console.warn('Cleanplaats: scripting content script registration is unavailable.');
+        return;
+    }
+
+    try {
+        await browserAPI.scripting.unregisterContentScripts({ ids: [THEME_INIT_SCRIPT_ID] });
+    } catch (error) {
+        console.warn('Cleanplaats: Failed to unregister theme startup script.', error);
+    }
+
+    if (!enabled) {
+        console.log('Cleanplaats: Startup dark-mode script disabled.');
+        return;
+    }
+
+    try {
+        await browserAPI.scripting.registerContentScripts([{
+            id: THEME_INIT_SCRIPT_ID,
+            js: ['theme-init.js'],
+            matches: THEME_MATCH_PATTERNS,
+            runAt: 'document_start',
+            persistAcrossSessions: true
+        }]);
+        console.log('Cleanplaats: Startup dark-mode script enabled.');
+    } catch (error) {
+        console.error('Cleanplaats: Failed to register theme startup script.', error);
+    }
+}
+
 /**
  * Handle hash-based navigation changes using webNavigation.onBeforeNavigate
  */
@@ -229,6 +270,7 @@ async function handleStorageChanges(changes, areaName) {
         const newResultsPerPage = newSettingsData.resultsPerPage?.toString() || "30";
         const newDefaultSortMode = newSettingsData.defaultSortMode || "standard";
         const newSortPreferenceSource = newSettingsData.sortPreferenceSource || "cleanplaats";
+        const darkModeEnabled = Boolean(newSettingsData.darkMode);
 
         let settingsActuallyChanged = false;
         if (newResultsPerPage !== resultsPerPage) {
@@ -246,6 +288,8 @@ async function handleStorageChanges(changes, areaName) {
             sortPreferenceSource = newSortPreferenceSource;
             settingsActuallyChanged = true;
         }
+
+        await updateDarkModeStartupScript(darkModeEnabled);
 
         if (settingsActuallyChanged) {
             // Pass the newly updated global variables directly
@@ -275,10 +319,14 @@ async function initialize() {
                     resultsPerPage = settings.resultsPerPage?.toString() || "30";
                     defaultSortMode = settings.defaultSortMode || "standard";
                     sortPreferenceSource = settings.sortPreferenceSource || "cleanplaats";
+                    await updateDarkModeStartupScript(Boolean(settings.darkMode));
+                } else {
+                    await updateDarkModeStartupScript(false);
                 }
                 // If settings are undefined/corrupt, resultsPerPage & defaultSortMode retain their script-defined defaults.
             } catch (error) {
                 console.error('Cleanplaats: Error parsing stored settings:', error, '. Using default settings.');
+                await updateDarkModeStartupScript(false);
                 // Globals resultsPerPage & defaultSortMode already have defaults.
             }
         }
@@ -422,6 +470,7 @@ async function refreshSettingsAndRules() {
             const newResultsPerPage = settings.resultsPerPage?.toString() || "30";
             const newDefaultSortMode = settings.defaultSortMode || "standard";
             const newSortPreferenceSource = settings.sortPreferenceSource || "cleanplaats";
+            const darkModeEnabled = Boolean(settings.darkMode);
             
             let settingsChanged = false;
             if (newResultsPerPage !== resultsPerPage) {
@@ -439,6 +488,8 @@ async function refreshSettingsAndRules() {
                 sortPreferenceSource = newSortPreferenceSource;
                 settingsChanged = true;
             }
+
+            await updateDarkModeStartupScript(darkModeEnabled);
             
             if (settingsChanged) {
                 await updateApiRequestRules(resultsPerPage, defaultSortMode);
@@ -481,7 +532,7 @@ function setupKeepAlive() {
         if (browserAPI.webNavigation && browserAPI.webNavigation.onBeforeNavigate) {
             browserAPI.webNavigation.onBeforeNavigate.addListener((details) => {
                 if (details.frameId === 0 && 
-                    (details.url.includes('marktplaats.nl') || details.url.includes('2dehands.be'))) {
+                    (details.url.includes('marktplaats.nl') || details.url.includes('2dehands.be') || details.url.includes('2ememain.be'))) {
                     lastMarktplaatsActivity = Date.now();
                     console.log('Cleanplaats: Marktplaats activity detected, updating timestamp');
                 }
