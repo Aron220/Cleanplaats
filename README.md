@@ -24,8 +24,7 @@ Belangrijkste functies:
 - `2ememain.be`
 
 ## Screenshot
-
-Voeg hier later eventueel een screenshot of korte demo-gif toe voor de GitHub-pagina.
+in progress
 
 ## Installatie voor lokaal gebruik
 
