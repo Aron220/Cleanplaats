@@ -55,7 +55,8 @@ function setupObservers() {
                     if (node.nodeType === Node.ELEMENT_NODE) {
                         if (
                             node.classList?.contains('hz-Header-logo-desktop') ||
-                            node.querySelector?.('.hz-Header-logo-desktop')
+                            node.classList?.contains('mp-Header-logo') ||
+                            node.querySelector?.('.hz-Header-logo-desktop, .mp-Header-logo')
                         ) {
                             shouldSyncHeaderLogo = true;
                         }

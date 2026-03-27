@@ -76,6 +76,130 @@ html.cleanplaats-dark-mode .hz-Header-navBar {
   border-bottom: 1px solid var(--cleanplaats-dark-border-subtle) !important;
 }
 
+html.cleanplaats-dark-mode .mp-Header-navBar,
+html.cleanplaats-dark-mode .mp-Header-ribbonBottom,
+html.cleanplaats-dark-mode .mp-Nav-dropdown-menu,
+html.cleanplaats-dark-mode .mp-HamburgerMenu,
+html.cleanplaats-dark-mode .mp-Nav-pills {
+  background: var(--cleanplaats-dark-bg) !important;
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .mp-Header-navBar,
+html.cleanplaats-dark-mode .mp-Header-ribbonBottom {
+  border-bottom: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode .mp-Header-menu .mp-Button--flat,
+html.cleanplaats-dark-mode .mp-Header-links .mp-Button--flat,
+html.cleanplaats-dark-mode .mp-Nav-dropdown-toggle,
+html.cleanplaats-dark-mode .mp-HamburgerMenu a,
+html.cleanplaats-dark-mode .mp-Nav-dropdown-menu a,
+html.cleanplaats-dark-mode .mp-Nav-pill--header,
+html.cleanplaats-dark-mode .mp-Nav-pill--separator,
+html.cleanplaats-dark-mode .mp-Header-hamburger-close {
+  background: transparent !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border-color: transparent !important;
+}
+
+html.cleanplaats-dark-mode .mp-Header-menu .mp-Button--flat:hover,
+html.cleanplaats-dark-mode .mp-Header-links .mp-Button--flat:hover,
+html.cleanplaats-dark-mode .mp-Nav-dropdown-toggle:hover,
+html.cleanplaats-dark-mode .mp-HamburgerMenu a:hover,
+html.cleanplaats-dark-mode .mp-Nav-dropdown-menu a:hover,
+html.cleanplaats-dark-mode .mp-Header-menu .mp-Button--flat:focus-visible,
+html.cleanplaats-dark-mode .mp-Header-links .mp-Button--flat:focus-visible,
+html.cleanplaats-dark-mode .mp-Nav-dropdown-toggle:focus-visible,
+html.cleanplaats-dark-mode .mp-HamburgerMenu a:focus-visible,
+html.cleanplaats-dark-mode .mp-Nav-dropdown-menu a:focus-visible,
+html.cleanplaats-dark-mode .mp-Header-hamburger-close:hover,
+html.cleanplaats-dark-mode .mp-Header-hamburger-close:focus-visible {
+  color: #ffffff !important;
+}
+
+html.cleanplaats-dark-mode .mp-Header-menu .mp-Button--callToAction,
+html.cleanplaats-dark-mode .mp-Header-menu .mp-Button--callToAction:visited {
+  color: #ffffff !important;
+}
+
+html.cleanplaats-dark-mode .mp-Header-menu .mp-Icon,
+html.cleanplaats-dark-mode .mp-Header-links .mp-Icon,
+html.cleanplaats-dark-mode .mp-Header-hamburger-close .mp-Icon {
+  opacity: 1 !important;
+  filter: invert(0.82) sepia(0.06) saturate(3) hue-rotate(175deg)
+    brightness(1.08) contrast(0.96) !important;
+}
+
+html.cleanplaats-dark-mode .mymp,
+html.cleanplaats-dark-mode .mymp.require.empty,
+html.cleanplaats-dark-mode .mymp .mp-Topbar,
+html.cleanplaats-dark-mode .mymp .mp-Tab-bar,
+html.cleanplaats-dark-mode .mymp .canvas,
+html.cleanplaats-dark-mode .mymp .table.ad-listing-container,
+html.cleanplaats-dark-mode .mymp .table-body,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.empty-row {
+  background: var(--cleanplaats-dark-bg) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .mymp .mp-Topbar {
+  border-bottom: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode .mymp .mp-Topbar-title,
+html.cleanplaats-dark-mode .mymp .hz-Title,
+html.cleanplaats-dark-mode .mymp .u-colorTextPrimary,
+html.cleanplaats-dark-mode .mymp .u-colorTextSecondary,
+html.cleanplaats-dark-mode .mymp .text,
+html.cleanplaats-dark-mode .mymp .text h3,
+html.cleanplaats-dark-mode .mymp .text p {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .mymp .mp-Tab,
+html.cleanplaats-dark-mode .mymp .mp-Tab:visited {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .mymp .mp-Tab:hover,
+html.cleanplaats-dark-mode .mymp .mp-Tab:focus-visible,
+html.cleanplaats-dark-mode .mymp .mp-Tab.is-selected,
+html.cleanplaats-dark-mode .mymp .mp-Tab.is-selected:visited {
+  color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode .mymp .mp-Tab-bar {
+  border-bottom: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode .mymp .table-head.ad-listing.compact,
+html.cleanplaats-dark-mode .mymp .bubble-help.info,
+html.cleanplaats-dark-mode .mymp .overlay-loader.overlayed {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .mymp .query.mp-Input,
+html.cleanplaats-dark-mode .mymp select,
+html.cleanplaats-dark-mode .mymp input[type="text"] {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border: 1px solid var(--cleanplaats-dark-border) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .mymp .query.mp-Input::placeholder,
+html.cleanplaats-dark-mode .mymp input::placeholder {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .mymp .filter-option,
+html.cleanplaats-dark-mode .mymp .filter-option.selected {
+  color: var(--cleanplaats-dark-link) !important;
+}
+
 html.cleanplaats-dark-mode .hz-Header-searchBar {
   background: transparent !important;
   border: 0 !important;

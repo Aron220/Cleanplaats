@@ -88,6 +88,23 @@ function syncHeaderLogoForDarkMode(enabled) {
             img.setAttribute('src', nextSource);
         }
     });
+
+    document.querySelectorAll('.mp-Header-logo').forEach(link => {
+        if (!(link instanceof HTMLElement)) return;
+
+        if (enabled) {
+            link.style.backgroundImage = `url("${browserAPI.runtime.getURL(CLEANPLAATS_DARK_LOGO_PATH)}")`;
+            link.style.backgroundRepeat = 'no-repeat';
+            link.style.backgroundPosition = 'center';
+            link.style.backgroundSize = 'contain';
+            return;
+        }
+
+        link.style.removeProperty('background-image');
+        link.style.removeProperty('background-repeat');
+        link.style.removeProperty('background-position');
+        link.style.removeProperty('background-size');
+    });
 }
 
 function updateCollapsedPanelIcon(panel = document.getElementById('cleanplaats-panel')) {
