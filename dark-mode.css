@@ -901,6 +901,43 @@ html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Nav-dropdown-toggle {
   padding: 4px 8px !important;
 }
 
+html.cleanplaats-dark-mode .hz-PopOverContent,
+html.cleanplaats-dark-mode .hz-PopOverContent-body,
+html.cleanplaats-dark-mode .hz-PopOverContent-close {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-PopOverContent .hz-Text,
+html.cleanplaats-dark-mode .hz-PopOverContent .u-colorTextPrimary,
+html.cleanplaats-dark-mode .hz-PopOverContent .u-colorTextSecondary {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-PopOverContent .hz-Icon {
+  opacity: 1 !important;
+  filter: invert(0.82) sepia(0.06) saturate(3) hue-rotate(175deg)
+    brightness(1.08) contrast(0.96) !important;
+}
+
+html.cleanplaats-dark-mode .hz-PopOverContent .hz-Button--tertiary,
+html.cleanplaats-dark-mode .hz-PopOverContent .hz-Button--icon-button {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: var(--cleanplaats-dark-text) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-PopOverContent .hz-Button--tertiary:hover,
+html.cleanplaats-dark-mode .hz-PopOverContent .hz-Button--tertiary:focus-visible,
+html.cleanplaats-dark-mode .hz-PopOverContent .hz-Button--icon-button:hover,
+html.cleanplaats-dark-mode .hz-PopOverContent .hz-Button--icon-button:focus-visible {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+}
+
 html.cleanplaats-dark-mode .hz-Header-searchBar .hz-Button,
 html.cleanplaats-dark-mode .hz-Header-searchBar button {
   border-left: 1px solid var(--cleanplaats-dark-border) !important;
