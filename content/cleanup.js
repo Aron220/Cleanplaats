@@ -228,6 +228,15 @@ function removeReservedListings() {
 
 function removeAllAds() {
     let count = 0;
+    const getMarktplaatsMarketingBannerContainer = element => {
+        if (!(element instanceof Element)) {
+            return null;
+        }
+
+        return element.closest('.MpCard-mpCardBanner')
+            || element.closest('[role="button"] .MpCard-mpCardBanner')
+            || element.closest('div[role="button"][tabindex]');
+    };
     const isMarktplaatsSponsoredNotice = element => {
         if (!element) return false;
 
@@ -237,7 +246,11 @@ function removeAllAds() {
     const isMarktplaatsMarketingBanner = element => {
         if (!element) return false;
 
-        if (element.matches?.('.MpCard-mpCardBanner')) {
+        if (
+            element.matches?.('.MpCard-mpCardBanner') ||
+            element.matches?.('div[role="button"][tabindex]') ||
+            element.querySelector?.('.MpCard-mpCardBanner')
+        ) {
             return true;
         }
 
@@ -295,6 +308,7 @@ function removeAllAds() {
         '.ndfc-wrapper[data-testid="ndfc-generic-text"]',
         '[data-testid="ndfc-close"]',
         '.MpCard-mpCardBanner',
+        'div[role="button"][tabindex] > .MpCard-mpCardBanner',
         'img[alt="Marktplaats Marketing Banner"]',
         '.hz-Banner',
         '.hz-Banner--fluid',
@@ -336,10 +350,20 @@ function removeAllAds() {
         }
     });
 
-    document.querySelectorAll('.MpCard-mpCardBanner, img[alt="Marktplaats Marketing Banner"]').forEach(banner => {
-        const bannerCard = banner.closest('.MpCard-mpCardBanner') || banner;
+    document.querySelectorAll('.MpCard-mpCardBanner, div[role="button"][tabindex], img[alt="Marktplaats Marketing Banner"]').forEach(banner => {
+        const bannerCard = getMarktplaatsMarketingBannerContainer(banner) || banner;
         if (isMarktplaatsMarketingBanner(bannerCard) && hideElement(bannerCard)) {
             count++;
+        }
+
+        const bannerWrapper = bannerCard.parentElement;
+        if (
+            bannerWrapper instanceof Element &&
+            bannerWrapper !== bannerCard &&
+            bannerWrapper.childElementCount === 1 &&
+            !bannerWrapper.hasAttribute('data-cleanplaats-hidden')
+        ) {
+            hideElement(bannerWrapper);
         }
     });
 

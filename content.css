@@ -496,6 +496,8 @@
 
   /* Add this to your existing CSS */
   .bannerContainerLoading[data-cleanplaats-hidden],
+  .MpCard-mpCardBanner[data-cleanplaats-hidden],
+  div[role="button"][tabindex][data-cleanplaats-hidden],
   .hz-Banner[data-cleanplaats-hidden],
   .hz-Banner--fluid[data-cleanplaats-hidden],
   .BannerTop-root[data-cleanplaats-hidden],

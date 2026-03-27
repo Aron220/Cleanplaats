@@ -126,7 +126,7 @@ function showUpdatePopup(version) {
     }
     document.getElementById('cleanplaats-update-popup-close')?.addEventListener('click', () => {
         closePopup();
-        showBubbleNotification(`Veel plezier met ${version}, (dat rijmt)`);
+        showBubbleNotification(`Veel plezier met ${version}`);
     });
 }
 

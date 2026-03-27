@@ -64,6 +64,9 @@ function setupObservers() {
                         if (
                             node.classList?.contains('hz-Listing') ||
                             node.querySelector?.('.hz-Listing') ||
+                            node.classList?.contains('MpCard-mpCardBanner') ||
+                            node.matches?.('div[role="button"][tabindex]') ||
+                            node.querySelector?.('.MpCard-mpCardBanner, img[alt="Marktplaats Marketing Banner"]') ||
                             node.classList?.contains('SimilarAdsList-related-ads-section') ||
                             node.querySelector?.('.SimilarAdsList-related-ads-section') ||
                             node.id === 'notifications-root' ||
@@ -92,6 +95,7 @@ function setupObservers() {
                 if (
                     target?.classList?.contains('hz-FeedBannerBlock') ||
                     target?.classList?.contains('Banners-bannerFeedItem') ||
+                    target?.classList?.contains('MpCard-mpCardBanner') ||
                     target?.classList?.contains('SimilarAdsList-related-ads-section') ||
                     target?.classList?.contains('NonFeatureBuyerBanner-root') ||
                     target?.classList?.contains('feature-banner') ||

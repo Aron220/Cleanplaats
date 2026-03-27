@@ -203,6 +203,17 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES = {
+    '2.0.5': {
+        intro: 'Cleanplaats 2.0.5 werkt Marktplaats verder bij met vooral meer dark mode-ondersteuning en een rustigere interface op meerdere pagina’s.',
+        highlights: [
+            'Dark mode is verder uitgebreid op onder meer "Mijn advertenties", account- en plaats advertentie-pagina’s, tabelweergaven en onderdelen rond eigen advertenties.',
+            'Ook losse interface-elementen zoals "Deal gesloten?", voorstel- en leveringsmenu’s nemen nu beter het donkere thema over.',
+            'Storende banners en promotieblokken zijn op meerdere plekken verborgen, waaronder "gerelateerde advertenties" in Favorieten.',
+            'Een visuele flicker bij het laden in dark mode is aangepakt, waardoor pagina’s rustiger en consistenter openen.',
+            "Marktplaats banner voor 'koop je auto bij autobedrijven' weggehaald"
+        ],
+        note: "Zie je nog een onderdeel of licht onderdeel dat door de dark mode heen glipt in veel gebruikte pagina's? Meld het via GitHub issues in het paneel."
+    },
     '2.0.4': {
         intro: 'Cleanplaats 2.0.4 brengt een grote opschoning onder de motorkap, samen met de additie van dark mode en ondersteuning voor 2ememain.',
         highlights: [
