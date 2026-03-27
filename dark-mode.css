@@ -570,7 +570,11 @@ html.cleanplaats-dark-mode .hz-Page-content [class*="FormSection-module-FormSect
 html.cleanplaats-dark-mode .hz-Page-content [class*="FormSection-module-FormSection_header"],
 html.cleanplaats-dark-mode .hz-Page-content [class*="AdAttribute-module-flexContainer"],
 html.cleanplaats-dark-mode .hz-Page-content [class*="Bundles-module-featureSelection"],
-html.cleanplaats-dark-mode .hz-Page-content [class*="TotalPrice-module-wrapper"] {
+html.cleanplaats-dark-mode .hz-Page-content [class*="TotalPrice-module-wrapper"],
+html.cleanplaats-dark-mode .hz-Page-content .SellerIdentity-container,
+html.cleanplaats-dark-mode .hz-Page-content .PhoneUpCallBlock-root,
+html.cleanplaats-dark-mode .hz-Page-content .PhoneUpCallBlock-section,
+html.cleanplaats-dark-mode .hz-Page-content .PhoneUpCallBlock-mobileOnly {
   background: transparent !important;
   color: var(--cleanplaats-dark-text) !important;
 }
@@ -585,7 +589,9 @@ html.cleanplaats-dark-mode .hz-Page-content [class*="FormSection-module-FormSect
 html.cleanplaats-dark-mode .hz-Page-content [class*="ImageBox-module-imageUploadBox"],
 html.cleanplaats-dark-mode .hz-Page-content [class*="HomepageInput-module-HomepageFeature_benefits"],
 html.cleanplaats-dark-mode .hz-Page-content [class*="BundleOption-module-featureColumn"],
-html.cleanplaats-dark-mode .hz-Page-content [class*="TotalPrice-module-content"] {
+html.cleanplaats-dark-mode .hz-Page-content [class*="TotalPrice-module-content"],
+html.cleanplaats-dark-mode .hz-Page-content .SellerIdentity-container,
+html.cleanplaats-dark-mode .hz-Page-content .PhoneUpCallBlock-root {
   background: var(--cleanplaats-dark-bg-elevated) !important;
   border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
   border-radius: 14px !important;
@@ -625,11 +631,30 @@ html.cleanplaats-dark-mode .hz-Page-content [class*="AdAttribute-module-progress
 html.cleanplaats-dark-mode .hz-Page-content [class*="AdAttribute-module-marginTop"],
 html.cleanplaats-dark-mode .hz-Page-content [class*="AdAttribute-module-overflowHidden"],
 html.cleanplaats-dark-mode .hz-Page-content [class*="AdAttribute-module-horizontalBox"],
+html.cleanplaats-dark-mode .hz-Page-content .SellerIdentity-container,
+html.cleanplaats-dark-mode .hz-Page-content .SellerIdentity-container div,
+html.cleanplaats-dark-mode .hz-Page-content .PhoneUpCallBlock-root,
+html.cleanplaats-dark-mode .hz-Page-content .PhoneUpCallBlock-section,
+html.cleanplaats-dark-mode .hz-Page-content .PhoneUpCallBlock-section div,
 html.cleanplaats-dark-mode .hz-Page-content .hz-Title,
 html.cleanplaats-dark-mode .hz-Page-content .hz-Text,
 html.cleanplaats-dark-mode .hz-Page-content .u-colorTextPrimary,
 html.cleanplaats-dark-mode .hz-Page-content .u-colorTextSecondary {
   color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content [class*="FieldTip-module-description"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="BiddingSwitch-module-tip"],
+html.cleanplaats-dark-mode .hz-Page-content .hz-BreadcrumbLabel,
+html.cleanplaats-dark-mode .hz-Page-content .hz-CurrentPage,
+html.cleanplaats-dark-mode .hz-Page-content .SellerIdentity-container a,
+html.cleanplaats-dark-mode .hz-Page-content .PhoneUpCallBlock-root a {
+  color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content .SellerIdentity-container a:hover,
+html.cleanplaats-dark-mode .hz-Page-content .PhoneUpCallBlock-root a:hover {
+  color: #8fc8ff !important;
 }
 
 html.cleanplaats-dark-mode .hz-Page-content [class*="FieldTip-module-description"],
@@ -652,10 +677,24 @@ html.cleanplaats-dark-mode .hz-Page-content [class*="ImageUploaderBox-module-lab
 
 html.cleanplaats-dark-mode .hz-Page-content [class*="ImageUploaderBox-module-icon"],
 html.cleanplaats-dark-mode .hz-Page-content [class*="HomepageInput-module-HomepageFeature_benefits"] .hz-Icon,
-html.cleanplaats-dark-mode .hz-Page-content [class*="BundleOption-module-featureIcon"] {
+html.cleanplaats-dark-mode .hz-Page-content [class*="BundleOption-module-featureIcon"],
+html.cleanplaats-dark-mode .hz-Page-content .PhoneUpCallBlock-root .hz-Icon {
   opacity: 1 !important;
   filter: invert(0.78) sepia(0.06) saturate(3) hue-rotate(175deg)
     brightness(1.08) contrast(0.96) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content .PhoneUpCallBlock-root .hz-Button--secondary {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border: 1px solid var(--cleanplaats-dark-border) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content .PhoneUpCallBlock-root .hz-Button--secondary:hover,
+html.cleanplaats-dark-mode .hz-Page-content .PhoneUpCallBlock-root .hz-Button--secondary:focus-visible {
+  background: var(--cleanplaats-dark-bg-soft-hover) !important;
+  border-color: rgba(140, 200, 255, 0.24) !important;
 }
 
 html.cleanplaats-dark-mode .hz-Page-content [class*="RichTextEditor-module-blockFormatDropdown"],
