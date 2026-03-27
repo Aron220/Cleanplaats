@@ -200,6 +200,95 @@ html.cleanplaats-dark-mode .mymp .filter-option.selected {
   color: var(--cleanplaats-dark-link) !important;
 }
 
+html.cleanplaats-dark-mode .mymp #ad-listing-table-body,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .cells,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .cell,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .description-column,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .status-column,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .views-column,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .position-column {
+  background: transparent !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact {
+  border-top-color: var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .description-title,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .flex-row,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .listing-status,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .amount,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .health,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .cta,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .bid,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .thumbnail-wrapper,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .thumbnail-wrapper a {
+  background: transparent !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .thumbnail-wrapper,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .thumbnail-wrapper a,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .thumbnail-wrapper img {
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .title,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .title:visited,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .type,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .activity,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .renewal,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .amount span[aria-hidden="true"],
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .upcall-label {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .status,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .status a,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .status a:visited,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .feature-phone-upcall,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .feature-phone-upcall:visited {
+  color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .status a:hover,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .feature-phone-upcall:hover {
+  color: #8fc8ff !important;
+}
+
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .mp-Icon,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .hz-Icon {
+  opacity: 1 !important;
+  filter: invert(0.82) sepia(0.06) saturate(3) hue-rotate(175deg)
+    brightness(1.08) contrast(0.96) !important;
+}
+
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .mp-Button--primary,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .opvallen-link.mp-Button--primary,
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .opvallen-link.one-feature-opvallen-link {
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .status-bad {
+  color: #f0ae86 !important;
+}
+
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .status-ok {
+  color: #f3d37b !important;
+}
+
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .status-good {
+  color: #9fd9b0 !important;
+}
+
+html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .verkopen-select {
+  accent-color: var(--cleanplaats-dark-link) !important;
+}
+
 html.cleanplaats-dark-mode .hz-Topbar,
 html.cleanplaats-dark-mode .hz-Topbar-inner-wrapper,
 html.cleanplaats-dark-mode .hz-Tab-bar.has-sticky,
