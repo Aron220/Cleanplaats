@@ -64,6 +64,8 @@ function setupObservers() {
                         if (
                             node.classList?.contains('hz-Listing') ||
                             node.querySelector?.('.hz-Listing') ||
+                            node.classList?.contains('SimilarAdsList-related-ads-section') ||
+                            node.querySelector?.('.SimilarAdsList-related-ads-section') ||
                             node.id?.includes('ad') ||
                             node.id === 'similar-items-root' ||
                             node.querySelector?.('#similar-items-root, .AdmarktSimilarItemsContainer, .AdmarktSimilarItems-root') ||
@@ -86,6 +88,7 @@ function setupObservers() {
                 if (
                     target?.classList?.contains('hz-FeedBannerBlock') ||
                     target?.classList?.contains('Banners-bannerFeedItem') ||
+                    target?.classList?.contains('SimilarAdsList-related-ads-section') ||
                     target?.classList?.contains('AdmarktSimilarItemsContainer') ||
                     target?.classList?.contains('AdmarktSimilarItems-root') ||
                     target?.id === 'similar-items-root' ||

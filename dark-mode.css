@@ -200,6 +200,132 @@ html.cleanplaats-dark-mode .mymp .filter-option.selected {
   color: var(--cleanplaats-dark-link) !important;
 }
 
+html.cleanplaats-dark-mode .hz-Topbar,
+html.cleanplaats-dark-mode .hz-Topbar-inner-wrapper,
+html.cleanplaats-dark-mode .hz-Tab-bar.has-sticky,
+html.cleanplaats-dark-mode .hz-Page-container,
+html.cleanplaats-dark-mode [class*="FavoritesContainer-favorites_container"],
+html.cleanplaats-dark-mode [class*="StickyHeader-sticky-header"],
+html.cleanplaats-dark-mode [class*="FilterSection-filters-container"],
+html.cleanplaats-dark-mode [class*="ListHeader-headers-container"],
+html.cleanplaats-dark-mode [class*="FavoritesList-list-container"] {
+  background: var(--cleanplaats-dark-bg) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Topbar,
+html.cleanplaats-dark-mode .hz-Tab-bar.has-sticky,
+html.cleanplaats-dark-mode [class*="FilterSection-filters-container"],
+html.cleanplaats-dark-mode [class*="ListHeader-headers-container"],
+html.cleanplaats-dark-mode [class*="FavoritesList-list-container"] {
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Topbar-title,
+html.cleanplaats-dark-mode .hz-Tab-bar .hz-Tab,
+html.cleanplaats-dark-mode .hz-Tab-bar .hz-Tab:visited,
+html.cleanplaats-dark-mode [class*="FavoritesContainer-favorites_container"] label,
+html.cleanplaats-dark-mode [class*="FavoritesContainer-favorites_container"] span,
+html.cleanplaats-dark-mode [class*="FavoritesContainer-favorites_container"] p,
+html.cleanplaats-dark-mode [class*="FavoritesContainer-favorites_container"] h4,
+html.cleanplaats-dark-mode [class*="FavoritesContainer-favorites_container"] div {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Tab-bar .hz-Tab,
+html.cleanplaats-dark-mode .hz-Tab-bar .hz-Tab:visited {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Tab-bar .hz-Tab:hover,
+html.cleanplaats-dark-mode .hz-Tab-bar .hz-Tab:focus-visible,
+html.cleanplaats-dark-mode .hz-Tab-bar .hz-Tab.is-selected,
+html.cleanplaats-dark-mode .hz-Tab-bar .hz-Tab.is-selected:visited {
+  color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode [class*="FavoritesContainer-favorites_container"] .hz-Dropdown-formControl,
+html.cleanplaats-dark-mode [class*="FavoritesContainer-favorites_container"] .hz-Dropdown-input,
+html.cleanplaats-dark-mode [class*="FilterSection-filterAll"] {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border: 1px solid var(--cleanplaats-dark-border) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="FavoritesContainer-favorites_container"] .hz-Dropdown-input {
+  border-radius: 10px !important;
+}
+
+html.cleanplaats-dark-mode [class*="FilterSection-filterAll"]:hover,
+html.cleanplaats-dark-mode [class*="FilterSection-filterAll"]:focus-visible {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  border-color: var(--cleanplaats-dark-border-strong) !important;
+}
+
+html.cleanplaats-dark-mode [class*="ListHeader-button-container"] .hz-Button,
+html.cleanplaats-dark-mode [class*="ListHeader-button-container"] button {
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="FavoritesListItem-favorites-list-item"] {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode [class*="FavoritesListItem-favorites-list-item"] [class*="hz-Listing-compact-body"],
+html.cleanplaats-dark-mode [class*="FavoritesListItem-favorites-list-item"] [class*="hz-Listing-compact-content"],
+html.cleanplaats-dark-mode [class*="FavoritesListItem-favorites-list-item"] [class*="FavoritesListItem-hz-Listing-compact-price"],
+html.cleanplaats-dark-mode [class*="FavoritesListItem-favorites-list-item"] [class*="FavoritesListItem-hz-Listing-compact-favorite"],
+html.cleanplaats-dark-mode [class*="FavoritesListItem-favorites-list-item"] [class*="FavoritesListItem-mobile-pricing"] {
+  background: transparent !important;
+  color: var(--cleanplaats-dark-text) !important;
+  opacity: 1 !important;
+}
+
+html.cleanplaats-dark-mode [class*="FavoritesListItem-favorites-list-item"] .hz-Listing-compact-title,
+html.cleanplaats-dark-mode [class*="FavoritesListItem-favorites-list-item"] .hz-Link,
+html.cleanplaats-dark-mode [class*="FavoritesListItem-favorites-list-item"] .hz-Link:visited,
+html.cleanplaats-dark-mode [class*="FavoritesListItem-favorites-list-item"] .hz-TextLink,
+html.cleanplaats-dark-mode [class*="FavoritesListItem-favorites-list-item"] .hz-TextLink:visited {
+  color: #b9dcff !important;
+}
+
+html.cleanplaats-dark-mode [class*="FavoritesListItem-favorites-list-item"] .hz-Listing-compact-seller,
+html.cleanplaats-dark-mode [class*="FavoritesListItem-favorites-list-item"] .hz-Listing-compact-location,
+html.cleanplaats-dark-mode [class*="ListHeader-list-header"] {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode [class*="SimilarAdsList-related-ads-section"] {
+  background: rgba(21, 28, 37, 0.76) !important;
+  border-top: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode [class*="SimilarAdsList-related-copy"] {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode [class*="SimilarAdItem-hz-Listing-compact"] {
+  color: inherit !important;
+  text-decoration-color: transparent !important;
+}
+
+html.cleanplaats-dark-mode [class*="SimilarAdItem-hz-Listing-compact"] [class*="hz-Listing-compact-body"] {
+  background: transparent !important;
+  border: 0 !important;
+}
+
+html.cleanplaats-dark-mode [class*="FavoritesContainer-favorites_container"] .hz-SelectionInput-Input {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border-color: var(--cleanplaats-dark-border-strong) !important;
+}
+
+html.cleanplaats-dark-mode [class*="FavoritesContainer-favorites_container"] .hz-SelectionInput-Input:checked {
+  background: var(--cleanplaats-dark-link) !important;
+  border-color: var(--cleanplaats-dark-link) !important;
+}
+
 html.cleanplaats-dark-mode .hz-Header-searchBar {
   background: transparent !important;
   border: 0 !important;
