@@ -564,6 +564,155 @@ html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-Button:di
   opacity: 1 !important;
 }
 
+html.cleanplaats-dark-mode .hz-Page-content [class*="Category-module-flexContainer"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="PlaceListing-module-placeListing"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="FormSection-module-FormSection"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="FormSection-module-FormSection_header"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="AdAttribute-module-flexContainer"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="Bundles-module-featureSelection"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="TotalPrice-module-wrapper"] {
+  background: transparent !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content [class*="FormSection-module-FormSection"] {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content [class*="ImageBox-module-imageUploadBox"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="HomepageInput-module-HomepageFeature_benefits"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="BundleOption-module-featureColumn"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="TotalPrice-module-content"] {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content [class*="ImageBox-module-imageUploadBox"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="HomepageInput-module-HomepageFeature_benefits"] {
+  background: linear-gradient(180deg, rgba(24, 33, 44, 0.86) 0%, rgba(20, 28, 37, 0.96) 100%) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content [class*="BundleOption-module-featureColumn"] {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content [class*="BundleOption-module-featureColumn"]:hover,
+html.cleanplaats-dark-mode .hz-Page-content [class*="BundleOption-module-featureColumn"]:focus-visible {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border-color: rgba(140, 200, 255, 0.22) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content [class*="Header-module-title"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="Category-module-categoryInfo"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="FieldTip-module-description"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="ImageUploadedStats-module-stats"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="HomepageInput-module-HomepageFeature_list"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="BundleOption-module-header"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="BundleOption-module-description"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="BundleOption-module-featureBody"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="BundleOption-module-features"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="BundleOption-module-featureNote"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="BundleOption-module-price"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="TotalPrice-module-number"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="BiddingSwitch-module-tip"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="AdAttribute-module-progressBarContainer"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="AdAttribute-module-marginTop"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="AdAttribute-module-overflowHidden"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="AdAttribute-module-horizontalBox"],
+html.cleanplaats-dark-mode .hz-Page-content .hz-Title,
+html.cleanplaats-dark-mode .hz-Page-content .hz-Text,
+html.cleanplaats-dark-mode .hz-Page-content .u-colorTextPrimary,
+html.cleanplaats-dark-mode .hz-Page-content .u-colorTextSecondary {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content [class*="FieldTip-module-description"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="BiddingSwitch-module-tip"],
+html.cleanplaats-dark-mode .hz-Page-content .hz-BreadcrumbLabel,
+html.cleanplaats-dark-mode .hz-Page-content .hz-CurrentPage {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content .hz-Breadcrumbs,
+html.cleanplaats-dark-mode .hz-Page-content [class*="Category-module-breadcrumb"] {
+  background: transparent !important;
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content [class*="ImageUploaderBox-module-label"] {
+  background: transparent !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content [class*="ImageUploaderBox-module-icon"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="HomepageInput-module-HomepageFeature_benefits"] .hz-Icon,
+html.cleanplaats-dark-mode .hz-Page-content [class*="BundleOption-module-featureIcon"] {
+  opacity: 1 !important;
+  filter: invert(0.78) sepia(0.06) saturate(3) hue-rotate(175deg)
+    brightness(1.08) contrast(0.96) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content [class*="RichTextEditor-module-blockFormatDropdown"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="RichTextEditor-module-toolbarItem"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="RichTextEditor-module-dropdownCaret"] {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content .hz-SelectionInput,
+html.cleanplaats-dark-mode .hz-Page-content .hz-Switch,
+html.cleanplaats-dark-mode .hz-Page-content .hz-SelectionInput-Container,
+html.cleanplaats-dark-mode .hz-Page-content .hz-SelectionInput-Body,
+html.cleanplaats-dark-mode .hz-Page-content .hz-Switch-Body {
+  background: transparent !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content .hz-SelectionInput-LabelText {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content .hz-SelectionInput-Input {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content .hz-SelectionInput-Input:hover,
+html.cleanplaats-dark-mode .hz-Page-content .hz-SelectionInput-Input:focus {
+  border-color: rgba(140, 200, 255, 0.3) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content .hz-SelectionInput-Input:checked {
+  background: var(--cleanplaats-dark-link) !important;
+  border-color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content .hz-Switch-Button {
+  background: rgba(255, 255, 255, 0.16) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content .hz-Switch-Handle {
+  background: #f2f7fc !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content .hz-Switch-Input:checked + .hz-Switch-Body .hz-Switch-Button {
+  background: var(--cleanplaats-dark-accent) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content .hz-Switch-Body .hz-Icon,
+html.cleanplaats-dark-mode .hz-Page-content .hz-Switch-Body [class*="SvgIcon"] {
+  filter: invert(0.88) sepia(0.03) saturate(3) hue-rotate(175deg)
+    brightness(1.06) contrast(0.98) !important;
+}
+
 html.cleanplaats-dark-mode .hz-Header-searchBar {
   background: transparent !important;
   border: 0 !important;
