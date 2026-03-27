@@ -10,6 +10,10 @@ function persistDarkModePreference(enabled) {
     }
 }
 
+function syncSiteThemeClass() {
+    document.documentElement.classList.toggle(CLEANPLAATS_TWH_SITE_CLASS, is2dehandsFamilySite());
+}
+
 function syncCleanplaatsSortMode(sortMode) {
     if (!sortMode) return;
 
@@ -49,6 +53,7 @@ function setupMarketplaceSortSync() {
 
 function applyDarkModeToDocument(enabled) {
     const isEnabled = Boolean(enabled);
+    syncSiteThemeClass();
     document.documentElement.classList.toggle(CLEANPLAATS_DARK_MODE_CLASS, isEnabled);
     persistDarkModePreference(isEnabled);
     syncHeaderLogoForDarkMode(isEnabled);
@@ -92,7 +97,7 @@ function syncHeaderLogoForDarkMode(enabled) {
     document.querySelectorAll('.mp-Header-logo').forEach(link => {
         if (!(link instanceof HTMLElement)) return;
 
-        if (enabled) {
+        if (enabled && isMarktplaatsSite()) {
             link.style.backgroundImage = `url("${browserAPI.runtime.getURL(CLEANPLAATS_DARK_LOGO_PATH)}")`;
             link.style.backgroundRepeat = 'no-repeat';
             link.style.backgroundPosition = 'center';

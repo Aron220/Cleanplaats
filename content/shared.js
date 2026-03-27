@@ -4,6 +4,7 @@
 
 var browserAPI = typeof browser !== 'undefined' ? browser : chrome;
 var CLEANPLAATS_DARK_MODE_CLASS = 'cleanplaats-dark-mode';
+var CLEANPLAATS_TWH_SITE_CLASS = 'cleanplaats-site-twh';
 var CLEANPLAATS_THEME_STORAGE_KEY = 'cleanplaats:darkMode';
 var CLEANPLAATS_FLOATING_OFFSET_VAR = '--cleanplaats-floating-offset';
 var MARKTPLAATS_DESKTOP_LOGO_MATCH = /\/tenant--nlnl(?:\.[a-z0-9]+)?\.svg$/i;
@@ -31,6 +32,14 @@ function getReviewCTAConfig() {
 
 function is2ememainLocale() {
     return location.hostname.includes('2ememain.be');
+}
+
+function is2dehandsFamilySite() {
+    return location.hostname.includes('2dehands.be') || location.hostname.includes('2ememain.be');
+}
+
+function isMarktplaatsSite() {
+    return location.hostname.includes('marktplaats.nl');
 }
 
 function getPanelLocaleText() {

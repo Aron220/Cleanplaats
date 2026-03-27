@@ -289,6 +289,41 @@ html.cleanplaats-dark-mode .mymp .row.ad-listing.compact .verkopen-select {
   accent-color: var(--cleanplaats-dark-link) !important;
 }
 
+html.cleanplaats-site-twh.cleanplaats-dark-mode .mymp .mp-Tab,
+html.cleanplaats-site-twh.cleanplaats-dark-mode .mymp .mp-Tab:visited {
+  color: #c8d8e8 !important;
+}
+
+html.cleanplaats-site-twh.cleanplaats-dark-mode .mymp .u-colorTextSecondary,
+html.cleanplaats-site-twh.cleanplaats-dark-mode .mymp small,
+html.cleanplaats-site-twh.cleanplaats-dark-mode .mymp .description,
+html.cleanplaats-site-twh.cleanplaats-dark-mode .mymp .hint,
+html.cleanplaats-site-twh.cleanplaats-dark-mode .mymp .meta {
+  color: #c1d2e2 !important;
+}
+
+html.cleanplaats-site-twh.cleanplaats-dark-mode .mymp .mp-Icon,
+html.cleanplaats-site-twh.cleanplaats-dark-mode .mymp .hz-Icon,
+html.cleanplaats-site-twh.cleanplaats-dark-mode .mp-Header .mp-Icon,
+html.cleanplaats-site-twh.cleanplaats-dark-mode .mp-Header .hz-Icon {
+  opacity: 1 !important;
+  filter: brightness(0) invert(1) !important;
+}
+
+html.cleanplaats-site-twh.cleanplaats-dark-mode .mp-Header-menu .mp-Button--callToAction,
+html.cleanplaats-site-twh.cleanplaats-dark-mode .mp-Header-menu .mp-Button--callToAction:visited,
+html.cleanplaats-site-twh.cleanplaats-dark-mode .mp-Header .mp-Button--callToAction,
+html.cleanplaats-site-twh.cleanplaats-dark-mode .mp-Header .mp-Button--callToAction:visited {
+  color: #ffffff !important;
+}
+
+html.cleanplaats-site-twh.cleanplaats-dark-mode .mp-Header-menu .mp-Button--callToAction *,
+html.cleanplaats-site-twh.cleanplaats-dark-mode .mp-Header .mp-Button--callToAction * {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+}
+
 html.cleanplaats-dark-mode .hz-Topbar,
 html.cleanplaats-dark-mode .hz-Topbar-inner-wrapper,
 html.cleanplaats-dark-mode .hz-Tab-bar.has-sticky,
@@ -1197,6 +1232,33 @@ html.cleanplaats-dark-mode .LoginComponent-root .hz-SvgAssetSocialBadgeGoogle {
   height: 20px !important;
   min-width: 20px !important;
   min-height: 20px !important;
+}
+
+html.cleanplaats-dark-mode .hz-Inpage,
+html.cleanplaats-dark-mode .hz-Inpage.hz-Inpage--info,
+html.cleanplaats-dark-mode .hz-Inpage .hz-Inpage-body {
+  background: rgba(31, 42, 54, 0.72) !important;
+  background-color: rgba(31, 42, 54, 0.72) !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Inpage .hz-Inpage-title,
+html.cleanplaats-dark-mode .hz-Inpage .hz-Inpage-title *,
+html.cleanplaats-dark-mode .hz-Inpage .hz-Inpage-body,
+html.cleanplaats-dark-mode .hz-Inpage .hz-Inpage-body * {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Inpage .hz-Inpage-icon {
+  color: #8cc8ff !important;
+}
+
+html.cleanplaats-dark-mode .hz-Inpage .hz-Inpage-icon .hz-SvgIcon,
+html.cleanplaats-dark-mode .hz-Inpage .hz-Inpage-icon .hz-Icon {
+  filter: invert(0.76) sepia(0.18) saturate(2.8) hue-rotate(175deg)
+    brightness(1.02) contrast(0.95) !important;
+  opacity: 1 !important;
 }
 
 html.cleanplaats-dark-mode .LinksBlock-root .LinksBlock-icon .hz-SvgIcon,

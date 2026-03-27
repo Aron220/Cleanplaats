@@ -1,6 +1,7 @@
 (() => {
     const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
     const DARK_MODE_CLASS = 'cleanplaats-dark-mode';
+    const TWH_SITE_CLASS = 'cleanplaats-site-twh';
     const THEME_STORAGE_KEY = 'cleanplaats:darkMode';
     const STORAGE_KEY = 'cleanplaatsSettings';
     const EARLY_STYLE_ID = 'cleanplaats-early-dark-mode';
@@ -140,8 +141,14 @@ html.cleanplaats-dark-mode [class*="Skeleton-withAnimation"]::before {
         (document.head || document.documentElement).appendChild(style);
     }
 
+    function syncSiteThemeClass() {
+        const isTwhSite = location.hostname.includes('2dehands.be') || location.hostname.includes('2ememain.be');
+        document.documentElement.classList.toggle(TWH_SITE_CLASS, isTwhSite);
+    }
+
     function applyDarkMode(enabled) {
         const isEnabled = Boolean(enabled);
+        syncSiteThemeClass();
         document.documentElement.classList.toggle(DARK_MODE_CLASS, isEnabled);
         ensureEarlyDarkModeStyle(isEnabled);
     }
