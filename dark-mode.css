@@ -326,6 +326,244 @@ html.cleanplaats-dark-mode [class*="FavoritesContainer-favorites_container"] .hz
   border-color: var(--cleanplaats-dark-link) !important;
 }
 
+html.cleanplaats-dark-mode .hz-Page-element--aside,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-UtilsBlock.u-backgroundColorBackgroundSurface {
+  background: var(--cleanplaats-dark-bg) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-UtilsBlock.u-backgroundColorBackgroundSurface {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-Title,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-Text,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-TextContent,
+html.cleanplaats-dark-mode .hz-Page-element--aside .u-colorTextPrimary {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-List._withDivider_gi4uo_6 .hz-ListItem--menu,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-List._withDivider_gi4uo_6 .hz-ListItemButton {
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItemButton {
+  background: transparent !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border-radius: 10px !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  transition: background-color 0.15s ease, color 0.15s ease !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItemButton .hz-ListItem,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItemButton .hz-ListItem--content,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItemButton .hz-ListItem--menuItem,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItemButton .hz-TextContent,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItemButton > .hz-ListItem--withIcon,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItemButton > .hz-ListItem--content.hz-ListItem--menuItem {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--menu:hover,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--menu:focus-within {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border-radius: 10px !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--menu:hover > .hz-ListItemButton,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--menu:focus-within > .hz-ListItemButton,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--menu:hover > .hz-ListItemButton > .hz-ListItem--withIcon,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--menu:focus-within > .hz-ListItemButton > .hz-ListItem--withIcon,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--menu:hover > .hz-ListItemButton > .hz-ListItem--content.hz-ListItem--menuItem,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--menu:focus-within > .hz-ListItemButton > .hz-ListItem--content.hz-ListItem--menuItem,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--menu:hover > .hz-ListItemButton .hz-TextContent,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--menu:focus-within > .hz-ListItemButton .hz-TextContent,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--menu:hover > .hz-ListItemButton .hz-Text,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--menu:focus-within > .hz-ListItemButton .hz-Text {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected .hz-ListItemButton {
+  background: rgba(31, 127, 209, 0.18) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  border-radius: 10px !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected .hz-ListItem,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected .hz-ListItem--content,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected .hz-ListItem--menuItem,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected .hz-TextContent,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected .hz-ListItemButton > .hz-ListItem--withIcon,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected .hz-ListItemButton > .hz-ListItem--content.hz-ListItem--menuItem {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  border-radius: inherit !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected .hz-Text,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected .u-colorTextControlsSelected,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected .hz-ListItemButton {
+  color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected:hover,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected:focus-within,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected:hover .hz-ListItemButton,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected:focus-within .hz-ListItemButton {
+  background: rgba(31, 127, 209, 0.18) !important;
+  color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--menu.hz-ListItem--selected:hover,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--menu.hz-ListItem--selected:focus-within {
+  background: transparent !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected:hover > .hz-ListItemButton .hz-TextContent,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected:focus-within > .hz-ListItemButton .hz-TextContent,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected:hover > .hz-ListItemButton .hz-Text,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected:focus-within > .hz-ListItemButton .hz-Text,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected:hover > .hz-ListItemButton .u-colorTextControlsSelected,
+html.cleanplaats-dark-mode .hz-Page-element--aside .hz-ListItem--selected:focus-within > .hz-ListItemButton .u-colorTextControlsSelected {
+  color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"],
+html.cleanplaats-dark-mode [class*="CategorySelection-module-main"],
+html.cleanplaats-dark-mode .syi-categories-section,
+html.cleanplaats-dark-mode .categories-wrap,
+html.cleanplaats-dark-mode [class*="ManualSelect-module-manualSelectContainer"] {
+  background: transparent !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-Title,
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-Text,
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .u-colorTextPrimary,
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .u-colorTextSecondary,
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .input-label,
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] span,
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] div {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-TextField,
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-TextField-footer,
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-TextField-formControl {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-TextField-formControl {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border: 1px solid var(--cleanplaats-dark-border) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-TextField-formControl:focus-within {
+  border-color: rgba(140, 200, 255, 0.42) !important;
+  box-shadow: inset 0 0 0 1px rgba(140, 200, 255, 0.18) !important;
+}
+
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-TextField-input,
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-TextField-input::placeholder {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-TextField-input::placeholder,
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .u-colorTextSecondary,
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-TextField-footer .hz-Text {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-Dropdown,
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-Dropdown-formControl,
+html.cleanplaats-dark-mode [class*="ManualSelect-module-manualSelect"] {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-Dropdown-input,
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] [class*="ManualSelect-module-manualSelect"] .hz-Dropdown-input {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border: 1px solid var(--cleanplaats-dark-border) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-Dropdown-input:focus,
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-Dropdown-input:focus-visible {
+  border-color: rgba(140, 200, 255, 0.42) !important;
+  box-shadow: inset 0 0 0 1px rgba(140, 200, 255, 0.18) !important;
+  outline: 0 !important;
+}
+
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-Dropdown-input option {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-SvgIconArrowDown,
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-SvgIconCategoryCars,
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-Dropdown .hz-Icon {
+  opacity: 1 !important;
+  filter: invert(0.78) sepia(0.06) saturate(3) hue-rotate(175deg)
+    brightness(1.08) contrast(0.96) !important;
+}
+
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-Button--secondary {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-Button--secondary:hover,
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-Button--secondary:focus-visible {
+  background: var(--cleanplaats-dark-bg-soft-hover) !important;
+  border-color: var(--cleanplaats-dark-link) !important;
+  color: #f7fbff !important;
+}
+
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .CategorySelection-module-submitButton:disabled,
+html.cleanplaats-dark-mode [class*="CategorySelection-module-box"] .hz-Button:disabled {
+  background: rgba(31, 42, 54, 0.55) !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+  color: var(--cleanplaats-dark-text-muted) !important;
+  opacity: 1 !important;
+}
+
 html.cleanplaats-dark-mode .hz-Header-searchBar {
   background: transparent !important;
   border: 0 !important;
