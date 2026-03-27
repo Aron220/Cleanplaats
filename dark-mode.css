@@ -1361,6 +1361,142 @@ html.cleanplaats-dark-mode .ListingHeader-action .hz-Button {
   box-shadow: none !important;
 }
 
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .hz-Modal-Header,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .hz-Modal-Content,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .PaymentRequestComposer-module-container-ATW7t,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .PaymentRequestComposer-module-optionsWrapper-xvzJq,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .OBPTransactionSupport-module-root-iPGCb {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .hz-Title,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .hz-Text,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal strong,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .u-colorTextPrimary {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .u-colorTextSecondary,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .u-textStyleBodySmall,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .OBPTransactionSupport-module-root-iPGCb .hz-Text {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .u-backgroundColorBackgroundSecondary,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .u-backgroundColorBackgroundDefault,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .hz-UtilsBlock.u-backgroundColorBackgroundSecondary,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .hz-UtilsBlock.u-backgroundColorBackgroundDefault {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+}
+
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingApp-module-root-NAusX,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .Header-module-root-Ws2Y3,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingOptionsByType-module-listSection-gNscY,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingOptionsByType-module-list-vmgiN,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingServiceType-module-root-StCL_,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingOption-module-root-g9k_o,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .CostPrice-module-root-eUO5p,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .Gutter-module-root-YYL5n {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingOption-module-root-g9k_o,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingServiceType-module-clickable-IwuV2 {
+  border-radius: 12px !important;
+}
+
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingOptionsByType-module-list-vmgiN li,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingOption-module-root-g9k_o,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingServiceType-module-root-StCL_ {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+}
+
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingOptionsByType-module-list-vmgiN li {
+  background: transparent !important;
+}
+
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingOptionsByType-module-list-vmgiN li:hover,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingOptionsByType-module-list-vmgiN li:focus-visible,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingOption-module-root-g9k_o:hover,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingOption-module-root-g9k_o:focus-visible,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingServiceType-module-clickable-IwuV2:hover,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingServiceType-module-clickable-IwuV2:focus-visible {
+  background: var(--cleanplaats-dark-bg-soft-hover) !important;
+}
+
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingOptionsByType-module-list-vmgiN li:hover,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingOptionsByType-module-list-vmgiN li:focus-visible {
+  background: transparent !important;
+}
+
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingOptionsByType-module-list-vmgiN li:hover *,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingOptionsByType-module-list-vmgiN li:focus-visible *,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingOption-module-root-g9k_o:hover *,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingOption-module-root-g9k_o:focus-visible *,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingServiceType-module-clickable-IwuV2:hover *,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .ShippingServiceType-module-clickable-IwuV2:focus-visible * {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .Row-module-root-KjQzq:hover,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .Row-module-root-KjQzq:focus-visible,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .Row-module-clickable-Qrm6d:hover,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .Row-module-clickable-Qrm6d:focus-visible {
+  background: var(--cleanplaats-dark-bg-soft-hover) !important;
+}
+
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .Row-module-root-KjQzq:hover *,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .Row-module-root-KjQzq:focus-visible *,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .Row-module-clickable-Qrm6d:hover *,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .Row-module-clickable-Qrm6d:focus-visible * {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .hz-TextField-formControl,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .hz-TextField-input {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .hz-TextField-prefix {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .hz-Button--action-image,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .hz-Button--icon-button {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .hz-Button--action-image:hover,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .hz-Button--action-image:focus-visible,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .hz-Button--icon-button:hover,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .hz-Button--icon-button:focus-visible {
+  background: var(--cleanplaats-dark-bg-soft-hover) !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+}
+
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .hz-Link {
+  color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .hz-Icon,
+html.cleanplaats-dark-mode .ReactModal__Content.hz-Modal .hz-Asset {
+  opacity: 1 !important;
+  filter: invert(0.82) sepia(0.06) saturate(3) hue-rotate(175deg)
+    brightness(1.08) contrast(0.96) !important;
+}
+
 html.cleanplaats-dark-mode .ListingHeader-action .hz-Link:hover,
 html.cleanplaats-dark-mode .ListingHeader-action .hz-Link:focus-visible,
 html.cleanplaats-dark-mode .ListingHeader-action .hz-Button:hover,
