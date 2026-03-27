@@ -68,7 +68,8 @@ function setupObservers() {
                             node.querySelector?.('.SimilarAdsList-related-ads-section') ||
                             node.id === 'notifications-root' ||
                             node.classList?.contains('NonFeatureBuyerBanner-root') ||
-                            node.querySelector?.('#notifications-root, .NonFeatureBuyerBanner-root') ||
+                            node.classList?.contains('feature-banner') ||
+                            node.querySelector?.('#notifications-root, .NonFeatureBuyerBanner-root, .feature-banner[data-testid="50-percent-off-banner"]') ||
                             node.id?.includes('ad') ||
                             node.id === 'similar-items-root' ||
                             node.querySelector?.('#similar-items-root, .AdmarktSimilarItemsContainer, .AdmarktSimilarItems-root') ||
@@ -93,6 +94,7 @@ function setupObservers() {
                     target?.classList?.contains('Banners-bannerFeedItem') ||
                     target?.classList?.contains('SimilarAdsList-related-ads-section') ||
                     target?.classList?.contains('NonFeatureBuyerBanner-root') ||
+                    target?.classList?.contains('feature-banner') ||
                     target?.classList?.contains('AdmarktSimilarItemsContainer') ||
                     target?.classList?.contains('AdmarktSimilarItems-root') ||
                     target?.id === 'notifications-root' ||

@@ -428,10 +428,14 @@ function removeSimilarAdsSections() {
 function removeNonFeatureBuyerBanner() {
     let count = 0;
 
-    document.querySelectorAll('#notifications-root, .NonFeatureBuyerBanner-root').forEach(element => {
+    document.querySelectorAll(
+        '#notifications-root, .NonFeatureBuyerBanner-root, .feature-banner[data-testid="50-percent-off-banner"]'
+    ).forEach(element => {
         const banner = element.id === 'notifications-root'
             ? element
-            : element.closest('#notifications-root') || element;
+            : element.closest('#notifications-root')
+                || element.closest('.feature-banner[data-testid="50-percent-off-banner"]')
+                || element;
 
         if (hideElement(banner)) {
             count++;
