@@ -66,6 +66,9 @@ function setupObservers() {
                             node.querySelector?.('.hz-Listing') ||
                             node.classList?.contains('SimilarAdsList-related-ads-section') ||
                             node.querySelector?.('.SimilarAdsList-related-ads-section') ||
+                            node.id === 'notifications-root' ||
+                            node.classList?.contains('NonFeatureBuyerBanner-root') ||
+                            node.querySelector?.('#notifications-root, .NonFeatureBuyerBanner-root') ||
                             node.id?.includes('ad') ||
                             node.id === 'similar-items-root' ||
                             node.querySelector?.('#similar-items-root, .AdmarktSimilarItemsContainer, .AdmarktSimilarItems-root') ||
@@ -89,8 +92,10 @@ function setupObservers() {
                     target?.classList?.contains('hz-FeedBannerBlock') ||
                     target?.classList?.contains('Banners-bannerFeedItem') ||
                     target?.classList?.contains('SimilarAdsList-related-ads-section') ||
+                    target?.classList?.contains('NonFeatureBuyerBanner-root') ||
                     target?.classList?.contains('AdmarktSimilarItemsContainer') ||
                     target?.classList?.contains('AdmarktSimilarItems-root') ||
+                    target?.id === 'notifications-root' ||
                     target?.id === 'similar-items-root' ||
                     target?.id === 'banner-right-container' ||
                     target?.id === 'banner-top-dt-container'

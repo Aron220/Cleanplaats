@@ -58,6 +58,7 @@ function performCleanup() {
     removeAllAds();
     removePersistentGoogleAds();
     removeSimilarAdsSections();
+    removeNonFeatureBuyerBanner();
 
     if (CLEANPLAATS.settings.removeTopAds) removeTopAdvertisements();
     if (CLEANPLAATS.settings.removeDagtoppers) removeDagtoppers();
@@ -417,6 +418,22 @@ function removeSimilarAdsSections() {
 
     document.querySelectorAll('.SimilarAdsList-related-ads-section').forEach(section => {
         if (hideElement(section)) {
+            count++;
+        }
+    });
+
+    CLEANPLAATS.stats.otherAdsRemoved += count;
+}
+
+function removeNonFeatureBuyerBanner() {
+    let count = 0;
+
+    document.querySelectorAll('#notifications-root, .NonFeatureBuyerBanner-root').forEach(element => {
+        const banner = element.id === 'notifications-root'
+            ? element
+            : element.closest('#notifications-root') || element;
+
+        if (hideElement(banner)) {
             count++;
         }
     });
