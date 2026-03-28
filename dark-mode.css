@@ -2458,6 +2458,12 @@ html.cleanplaats-dark-mode .hz-Header-logo {
   background: #253240;
 }
 
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-button.secondary:hover,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-button.secondary:focus-visible {
+  background: #2b3948;
+  border-color: rgba(166, 189, 214, 0.2);
+}
+
 .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-bmc-button:hover,
 .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-bmc-button:focus {
   box-shadow: 0 12px 26px rgba(0, 0, 0, 0.34);

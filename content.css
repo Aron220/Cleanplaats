@@ -350,6 +350,67 @@
     background-color: #c1c1c1;
     border-radius: 3px;
   }
+
+  .cleanplaats-panel-view {
+    display: none;
+  }
+
+  .cleanplaats-panel-view.active {
+    display: block;
+  }
+
+  .cleanplaats-panel-view-header {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+
+  .cleanplaats-panel-view-topline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .cleanplaats-panel-view-title {
+    color: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .cleanplaats-panel-view-copy {
+    color: inherit;
+    font-size: 12.5px;
+    line-height: 1.45;
+    max-width: 24ch;
+    opacity: 0.68;
+  }
+
+  .cleanplaats-panel-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(127, 127, 127, 0.1);
+    border: 1px solid rgba(127, 127, 127, 0.16);
+    border-radius: 999px;
+    color: inherit;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 9px;
+    opacity: 0.84;
+    transition: opacity 0.2s ease, color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .cleanplaats-panel-back:hover {
+    opacity: 1;
+    background: rgba(127, 127, 127, 0.15);
+    border-color: rgba(127, 127, 127, 0.24);
+  }
   
   /* Options Styling */
   .cleanplaats-options {
@@ -416,8 +477,36 @@
     cursor: pointer;
     user-select: none;
     flex: 1;
-    white-space: nowrap;
+    min-width: 0;
+    white-space: normal;
+    line-height: 1.4;
     margin-left: 0 !important;
+  }
+
+  .cleanplaats-option-label-text {
+    display: inline;
+    min-width: 0;
+  }
+
+  .cleanplaats-results-dropdown-row .cleanplaats-option-label {
+    white-space: nowrap;
+  }
+
+  .cleanplaats-option-preference {
+    align-items: flex-start;
+    padding-top: 12px;
+    border-top: 1px solid #f1f3f5;
+  }
+
+  .cleanplaats-option-preference .cleanplaats-switch {
+    flex: 0 0 auto;
+    margin-top: 2px;
+  }
+
+  .cleanplaats-option-preference .cleanplaats-tooltip-icon {
+    margin-left: 6px;
+    margin-top: 0;
+    vertical-align: text-top;
   }
   
   /* Button Styling */
@@ -451,6 +540,18 @@
   
   .cleanplaats-button.secondary:hover {
     background: #e8e8e8;
+  }
+
+  .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-button.secondary:hover,
+  .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-button.secondary:focus-visible {
+    background: #2f3e4e !important;
+    border-color: rgba(166, 189, 214, 0.24) !important;
+    color: #f3f7fb !important;
+  }
+
+  .cleanplaats-panel-nav-button {
+    margin-top: 10px;
+    margin-bottom: 4px;
   }
 
   /* Stats Area */

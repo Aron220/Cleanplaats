@@ -105,121 +105,151 @@ function createControlPanel() {
             </div>
         </div>
         <div class="cleanplaats-content">
-            <a
-                href="https://buymeacoffee.com/cleanplaats"
-                class="cleanplaats-bmc-button"
-                target="_blank"
-                rel="noopener"
-                title="${panelText.supportTitle}"
-            >
-                <span class="cleanplaats-bmc-emoji">☕</span>
-                <span class="cleanplaats-bmc-text">${panelText.supportButton}</span>
-            </a>
-            <div class="cleanplaats-options">
-                <div class="cleanplaats-section-title">${panelText.optionsTitle}</div>
-                <div class="cleanplaats-option">
-                    <label class="cleanplaats-switch">
-                        <input type="checkbox" id="removeTopAds" ${CLEANPLAATS.settings.removeTopAds ? 'checked' : ''}>
-                        <span class="cleanplaats-switch-slider"></span>
-                    </label>
-                    <label for="removeTopAds" class="cleanplaats-option-label">
-                        ${panelText.topAdLabel}
-                        <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.topAdTooltip}">?</span>
-                    </label>
+            <div class="cleanplaats-panel-view" id="cleanplaats-view-filters">
+                <a
+                    href="https://buymeacoffee.com/cleanplaats"
+                    class="cleanplaats-bmc-button"
+                    target="_blank"
+                    rel="noopener"
+                    title="${panelText.supportTitle}"
+                >
+                    <span class="cleanplaats-bmc-emoji">☕</span>
+                    <span class="cleanplaats-bmc-text">${panelText.supportButton}</span>
+                </a>
+                <div class="cleanplaats-options">
+                    <div class="cleanplaats-section-title">${panelText.optionsTitle}</div>
+                    <div class="cleanplaats-option">
+                        <label class="cleanplaats-switch">
+                            <input type="checkbox" id="removeTopAds" ${CLEANPLAATS.settings.removeTopAds ? 'checked' : ''}>
+                            <span class="cleanplaats-switch-slider"></span>
+                        </label>
+                        <label for="removeTopAds" class="cleanplaats-option-label">
+                            ${panelText.topAdLabel}
+                            <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.topAdTooltip}">?</span>
+                        </label>
+                    </div>
+                    <div class="cleanplaats-option">
+                        <label class="cleanplaats-switch">
+                            <input type="checkbox" id="removeDagtoppers" ${CLEANPLAATS.settings.removeDagtoppers ? 'checked' : ''}>
+                            <span class="cleanplaats-switch-slider"></span>
+                        </label>
+                        <label for="removeDagtoppers" class="cleanplaats-option-label">
+                            ${panelText.dagtoppersLabel}
+                            <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.dagtoppersTooltip}">?</span>
+                        </label>
+                    </div>
+                    <div class="cleanplaats-option">
+                        <label class="cleanplaats-switch">
+                            <input type="checkbox" id="removePromotedListings" ${CLEANPLAATS.settings.removePromotedListings ? 'checked' : ''}>
+                            <span class="cleanplaats-switch-slider"></span>
+                        </label>
+                        <label for="removePromotedListings" class="cleanplaats-option-label">
+                            ${panelText.promotedListingsLabel}
+                            <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.promotedListingsTooltip}">?</span>
+                        </label>
+                    </div>
+                    <div class="cleanplaats-option">
+                        <label class="cleanplaats-switch">
+                            <input type="checkbox" id="removeOpvalStickers" ${CLEANPLAATS.settings.removeOpvalStickers ? 'checked' : ''}>
+                            <span class="cleanplaats-switch-slider"></span>
+                        </label>
+                        <label for="removeOpvalStickers" class="cleanplaats-option-label">
+                            ${panelText.stickersLabel}
+                            <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.stickersTooltip}">?</span>
+                        </label>
+                    </div>
+                    <div class="cleanplaats-option">
+                        <label class="cleanplaats-switch">
+                            <input type="checkbox" id="removeReservedListings" ${CLEANPLAATS.settings.removeReservedListings ? 'checked' : ''}>
+                            <span class="cleanplaats-switch-slider"></span>
+                        </label>
+                        <label for="removeReservedListings" class="cleanplaats-option-label">
+                            ${panelText.reservedLabel}
+                            <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.reservedTooltip}">?</span>
+                        </label>
+                    </div>
+                    <button id="cleanplaats-open-preferences" class="cleanplaats-button secondary cleanplaats-panel-nav-button" type="button">${panelText.preferencesLabel}</button>
+                    <div class="cleanplaats-option cleanplaats-results-dropdown-row">
+                        <label for="cleanplaats-results-dropdown" class="cleanplaats-option-label" style="min-width:120px;">${panelText.resultsPerPageLabel}</label>
+                        <select id="cleanplaats-results-dropdown" class="cleanplaats-results-dropdown">
+                            <option value="30" ${CLEANPLAATS.settings.resultsPerPage == 30 ? 'selected' : ''}>30</option>
+                            <option value="50" ${CLEANPLAATS.settings.resultsPerPage == 50 ? 'selected' : ''}>50</option>
+                            <option value="100" ${CLEANPLAATS.settings.resultsPerPage == 100 ? 'selected' : ''}>100</option>
+                        </select>
+                    </div>
+                    <div class="cleanplaats-option cleanplaats-results-dropdown-row">
+                        <label for="cleanplaats-sort-dropdown" class="cleanplaats-option-label" style="min-width:120px;">${panelText.defaultSortLabel}</label>
+                        <select id="cleanplaats-sort-dropdown" class="cleanplaats-results-dropdown">
+                            <option value="standard" ${CLEANPLAATS.settings.defaultSortMode == 'standard' ? 'selected' : ''}>${panelText.sortOptions.standard}</option>
+                            <option value="date_new_old" ${CLEANPLAATS.settings.defaultSortMode == 'date_new_old' ? 'selected' : ''}>${panelText.sortOptions.date_new_old}</option>
+                            <option value="date_old_new" ${CLEANPLAATS.settings.defaultSortMode == 'date_old_new' ? 'selected' : ''}>${panelText.sortOptions.date_old_new}</option>
+                            <option value="price_low_high" ${CLEANPLAATS.settings.defaultSortMode == 'price_low_high' ? 'selected' : ''}>${panelText.sortOptions.price_low_high}</option>
+                            <option value="price_high_low" ${CLEANPLAATS.settings.defaultSortMode == 'price_high_low' ? 'selected' : ''}>${panelText.sortOptions.price_high_low}</option>
+                            <option value="distance" ${CLEANPLAATS.settings.defaultSortMode == 'distance' ? 'selected' : ''}>${panelText.sortOptions.distance}</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="cleanplaats-option">
-                    <label class="cleanplaats-switch">
-                        <input type="checkbox" id="removeDagtoppers" ${CLEANPLAATS.settings.removeDagtoppers ? 'checked' : ''}>
-                        <span class="cleanplaats-switch-slider"></span>
-                    </label>
-                    <label for="removeDagtoppers" class="cleanplaats-option-label">
-                        ${panelText.dagtoppersLabel}
-                        <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.dagtoppersTooltip}">?</span>
-                    </label>
+
+                ${CLEANPLAATS.featureFlags.showStats ? `
+                <div class="cleanplaats-stats cleanplaats-stats-compact" id="cleanplaats-stats">
+                    <div class="cleanplaats-section-title">${panelText.statsTitle}</div>
+                    <div class="cleanplaats-stat-item">
+                        <span class="cleanplaats-stat-label">${panelText.statsTop}</span>
+                        <span class="cleanplaats-stat-value" id="cleanplaats-topads-count">0</span>
+                    </div>
+                    <div class="cleanplaats-stat-item">
+                        <span class="cleanplaats-stat-label">${panelText.statsDagtoppers}</span>
+                        <span class="cleanplaats-stat-value" id="cleanplaats-dagtoppers-count">0</span>
+                    </div>
+                    <div class="cleanplaats-stat-item">
+                        <span class="cleanplaats-stat-label">${panelText.statsBusiness}</span>
+                        <span class="cleanplaats-stat-value" id="cleanplaats-promoted-count">0</span>
+                    </div>
+                    <div class="cleanplaats-stat-item">
+                        <span class="cleanplaats-stat-label">${panelText.statsStickers}</span>
+                        <span class="cleanplaats-stat-value" id="cleanplaats-stickers-count">0</span>
+                    </div>
+                    <div class="cleanplaats-stat-item">
+                        <span class="cleanplaats-stat-label">${panelText.statsOther}</span>
+                        <span class="cleanplaats-stat-value" id="cleanplaats-otherads-count">0</span>
+                    </div>
+                    <div class="cleanplaats-stat-item">
+                        <span class="cleanplaats-stat-label">${panelText.statsTotal}</span>
+                        <span class="cleanplaats-stat-value" id="cleanplaats-total-count-stats">0</span>
+                    </div>
                 </div>
-                <div class="cleanplaats-option">
-                    <label class="cleanplaats-switch">
-                        <input type="checkbox" id="removePromotedListings" ${CLEANPLAATS.settings.removePromotedListings ? 'checked' : ''}>
-                        <span class="cleanplaats-switch-slider"></span>
-                    </label>
-                    <label for="removePromotedListings" class="cleanplaats-option-label">
-                        ${panelText.promotedListingsLabel}
-                        <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.promotedListingsTooltip}">?</span>
-                    </label>
+                ` : ''}
+
+                <button id="cleanplaats-manage-terms" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageTerms}</button>
+                <button id="cleanplaats-manage-blacklist" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageSellers}</button>
+            </div>
+            <div class="cleanplaats-panel-view" id="cleanplaats-view-preferences">
+                <div class="cleanplaats-panel-view-header">
+                    <div class="cleanplaats-panel-view-topline">
+                        <button id="cleanplaats-back-to-filters" class="cleanplaats-panel-back" type="button">${panelText.backLabel}</button>
+                        <div class="cleanplaats-panel-view-title">${panelText.preferencesLabel}</div>
+                    </div>
+                    ${panelText.preferencesIntro ? `
+                    <div class="cleanplaats-panel-view-copy">
+                        ${panelText.preferencesIntro}
+                    </div>
+                    ` : ''}
                 </div>
-                <div class="cleanplaats-option">
-                    <label class="cleanplaats-switch">
-                        <input type="checkbox" id="removeOpvalStickers" ${CLEANPLAATS.settings.removeOpvalStickers ? 'checked' : ''}>
-                        <span class="cleanplaats-switch-slider"></span>
-                    </label>
-                    <label for="removeOpvalStickers" class="cleanplaats-option-label">
-                        ${panelText.stickersLabel}
-                        <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.stickersTooltip}">?</span>
-                    </label>
-                </div>
-                <div class="cleanplaats-option">
-                    <label class="cleanplaats-switch">
-                        <input type="checkbox" id="removeReservedListings" ${CLEANPLAATS.settings.removeReservedListings ? 'checked' : ''}>
-                        <span class="cleanplaats-switch-slider"></span>
-                    </label>
-                    <label for="removeReservedListings" class="cleanplaats-option-label">
-                        ${panelText.reservedLabel}
-                        <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.reservedTooltip}">?</span>
-                    </label>
-                </div>
-                <div class="cleanplaats-option cleanplaats-results-dropdown-row">
-                    <label for="cleanplaats-results-dropdown" class="cleanplaats-option-label" style="min-width:120px;">${panelText.resultsPerPageLabel}</label>
-                    <select id="cleanplaats-results-dropdown" class="cleanplaats-results-dropdown">
-                        <option value="30" ${CLEANPLAATS.settings.resultsPerPage == 30 ? 'selected' : ''}>30</option>
-                        <option value="50" ${CLEANPLAATS.settings.resultsPerPage == 50 ? 'selected' : ''}>50</option>
-                        <option value="100" ${CLEANPLAATS.settings.resultsPerPage == 100 ? 'selected' : ''}>100</option>
-                    </select>
-                </div>
-                <div class="cleanplaats-option cleanplaats-results-dropdown-row">
-                    <label for="cleanplaats-sort-dropdown" class="cleanplaats-option-label" style="min-width:120px;">${panelText.defaultSortLabel}</label>
-                    <select id="cleanplaats-sort-dropdown" class="cleanplaats-results-dropdown">
-                        <option value="standard" ${CLEANPLAATS.settings.defaultSortMode == 'standard' ? 'selected' : ''}>${panelText.sortOptions.standard}</option>
-                        <option value="date_new_old" ${CLEANPLAATS.settings.defaultSortMode == 'date_new_old' ? 'selected' : ''}>${panelText.sortOptions.date_new_old}</option>
-                        <option value="date_old_new" ${CLEANPLAATS.settings.defaultSortMode == 'date_old_new' ? 'selected' : ''}>${panelText.sortOptions.date_old_new}</option>
-                        <option value="price_low_high" ${CLEANPLAATS.settings.defaultSortMode == 'price_low_high' ? 'selected' : ''}>${panelText.sortOptions.price_low_high}</option>
-                        <option value="price_high_low" ${CLEANPLAATS.settings.defaultSortMode == 'price_high_low' ? 'selected' : ''}>${panelText.sortOptions.price_high_low}</option>
-                        <option value="distance" ${CLEANPLAATS.settings.defaultSortMode == 'distance' ? 'selected' : ''}>${panelText.sortOptions.distance}</option>
-                    </select>
+                <div class="cleanplaats-options">
+                    <div class="cleanplaats-option cleanplaats-option-preference">
+                        <label class="cleanplaats-switch">
+                            <input type="checkbox" id="removeFavoriteRelatedAds" ${CLEANPLAATS.settings.removeFavoriteRelatedAds ? 'checked' : ''}>
+                            <span class="cleanplaats-switch-slider"></span>
+                        </label>
+                        <label for="removeFavoriteRelatedAds" class="cleanplaats-option-label">
+                            <span class="cleanplaats-option-label-text">
+                                ${panelText.favoriteRelatedAdsLabel}
+                                <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.favoriteRelatedAdsTooltip}">?</span>
+                            </span>
+                        </label>
+                    </div>
                 </div>
             </div>
-
-            ${CLEANPLAATS.featureFlags.showStats ? `
-            <div class="cleanplaats-stats cleanplaats-stats-compact" id="cleanplaats-stats">
-                <div class="cleanplaats-section-title">${panelText.statsTitle}</div>
-                <div class="cleanplaats-stat-item">
-                    <span class="cleanplaats-stat-label">${panelText.statsTop}</span>
-                    <span class="cleanplaats-stat-value" id="cleanplaats-topads-count">0</span>
-                </div>
-                <div class="cleanplaats-stat-item">
-                    <span class="cleanplaats-stat-label">${panelText.statsDagtoppers}</span>
-                    <span class="cleanplaats-stat-value" id="cleanplaats-dagtoppers-count">0</span>
-                </div>
-                <div class="cleanplaats-stat-item">
-                    <span class="cleanplaats-stat-label">${panelText.statsBusiness}</span>
-                    <span class="cleanplaats-stat-value" id="cleanplaats-promoted-count">0</span>
-                </div>
-                <div class="cleanplaats-stat-item">
-                    <span class="cleanplaats-stat-label">${panelText.statsStickers}</span>
-                    <span class="cleanplaats-stat-value" id="cleanplaats-stickers-count">0</span>
-                </div>
-                <div class="cleanplaats-stat-item">
-                    <span class="cleanplaats-stat-label">${panelText.statsOther}</span>
-                    <span class="cleanplaats-stat-value" id="cleanplaats-otherads-count">0</span>
-                </div>
-                <div class="cleanplaats-stat-item">
-                    <span class="cleanplaats-stat-label">${panelText.statsTotal}</span>
-                    <span class="cleanplaats-stat-value" id="cleanplaats-total-count-stats">0</span>
-                </div>
-            </div>
-            ` : ''}
-
-            <button id="cleanplaats-manage-terms" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageTerms}</button>
-            <button id="cleanplaats-manage-blacklist" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageSellers}</button>
             <div id="cleanplaats-blacklist-modal" class="cleanplaats-blacklist-modal" style="display:none;"></div>
             <div id="cleanplaats-terms-modal" class="cleanplaats-terms-modal" style="display:none;"></div>
         </div>
@@ -259,6 +289,32 @@ function createControlPanel() {
     }
 
     setupGlobalTooltip();
+    setActivePanelView(getStoredPanelView(), { persist: false });
+}
+
+function getStoredPanelView() {
+    return CLEANPLAATS.panelState.activeView === 'preferences' ? 'preferences' : 'filters';
+}
+
+function setActivePanelView(view, options = {}) {
+    const persist = options.persist !== false;
+    const nextView = view === 'preferences' ? 'preferences' : 'filters';
+    const filtersView = document.getElementById('cleanplaats-view-filters');
+    const preferencesView = document.getElementById('cleanplaats-view-preferences');
+
+    if (!filtersView || !preferencesView) {
+        return;
+    }
+
+    filtersView.classList.toggle('active', nextView === 'filters');
+    preferencesView.classList.toggle('active', nextView === 'preferences');
+    CLEANPLAATS.panelState.activeView = nextView;
+
+    if (persist) {
+        saveSettings().catch(error => {
+            console.error('Cleanplaats: Failed to store active panel view', error);
+        });
+    }
 }
 
 function setupGlobalTooltip() {
@@ -292,6 +348,8 @@ function setupGlobalTooltip() {
 function setupEventListeners() {
     const panel = document.getElementById('cleanplaats-panel');
     const toggle = document.getElementById('cleanplaats-toggle');
+    const openPreferencesButton = document.getElementById('cleanplaats-open-preferences');
+    const backToFiltersButton = document.getElementById('cleanplaats-back-to-filters');
 
     if (panel) {
         panel.addEventListener('click', (e) => {
@@ -371,8 +429,20 @@ function setupEventListeners() {
         });
     }
 
+    openPreferencesButton?.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setActivePanelView('preferences');
+    });
+
+    backToFiltersButton?.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setActivePanelView('filters');
+    });
+
     ['removeTopAds', 'removeDagtoppers', 'removePromotedListings',
-        'removeOpvalStickers', 'removeReservedListings'].forEach(id => {
+        'removeOpvalStickers', 'removeReservedListings', 'removeFavoriteRelatedAds'].forEach(id => {
         const checkbox = document.getElementById(id);
         if (checkbox) {
             checkbox.addEventListener('change', handleCheckboxChange);

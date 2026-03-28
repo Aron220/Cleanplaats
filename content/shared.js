@@ -62,6 +62,11 @@ function getPanelLocaleText() {
             stickersTooltip: 'Supprime les annonces avec des autocollants promotionnels',
             reservedLabel: 'Réservées',
             reservedTooltip: "Masque les annonces marquées 'Réservé'",
+            favoriteRelatedAdsLabel: 'Annonces similaires dans les favoris',
+            favoriteRelatedAdsTooltip: 'Masque la liste des annonces similaires affichée dans les favoris',
+            preferencesLabel: 'Préférences',
+            backLabel: '← Retour',
+            preferencesIntro: '',
             darkModeLabel: 'Mode sombre',
             darkModeTooltip: 'Active un thème sombre pour 2ememain et le panneau Cleanplaats. Expérimental: si la visibilité pose problème, désactivez-le.',
             resultsPerPageLabel: 'Résultats par page :',
@@ -125,6 +130,11 @@ function getPanelLocaleText() {
         stickersTooltip: 'Verwijdert advertenties met opvalstickers',
         reservedLabel: 'Gereserveerde',
         reservedTooltip: "Verbergt advertenties die 'Gereserveerd' zijn",
+        favoriteRelatedAdsLabel: 'Gerelateerde advertenties bij favorieten',
+        favoriteRelatedAdsTooltip: 'Verbergt het blok met gerelateerde advertenties op de favorietenpagina',
+        preferencesLabel: 'Voorkeuren',
+        backLabel: '← Terug',
+        preferencesIntro: '',
         darkModeLabel: 'Donkere modus',
         darkModeTooltip: 'Schakelt een donker thema in voor Marktplaats en het Cleanplaats-paneel. Experimenteel: werkt meestal goed, maar zet het uit als iets slecht leesbaar is.',
         resultsPerPageLabel: 'Resultaten per pagina:',
@@ -175,6 +185,7 @@ var CLEANPLAATS = {
         removePromotedListings: true,
         removeOpvalStickers: true,
         removeReservedListings: false,
+        removeFavoriteRelatedAds: false,
         darkMode: false,
         blacklistedSellers: [],
         blacklistedTerms: [],
@@ -207,7 +218,8 @@ var CLEANPLAATS = {
     panelState: {
         isCollapsed: false,
         hasShownWelcomeToast: false,
-        lastSeenVersion: ''
+        lastSeenVersion: '',
+        activeView: 'filters'
     }
 };
 

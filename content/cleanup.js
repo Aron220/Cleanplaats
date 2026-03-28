@@ -57,7 +57,7 @@ function performInitialCleanup() {
 function performCleanup() {
     removeAllAds();
     removePersistentGoogleAds();
-    removeSimilarAdsSections();
+    if (CLEANPLAATS.settings.removeFavoriteRelatedAds) removeSimilarAdsSections();
     removeNonFeatureBuyerBanner();
 
     if (CLEANPLAATS.settings.removeTopAds) removeTopAdvertisements();
