@@ -105,6 +105,7 @@ function createControlPanel() {
             </div>
         </div>
         <div class="cleanplaats-content">
+            <div class="cleanplaats-panel-views" id="cleanplaats-panel-views">
             <div class="cleanplaats-panel-view" id="cleanplaats-view-filters">
                 <a
                     href="https://buymeacoffee.com/cleanplaats"
@@ -250,6 +251,7 @@ function createControlPanel() {
                     </div>
                 </div>
             </div>
+            </div>
             <div id="cleanplaats-blacklist-modal" class="cleanplaats-blacklist-modal" style="display:none;"></div>
             <div id="cleanplaats-terms-modal" class="cleanplaats-terms-modal" style="display:none;"></div>
         </div>
@@ -289,25 +291,157 @@ function createControlPanel() {
     }
 
     setupGlobalTooltip();
-    setActivePanelView(getStoredPanelView(), { persist: false });
+    setActivePanelView(getStoredPanelView(), { persist: false, animated: false });
 }
 
 function getStoredPanelView() {
     return CLEANPLAATS.panelState.activeView === 'preferences' ? 'preferences' : 'filters';
 }
 
-function setActivePanelView(view, options = {}) {
-    const persist = options.persist !== false;
-    const nextView = view === 'preferences' ? 'preferences' : 'filters';
-    const filtersView = document.getElementById('cleanplaats-view-filters');
-    const preferencesView = document.getElementById('cleanplaats-view-preferences');
+function getPanelViewDirection(fromView, toView) {
+    if (fromView === toView) {
+        return 'none';
+    }
+    return toView === 'preferences' ? 'down' : 'up';
+}
 
-    if (!filtersView || !preferencesView) {
+function clearPanelViewAnimationState(viewElement) {
+    if (!viewElement) {
+        return;
+    }
+    viewElement.classList.remove(
+        'active',
+        'is-entering',
+        'is-leaving',
+        'is-entering-down',
+        'is-entering-up',
+        'is-leaving-down',
+        'is-leaving-up'
+    );
+}
+
+function syncPanelViewContainerHeight(activeView) {
+    const viewsContainer = document.getElementById('cleanplaats-panel-views');
+    if (!viewsContainer || !activeView) {
         return;
     }
 
-    filtersView.classList.toggle('active', nextView === 'filters');
-    preferencesView.classList.toggle('active', nextView === 'preferences');
+    viewsContainer.style.height = `${activeView.scrollHeight}px`;
+}
+
+function measurePanelViewHeight(viewElement) {
+    const viewsContainer = document.getElementById('cleanplaats-panel-views');
+    if (!viewElement || !viewsContainer) {
+        return 0;
+    }
+
+    const clone = viewElement.cloneNode(true);
+    const measurementWrapper = document.createElement('div');
+    clone.removeAttribute('id');
+    clone.querySelectorAll('[id]').forEach((element) => {
+        element.removeAttribute('id');
+    });
+
+    clearPanelViewAnimationState(clone);
+    clone.classList.add('active');
+    clone.setAttribute('aria-hidden', 'true');
+    clone.style.position = 'relative';
+    clone.style.visibility = 'hidden';
+    clone.style.pointerEvents = 'none';
+    clone.style.opacity = '0';
+    clone.style.transform = 'translateY(0)';
+
+    measurementWrapper.setAttribute('aria-hidden', 'true');
+    measurementWrapper.style.position = 'absolute';
+    measurementWrapper.style.top = '0';
+    measurementWrapper.style.right = '0';
+    measurementWrapper.style.left = '0';
+    measurementWrapper.style.visibility = 'hidden';
+    measurementWrapper.style.pointerEvents = 'none';
+    measurementWrapper.style.opacity = '0';
+    measurementWrapper.style.overflow = 'visible';
+
+    measurementWrapper.appendChild(clone);
+    viewsContainer.appendChild(measurementWrapper);
+    const height = clone.getBoundingClientRect().height;
+    measurementWrapper.remove();
+
+    return height;
+}
+
+function setActivePanelView(view, options = {}) {
+    const persist = options.persist !== false;
+    const nextView = view === 'preferences' ? 'preferences' : 'filters';
+    const animated = options.animated !== false;
+    const viewsContainer = document.getElementById('cleanplaats-panel-views');
+    const filtersView = document.getElementById('cleanplaats-view-filters');
+    const preferencesView = document.getElementById('cleanplaats-view-preferences');
+
+    if (!filtersView || !preferencesView || !viewsContainer) {
+        return;
+    }
+
+    const currentView = CLEANPLAATS.panelState.activeView === 'preferences' ? 'preferences' : 'filters';
+    const currentElement = currentView === 'preferences' ? preferencesView : filtersView;
+    const nextElement = nextView === 'preferences' ? preferencesView : filtersView;
+
+    if (currentView === nextView) {
+        clearPanelViewAnimationState(filtersView);
+        clearPanelViewAnimationState(preferencesView);
+        nextElement.classList.add('active');
+        syncPanelViewContainerHeight(nextElement);
+        CLEANPLAATS.panelState.activeView = nextView;
+
+        if (persist) {
+            saveSettings().catch(error => {
+                console.error('Cleanplaats: Failed to store active panel view', error);
+            });
+        }
+        return;
+    }
+
+    if (!animated) {
+        clearPanelViewAnimationState(filtersView);
+        clearPanelViewAnimationState(preferencesView);
+        nextElement.classList.add('active');
+        syncPanelViewContainerHeight(nextElement);
+        CLEANPLAATS.panelState.activeView = nextView;
+
+        if (persist) {
+            saveSettings().catch(error => {
+                console.error('Cleanplaats: Failed to store active panel view', error);
+            });
+        }
+        return;
+    }
+
+    const direction = getPanelViewDirection(currentView, nextView);
+    const fromHeight = currentElement.scrollHeight;
+    const nextHeight = measurePanelViewHeight(nextElement);
+
+    clearPanelViewAnimationState(filtersView);
+    clearPanelViewAnimationState(preferencesView);
+
+    currentElement.classList.add('active', 'is-leaving', direction === 'down' ? 'is-leaving-up' : 'is-leaving-down');
+    nextElement.classList.add('active', 'is-entering', direction === 'down' ? 'is-entering-down' : 'is-entering-up');
+
+    viewsContainer.style.height = `${fromHeight}px`;
+    void viewsContainer.offsetHeight;
+
+    requestAnimationFrame(() => {
+        viewsContainer.style.height = `${nextHeight}px`;
+        currentElement.classList.remove(direction === 'down' ? 'is-leaving-up' : 'is-leaving-down');
+        nextElement.classList.remove(direction === 'down' ? 'is-entering-down' : 'is-entering-up');
+    });
+
+    window.clearTimeout(viewsContainer._cleanplaatsViewAnimationTimer);
+    viewsContainer._cleanplaatsViewAnimationTimer = window.setTimeout(() => {
+        clearPanelViewAnimationState(currentElement);
+        clearPanelViewAnimationState(nextElement);
+        nextElement.classList.add('active');
+        syncPanelViewContainerHeight(nextElement);
+    }, 340);
+
     CLEANPLAATS.panelState.activeView = nextView;
 
     if (persist) {
