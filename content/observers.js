@@ -65,7 +65,6 @@ function setupObservers() {
                             node.classList?.contains('hz-Listing') ||
                             node.querySelector?.('.hz-Listing') ||
                             node.classList?.contains('MpCard-mpCardBanner') ||
-                            node.matches?.('div[role="button"][tabindex]') ||
                             node.querySelector?.('.MpCard-mpCardBanner, img[alt="Marktplaats Marketing Banner"]') ||
                             node.classList?.contains('SimilarAdsList-related-ads-section') ||
                             node.querySelector?.('.SimilarAdsList-related-ads-section') ||

@@ -228,14 +228,29 @@ function removeReservedListings() {
 
 function removeAllAds() {
     let count = 0;
+    const marktplaatsMarketingBannerSelector = '.MpCard-mpCardBanner, img[alt="Marktplaats Marketing Banner"]';
+    const marktplaatsMarketingBannerWrapperSelector = 'div[role="button"][tabindex]';
     const getMarktplaatsMarketingBannerContainer = element => {
         if (!(element instanceof Element)) {
             return null;
         }
 
-        return element.closest('.MpCard-mpCardBanner')
-            || element.closest('[role="button"] .MpCard-mpCardBanner')
-            || element.closest('div[role="button"][tabindex]');
+        const bannerCard = element.closest('.MpCard-mpCardBanner');
+        if (bannerCard) {
+            const bannerWrapper = bannerCard.closest(marktplaatsMarketingBannerWrapperSelector);
+            if (bannerWrapper?.querySelector(marktplaatsMarketingBannerSelector)) {
+                return bannerWrapper;
+            }
+
+            return bannerCard;
+        }
+
+        const bannerWrapper = element.closest(marktplaatsMarketingBannerWrapperSelector);
+        if (bannerWrapper?.querySelector(marktplaatsMarketingBannerSelector)) {
+            return bannerWrapper;
+        }
+
+        return element.closest('img[alt="Marktplaats Marketing Banner"]');
     };
     const isMarktplaatsSponsoredNotice = element => {
         if (!element) return false;
@@ -248,8 +263,7 @@ function removeAllAds() {
 
         if (
             element.matches?.('.MpCard-mpCardBanner') ||
-            element.matches?.('div[role="button"][tabindex]') ||
-            element.querySelector?.('.MpCard-mpCardBanner')
+            element.querySelector?.(marktplaatsMarketingBannerSelector)
         ) {
             return true;
         }
@@ -350,7 +364,7 @@ function removeAllAds() {
         }
     });
 
-    document.querySelectorAll('.MpCard-mpCardBanner, div[role="button"][tabindex], img[alt="Marktplaats Marketing Banner"]').forEach(banner => {
+    document.querySelectorAll('.MpCard-mpCardBanner, img[alt="Marktplaats Marketing Banner"]').forEach(banner => {
         const bannerCard = getMarktplaatsMarketingBannerContainer(banner) || banner;
         if (isMarktplaatsMarketingBanner(bannerCard) && hideElement(bannerCard)) {
             count++;
