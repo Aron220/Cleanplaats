@@ -224,6 +224,15 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES = {
+    '2.0.6': {
+        intro: 'Cleanplaats 2.0.6 herstelt een paar dingen op Favorieten en lost een vervelende fout op die sommige filters uit beeld haalde.',
+        highlights: [
+            'De filters voor categorie en afstand zijn weer terug waar ze horen.',
+            'Gerelateerde advertenties in Favorieten worden niet meer standaard verborgen. Via de nieuwe knop "Voorkeuren" kun je dit nu zelf aan of uit zetten.',
+            'Niet-beschikbare advertenties in Favorieten zien er in dark mode nu weer duidelijk anders uit dan actieve advertenties.'
+        ],
+        note: 'Excuses voor de bug waardoor categorie en afstand ineens konden verdwijnen. Bedankt aan iedereen die dit zo snel heeft gemeld via Reddit en GitHub issues. Jullie hulp en betrokkenheid maken Cleanplaats tot het succes dat het is.'
+    },
     '2.0.5': {
         intro: 'Cleanplaats 2.0.5 werkt Marktplaats verder bij met vooral meer dark mode-ondersteuning en een rustigere interface op meerdere pagina’s.',
         highlights: [
