@@ -407,6 +407,10 @@ html.cleanplaats-dark-mode [class*="FavoritesListItem-favorites-list-item"] [cla
   opacity: 1 !important;
 }
 
+html.cleanplaats-dark-mode [class*="FavoritesListItem-favorites-list-item"] [class*="hz-Listing-compact-body"].FavoritesListItem-not_published {
+  opacity: 0.5 !important;
+}
+
 html.cleanplaats-dark-mode [class*="FavoritesListItem-favorites-list-item"] .hz-Listing-compact-title,
 html.cleanplaats-dark-mode [class*="FavoritesListItem-favorites-list-item"] .hz-Link,
 html.cleanplaats-dark-mode [class*="FavoritesListItem-favorites-list-item"] .hz-Link:visited,
