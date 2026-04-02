@@ -512,7 +512,8 @@
     transform: rotate(45deg);
   }
   
-  .cleanplaats-option label {
+  .cleanplaats-option > label,
+  .cleanplaats-option-main > label {
     display: flex;
     align-items: center;
     font-size: 14px;
@@ -572,12 +573,13 @@
   }
 
   .cleanplaats-threshold-controls {
-    display: flex;
+    display: grid;
+    grid-template-columns: 58px minmax(92px, 1fr);
     align-items: center;
-    gap: 8px;
-    width: 100%;
+    column-gap: 8px;
+    row-gap: 8px;
+    width: calc(100% - 48px);
     margin-left: 48px;
-    flex-wrap: wrap;
     transition: opacity 0.2s ease;
   }
 
@@ -586,14 +588,17 @@
   }
 
   .cleanplaats-threshold-label {
+    display: block;
+    grid-column: 1 / -1;
     font-size: 12px;
     color: #6b7280;
     white-space: nowrap;
   }
 
   .cleanplaats-threshold-input {
-    width: 58px;
-    min-width: 58px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     padding: 4px 8px;
     border: 1px solid #e0e0e0;
     border-radius: 4px;
@@ -603,7 +608,9 @@
   }
 
   .cleanplaats-threshold-unit {
-    min-width: 92px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
   }
   
   /* Button Styling */
