@@ -183,7 +183,52 @@ function removeSellerFromBlacklist(sellerName) {
     });
 }
 
+function injectProductDetailBlacklistButton() {
+    const panelText = getPanelLocaleText();
+    const sellerRoot = document.querySelector('.SellerInfoSmall-root');
+    const sellerNameElement = sellerRoot?.querySelector('.SellerInfoSmall-name a, .SellerInfoSmall-name');
+    const existingRow = document.querySelector('.cleanplaats-detail-blacklist-row');
+
+    if (!isProductDetailPage() || !sellerRoot || !sellerNameElement) {
+        existingRow?.remove();
+        return;
+    }
+
+    const sellerName = sellerNameElement.textContent?.trim();
+    if (!sellerName) {
+        existingRow?.remove();
+        return;
+    }
+
+    const isBlacklisted = CLEANPLAATS.settings.blacklistedSellers.includes(sellerName);
+    const detailRow = existingRow || document.createElement('div');
+    detailRow.className = 'cleanplaats-detail-blacklist-row';
+
+    const button = document.createElement('button');
+    button.className = 'cleanplaats-blacklist-btn cleanplaats-detail-blacklist-btn';
+    button.type = 'button';
+    button.tabIndex = 0;
+    button.textContent = isBlacklisted ? panelText.hiddenSellerButton : panelText.hideSellerButton;
+    button.disabled = isBlacklisted;
+    button.setAttribute('aria-disabled', isBlacklisted ? 'true' : 'false');
+
+    if (!isBlacklisted) {
+        button.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            addSellerToBlacklist(sellerName);
+        });
+    }
+
+    detailRow.replaceChildren(button);
+
+    if (!existingRow) {
+        sellerRoot.insertAdjacentElement('afterend', detailRow);
+    }
+}
+
 function injectBlacklistButtons() {
+    const panelText = getPanelLocaleText();
     document.querySelectorAll('.hz-Listing').forEach(listing => {
         const oldBtn = listing.querySelector('.cleanplaats-blacklist-btn-row');
         const oldTopRight = listing.querySelector('.cleanplaats-seller-topright-mobile');
@@ -234,7 +279,7 @@ function injectBlacklistButtons() {
             topRow.dataset.cleanplaatsSellerName = sellerName;
             topRow.innerHTML = DOMPurify.sanitize(`
                 <span class="cleanplaats-seller-name-mobile">${sellerName}</span>
-                <button class="cleanplaats-blacklist-btn-mobile" title="Verberg deze verkoper" aria-label="Verberg deze verkoper">
+                <button class="cleanplaats-blacklist-btn-mobile" title="${panelText.hideSellerButtonAriaLabel}" aria-label="${panelText.hideSellerButtonAriaLabel}">
                   <svg xmlns="http://www.w3.org/2000/svg" height="18" width="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M17.94 17.94A10.06 10.06 0 0 1 12 20C7 20 2.73 16.11 1 12c.74-1.61 1.81-3.09 3.06-4.31"/>
                     <path d="M22.54 12.88A10.06 10.06 0 0 0 12 4c-1.61 0-3.16.31-4.59.88"/>
@@ -272,7 +317,7 @@ function injectBlacklistButtons() {
 
             const btn = document.createElement('button');
             btn.className = 'cleanplaats-blacklist-btn cleanplaats-inline-btn';
-            btn.textContent = 'Verkoper verbergen';
+            btn.textContent = panelText.hideSellerButton;
             btn.type = 'button';
             btn.tabIndex = 0;
             btn.style.marginLeft = '8px';
@@ -290,7 +335,7 @@ function injectBlacklistButtons() {
 
             const btn = document.createElement('button');
             btn.className = 'cleanplaats-blacklist-btn';
-            btn.textContent = 'Verkoper verbergen';
+            btn.textContent = panelText.hideSellerButton;
             btn.type = 'button';
             btn.tabIndex = 0;
 
@@ -307,6 +352,8 @@ function injectBlacklistButtons() {
             }
         }
     });
+
+    injectProductDetailBlacklistButton();
 }
 
 function showBlacklistModal() {

@@ -1993,6 +1993,29 @@ html.cleanplaats-dark-mode .cleanplaats-blacklist-btn-mobile:active svg {
   stroke: var(--cleanplaats-dark-text) !important;
 }
 
+html.cleanplaats-dark-mode .cleanplaats-detail-blacklist-row {
+  border-top-color: var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-detail-blacklist-btn {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-detail-blacklist-btn:hover {
+  background: #c14444 !important;
+  color: #fff !important;
+  border-color: #c14444 !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-detail-blacklist-btn:disabled,
+html.cleanplaats-dark-mode .cleanplaats-detail-blacklist-btn[aria-disabled="true"] {
+  background: rgba(166, 189, 214, 0.08) !important;
+  color: var(--cleanplaats-dark-text-muted) !important;
+  border-color: rgba(166, 189, 214, 0.14) !important;
+}
+
 @media (hover: none), (pointer: coarse) {
   html.cleanplaats-dark-mode .hz-Listing a:hover,
   html.cleanplaats-dark-mode .hz-StructuredListing a:hover,

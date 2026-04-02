@@ -1324,6 +1324,42 @@
     max-width: none;
   }
 
+  .cleanplaats-detail-blacklist-row {
+    margin-top: 10px;
+    margin-bottom: 14px;
+    padding-top: 10px;
+    border-top: 1px solid #edf1f5;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .cleanplaats-detail-blacklist-btn {
+    width: auto;
+    justify-content: flex-start;
+    font-weight: 600;
+    padding: 8px 12px;
+  }
+
+  .cleanplaats-detail-blacklist-btn:disabled,
+  .cleanplaats-detail-blacklist-btn[aria-disabled="true"] {
+    background: #eef2f6;
+    color: #8a94a3;
+    cursor: default;
+    transform: none;
+  }
+
+  .cleanplaats-detail-blacklist-btn:disabled::before,
+  .cleanplaats-detail-blacklist-btn[aria-disabled="true"]::before {
+    text-decoration: line-through;
+  }
+
+  .cleanplaats-detail-blacklist-btn:disabled:hover,
+  .cleanplaats-detail-blacklist-btn[aria-disabled="true"]:hover {
+    background: #eef2f6;
+    color: #8a94a3;
+    transform: none;
+  }
+
   /* Inline button for car adverts */
   .cleanplaats-inline-btn {
     display: inline-flex !important;
