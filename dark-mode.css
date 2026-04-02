@@ -2218,14 +2218,29 @@ html.cleanplaats-dark-mode .hz-Pills.stickyPills .pillsContainer,
 html.cleanplaats-dark-mode .hz-Pills.stickyPills .chipsSlider,
 html.cleanplaats-dark-mode .hz-Pills.stickyPills .innerWrapper,
 html.cleanplaats-dark-mode .hz-Pills.stickyPills .pillWrapper,
-html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Link {
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Link,
+html.cleanplaats-dark-mode .CategorySuggestionTooltip_stickyBg__pQ41X .hz-Pills {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
 }
 
+html.cleanplaats-dark-mode .CategorySuggestionTooltip_stickyBg__pQ41X,
+html.cleanplaats-dark-mode .HighlightGuide_targetNormal__a7Lbf.CategorySuggestionTooltip_stickyBg__pQ41X {
+  background: linear-gradient(180deg, rgba(24, 33, 44, 0.94) 0%, rgba(20, 28, 37, 0.98) 100%) !important;
+  border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  box-shadow: none !important;
+}
+
+html.cleanplaats-dark-mode .CategorySuggestionTooltip_stickyBg__pQ41X .hz-Text,
+html.cleanplaats-dark-mode .CategorySuggestionTooltip_stickyBg__pQ41X .CategorySuggestionTooltip_textRegular__25s5a {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
 html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Pill,
-html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Filter-chip {
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Filter-chip,
+html.cleanplaats-dark-mode .CategorySuggestionTooltip_stickyBg__pQ41X .hz-Pill {
   background: rgba(31, 42, 54, 0.42) !important;
   border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
   color: var(--cleanplaats-dark-text) !important;
@@ -2240,7 +2255,9 @@ html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Filter-chip i {
 html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Pill:hover,
 html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Pill:focus-visible,
 html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Filter-chip:hover,
-html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Filter-chip:focus-visible {
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Filter-chip:focus-visible,
+html.cleanplaats-dark-mode .CategorySuggestionTooltip_stickyBg__pQ41X .hz-Pill:hover,
+html.cleanplaats-dark-mode .CategorySuggestionTooltip_stickyBg__pQ41X .hz-Pill:focus-visible {
   background: rgba(38, 51, 66, 0.58) !important;
   border-color: rgba(140, 200, 255, 0.18) !important;
   color: var(--cleanplaats-dark-text) !important;
@@ -2249,7 +2266,9 @@ html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Filter-chip:focus-visible {
 html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Pill.is-active,
 html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Filter-chip.is-active,
 html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Pill[aria-pressed="true"],
-html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Filter-chip[aria-pressed="true"] {
+html.cleanplaats-dark-mode .hz-Pills.stickyPills .hz-Filter-chip[aria-pressed="true"],
+html.cleanplaats-dark-mode .CategorySuggestionTooltip_stickyBg__pQ41X .hz-Pill.is-active,
+html.cleanplaats-dark-mode .CategorySuggestionTooltip_stickyBg__pQ41X .hz-Pill[aria-pressed="true"] {
   background: rgba(140, 200, 255, 0.12) !important;
   border-color: rgba(140, 200, 255, 0.24) !important;
   color: var(--cleanplaats-dark-text) !important;
