@@ -329,6 +329,15 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES = {
+    '2.0.7': {
+        intro: 'Cleanplaats 2.0.7 voegt een extra veiligheidswaarschuwing toe op advertentiepagina’s en maakt het verbergen van verkopers duidelijker en handiger.',
+        highlights: [
+            'Je kunt nu een waarschuwing krijgen bij nieuwe verkoperaccounts. Deze instelling vind je onder het tabje "Voorkeuren" in het paneel, waar je zelf kiest vanaf hoeveel dagen, weken, maanden of jaren je zo’n melding wilt zien.',
+            'Op advertentiepagina’s staat nu ook een knop onder de verkopernaam om in één keer alle advertenties van die verkoper te verbergen.',
+            'De knop om een verkoper te verbergen is nu ook netjes vertaald op 2ememain.'
+        ],
+        note: 'Zie je een verkoper die je niet vertrouwt? Dan kun je die nu direct vanaf de advertentiepagina verbergen.'
+    },
     '2.0.6': {
         intro: 'Cleanplaats 2.0.6 herstelt een paar dingen op Favorieten en lost een vervelende fout op die sommige filters uit beeld haalde.',
         highlights: [
@@ -348,38 +357,6 @@ var CLEANPLAATS_UPDATE_NOTES = {
             "Marktplaats banner voor 'koop je auto bij autobedrijven' weggehaald"
         ],
         note: "Zie je nog een onderdeel of licht onderdeel dat door de dark mode heen glipt in veel gebruikte pagina's? Meld het via GitHub issues in het paneel."
-    },
-    '2.0.4': {
-        intro: 'Cleanplaats 2.0.4 brengt een grote opschoning onder de motorkap, samen met de additie van dark mode en ondersteuning voor 2ememain.',
-        highlights: [
-            'Nieuwe feature: Dark mode is toegevoegd! Met een nieuwe thema-schakelaar bovenin het paneel. Probeer het eens!',
-            'De extensie is intern opgesplitst in overzichtelijkere modules, wat zorgt voor een stabielere basis voor toekomstige updates.',
-            'De ondersteuning voor 2dehands is verbeterd en ondersteuning voor 2ememain is toegevoegd. Inclusief verwerking van Franse benamingen.',
-            'Blacklist-termen werken nu betrouwbaarder op de vernieuwde resultaatpagina’s.',
-            'Storende elementen zoals marketingbanners en bepaalde gesponsorde meldingen zijn verder opgeruimd voor een rustigere ervaring.'
-        ],
-        note: 'Zie je nog iets dat niet goed wordt meegenomen op Marktplaats, 2dehands of 2ememain? Meld het via GitHub issues in het paneel.'
-    },
-    '2.0.3': {
-        intro: 'Cleanplaats lost problemen op met sorteren en filtert bedrijfsadvertenties nu ook  op de homepage.',
-        highlights: [
-            'Wisselen tussen bijvoorbeeld "Datum (nieuw-oud)" en "Prijs (laag-hoog)" werkt nu betrouwbaarder.',
-            'De extensie zet je gekozen sortering niet meer onbedoeld terug bij verversen of pagineren.',
-            'Daardoor hoef je een andere sorteermodus niet meer twee keer aan te klikken.',
-            'De filter "Bedrijfsadvertenties" verbergt nu ook alle bedrijfs- en winkeladvertenties op de homepage bij "Voor jou" en "In je buurt", zoals bijv. Catawiki.',
-            'De knop om een verkoper te verbergen blijft nu ook op mobiel zichtbaar op listingpagina’s.',
-            'Bij "Beheer verborgen verkopers" kun je nu ook zelf verkopers toevoegen, inclusief meerdere namen tegelijk met komma’s of puntkomma’s.'
-        ],
-        note: 'Zie je nog iets vreemds met sorteren of homepage-filters? Meld het via GitHub issues in het paneel.'
-    },
-    '2.0.0': {
-        intro: 'Deze update legt een sterkere basis voor de vernieuwde Marktplaats- en 2dehands-pagina’s.',
-        highlights: [
-            'De ondersteuning voor 2dehands en bijgewerkte Marktplaats-selectors is uitgebreid.',
-            'Blacklist-knoppen en seller-detectie werken betrouwbaarder op meer listing-varianten.',
-            'Diverse layout- en filterfixes zorgen voor stabielere opschoning van resultaten.'
-        ],
-        note: 'Zie je nog iets doorheen glippen? Meld het via GitHub issues in het paneel.'
     }
 };
 
