@@ -247,11 +247,129 @@ function showBubbleNotification(message) {
     }, 5000);
 }
 
+function clearSellerAgeWarningToast() {
+    const toast = document.getElementById('cleanplaats-seller-age-warning-toast');
+    if (toast) {
+        toast.classList.remove('visible');
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }
+}
+
+function getSellerAgeWarningThresholdLabel() {
+    const panelText = getPanelLocaleText();
+    const value = Math.max(1, parseInt(CLEANPLAATS.settings.sellerAgeWarningThresholdValue, 10) || 1);
+    const unit = CLEANPLAATS.settings.sellerAgeWarningThresholdUnit;
+    const unitLabel = panelText.sellerAgeWarningThresholdUnits[unit] || panelText.sellerAgeWarningThresholdUnits.months;
+
+    return `${value} ${unitLabel}`;
+}
+
+function getSellerAgeInfoFromPage() {
+    const sellerRows = Array.from(document.querySelectorAll('.SellerInfoSmall-root .SellerInfoSmall-row'));
+    const sellerAgeRow = sellerRows.find(row => parseSellerAgeToDays(row.textContent) !== null);
+    const sellerNameElement = document.querySelector('.SellerInfoSmall-root .SellerInfoSmall-name a, .SellerInfoSmall-root .SellerInfoSmall-name');
+    const sellerAgeText = sellerAgeRow?.textContent?.trim() || '';
+    const sellerName = sellerNameElement?.textContent?.trim() || 'Deze verkoper';
+    const sellerAgeDays = parseSellerAgeToDays(sellerAgeText);
+
+    if (!sellerAgeText || sellerAgeDays === null) {
+        return null;
+    }
+
+    return {
+        sellerName,
+        sellerAgeText,
+        sellerAgeDays
+    };
+}
+
+function showSellerAgeWarningToast({ sellerName, sellerAgeText }) {
+    const panelText = getPanelLocaleText();
+    const thresholdLabel = getSellerAgeWarningThresholdLabel();
+
+    clearSellerAgeWarningToast();
+
+    const toast = document.createElement('div');
+    toast.className = 'cleanplaats-blacklist-toast cleanplaats-blacklist-toast-warning';
+    toast.id = 'cleanplaats-seller-age-warning-toast';
+
+    toast.innerHTML = DOMPurify.sanitize(`
+        <div class="cleanplaats-blacklist-toast-content">
+            <span class="cleanplaats-toast-icon">!</span>
+            <div class="cleanplaats-toast-message">
+                <strong>${panelText.sellerAgeWarningToastTitle}</strong>
+                <span>${panelText.sellerAgeWarningToastMessage(sellerName, sellerAgeText, thresholdLabel)}</span>
+            </div>
+        </div>
+    `);
+
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        requestAnimationFrame(() => toast.classList.add('visible'));
+    }, 50);
+
+    toast.timeoutId = setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 300);
+    }, 5200);
+}
+
+function maybeShowSellerAgeWarning(options = {}) {
+    const force = options.force === true;
+
+    if (!isProductDetailPage()) {
+        clearSellerAgeWarningToast();
+        return;
+    }
+
+    if (!CLEANPLAATS.settings.sellerAgeWarningEnabled) {
+        clearSellerAgeWarningToast();
+        return;
+    }
+
+    const sellerAgeInfo = getSellerAgeInfoFromPage();
+    if (!sellerAgeInfo) {
+        clearSellerAgeWarningToast();
+        return;
+    }
+
+    const thresholdDays = getSellerAgeWarningThresholdDays();
+    if (sellerAgeInfo.sellerAgeDays >= thresholdDays) {
+        clearSellerAgeWarningToast();
+        return;
+    }
+
+    const warningKey = `${location.pathname}|${sellerAgeInfo.sellerAgeText}|${thresholdDays}`;
+    if (!force && CLEANPLAATS.runtime.lastSellerAgeWarningKey === warningKey) {
+        return;
+    }
+
+    CLEANPLAATS.runtime.lastSellerAgeWarningKey = warningKey;
+    showSellerAgeWarningToast(sellerAgeInfo);
+}
+
+function scheduleSellerAgeWarningCheck(options = {}) {
+    const force = options.force === true;
+    const resetState = options.resetState === true;
+
+    if (resetState) {
+        CLEANPLAATS.runtime.lastSellerAgeWarningKey = '';
+    }
+
+    window.clearTimeout(CLEANPLAATS.runtime.sellerAgeCheckTimer);
+    CLEANPLAATS.runtime.sellerAgeCheckTimer = window.setTimeout(() => {
+        maybeShowSellerAgeWarning({ force });
+    }, 180);
+}
+
 function clearAllNotifications() {
     const notifications = document.querySelectorAll('[id^="cleanplaats-"]');
     notifications.forEach(notification => {
         if (notification.classList.contains('cleanplaats-empty-notification') ||
-            notification.id === 'cleanplaats-loading') {
+            notification.id === 'cleanplaats-loading' ||
+            notification.id === 'cleanplaats-seller-age-warning-toast') {
             notification.remove();
         }
     });

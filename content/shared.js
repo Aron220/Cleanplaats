@@ -42,6 +42,70 @@ function isMarktplaatsSite() {
     return location.hostname.includes('marktplaats.nl');
 }
 
+function isProductDetailPage() {
+    return /\/v\//.test(window.location.pathname);
+}
+
+function normalizeSellerAgeText(text) {
+    return (text || '')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, ' ');
+}
+
+function parseSellerAgeToDays(text) {
+    const normalizedText = normalizeSellerAgeText(text);
+    const match = normalizedText.match(/(\d+)\s+(dag|dagen|day|days|jour|jours|week|weken|maand|maanden|jaar|jaren|month|months|year|years|mois|an|ans|semaine|semaines)\b/);
+
+    if (!match) {
+        return null;
+    }
+
+    const amount = parseInt(match[1], 10);
+    const unit = match[2];
+
+    if (!Number.isFinite(amount) || amount < 0) {
+        return null;
+    }
+
+    if (unit === 'dag' || unit === 'dagen' || unit === 'day' || unit === 'days' || unit === 'jour' || unit === 'jours') {
+        return amount;
+    }
+
+    if (unit === 'week' || unit === 'weken' || unit === 'semaine' || unit === 'semaines') {
+        return amount * 7;
+    }
+
+    if (unit === 'maand' || unit === 'maanden' || unit === 'month' || unit === 'months' || unit === 'mois') {
+        return amount * 30;
+    }
+
+    if (unit === 'jaar' || unit === 'jaren' || unit === 'year' || unit === 'years' || unit === 'an' || unit === 'ans') {
+        return amount * 365;
+    }
+
+    return null;
+}
+
+function getSellerAgeWarningThresholdDays() {
+    const value = Math.max(1, parseInt(CLEANPLAATS.settings.sellerAgeWarningThresholdValue, 10) || 1);
+    const unit = CLEANPLAATS.settings.sellerAgeWarningThresholdUnit;
+
+    if (unit === 'days') {
+        return value;
+    }
+
+    if (unit === 'weeks') {
+        return value * 7;
+    }
+
+    if (unit === 'years') {
+        return value * 365;
+    }
+
+    return value * 30;
+}
+
 function getPanelLocaleText() {
     if (is2ememainLocale()) {
         return {
@@ -64,6 +128,19 @@ function getPanelLocaleText() {
             reservedTooltip: "Masque les annonces marquées 'Réservé'",
             favoriteRelatedAdsLabel: 'Annonces similaires dans les favoris',
             favoriteRelatedAdsTooltip: 'Masque la liste des annonces similaires affichée dans les favoris',
+            sellerAgeWarningLabel: 'Alerte compte vendeur récent',
+            sellerAgeWarningTooltip: "Affiche un avertissement sur une page d'annonce si le compte vendeur est plus récent que votre seuil.",
+            sellerAgeWarningThresholdLabel: 'Avertir en dessous de',
+            sellerAgeWarningThresholdValueAriaLabel: 'Valeur seuil pour le compte vendeur récent',
+            sellerAgeWarningThresholdUnitAriaLabel: 'Unité seuil pour le compte vendeur récent',
+            sellerAgeWarningThresholdUnits: {
+                days: 'jours',
+                weeks: 'semaines',
+                months: 'mois',
+                years: 'ans'
+            },
+            sellerAgeWarningToastTitle: 'Compte vendeur récent',
+            sellerAgeWarningToastMessage: (sellerName, sellerAgeText, thresholdLabel) => `${sellerName} est sur la plateforme depuis ${sellerAgeText}. Votre seuil est ${thresholdLabel}.`,
             preferencesLabel: 'Préférences',
             backLabel: '← Retour',
             preferencesIntro: '',
@@ -132,6 +209,19 @@ function getPanelLocaleText() {
         reservedTooltip: "Verbergt advertenties die 'Gereserveerd' zijn",
         favoriteRelatedAdsLabel: 'Gerelateerde advertenties bij favorieten',
         favoriteRelatedAdsTooltip: 'Verbergt het blok met gerelateerde advertenties op de favorietenpagina',
+        sellerAgeWarningLabel: 'Waarschuwing voor nieuwe verkoperaccounts',
+        sellerAgeWarningTooltip: 'Toont op een advertentiepagina een waarschuwing als het verkopersaccount jonger is dan jouw ingestelde grens.',
+        sellerAgeWarningThresholdLabel: 'Waarschuwen onder',
+        sellerAgeWarningThresholdValueAriaLabel: 'Drempelwaarde voor waarschuwing nieuwe verkoperaccounts',
+        sellerAgeWarningThresholdUnitAriaLabel: 'Drempeleenheid voor waarschuwing nieuwe verkoperaccounts',
+        sellerAgeWarningThresholdUnits: {
+            days: 'dagen',
+            weeks: 'weken',
+            months: 'maanden',
+            years: 'jaar'
+        },
+        sellerAgeWarningToastTitle: 'Nieuw verkoperaccount',
+        sellerAgeWarningToastMessage: (sellerName, sellerAgeText, thresholdLabel) => `${sellerName} zit pas ${sellerAgeText}. Jouw grens staat op ${thresholdLabel}.`,
         preferencesLabel: 'Voorkeuren',
         backLabel: '← Terug',
         preferencesIntro: '',
@@ -186,6 +276,9 @@ var CLEANPLAATS = {
         removeOpvalStickers: true,
         removeReservedListings: false,
         removeFavoriteRelatedAds: false,
+        sellerAgeWarningEnabled: false,
+        sellerAgeWarningThresholdValue: 3,
+        sellerAgeWarningThresholdUnit: 'days',
         darkMode: false,
         blacklistedSellers: [],
         blacklistedTerms: [],
@@ -206,7 +299,13 @@ var CLEANPLAATS = {
     observers: {
         mutation: null,
         ads: null,
-        webchat: null
+        webchat: null,
+        sellerAge: null
+    },
+
+    runtime: {
+        lastSellerAgeWarningKey: '',
+        sellerAgeCheckTimer: 0
     },
 
     featureFlags: {

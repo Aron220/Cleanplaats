@@ -114,6 +114,7 @@ function initCleanplaats() {
                     setupWebchatCollisionAvoidance();
                     setupAllObservers();
                     applySettings();
+                    scheduleSellerAgeWarningCheck({ resetState: true });
                     showOnboarding(currentVersion);
 
                     const tryCleanup = () => {

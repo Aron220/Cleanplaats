@@ -249,6 +249,43 @@ function createControlPanel() {
                             </span>
                         </label>
                     </div>
+                    <div class="cleanplaats-option cleanplaats-option-preference cleanplaats-option-preference-block">
+                        <div class="cleanplaats-option-main">
+                            <label class="cleanplaats-switch">
+                                <input type="checkbox" id="sellerAgeWarningEnabled" ${CLEANPLAATS.settings.sellerAgeWarningEnabled ? 'checked' : ''}>
+                                <span class="cleanplaats-switch-slider"></span>
+                            </label>
+                            <label for="sellerAgeWarningEnabled" class="cleanplaats-option-label">
+                                <span class="cleanplaats-option-label-text">
+                                    ${panelText.sellerAgeWarningLabel}
+                                    <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.sellerAgeWarningTooltip}">?</span>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="cleanplaats-threshold-controls ${CLEANPLAATS.settings.sellerAgeWarningEnabled ? '' : 'is-disabled'}" id="cleanplaats-seller-age-threshold-controls">
+                            <label for="cleanplaats-seller-age-threshold-value" class="cleanplaats-threshold-label">${panelText.sellerAgeWarningThresholdLabel}</label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="99"
+                                step="1"
+                                id="cleanplaats-seller-age-threshold-value"
+                                class="cleanplaats-threshold-input"
+                                aria-label="${panelText.sellerAgeWarningThresholdValueAriaLabel}"
+                                value="${Math.max(1, parseInt(CLEANPLAATS.settings.sellerAgeWarningThresholdValue, 10) || 1)}"
+                            >
+                            <select
+                                id="cleanplaats-seller-age-threshold-unit"
+                                class="cleanplaats-results-dropdown cleanplaats-threshold-unit"
+                                aria-label="${panelText.sellerAgeWarningThresholdUnitAriaLabel}"
+                            >
+                                <option value="days" ${CLEANPLAATS.settings.sellerAgeWarningThresholdUnit === 'days' ? 'selected' : ''}>${panelText.sellerAgeWarningThresholdUnits.days}</option>
+                                <option value="weeks" ${CLEANPLAATS.settings.sellerAgeWarningThresholdUnit === 'weeks' ? 'selected' : ''}>${panelText.sellerAgeWarningThresholdUnits.weeks}</option>
+                                <option value="months" ${CLEANPLAATS.settings.sellerAgeWarningThresholdUnit === 'months' ? 'selected' : ''}>${panelText.sellerAgeWarningThresholdUnits.months}</option>
+                                <option value="years" ${CLEANPLAATS.settings.sellerAgeWarningThresholdUnit === 'years' ? 'selected' : ''}>${panelText.sellerAgeWarningThresholdUnits.years}</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
             </div>
@@ -479,6 +516,75 @@ function setupGlobalTooltip() {
     });
 }
 
+function syncSellerAgeThresholdControlsState() {
+    const controls = document.getElementById('cleanplaats-seller-age-threshold-controls');
+    const valueInput = document.getElementById('cleanplaats-seller-age-threshold-value');
+    const unitSelect = document.getElementById('cleanplaats-seller-age-threshold-unit');
+    const isEnabled = Boolean(CLEANPLAATS.settings.sellerAgeWarningEnabled);
+
+    if (controls) {
+        controls.classList.toggle('is-disabled', !isEnabled);
+    }
+
+    if (valueInput) {
+        valueInput.disabled = !isEnabled;
+    }
+
+    if (unitSelect) {
+        unitSelect.disabled = !isEnabled;
+    }
+}
+
+function handleSellerAgeThresholdChange() {
+    const valueInput = document.getElementById('cleanplaats-seller-age-threshold-value');
+    const unitSelect = document.getElementById('cleanplaats-seller-age-threshold-unit');
+
+    if (!valueInput || !unitSelect) {
+        return;
+    }
+
+    const nextValue = Math.min(99, Math.max(1, parseInt(valueInput.value, 10) || 1));
+    valueInput.value = String(nextValue);
+    CLEANPLAATS.settings.sellerAgeWarningThresholdValue = nextValue;
+    CLEANPLAATS.settings.sellerAgeWarningThresholdUnit = unitSelect.value;
+    CLEANPLAATS.runtime.lastSellerAgeWarningKey = '';
+
+    saveSettings()
+        .then(() => {
+            showSettingFeedback();
+            scheduleSellerAgeWarningCheck({ force: true });
+        })
+        .catch(error => {
+            console.error('Cleanplaats: Failed to save seller age threshold', error);
+        });
+}
+
+function handleSellerAgeThresholdInput() {
+    const valueInput = document.getElementById('cleanplaats-seller-age-threshold-value');
+    if (!valueInput) {
+        return;
+    }
+
+    const rawValue = String(valueInput.value || '').replace(/[^\d]/g, '');
+    if (!rawValue) {
+        return;
+    }
+
+    const nextValue = Math.min(99, Math.max(1, parseInt(rawValue, 10) || 1));
+    valueInput.value = String(nextValue);
+    CLEANPLAATS.settings.sellerAgeWarningThresholdValue = nextValue;
+    CLEANPLAATS.runtime.lastSellerAgeWarningKey = '';
+
+    saveSettings()
+        .then(() => {
+            // Persist immediately so refreshes don't lose the typed value,
+            // but avoid re-triggering the warning toast on every keystroke.
+        })
+        .catch(error => {
+            console.error('Cleanplaats: Failed to store seller age threshold value during input', error);
+        });
+}
+
 function setupEventListeners() {
     const panel = document.getElementById('cleanplaats-panel');
     const toggle = document.getElementById('cleanplaats-toggle');
@@ -576,12 +682,19 @@ function setupEventListeners() {
     });
 
     ['removeTopAds', 'removeDagtoppers', 'removePromotedListings',
-        'removeOpvalStickers', 'removeReservedListings', 'removeFavoriteRelatedAds'].forEach(id => {
+        'removeOpvalStickers', 'removeReservedListings', 'removeFavoriteRelatedAds', 'sellerAgeWarningEnabled'].forEach(id => {
         const checkbox = document.getElementById(id);
         if (checkbox) {
             checkbox.addEventListener('change', handleCheckboxChange);
         }
     });
+
+    const sellerAgeThresholdValue = document.getElementById('cleanplaats-seller-age-threshold-value');
+    const sellerAgeThresholdUnit = document.getElementById('cleanplaats-seller-age-threshold-unit');
+    sellerAgeThresholdValue?.addEventListener('input', handleSellerAgeThresholdInput);
+    sellerAgeThresholdValue?.addEventListener('change', handleSellerAgeThresholdChange);
+    sellerAgeThresholdUnit?.addEventListener('change', handleSellerAgeThresholdChange);
+    syncSellerAgeThresholdControlsState();
 
     const themeToggle = document.getElementById('cleanplaats-theme-toggle');
     if (themeToggle) {
@@ -622,11 +735,22 @@ function handleCheckboxChange(event) {
 
     CLEANPLAATS.settings[setting] = value;
 
+    if (setting === 'sellerAgeWarningEnabled') {
+        CLEANPLAATS.runtime.lastSellerAgeWarningKey = '';
+        syncSellerAgeThresholdControlsState();
+    }
+
     saveSettings()
         .then(() => {
             if (setting === 'darkMode') {
                 applyDarkModeToDocument(value);
                 showSettingFeedback();
+                return;
+            }
+
+            if (setting === 'sellerAgeWarningEnabled') {
+                showSettingFeedback();
+                scheduleSellerAgeWarningCheck({ force: true });
                 return;
             }
 

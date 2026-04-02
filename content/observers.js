@@ -10,6 +10,7 @@ function performCleanupAndCheckForEmptyPage() {
     }
 
     clearBubbleNotification();
+    scheduleSellerAgeWarningCheck({ resetState: true });
 
     const checkContentLoaded = setInterval(() => {
         if (document.querySelector('.hz-Listing') || document.querySelector('#adsense-container')) {
@@ -34,6 +35,7 @@ function setupObservers() {
         if (lastUrl !== location.href) {
             console.log('Cleanplaats: URL changed from', lastUrl, 'to', location.href);
             lastUrl = location.href;
+            CLEANPLAATS.runtime.lastSellerAgeWarningKey = '';
             performCleanupAndCheckForEmptyPage();
         }
 
@@ -59,6 +61,13 @@ function setupObservers() {
                             node.querySelector?.('.hz-Header-logo-desktop, .mp-Header-logo')
                         ) {
                             shouldSyncHeaderLogo = true;
+                        }
+
+                        if (
+                            node.classList?.contains('SellerInfoSmall-root') ||
+                            node.querySelector?.('.SellerInfoSmall-root')
+                        ) {
+                            scheduleSellerAgeWarningCheck();
                         }
 
                         if (
@@ -91,6 +100,12 @@ function setupObservers() {
 
             if (mutation.type === 'attributes') {
                 const target = mutation.target;
+                if (
+                    target?.classList?.contains('SellerInfoSmall-root')
+                ) {
+                    scheduleSellerAgeWarningCheck();
+                }
+
                 if (
                     target?.classList?.contains('hz-FeedBannerBlock') ||
                     target?.classList?.contains('Banners-bannerFeedItem') ||
