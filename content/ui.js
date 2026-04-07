@@ -2,8 +2,23 @@
  * Content-script control panel rendering and UI event handling.
  */
 
+function applyInitialPanelStateForPageLoad() {
+    if (CLEANPLAATS.featureFlags.firstRun) {
+        CLEANPLAATS.panelState.isCollapsed = false;
+        CLEANPLAATS.panelState.activeView = 'filters';
+        return;
+    }
+
+    if (!CLEANPLAATS.settings.expandPanelOnPageLoad) {
+        CLEANPLAATS.panelState.isCollapsed = true;
+        CLEANPLAATS.panelState.activeView = 'filters';
+    }
+}
+
 function createControlPanel() {
     if (document.getElementById('cleanplaats-panel')) return;
+
+    applyInitialPanelStateForPageLoad();
 
     const panel = document.createElement('div');
     panel.id = 'cleanplaats-panel';
@@ -237,6 +252,18 @@ function createControlPanel() {
                     ` : ''}
                 </div>
                 <div class="cleanplaats-options">
+                    <div class="cleanplaats-option cleanplaats-option-preference">
+                        <label class="cleanplaats-switch">
+                            <input type="checkbox" id="expandPanelOnPageLoad" ${CLEANPLAATS.settings.expandPanelOnPageLoad ? 'checked' : ''}>
+                            <span class="cleanplaats-switch-slider"></span>
+                        </label>
+                        <label for="expandPanelOnPageLoad" class="cleanplaats-option-label">
+                            <span class="cleanplaats-option-label-text">
+                                ${panelText.expandPanelOnPageLoadLabel}
+                                <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.expandPanelOnPageLoadTooltip}">?</span>
+                            </span>
+                        </label>
+                    </div>
                     <div class="cleanplaats-option cleanplaats-option-preference">
                         <label class="cleanplaats-switch">
                             <input type="checkbox" id="removeFavoriteRelatedAds" ${CLEANPLAATS.settings.removeFavoriteRelatedAds ? 'checked' : ''}>
@@ -682,7 +709,7 @@ function setupEventListeners() {
     });
 
     ['removeTopAds', 'removeDagtoppers', 'removePromotedListings',
-        'removeOpvalStickers', 'removeReservedListings', 'removeFavoriteRelatedAds', 'sellerAgeWarningEnabled'].forEach(id => {
+        'removeOpvalStickers', 'removeReservedListings', 'expandPanelOnPageLoad', 'removeFavoriteRelatedAds', 'sellerAgeWarningEnabled'].forEach(id => {
         const checkbox = document.getElementById(id);
         if (checkbox) {
             checkbox.addEventListener('change', handleCheckboxChange);
@@ -744,6 +771,11 @@ function handleCheckboxChange(event) {
         .then(() => {
             if (setting === 'darkMode') {
                 applyDarkModeToDocument(value);
+                showSettingFeedback();
+                return;
+            }
+
+            if (setting === 'expandPanelOnPageLoad') {
                 showSettingFeedback();
                 return;
             }

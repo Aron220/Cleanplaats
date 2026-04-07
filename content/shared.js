@@ -144,6 +144,8 @@ function getPanelLocaleText() {
             preferencesLabel: 'Préférences',
             backLabel: '← Retour',
             preferencesIntro: '',
+            expandPanelOnPageLoadLabel: 'Déplier le panneau à l’ouverture de la page',
+            expandPanelOnPageLoadTooltip: 'Si cette option est désactivée, le panneau reste replié en bas à droite à chaque chargement de page (sauf la toute première visite).',
             darkModeLabel: 'Mode sombre',
             darkModeTooltip: 'Active un thème sombre pour 2ememain et le panneau Cleanplaats. Expérimental: si la visibilité pose problème, désactivez-le.',
             resultsPerPageLabel: 'Résultats par page :',
@@ -228,6 +230,8 @@ function getPanelLocaleText() {
         preferencesLabel: 'Voorkeuren',
         backLabel: '← Terug',
         preferencesIntro: '',
+        expandPanelOnPageLoadLabel: 'Paneel uitklappen bij openen pagina',
+        expandPanelOnPageLoadTooltip: 'Uit: het paneel start bij elke pagina ingeklapt (behalve de allereerste keer). Aan: onthoudt of het paneel uit- of ingeklapt was.',
         darkModeLabel: 'Donkere modus',
         darkModeTooltip: 'Schakelt een donker thema in voor Marktplaats en het Cleanplaats-paneel. Experimenteel: werkt meestal goed, maar zet het uit als iets slecht leesbaar is.',
         resultsPerPageLabel: 'Resultaten per pagina:',
@@ -290,7 +294,8 @@ var CLEANPLAATS = {
         blacklistedTerms: [],
         resultsPerPage: 30,
         defaultSortMode: 'standard',
-        sortPreferenceSource: 'cleanplaats'
+        sortPreferenceSource: 'cleanplaats',
+        expandPanelOnPageLoad: false
     },
 
     stats: {
