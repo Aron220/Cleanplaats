@@ -334,6 +334,15 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES = {
+    '2.0.8': {
+        intro: 'Cleanplaats 2.0.8 zorgt voor een rustiger startgedrag van het paneel en geeft je meer controle over hoe het opent.',
+        highlights: [
+            'Het paneel start nu na de eerste keer standaard ingeklapt, zodat het minder aanwezig is bij het openen van een pagina.',
+            'Ook het tabje "Voorkeuren" blijft niet meer onbedoeld openstaan bij een nieuw bezoek.',
+            'Via "Voorkeuren" kun je nu zelf instellen of Cleanplaats het paneel bij elke pagina weer mag uitklappen.'
+        ],
+        note: 'Open je het paneel liever meteen volledig? Dan kun je dat nu zelf aanzetten onder Voorkeuren.'
+    },
     '2.0.7': {
         intro: 'Cleanplaats 2.0.7 voegt een extra veiligheidswaarschuwing toe op advertentiepagina’s en maakt het verbergen van verkopers duidelijker en handiger.',
         highlights: [

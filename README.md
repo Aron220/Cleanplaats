@@ -114,5 +114,5 @@ Issues en verbeterideeën zijn welkom. Gebruik bij voorkeur GitHub Issues voor:
 
 ## Versie
 
-Huidige versie in deze repository: `2.0.4`
+Huidige versie in deze repository: `2.0.8`
 
