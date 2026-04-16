@@ -482,6 +482,9 @@ const showWelcomeToast = (): void => {
     return;
   }
 
+  patchPanelState({ hasShownWelcomeToast: true });
+  void saveSettings(repositoryRef);
+
   const toast = document.createElement('div');
   toast.className = 'cleanplaats-toast';
   toast.id = 'cleanplaats-toast';
@@ -505,9 +508,6 @@ const showWelcomeToast = (): void => {
     toast.classList.remove('visible');
     setTimeout(() => toast.remove(), 300);
   }, 3000);
-
-  patchPanelState({ hasShownWelcomeToast: true });
-  void saveSettings(repositoryRef);
 };
 
 let repositoryRef!: SettingsRepository;
