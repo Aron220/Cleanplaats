@@ -1,8 +1,8 @@
 # Cleanplaats
 
-Cleanplaats is een browserextensie voor [Marktplaats](https://www.marktplaats.nl/), [2dehands](https://www.2dehands.be/) en [2ememain](https://www.2ememain.be/) die rommel uit zoekresultaten en overzichtspagina's haalt. De extensie helpt gebruikers om sneller door relevante advertenties te bladeren door promotionele, storende en ongewenste listings te verbergen.
+Cleanplaats is een browserextensie voor [Marktplaats](https://www.marktplaats.nl/), [2dehands](https://www.2dehands.be/) en [2ememain](https://www.2ememain.be/) die rommel uit zoekresultaten en overzichtspagina's haalt.
 
-Gebouwd voor Chromium-browsers en Firefox, met een modulaire codebase die eenvoudiger te onderhouden en uit te breiden is.
+Deze versie is herschreven naar **WXT + React + TypeScript**, met dezelfde kernfunctionaliteit en browserondersteuning als de vorige implementatie.
 
 ## Wat doet Cleanplaats?
 
@@ -23,67 +23,74 @@ Belangrijkste functies:
 - `2dehands.be`
 - `2ememain.be`
 
-## Screenshot
-in progress
+## Browserondersteuning
 
-## Installatie voor lokaal gebruik
+De projectconfiguratie ondersteunt:
 
-### Chrome of andere Chromium-browsers
+- Chromium (Manifest V3)
+- Firefox (Manifest V3 buildpad beschikbaar via `--mv3`)
 
-1. Clone deze repository.
-2. Open `chrome://extensions`.
-3. Zet `Developer mode` aan.
-4. Kies `Load unpacked`.
-5. Selecteer de rootmap van deze repository.
-
-### Firefox
-
-1. Clone deze repository.
-2. Open `about:debugging#/runtime/this-firefox`.
-3. Kies `Load Temporary Add-on`.
-4. Selecteer het bestand [manifest.json](/home/aron/projects/Cleanplaats/manifest.json).
+Gecko-instellingen (id/min-version) zijn behouden in de manifest-configuratie.
 
 ## Ontwikkeling
 
-Deze repository gebruikt geen buildstap. De extensie draait direct op de bestanden in de repo.
-
-Tijdens development werk je meestal zo:
-
-1. Pas bestanden aan in de repo.
-2. Herlaad de extensie in de browser.
-3. Ververs een ondersteunde pagina op Marktplaats, 2dehands of 2ememain.
-
-Handige controle:
+### Installeren
 
 ```bash
-node --check content/shared.js
-node --check content/notifications.js
+npm install
+```
+
+### Development builds
+
+```bash
+# Chromium
+npm run dev
+
+# Firefox
+npm run dev:firefox
+```
+
+### Productiebuilds
+
+```bash
+# Chromium
+npm run build
+
+# Firefox (default target)
+npm run build:firefox
+
+# Firefox MV3 expliciet
+npm run build:firefox:mv3
+```
+
+### Typecheck en tests
+
+```bash
+npm run compile
+npm run test
 ```
 
 ## Projectstructuur
 
-De codebase is opgesplitst per verantwoordelijkheid:
-
 ```text
-background/         Service worker modules
-content/            Content-script modules
+src/
+  entrypoints/      WXT entrypoints (background/content/theme-init)
+  content/          Content runtime, services, React panel
+  background/       Background services en listeners
+  shared/           Types, constants, storage/message utilities
+  styles/           Content/panel + dark mode CSS
 icons/              Extensie-assets
-background.js       Bootstrap voor background modules
-content.js          Bootstrap voor content modules
-content.css         Paneel- en UI-styling
-dark-mode.css       Dark mode overrides voor ondersteunde sites
-theme-init.js       Vroege theme-initialisatie om flash te voorkomen
-manifest.json       Browser extension manifest
+wxt.config.ts       WXT config + manifest declaratie
 ```
 
 ## Belangrijke modules
 
-- `content/cleanup.js`: detecteert en verbergt listings
-- `content/blacklist.js`: beheer van blacklist-termen en verborgen verkopers
-- `content/theme.js`: thema-logica en dark mode synchronisatie
-- `content/notifications.js`: onboarding, update-popup en toastmeldingen
-- `content/ui.js`: opbouw van het Cleanplaats-paneel
-- `background/`: achtergrondlogica voor lifecycle, messaging en URL-regels
+- `src/content/services/cleanup.ts`: detecteert en verbergt listings/ads
+- `src/content/services/blacklist-inject.ts`: beheer van verborgen verkopers + knoppeninjectie
+- `src/content/services/theme.ts`: thema-logica en dark mode synchronisatie
+- `src/content/services/notifications.ts`: onboarding, update-popup en toastmeldingen
+- `src/content/panel/CleanplaatsPanel.tsx`: React-paneel met hooks/state
+- `src/background/`: URL-regels, keepalive en runtime messaging
 
 ## Rechten
 
@@ -93,15 +100,7 @@ Cleanplaats gebruikt browserrechten die nodig zijn voor:
 - injecteren van scripts en styles op ondersteunde domeinen
 - tab- en navigatie-events voor extensielogica
 
-Zie [manifest.json](/home/aron/projects/Cleanplaats/manifest.json) voor de actuele lijst van permissies en host-permissies.
-
-## Roadmap
-
-Mogelijke vervolgstappen:
-
-- extra regressietests voor selector-wijzigingen op de ondersteunde sites
-- visuele regression checks voor dark mode
-- verdere opschoning van content-script styling en componentstructuur
+De actuele permissies en host-permissies staan in de gegenereerde manifest output van WXT op basis van `wxt.config.ts`.
 
 ## Bijdragen
 
@@ -114,5 +113,5 @@ Issues en verbeterideeën zijn welkom. Gebruik bij voorkeur GitHub Issues voor:
 
 ## Versie
 
-Huidige versie in deze repository: `2.0.4`
+Huidige versie in deze repository: `2.0.7`
 
