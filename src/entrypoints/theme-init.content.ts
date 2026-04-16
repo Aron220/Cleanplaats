@@ -1,3 +1,4 @@
+import '@/styles/dark-mode.css';
 import { EARLY_DARK_MODE_CSS } from '@/content/theme/early-dark-mode-css';
 import { LOCAL_STORAGE_KEYS, STORAGE_KEYS } from '@/shared/constants/storage';
 import { CLEANPLAATS_DARK_MODE_CLASS, CLEANPLAATS_TWH_SITE_CLASS } from '@/content/constants/ui';

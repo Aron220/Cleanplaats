@@ -2,7 +2,7 @@
 
 Cleanplaats is een browserextensie voor [Marktplaats](https://www.marktplaats.nl/), [2dehands](https://www.2dehands.be/) en [2ememain](https://www.2ememain.be/) die rommel uit zoekresultaten en overzichtspagina's haalt.
 
-Deze versie is herschreven naar **WXT + React + TypeScript**, met dezelfde kernfunctionaliteit en browserondersteuning als de vorige implementatie.
+Deze codebase is volledig herschreven met **WXT + React + TypeScript**, met behoud van de bestaande functionaliteit en domeinondersteuning.
 
 ## Wat doet Cleanplaats?
 
@@ -28,7 +28,7 @@ Belangrijkste functies:
 De projectconfiguratie ondersteunt:
 
 - Chromium (Manifest V3)
-- Firefox (Manifest V3 buildpad beschikbaar via `--mv3`)
+- Firefox (Manifest V3)
 
 Gecko-instellingen (id/min-version) zijn behouden in de manifest-configuratie.
 
@@ -53,14 +53,11 @@ npm run dev:firefox
 ### Productiebuilds
 
 ```bash
-# Chromium
+# Chromium (MV3)
 npm run build
 
-# Firefox (default target)
+# Firefox (MV3)
 npm run build:firefox
-
-# Firefox MV3 expliciet
-npm run build:firefox:mv3
 ```
 
 ### Typecheck en tests
@@ -79,7 +76,8 @@ src/
   background/       Background services en listeners
   shared/           Types, constants, storage/message utilities
   styles/           Content/panel + dark mode CSS
-icons/              Extensie-assets
+public/
+  icons/            Extensie-assets (copied into build output)
 wxt.config.ts       WXT config + manifest declaratie
 ```
 

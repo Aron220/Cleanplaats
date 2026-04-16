@@ -4,6 +4,7 @@ import { initCleanplaats } from '@/content/bootstrap';
 export default defineContentScript({
   matches: ['*://*.marktplaats.nl/*', '*://*.2dehands.be/*', '*://*.2ememain.be/*'],
   runAt: 'document_end',
+  cssInjectionMode: 'manifest',
   main() {
     const start = (): void => {
       void initCleanplaats();

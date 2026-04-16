@@ -38,7 +38,7 @@ export default defineConfig({
     },
     web_accessible_resources: [
       {
-        resources: ['icons/*', 'dark-mode.css'],
+        resources: ['icons/*'],
         matches: HOST_MATCH_PATTERNS,
       },
     ],
