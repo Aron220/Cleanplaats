@@ -1,3 +1,5 @@
+import { initializeBackground } from '@/background';
+
 export default defineBackground(() => {
-  console.log('Cleanplaats background initialized.');
+  initializeBackground();
 });

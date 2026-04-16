@@ -1,13 +1,18 @@
 import '../styles/content.css';
+import { initCleanplaats } from '@/content/bootstrap';
 
 export default defineContentScript({
-  matches: [
-    '*://*.marktplaats.nl/*',
-    '*://*.2dehands.be/*',
-    '*://*.2ememain.be/*',
-  ],
+  matches: ['*://*.marktplaats.nl/*', '*://*.2dehands.be/*', '*://*.2ememain.be/*'],
   runAt: 'document_end',
   main() {
-    console.log('Cleanplaats: main content script bootstrap loaded');
+    const start = (): void => {
+      void initCleanplaats();
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', start, { once: true });
+    } else {
+      start();
+    }
   },
 });
