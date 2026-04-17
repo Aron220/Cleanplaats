@@ -34,10 +34,16 @@ export const updateCollapsedPanelIcon = (
 
   if (panel.classList.contains('collapsed-ready')) {
     panel.style.backgroundImage = `url('${getCollapsedPanelIconUrl(settings.darkMode)}')`;
+    panel.style.backgroundRepeat = 'no-repeat';
+    panel.style.backgroundPosition = 'center';
+    panel.style.backgroundSize = 'contain';
     return;
   }
 
-  panel.style.backgroundImage = '';
+  panel.style.removeProperty('background-image');
+  panel.style.removeProperty('background-repeat');
+  panel.style.removeProperty('background-position');
+  panel.style.removeProperty('background-size');
 };
 
 export const syncHeaderLogoForDarkMode = (enabled: boolean): void => {

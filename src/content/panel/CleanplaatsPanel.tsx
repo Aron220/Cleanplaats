@@ -444,7 +444,6 @@ export function CleanplaatsPanel({ repository, onMounted }: Props) {
                 className="cleanplaats-toggle"
                 type="button"
                 aria-label="Paneel inklappen of uitklappen"
-                onClick={(e) => e.stopPropagation()}
               >
                 {panelState.isCollapsed ? '▲' : '▼'}
               </button>

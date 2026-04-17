@@ -26,6 +26,7 @@
 .cleanplaats-panel:not(.collapsed) {
   min-width: 250px;
   padding: 0;
+  background-image: none !important;
 }
 
   /* Collapsed state */
