@@ -20,6 +20,88 @@ function getListingTitleText(container) {
     return titleElement?.textContent?.trim().toLowerCase() || '';
 }
 
+function getViewedListingCardLink(listing) {
+    if (!(listing instanceof Element)) {
+        return null;
+    }
+
+    return listing.querySelector('a[href*="/v/"]');
+}
+
+function removeViewedListingIndicator(listing) {
+    if (!(listing instanceof Element)) {
+        return;
+    }
+
+    listing.classList.remove('cleanplaats-viewed-listing');
+    listing.removeAttribute('data-cleanplaats-viewed-id');
+    listing.querySelector('.cleanplaats-viewed-badge')?.remove();
+}
+
+function setViewedBadgeInteractionState(badge, isUndoState) {
+    if (!(badge instanceof HTMLElement)) {
+        return;
+    }
+
+    const defaultLabel = badge.dataset.defaultLabel || badge.textContent || '';
+    const hoverLabel = badge.dataset.hoverLabel || defaultLabel;
+    badge.textContent = isUndoState ? hoverLabel : defaultLabel;
+    badge.classList.toggle('is-undo-state', Boolean(isUndoState));
+}
+
+function ensureViewedListingBadge(listing, label) {
+    const wrapper = listing.querySelector('.hz-Listing-item-wrapper-new') || listing;
+    const panelText = getPanelLocaleText();
+    let badge = wrapper.querySelector('.cleanplaats-viewed-badge');
+
+    if (!badge) {
+        badge = document.createElement('button');
+        badge.type = 'button';
+        badge.className = 'cleanplaats-viewed-badge';
+        badge.setAttribute('aria-label', panelText.viewedListingBadgeUndoTooltip);
+        badge.title = panelText.viewedListingBadgeUndoTooltip;
+        wrapper.appendChild(badge);
+    }
+
+    badge.dataset.defaultLabel = label;
+    badge.dataset.hoverLabel = panelText.viewedListingBadgeUndo;
+    setViewedBadgeInteractionState(badge, false);
+}
+
+function applyViewedListingIndicators() {
+    const listings = document.querySelectorAll('.hz-Listing');
+
+    if (!listings.length) {
+        return;
+    }
+
+    if (!CLEANPLAATS.settings.showViewedListingsIndicator) {
+        listings.forEach(removeViewedListingIndicator);
+        return;
+    }
+
+    const panelText = getPanelLocaleText();
+
+    listings.forEach(listing => {
+        const listingLink = getViewedListingCardLink(listing);
+        const listingId = getListingIdFromUrl(listingLink?.href);
+
+        if (!listingId) {
+            removeViewedListingIndicator(listing);
+            return;
+        }
+
+        if (!isListingViewed(listingId)) {
+            removeViewedListingIndicator(listing);
+            return;
+        }
+
+        listing.classList.add('cleanplaats-viewed-listing');
+        listing.setAttribute('data-cleanplaats-viewed-id', listingId);
+        ensureViewedListingBadge(listing, panelText.viewedListingBadge);
+    });
+}
+
 function updateStatsDisplay() {
     if (!CLEANPLAATS.featureFlags.showStats) return;
 
@@ -99,6 +181,7 @@ function performCleanup() {
         });
     });
 
+    applyViewedListingIndicators();
     updateStatsDisplay();
 }
 

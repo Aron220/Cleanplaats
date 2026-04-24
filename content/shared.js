@@ -6,6 +6,8 @@ var browserAPI = typeof browser !== 'undefined' ? browser : chrome;
 var CLEANPLAATS_DARK_MODE_CLASS = 'cleanplaats-dark-mode';
 var CLEANPLAATS_TWH_SITE_CLASS = 'cleanplaats-site-twh';
 var CLEANPLAATS_THEME_STORAGE_KEY = 'cleanplaats:darkMode';
+var CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY = 'cleanplaatsViewedListings';
+var CLEANPLAATS_MAX_VIEWED_LISTINGS = 1500;
 var CLEANPLAATS_FLOATING_OFFSET_VAR = '--cleanplaats-floating-offset';
 var MARKTPLAATS_DESKTOP_LOGO_MATCH = /\/tenant--nlnl(?:\.[a-z0-9]+)?\.svg$/i;
 var CLEANPLAATS_DARK_LOGO_PATH = 'icons/marktplaats-logo-darkmode.svg';
@@ -44,6 +46,30 @@ function isMarktplaatsSite() {
 
 function isProductDetailPage() {
     return /\/v\//.test(window.location.pathname);
+}
+
+function getListingIdFromUrl(url) {
+    const rawUrl = typeof url === 'string' ? url : String(url || '');
+
+    try {
+        const parsedUrl = new URL(rawUrl, window.location.origin);
+        const pathMatch = parsedUrl.pathname.match(/\/([am]\d+)(?:[-/?]|$)/i);
+        if (pathMatch) {
+            return pathMatch[1].toLowerCase();
+        }
+
+        const itemId = parsedUrl.searchParams.get('itemId');
+        if (itemId && /^[am]\d+$/i.test(itemId)) {
+            return itemId.toLowerCase();
+        }
+    } catch (error) {
+        const rawMatch = rawUrl.match(/([am]\d+)(?:[-/?]|$)/i);
+        if (rawMatch) {
+            return rawMatch[1].toLowerCase();
+        }
+    }
+
+    return '';
 }
 
 function normalizeSellerAgeText(text) {
@@ -128,6 +154,15 @@ function getPanelLocaleText() {
             reservedTooltip: "Masque les annonces marquées 'Réservé'",
             favoriteRelatedAdsLabel: 'Annonces similaires dans les favoris',
             favoriteRelatedAdsTooltip: 'Masque la liste des annonces similaires affichée dans les favoris',
+            viewedListingsLabel: 'Marquer les annonces déjà ouvertes',
+            viewedListingsTooltip: 'Ajoute un repère visuel dans les résultats de recherche pour les annonces que vous avez déjà ouvertes.',
+            viewedListingBadge: 'Vu',
+            viewedListingBadgeUndo: 'Annuler',
+            viewedListingBadgeUndoTooltip: 'Marquer comme non vue',
+            viewedListingsClearButton: 'Effacer',
+            viewedListingsClearButtonAriaLabel: 'Effacer toutes les annonces vues enregistrées',
+            viewedListingsClearedToast: 'Les repères des annonces vues ont été effacés.',
+            viewedListingRemovedToast: 'Cette annonce n’est plus marquée comme vue.',
             sellerAgeWarningLabel: 'Alerte compte vendeur récent',
             sellerAgeWarningTooltip: "Affiche un avertissement sur une page d'annonce si le compte vendeur est plus récent que votre seuil.",
             sellerAgeWarningThresholdLabel: 'Avertir en dessous de',
@@ -214,6 +249,15 @@ function getPanelLocaleText() {
         reservedTooltip: "Verbergt advertenties die 'Gereserveerd' zijn",
         favoriteRelatedAdsLabel: 'Gerelateerde advertenties bij favorieten',
         favoriteRelatedAdsTooltip: 'Verbergt het blok met gerelateerde advertenties op de favorietenpagina',
+        viewedListingsLabel: 'Markeer eerder geopende advertenties',
+        viewedListingsTooltip: 'Laat in zoekresultaten zien welke advertenties je eerder al hebt geopend.',
+        viewedListingBadge: 'Bekeken',
+        viewedListingBadgeUndo: 'Niet bekeken',
+        viewedListingBadgeUndoTooltip: 'Markeer als niet bekeken',
+        viewedListingsClearButton: 'Wis',
+        viewedListingsClearButtonAriaLabel: 'Wis alle opgeslagen bekeken advertenties',
+        viewedListingsClearedToast: 'Alle bekeken-markeringen zijn gewist.',
+        viewedListingRemovedToast: 'Deze advertentie is niet meer gemarkeerd als bekeken.',
         sellerAgeWarningLabel: 'Waarschuwing voor nieuwe verkoperaccounts',
         sellerAgeWarningTooltip: 'Toont op een advertentiepagina een waarschuwing als het verkopersaccount jonger is dan jouw ingestelde grens.',
         sellerAgeWarningThresholdLabel: 'Waarschuwen onder',
@@ -286,6 +330,7 @@ var CLEANPLAATS = {
         removeOpvalStickers: true,
         removeReservedListings: false,
         removeFavoriteRelatedAds: false,
+        showViewedListingsIndicator: false,
         sellerAgeWarningEnabled: false,
         sellerAgeWarningThresholdValue: 3,
         sellerAgeWarningThresholdUnit: 'days',
@@ -316,7 +361,8 @@ var CLEANPLAATS = {
 
     runtime: {
         lastSellerAgeWarningKey: '',
-        sellerAgeCheckTimer: 0
+        sellerAgeCheckTimer: 0,
+        viewedListings: {}
     },
 
     featureFlags: {

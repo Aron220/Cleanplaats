@@ -266,6 +266,27 @@ function createControlPanel() {
                     </div>
                     <div class="cleanplaats-option cleanplaats-option-preference">
                         <label class="cleanplaats-switch">
+                            <input type="checkbox" id="showViewedListingsIndicator" ${CLEANPLAATS.settings.showViewedListingsIndicator ? 'checked' : ''}>
+                            <span class="cleanplaats-switch-slider"></span>
+                        </label>
+                        <label for="showViewedListingsIndicator" class="cleanplaats-option-label">
+                            <span class="cleanplaats-option-label-text">
+                                ${panelText.viewedListingsLabel}
+                                <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.viewedListingsTooltip}">?</span>
+                            </span>
+                        </label>
+                        <button
+                            id="cleanplaats-clear-viewed-listings"
+                            class="cleanplaats-inline-button"
+                            type="button"
+                            aria-label="${panelText.viewedListingsClearButtonAriaLabel}"
+                            title="${panelText.viewedListingsClearButtonAriaLabel}"
+                        >
+                            ${panelText.viewedListingsClearButton}
+                        </button>
+                    </div>
+                    <div class="cleanplaats-option cleanplaats-option-preference">
+                        <label class="cleanplaats-switch">
                             <input type="checkbox" id="removeFavoriteRelatedAds" ${CLEANPLAATS.settings.removeFavoriteRelatedAds ? 'checked' : ''}>
                             <span class="cleanplaats-switch-slider"></span>
                         </label>
@@ -562,6 +583,28 @@ function syncSellerAgeThresholdControlsState() {
     }
 }
 
+function syncViewedListingsControlsState() {
+    const clearButton = document.getElementById('cleanplaats-clear-viewed-listings');
+    if (!clearButton) {
+        return;
+    }
+
+    const hasViewedListings = getViewedListingsCount() > 0;
+    clearButton.disabled = !hasViewedListings;
+}
+
+function handleClearViewedListings() {
+    clearViewedListings()
+        .then(() => {
+            applyViewedListingIndicators();
+            syncViewedListingsControlsState();
+            showBubbleNotification(getPanelLocaleText().viewedListingsClearedToast);
+        })
+        .catch(error => {
+            console.error('Cleanplaats: Failed to clear viewed listings', error);
+        });
+}
+
 function handleSellerAgeThresholdChange() {
     const valueInput = document.getElementById('cleanplaats-seller-age-threshold-value');
     const unitSelect = document.getElementById('cleanplaats-seller-age-threshold-unit');
@@ -709,7 +752,7 @@ function setupEventListeners() {
     });
 
     ['removeTopAds', 'removeDagtoppers', 'removePromotedListings',
-        'removeOpvalStickers', 'removeReservedListings', 'expandPanelOnPageLoad', 'removeFavoriteRelatedAds', 'sellerAgeWarningEnabled'].forEach(id => {
+        'removeOpvalStickers', 'removeReservedListings', 'expandPanelOnPageLoad', 'showViewedListingsIndicator', 'removeFavoriteRelatedAds', 'sellerAgeWarningEnabled'].forEach(id => {
         const checkbox = document.getElementById(id);
         if (checkbox) {
             checkbox.addEventListener('change', handleCheckboxChange);
@@ -718,10 +761,13 @@ function setupEventListeners() {
 
     const sellerAgeThresholdValue = document.getElementById('cleanplaats-seller-age-threshold-value');
     const sellerAgeThresholdUnit = document.getElementById('cleanplaats-seller-age-threshold-unit');
+    const clearViewedListingsButton = document.getElementById('cleanplaats-clear-viewed-listings');
     sellerAgeThresholdValue?.addEventListener('input', handleSellerAgeThresholdInput);
     sellerAgeThresholdValue?.addEventListener('change', handleSellerAgeThresholdChange);
     sellerAgeThresholdUnit?.addEventListener('change', handleSellerAgeThresholdChange);
+    clearViewedListingsButton?.addEventListener('click', handleClearViewedListings);
     syncSellerAgeThresholdControlsState();
+    syncViewedListingsControlsState();
 
     const themeToggle = document.getElementById('cleanplaats-theme-toggle');
     if (themeToggle) {

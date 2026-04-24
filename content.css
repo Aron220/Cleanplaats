@@ -549,6 +549,11 @@
     border-top: 1px solid #f1f3f5;
   }
 
+  .cleanplaats-option-preference > .cleanplaats-inline-button {
+    margin-left: auto;
+    margin-top: 0;
+  }
+
   .cleanplaats-option-preference-block {
     flex-direction: column;
     gap: 10px;
@@ -570,6 +575,34 @@
     margin-left: 6px;
     margin-top: 0;
     vertical-align: text-top;
+  }
+
+  .cleanplaats-inline-button {
+    flex: 0 0 auto;
+    min-width: 42px;
+    padding: 5px 10px;
+    border: 1px solid #d7dde4;
+    border-radius: 999px;
+    background: #f7f9fb;
+    color: #496174;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  }
+
+  .cleanplaats-inline-button:hover,
+  .cleanplaats-inline-button:focus-visible {
+    background: #edf4fa;
+    border-color: #b8d3eb;
+    color: #1f7fd1;
+    outline: none;
+  }
+
+  .cleanplaats-inline-button:disabled {
+    opacity: 0.45;
+    cursor: default;
   }
 
   .cleanplaats-threshold-controls {
@@ -1667,6 +1700,97 @@
     display: none !important;
   }
 
+  .hz-Listing.cleanplaats-viewed-listing .hz-Listing-item-wrapper-new {
+    background: linear-gradient(90deg, rgba(31, 127, 209, 0.05), rgba(31, 127, 209, 0) 112px);
+    transition: background-color 0.2s ease;
+  }
+
+  .hz-Listing.cleanplaats-viewed-listing .hz-imageContainer,
+  .hz-Listing.cleanplaats-viewed-listing .hz-Listing-image-container-new {
+    position: relative;
+  }
+
+  .hz-Listing.cleanplaats-viewed-listing .hz-imageContainer::before,
+  .hz-Listing.cleanplaats-viewed-listing .hz-Listing-image-container-new::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -8px;
+    width: 3px;
+    border-radius: 999px;
+    background: #1f7fd1;
+  }
+
+  .cleanplaats-viewed-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 22px;
+    padding: 0 9px;
+    border: 1px solid rgba(31, 127, 209, 0.22);
+    border-radius: 999px;
+    background: rgba(232, 243, 251, 0.95);
+    color: #15507f;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .cleanplaats-viewed-badge:hover,
+  .cleanplaats-viewed-badge:focus-visible,
+  .cleanplaats-viewed-badge.is-undo-state {
+    border-color: rgba(31, 127, 209, 0.38);
+    background: rgba(31, 127, 209, 0.12);
+    color: #0f5f9b;
+    outline: none;
+    transform: translateY(-1px);
+  }
+
+  html.cleanplaats-dark-mode .hz-Listing.cleanplaats-viewed-listing .hz-Listing-item-wrapper-new {
+    background: linear-gradient(90deg, rgba(31, 127, 209, 0.11), rgba(31, 127, 209, 0) 112px);
+  }
+
+  html.cleanplaats-dark-mode .hz-Listing.cleanplaats-viewed-listing .hz-imageContainer::before,
+  html.cleanplaats-dark-mode .hz-Listing.cleanplaats-viewed-listing .hz-Listing-image-container-new::before {
+    background: #59a8e8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-viewed-badge {
+    border-color: rgba(89, 168, 232, 0.3);
+    background: rgba(18, 43, 67, 0.92);
+    color: #9fd1ff;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-viewed-badge:hover,
+  html.cleanplaats-dark-mode .cleanplaats-viewed-badge:focus-visible,
+  html.cleanplaats-dark-mode .cleanplaats-viewed-badge.is-undo-state {
+    border-color: rgba(89, 168, 232, 0.5);
+    background: rgba(22, 64, 99, 0.96);
+    color: #d2ebff;
+  }
+
+  .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-inline-button {
+    border-color: #38506a;
+    background: #18212c;
+    color: #c7d5e3;
+  }
+
+  .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-inline-button:hover,
+  .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-inline-button:focus-visible {
+    border-color: #59a8e8;
+    background: #223246;
+    color: #9fd1ff;
+  }
+
   .cleanplaats-terms-input-row {
     display: flex;
     gap: 8px;
@@ -1730,6 +1854,11 @@
 
   /* Mobile seller topright row and hide button */
   @media (max-width: 700px) {
+    .cleanplaats-viewed-badge {
+      top: 8px;
+      right: 8px;
+    }
+
     .cleanplaats-seller-topright-mobile {
       display: flex;
       justify-content: flex-end;

@@ -105,6 +105,7 @@ function initCleanplaats() {
         .then(() => {
             registerSettingsStorageSync();
             applyDarkModeToDocument(CLEANPLAATS.settings.darkMode);
+            rememberCurrentListingVisit();
 
             checkFirstRun()
                 .then(isFirstRun => {

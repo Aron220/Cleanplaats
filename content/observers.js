@@ -155,6 +155,69 @@ function handleNavigation() {
     window.dispatchEvent(new Event('navigation'));
 }
 
+function handleViewedListingInteraction(event) {
+    const link = event.target instanceof Element ? event.target.closest('a[href]') : null;
+    if (!link || link.hostname !== window.location.hostname) {
+        return;
+    }
+
+    const listingId = getListingIdFromUrl(link.href);
+    if (!listingId) {
+        return;
+    }
+
+    markListingAsViewed(listingId)
+        .then(() => {
+            if (typeof applyViewedListingIndicators === 'function') {
+                applyViewedListingIndicators();
+            }
+        })
+        .catch(error => {
+            console.error('Cleanplaats: Failed to track viewed listing interaction', error);
+        });
+}
+
+function handleViewedListingBadgeToggle(event) {
+    const badge = event.target instanceof Element ? event.target.closest('.cleanplaats-viewed-badge') : null;
+    if (!badge) {
+        return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const listing = badge.closest('.hz-Listing');
+    const listingId = listing?.getAttribute('data-cleanplaats-viewed-id')
+        || getListingIdFromUrl(listing?.querySelector('a[href*="/v/"]')?.href);
+
+    if (!listingId) {
+        return;
+    }
+
+    removeViewedListing(listingId)
+        .then((didRemove) => {
+            if (!didRemove) {
+                return;
+            }
+
+            applyViewedListingIndicators();
+            syncViewedListingsControlsState?.();
+            showBubbleNotification(getPanelLocaleText().viewedListingRemovedToast);
+        })
+        .catch(error => {
+            console.error('Cleanplaats: Failed to remove viewed listing flag', error);
+        });
+}
+
+function handleViewedListingBadgeState(event, isUndoState) {
+    const badge = event.target instanceof Element ? event.target.closest('.cleanplaats-viewed-badge') : null;
+    if (!badge || typeof setViewedBadgeInteractionState !== 'function') {
+        return;
+    }
+
+    setViewedBadgeInteractionState(badge, isUndoState);
+}
+
 function setupNavigationDetection() {
     window.addEventListener('popstate', handleNavigation);
 
@@ -174,6 +237,26 @@ function setupNavigationDetection() {
             setTimeout(() => handleNavigation(), 100);
         }
     });
+
+    document.addEventListener('click', handleViewedListingInteraction, true);
+    document.addEventListener('click', handleViewedListingBadgeToggle, true);
+    document.addEventListener('auxclick', (event) => {
+        if (event.button === 1) {
+            handleViewedListingInteraction(event);
+        }
+    }, true);
+    document.addEventListener('mouseover', (event) => {
+        handleViewedListingBadgeState(event, true);
+    }, true);
+    document.addEventListener('mouseout', (event) => {
+        handleViewedListingBadgeState(event, false);
+    }, true);
+    document.addEventListener('focusin', (event) => {
+        handleViewedListingBadgeState(event, true);
+    }, true);
+    document.addEventListener('focusout', (event) => {
+        handleViewedListingBadgeState(event, false);
+    }, true);
 }
 
 function setupAllObservers() {
