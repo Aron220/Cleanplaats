@@ -45,7 +45,7 @@ function setupObservers() {
         for (const mutation of mutations) {
             if (mutation.type === 'childList' && mutation.addedNodes.length) {
                 const listingMutationTarget = mutation.target?.nodeType === Node.ELEMENT_NODE
-                    ? mutation.target.closest?.('.hz-Listing')
+                    ? mutation.target.closest?.('.hz-Listing, .hz-StructuredListing')
                     : null;
 
                 if (window.innerWidth < 700 && listingMutationTarget) {
@@ -72,7 +72,9 @@ function setupObservers() {
 
                         if (
                             node.classList?.contains('hz-Listing') ||
+                            node.classList?.contains('hz-StructuredListing') ||
                             node.querySelector?.('.hz-Listing') ||
+                            node.querySelector?.('.hz-StructuredListing') ||
                             node.classList?.contains('MpCard-mpCardBanner') ||
                             node.querySelector?.('.MpCard-mpCardBanner, img[alt="Marktplaats Marketing Banner"]') ||
                             node.classList?.contains('SimilarAdsList-related-ads-section') ||
@@ -107,6 +109,7 @@ function setupObservers() {
                 }
 
                 if (
+                    target?.classList?.contains('hz-StructuredListing') ||
                     target?.classList?.contains('hz-FeedBannerBlock') ||
                     target?.classList?.contains('Banners-bannerFeedItem') ||
                     target?.classList?.contains('MpCard-mpCardBanner') ||
