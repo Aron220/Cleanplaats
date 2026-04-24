@@ -3236,3 +3236,33 @@ html.cleanplaats-dark-mode [class*="DropdownMenu-module-root"] [aria-haspopup]:h
 html.cleanplaats-dark-mode [class*="DropdownMenu-module-root"] button:hover {
   color: var(--cleanplaats-dark-text) !important;
 }
+
+html.cleanplaats-dark-mode #checkoutRoot [class*="Section-module-root"],
+html.cleanplaats-dark-mode #checkoutRoot .u-backgroundColorBackgroundDefault,
+html.cleanplaats-dark-mode #checkoutRoot [class*="SelectableBlock-module-root"],
+html.cleanplaats-dark-mode #checkoutRoot [class*="BuyerProtection"],
+html.cleanplaats-dark-mode #checkoutRoot [class*="PaymentProviderTCs-module-root"] {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+  box-shadow: none !important;
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode #checkoutRoot [class*="Section-module-root"] {
+  border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+}
+
+html.cleanplaats-dark-mode #checkoutRoot [class*="SelectableBlock-module-root"]:hover,
+html.cleanplaats-dark-mode #checkoutRoot [class*="SelectableBlock-module-root"]:focus-visible {
+  background: var(--cleanplaats-dark-bg-soft-hover) !important;
+  border-color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode #checkoutRoot [class*="SelectableBlock-module-selected"] {
+  background: rgba(31, 127, 209, 0.12) !important;
+  border-color: var(--cleanplaats-dark-link) !important;
+}
+
+html.cleanplaats-dark-mode #checkoutRoot [class*="Divider-module-root"] {
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+}
