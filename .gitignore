@@ -3,3 +3,6 @@
 *.zip
 update_notes.txt
 .codex
+.output/
+.wxt/
+node_modules/
