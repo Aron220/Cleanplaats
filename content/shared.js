@@ -395,6 +395,15 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES = {
+    '2.0.9': {
+        intro: 'Cleanplaats 2.0.9 breidt de blacklist uit met beschrijvingen, voegt een bekeken-indicator toe en verbetert de donkere modus.',
+        highlights: [
+            'Blacklist-termen werken nu ook op advertentiebeschrijvingen — voeg termen toe via "Beheer blacklist-termen" onder het kopje "In beschrijvingen".',
+            'Bekeken advertenties krijgen een subtiele indicator zodat je ze makkelijker herkent. Dit kun je in- of uitschakelen via Voorkeuren.',
+            'De donkere modus dekt nu ook de "Direct kopen"-pagina correct af.'
+        ],
+        note: 'Wil je advertenties met bepaalde woorden in de beschrijving verbergen? Voeg ze toe via "Beheer blacklist-termen".'
+    },
     '2.0.8': {
         intro: 'Cleanplaats 2.0.8 zorgt voor een rustiger startgedrag van het paneel en geeft je meer controle over hoe het opent.',
         highlights: [
