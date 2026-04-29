@@ -20,6 +20,15 @@ function getListingTitleText(container) {
     return titleElement?.textContent?.trim().toLowerCase() || '';
 }
 
+function getListingDescriptionText(container) {
+    if (!(container instanceof Element)) return '';
+    const el = container.querySelector([
+        '[class*="ListingDescription_hz-Listing-description"]',
+        '.hz-Listing-description'
+    ].join(', '));
+    return el?.textContent?.trim().toLowerCase() || '';
+}
+
 function getViewedListingCardLink(listing) {
     if (!(listing instanceof Element)) {
         return null;
@@ -180,6 +189,20 @@ function performCleanup() {
             }
         });
     });
+
+    if (CLEANPLAATS.settings.blacklistedDescriptionTerms?.length > 0) {
+        document.querySelectorAll('.hz-Listing').forEach(listing => {
+            if (listing.hasAttribute('data-cleanplaats-hidden')) return;
+            const description = getListingDescriptionText(listing);
+            if (!description) return;
+            CLEANPLAATS.settings.blacklistedDescriptionTerms.forEach(term => {
+                if (description.includes(term.toLowerCase())) {
+                    listing.setAttribute('data-cleanplaats-hidden', 'true');
+                    listing.style.display = 'none';
+                }
+            });
+        });
+    }
 
     applyViewedListingIndicators();
     updateStatsDisplay();

@@ -359,12 +359,12 @@ function createControlPanel() {
 
     document.getElementById('cleanplaats-manage-blacklist').addEventListener('click', (e) => {
         e.preventDefault();
-        showBlacklistModal();
+        showBlacklistModal(e.currentTarget);
     });
 
     document.getElementById('cleanplaats-manage-terms').addEventListener('click', (e) => {
         e.preventDefault();
-        showTermsModal();
+        showTermsModal(e.currentTarget);
     });
 
     if (!document.getElementById('cleanplaats-global-tooltip')) {
@@ -411,7 +411,7 @@ function syncPanelViewContainerHeight(activeView) {
         return;
     }
 
-    viewsContainer.style.height = `${activeView.scrollHeight}px`;
+    viewsContainer.style.height = '';
 }
 
 function measurePanelViewHeight(viewElement) {
@@ -705,6 +705,15 @@ function setupEventListeners() {
 
                 CLEANPLAATS.panelState.isCollapsed = !CLEANPLAATS.panelState.isCollapsed;
                 panel.classList.toggle('collapsed', CLEANPLAATS.panelState.isCollapsed);
+
+                if (!CLEANPLAATS.panelState.isCollapsed) {
+                    const activeViewEl = document.getElementById(
+                        CLEANPLAATS.panelState.activeView === 'preferences'
+                            ? 'cleanplaats-view-preferences'
+                            : 'cleanplaats-view-filters'
+                    );
+                    syncPanelViewContainerHeight(activeViewEl);
+                }
 
                 if (toggle) {
                     toggle.textContent = CLEANPLAATS.panelState.isCollapsed ? '▲' : '▼';

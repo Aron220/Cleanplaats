@@ -2,28 +2,29 @@
  * Content-script seller and term blacklist management.
  */
 
-function showTermsModal() {
+function showTermsModal(triggerButton) {
     const modal = document.getElementById('cleanplaats-terms-modal');
     if (!modal) return;
     const panelText = getPanelLocaleText();
 
     const blacklistModal = document.getElementById('cleanplaats-blacklist-modal');
-    if (blacklistModal) {
-        blacklistModal.style.display = 'none';
-    }
+    if (blacklistModal) blacklistModal.style.display = 'none';
 
     if (modal.style.display === 'block') {
         modal.style.display = 'none';
         return;
     }
 
-    const terms = CLEANPLAATS.settings.blacklistedTerms;
+    const titleTerms = CLEANPLAATS.settings.blacklistedTerms;
+    const descTerms = CLEANPLAATS.settings.blacklistedDescriptionTerms;
 
     modal.innerHTML = DOMPurify.sanitize(`
         <div class="cleanplaats-terms-modal-content">
             <h4>${panelText.termsModalTitle}</h4>
+
+            <div class="cleanplaats-terms-section-label">${panelText.termsTitleSectionLabel}</div>
             <ul id="cleanplaats-terms-list">
-                ${terms.length === 0 ? `<li><em>${panelText.termsEmpty}</em></li>` : terms.map(term => `
+                ${titleTerms.length === 0 ? `<li><em>${panelText.termsEmpty}</em></li>` : titleTerms.map(term => `
                     <li>
                         <span>${term}</span>
                         <button class="cleanplaats-unblacklist-term-btn" data-term="${term}">${panelText.hiddenButton}</button>
@@ -35,16 +36,39 @@ function showTermsModal() {
                 <button id="cleanplaats-add-term" class="cleanplaats-add-term-btn">${panelText.addButton}</button>
             </div>
             <div class="cleanplaats-input-help">${panelText.termInputHelp}</div>
+
+            <div class="cleanplaats-terms-section">
+                <div class="cleanplaats-terms-section-label">${panelText.termsDescriptionSectionLabel}</div>
+                <ul id="cleanplaats-description-terms-list">
+                    ${descTerms.length === 0 ? `<li><em>${panelText.descriptionTermsEmpty}</em></li>` : descTerms.map(term => `
+                        <li>
+                            <span>${term}</span>
+                            <button class="cleanplaats-unblacklist-description-term-btn" data-term="${term}">${panelText.hiddenButton}</button>
+                        </li>
+                    `).join('')}
+                </ul>
+                <div class="cleanplaats-terms-input-row">
+                    <input type="text" id="cleanplaats-description-term-input" class="cleanplaats-term-input" placeholder="${panelText.descriptionTermInputPlaceholder}">
+                    <button id="cleanplaats-add-description-term" class="cleanplaats-add-term-btn">${panelText.addButton}</button>
+                </div>
+                <div class="cleanplaats-input-help">${panelText.descriptionTermInputHelp}</div>
+            </div>
+
             <button id="cleanplaats-terms-close" style="margin-top:12px;">${panelText.closeButton}</button>
         </div>
     `);
+    if (triggerButton) {
+        const rect = triggerButton.getBoundingClientRect();
+        modal.style.bottom = `${window.innerHeight - rect.top + 8}px`;
+        modal.style.removeProperty('top');
+    }
     modal.style.display = 'block';
 
     document.getElementById('cleanplaats-terms-close').onclick = () => {
         modal.style.display = 'none';
     };
 
-    const addTerm = () => {
+    const addTitleTerm = () => {
         const input = document.getElementById('cleanplaats-term-input');
         const term = input.value.trim();
         if (term && !CLEANPLAATS.settings.blacklistedTerms.includes(term)) {
@@ -58,16 +82,32 @@ function showTermsModal() {
         }
     };
 
-    document.getElementById('cleanplaats-add-term').onclick = addTerm;
-
-    document.getElementById('cleanplaats-term-input').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            addTerm();
+    const addDescriptionTerm = () => {
+        const input = document.getElementById('cleanplaats-description-term-input');
+        const term = input.value.trim();
+        if (term && !CLEANPLAATS.settings.blacklistedDescriptionTerms.includes(term)) {
+            CLEANPLAATS.settings.blacklistedDescriptionTerms.push(term);
+            saveSettings().then(() => {
+                input.value = '';
+                updateTermsModal();
+                performCleanup();
+                showBubbleNotification(panelText.descriptionTermToastHidden(term));
+            });
         }
+    };
+
+    document.getElementById('cleanplaats-add-term').onclick = addTitleTerm;
+    document.getElementById('cleanplaats-term-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); addTitleTerm(); }
+    });
+
+    document.getElementById('cleanplaats-add-description-term').onclick = addDescriptionTerm;
+    document.getElementById('cleanplaats-description-term-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); addDescriptionTerm(); }
     });
 
     setupTermsModalButtons();
+    setupDescriptionTermsModalButtons();
 }
 
 function updateTermsModal() {
@@ -75,22 +115,34 @@ function updateTermsModal() {
     if (!modal || modal.style.display === 'none') return;
     const panelText = getPanelLocaleText();
 
-    const terms = CLEANPLAATS.settings.blacklistedTerms;
-    const list = document.getElementById('cleanplaats-terms-list');
-
-    if (list) {
-        list.innerHTML = DOMPurify.sanitize(
-            terms.length === 0
+    const titleList = document.getElementById('cleanplaats-terms-list');
+    if (titleList) {
+        titleList.innerHTML = DOMPurify.sanitize(
+            CLEANPLAATS.settings.blacklistedTerms.length === 0
                 ? `<li><em>${panelText.termsEmpty}</em></li>`
-                : terms.map(term => `
+                : CLEANPLAATS.settings.blacklistedTerms.map(term => `
                     <li>
                         <span>${term}</span>
                         <button class="cleanplaats-unblacklist-term-btn" data-term="${term}">${panelText.hiddenButton}</button>
                     </li>
                 `).join('')
         );
-
         setupTermsModalButtons();
+    }
+
+    const descList = document.getElementById('cleanplaats-description-terms-list');
+    if (descList) {
+        descList.innerHTML = DOMPurify.sanitize(
+            CLEANPLAATS.settings.blacklistedDescriptionTerms.length === 0
+                ? `<li><em>${panelText.descriptionTermsEmpty}</em></li>`
+                : CLEANPLAATS.settings.blacklistedDescriptionTerms.map(term => `
+                    <li>
+                        <span>${term}</span>
+                        <button class="cleanplaats-unblacklist-description-term-btn" data-term="${term}">${panelText.hiddenButton}</button>
+                    </li>
+                `).join('')
+        );
+        setupDescriptionTermsModalButtons();
     }
 }
 
@@ -117,6 +169,42 @@ function setupTermsModalButtons() {
                 showUnblacklistTermToast(term);
             });
         };
+    });
+}
+
+function setupDescriptionTermsModalButtons() {
+    const panelText = getPanelLocaleText();
+    document.querySelectorAll('.cleanplaats-unblacklist-description-term-btn').forEach(btn => {
+        btn.onmouseover = () => {
+            btn.style.background = 'green';
+            btn.textContent = panelText.unhideButton;
+        };
+        btn.onmouseout = () => {
+            btn.style.background = '#ff4d4d';
+            btn.textContent = panelText.hiddenButton;
+        };
+        btn.style.background = '#ff4d4d';
+        btn.style.color = 'white';
+        btn.onclick = () => {
+            const term = btn.dataset.term;
+            CLEANPLAATS.settings.blacklistedDescriptionTerms = CLEANPLAATS.settings.blacklistedDescriptionTerms.filter(t => t !== term);
+            saveSettings().then(() => {
+                updateTermsModal();
+                unhideListingsByDescriptionTerm(term);
+                performCleanup();
+                showBubbleNotification(panelText.descriptionTermToastShown(term));
+            });
+        };
+    });
+}
+
+function unhideListingsByDescriptionTerm(term) {
+    document.querySelectorAll('.hz-Listing').forEach(listing => {
+        const description = getListingDescriptionText(listing);
+        if (description.includes(term.toLowerCase())) {
+            listing.removeAttribute('data-cleanplaats-hidden');
+            listing.style.display = '';
+        }
     });
 }
 
@@ -356,15 +444,15 @@ function injectBlacklistButtons() {
     injectProductDetailBlacklistButton();
 }
 
-function showBlacklistModal() {
+function showBlacklistModal(triggerButton) {
     const modal = document.getElementById('cleanplaats-blacklist-modal');
     if (!modal) return;
     const panelText = getPanelLocaleText();
 
     const termsModal = document.getElementById('cleanplaats-terms-modal');
-    if (termsModal) {
-        termsModal.style.display = 'none';
-    }
+    const descriptionTermsModal = document.getElementById('cleanplaats-description-terms-modal');
+    if (termsModal) termsModal.style.display = 'none';
+    if (descriptionTermsModal) descriptionTermsModal.style.display = 'none';
 
     if (modal.style.display === 'block') {
         modal.style.display = 'none';
@@ -392,6 +480,11 @@ function showBlacklistModal() {
             <button id="cleanplaats-blacklist-close" style="margin-top:10px;">${panelText.closeButton}</button>
         </div>
     `);
+    if (triggerButton) {
+        const rect = triggerButton.getBoundingClientRect();
+        modal.style.bottom = `${window.innerHeight - rect.top + 8}px`;
+        modal.style.removeProperty('top');
+    }
     modal.style.display = 'block';
 
     document.getElementById('cleanplaats-blacklist-close').onclick = () => {

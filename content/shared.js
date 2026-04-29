@@ -200,14 +200,19 @@ function getPanelLocaleText() {
             statsStickers: 'Autocollants :',
             statsOther: 'Autres :',
             statsTotal: 'Total :',
-            manageTerms: 'Gérer les termes masqués dans le titre',
+            manageTerms: 'Gérer les termes masqués',
             manageSellers: 'Gérer les vendeurs masqués',
             termsModalTitle: 'Termes masqués',
+            termsTitleSectionLabel: 'Dans le titre',
+            termsDescriptionSectionLabel: 'Dans la description',
             termsEmpty: 'Aucun terme ajouté',
             hiddenButton: 'Masqué',
             unhideButton: 'Afficher',
             termInputPlaceholder: 'Saisissez un terme',
             termInputHelp: 'Les annonces sont masquées si ce terme apparaît dans le titre.',
+            descriptionTermsEmpty: 'Aucun terme ajouté',
+            descriptionTermInputPlaceholder: 'Saisissez un terme',
+            descriptionTermInputHelp: 'Les annonces sont masquées si ce terme apparaît dans la description.',
             addButton: 'Ajouter',
             closeButton: 'Fermer',
             sellersModalTitle: 'Vendeurs masqués',
@@ -223,7 +228,9 @@ function getPanelLocaleText() {
             blacklistToastShownSuffix: "n'est plus masqué",
             blacklistToastShownHint: 'Ce vendeur est à nouveau visible dans les résultats',
             termToastHidden: term => `Toutes les annonces contenant le terme '${term}' sont désormais masquées.`,
-            termToastShown: term => `Les annonces contenant le terme '${term}' sont à nouveau affichées.`
+            termToastShown: term => `Les annonces contenant le terme '${term}' sont à nouveau affichées.`,
+            descriptionTermToastHidden: term => `Les annonces avec '${term}' dans la description sont désormais masquées.`,
+            descriptionTermToastShown: term => `Les annonces avec '${term}' dans la description sont à nouveau affichées.`
         };
     }
 
@@ -295,14 +302,19 @@ function getPanelLocaleText() {
         statsStickers: 'Stickers:',
         statsOther: 'Overig:',
         statsTotal: 'Totaal:',
-        manageTerms: 'Beheer blacklist-termen in titels',
+        manageTerms: 'Beheer blacklist-termen',
         manageSellers: 'Beheer verborgen verkopers',
         termsModalTitle: 'Blacklist termen',
+        termsTitleSectionLabel: 'In titels',
+        termsDescriptionSectionLabel: 'In beschrijvingen',
         termsEmpty: 'Geen termen toegevoegd',
         hiddenButton: 'Verborgen',
         unhideButton: 'Opheffen',
         termInputPlaceholder: 'Voer een term in',
         termInputHelp: 'Advertenties worden verborgen als deze term in de titel voorkomt.',
+        descriptionTermsEmpty: 'Geen termen toegevoegd',
+        descriptionTermInputPlaceholder: 'Voer een term in',
+        descriptionTermInputHelp: 'Advertenties worden verborgen als deze term in de beschrijving voorkomt.',
         addButton: 'Toevoegen',
         closeButton: 'Sluiten',
         sellersModalTitle: 'Verborgen verkopers',
@@ -318,7 +330,9 @@ function getPanelLocaleText() {
         blacklistToastShownSuffix: 'niet meer verborgen',
         blacklistToastShownHint: 'Deze verkoper is weer zichtbaar in de resultaten',
         termToastHidden: term => `Alle advertenties met de term '${term}' zijn nu verborgen.`,
-        termToastShown: term => `Advertenties met de term '${term}' worden weer getoond.`
+        termToastShown: term => `Advertenties met de term '${term}' worden weer getoond.`,
+        descriptionTermToastHidden: term => `Advertenties met '${term}' in de beschrijving zijn nu verborgen.`,
+        descriptionTermToastShown: term => `Advertenties met '${term}' in de beschrijving worden weer getoond.`
     };
 }
 
@@ -337,6 +351,7 @@ var CLEANPLAATS = {
         darkMode: false,
         blacklistedSellers: [],
         blacklistedTerms: [],
+        blacklistedDescriptionTerms: [],
         resultsPerPage: 30,
         defaultSortMode: 'standard',
         sortPreferenceSource: 'cleanplaats',

@@ -1558,6 +1558,8 @@
     border-radius: 8px;
     width: 280px;
     max-width: 90vw;
+    max-height: calc(100vh - 110px);
+    overflow-y: auto;
     transform: translateZ(0);
     will-change: transform;
     backface-visibility: hidden;
@@ -1582,7 +1584,7 @@
     list-style: none;
     padding: 0;
     margin: 0;
-    max-height: 300px;
+    max-height: 140px;
     overflow-y: auto;
   }
 
@@ -1621,7 +1623,8 @@
   }
 
   /* Modern button style for blacklist terms */
-  .cleanplaats-unblacklist-term-btn {
+  .cleanplaats-unblacklist-term-btn,
+  .cleanplaats-unblacklist-description-term-btn {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -1637,7 +1640,8 @@
     position: relative;
   }
 
-  .cleanplaats-unblacklist-term-btn::before {
+  .cleanplaats-unblacklist-term-btn::before,
+  .cleanplaats-unblacklist-description-term-btn::before {
     content: "👁";
     font-size: 14px;
     text-decoration: line-through;
@@ -1645,12 +1649,14 @@
     transition: all 0.3s ease;
   }
 
-  .cleanplaats-unblacklist-term-btn:hover {
+  .cleanplaats-unblacklist-term-btn:hover,
+  .cleanplaats-unblacklist-description-term-btn:hover {
     background: #4CAF50;
     transform: translateY(-1px);
   }
 
-  .cleanplaats-unblacklist-term-btn:hover::before {
+  .cleanplaats-unblacklist-term-btn:hover::before,
+  .cleanplaats-unblacklist-description-term-btn:hover::before {
     text-decoration: none;
   }
 
@@ -1843,6 +1849,25 @@
     color: #666;
     font-size: 12px;
     line-height: 1.4;
+  }
+
+  .cleanplaats-terms-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #888;
+    margin: 10px 0 6px;
+  }
+
+  .cleanplaats-terms-section {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  .cleanplaats-terms-section .cleanplaats-terms-section-label {
+    margin-top: 0;
   }
 
   .cleanplaats-panel.animating .cleanplaats-content {
