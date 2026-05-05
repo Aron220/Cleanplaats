@@ -634,7 +634,7 @@ function hideElement(element) {
 
 const MARKTPLAATS_PAGE_SIZE = 30;
 
-function buildSearchApiUrl(offset) {
+function buildSearchApiUrl(offset, limit) {
     const hash = window.location.hash.replace('#', '');
     const hashParams = {};
     hash.split('|').forEach(part => {
@@ -648,7 +648,7 @@ function buildSearchApiUrl(offset) {
     const sortOrder = hashParams.sortOrder || 'DECREASING';
 
     const params = new URLSearchParams();
-    params.set('limit', MARKTPLAATS_PAGE_SIZE);
+    params.set('limit', limit);
     params.set('offset', offset);
 
     try {
@@ -704,12 +704,11 @@ async function findFirstNonEmptyOffset(startOffset, pageSize) {
 
         const results = await Promise.all(offsets.map(async offset => {
             try {
-                const resp = await fetch(buildSearchApiUrl(offset));
+                const resp = await fetch(buildSearchApiUrl(offset, pageSize));
                 if (!resp.ok) return null;
                 const data = await resp.json();
                 if (!data.listings?.length) return null;
-                const pageListings = data.listings.slice(0, pageSize);
-                return pageListings.some(l => !isApiListingBlocked(l)) ? offset : null;
+                return data.listings.some(l => !isApiListingBlocked(l)) ? offset : null;
             } catch (e) {
                 return null;
             }
@@ -733,7 +732,7 @@ function removeEmptyPageBanner() {
 }
 
 function updateEmptyPageBanner() {
-    if (!isMarktplaatsSite()) return;
+    if (!isMarktplaatsSite() && !is2dehandsFamilySite()) return;
 
     const href = window.location.href;
     if (!href.includes('/q/') && !href.includes('/l/')) {
@@ -811,7 +810,10 @@ function updateEmptyPageBanner() {
 
         const pageMatch = window.location.pathname.match(/\/p\/(\d+)\//);
         const currentPage = pageMatch ? parseInt(pageMatch[1]) : 1;
-        const nextOffset = (currentPage - 1) * MARKTPLAATS_PAGE_SIZE + userLimit;
+        // Align nextOffset to page boundaries (multiples of MARKTPLAATS_PAGE_SIZE)
+        // so each scanned offset exactly matches what a /p/N/ URL will load.
+        const currentPageOffset = (currentPage - 1) * MARKTPLAATS_PAGE_SIZE;
+        const nextOffset = Math.ceil((currentPageOffset + userLimit) / MARKTPLAATS_PAGE_SIZE) * MARKTPLAATS_PAGE_SIZE;
 
         const foundOffset = await findFirstNonEmptyOffset(nextOffset, userLimit);
         clearInterval(phraseInterval);
@@ -824,7 +826,7 @@ function updateEmptyPageBanner() {
         }
 
         status.textContent = '🎯 Gevonden! Pagina laden…';
-        const targetPage = Math.floor(foundOffset / MARKTPLAATS_PAGE_SIZE) + 1;
+        const targetPage = foundOffset / MARKTPLAATS_PAGE_SIZE + 1;
         setTimeout(() => { window.location.href = buildPageUrl(targetPage); }, 400);
     });
 }
