@@ -230,7 +230,11 @@ function getPanelLocaleText() {
             termToastHidden: term => `Toutes les annonces contenant le terme '${term}' sont désormais masquées.`,
             termToastShown: term => `Les annonces contenant le terme '${term}' sont à nouveau affichées.`,
             descriptionTermToastHidden: term => `Les annonces avec '${term}' dans la description sont désormais masquées.`,
-            descriptionTermToastShown: term => `Les annonces avec '${term}' dans la description sont à nouveau affichées.`
+            descriptionTermToastShown: term => `Les annonces avec '${term}' dans la description sont à nouveau affichées.`,
+            emptyPageText: 'Toutes les annonces de cette page sont masquées par Cleanplaats.',
+            emptyPageFindNext: 'Trouver la prochaine page avec des annonces visibles',
+            emptyPageSearching: 'Recherche en cours…',
+            emptyPageNotFound: 'Aucune page avec des annonces visibles trouvée.'
         };
     }
 
@@ -332,7 +336,11 @@ function getPanelLocaleText() {
         termToastHidden: term => `Alle advertenties met de term '${term}' zijn nu verborgen.`,
         termToastShown: term => `Advertenties met de term '${term}' worden weer getoond.`,
         descriptionTermToastHidden: term => `Advertenties met '${term}' in de beschrijving zijn nu verborgen.`,
-        descriptionTermToastShown: term => `Advertenties met '${term}' in de beschrijving worden weer getoond.`
+        descriptionTermToastShown: term => `Advertenties met '${term}' in de beschrijving worden weer getoond.`,
+        emptyPageText: 'Alle advertenties op deze pagina zijn verborgen door Cleanplaats.',
+        emptyPageFindNext: 'Zoek volgende pagina met zichtbare advertenties',
+        emptyPageSearching: 'Zoeken…',
+        emptyPageNotFound: 'Geen pagina met zichtbare advertenties gevonden.'
     };
 }
 

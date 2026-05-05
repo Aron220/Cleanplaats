@@ -206,6 +206,7 @@ function performCleanup() {
 
     applyViewedListingIndicators();
     updateStatsDisplay();
+    updateEmptyPageBanner();
 }
 
 function resetPreviousChanges() {
@@ -627,4 +628,203 @@ function hideElement(element) {
         console.error('Cleanplaats: Error hiding element', error);
         return false;
     }
+}
+
+// --- Empty-page skip feature ---
+
+const MARKTPLAATS_PAGE_SIZE = 30;
+
+function buildSearchApiUrl(offset) {
+    const hash = window.location.hash.replace('#', '');
+    const hashParams = {};
+    hash.split('|').forEach(part => {
+        const colonIdx = part.indexOf(':');
+        if (colonIdx > 0) {
+            hashParams[part.slice(0, colonIdx)] = part.slice(colonIdx + 1);
+        }
+    });
+
+    const sortBy = hashParams.sortBy || 'SORT_INDEX';
+    const sortOrder = hashParams.sortOrder || 'DECREASING';
+
+    const params = new URLSearchParams();
+    params.set('limit', MARKTPLAATS_PAGE_SIZE);
+    params.set('offset', offset);
+
+    try {
+        const nextDataEl = document.getElementById('__NEXT_DATA__');
+        if (nextDataEl) {
+            const nextData = JSON.parse(nextDataEl.textContent);
+            const q = nextData.query || {};
+            if (q.searchQuery) params.set('query', q.searchQuery);
+            if (q.l1CategoryId) params.set('l1CategoryId', q.l1CategoryId);
+            if (q.l2CategoryId) params.set('l2CategoryId', q.l2CategoryId);
+            if (q.postcode) params.set('postcode', q.postcode);
+            if (q.attributesValuesIds) params.set('attributesValuesIds', q.attributesValuesIds);
+            if (q.attributesValuesKeys) params.set('attributesValuesKeys', q.attributesValuesKeys);
+        }
+    } catch (e) {}
+
+    // Hash postcode overrides __NEXT_DATA__ postcode
+    if (hashParams.postcode) params.set('postcode', hashParams.postcode);
+
+    params.set('sortBy', sortBy);
+    params.set('sortOrder', sortOrder);
+    params.set('searchInTitleAndDescription', 'true');
+    params.set('viewOptions', 'list-view');
+
+    return `/lrp/api/search?${params.toString()}`;
+}
+
+function isApiListingBlocked(apiListing) {
+    const sellerName = apiListing.sellerInformation?.sellerName || '';
+    if (sellerName && CLEANPLAATS.settings.blacklistedSellers.includes(sellerName)) return true;
+
+    const title = (apiListing.title || '').toLowerCase();
+    if (CLEANPLAATS.settings.blacklistedTerms.some(term => title.includes(term.toLowerCase()))) return true;
+
+    if (CLEANPLAATS.settings.blacklistedDescriptionTerms?.length > 0) {
+        const description = (apiListing.description || '').toLowerCase();
+        if (CLEANPLAATS.settings.blacklistedDescriptionTerms.some(term => description.includes(term.toLowerCase()))) return true;
+    }
+
+    if (CLEANPLAATS.settings.removeDagtoppers && apiListing.priorityProduct === 'DAGTOPPER') return true;
+    if (CLEANPLAATS.settings.removeReservedListings && apiListing.reserved === true) return true;
+    if (CLEANPLAATS.settings.removeOpvalStickers && apiListing.traits?.includes('ETALAGE')) return true;
+
+    return false;
+}
+
+async function findFirstNonEmptyOffset(startOffset, pageSize) {
+    const MAX_PAGES = 100;
+    const BATCH = 5;
+
+    for (let scanned = 0; scanned < MAX_PAGES; scanned += BATCH) {
+        const offsets = Array.from({ length: BATCH }, (_, i) => startOffset + (scanned + i) * MARKTPLAATS_PAGE_SIZE);
+
+        const results = await Promise.all(offsets.map(async offset => {
+            try {
+                const resp = await fetch(buildSearchApiUrl(offset));
+                if (!resp.ok) return null;
+                const data = await resp.json();
+                if (!data.listings?.length) return null;
+                const pageListings = data.listings.slice(0, pageSize);
+                return pageListings.some(l => !isApiListingBlocked(l)) ? offset : null;
+            } catch (e) {
+                return null;
+            }
+        }));
+
+        const found = results.find(r => r != null);
+        if (found != null) return found;
+    }
+    return null;
+}
+
+function buildPageUrl(pageNum) {
+    const cleanPath = window.location.pathname.replace(/\/p\/\d+\//, '/');
+    const hash = window.location.hash;
+    if (pageNum <= 1) return cleanPath + hash;
+    return cleanPath.replace(/\/$/, '') + `/p/${pageNum}/` + hash;
+}
+
+function removeEmptyPageBanner() {
+    document.getElementById('cleanplaats-empty-page-banner')?.remove();
+}
+
+function updateEmptyPageBanner() {
+    if (!isMarktplaatsSite()) return;
+
+    const href = window.location.href;
+    if (!href.includes('/q/') && !href.includes('/l/')) {
+        removeEmptyPageBanner();
+        return;
+    }
+
+    const allListings = document.querySelectorAll('.hz-Listing');
+    if (allListings.length === 0) {
+        removeEmptyPageBanner();
+        return;
+    }
+
+    const hasVisible = document.querySelector('.hz-Listing:not([data-cleanplaats-hidden])');
+    if (hasVisible) {
+        removeEmptyPageBanner();
+        return;
+    }
+
+    if (document.getElementById('cleanplaats-empty-page-banner')) return;
+
+    const panelText = getPanelLocaleText();
+
+    const banner = document.createElement('div');
+    banner.id = 'cleanplaats-empty-page-banner';
+    banner.innerHTML = DOMPurify.sanitize(`
+        <p class="cleanplaats-empty-page-text">${panelText.emptyPageText}</p>
+        <div class="cleanplaats-empty-page-actions">
+            <button class="cleanplaats-empty-page-btn" id="cleanplaats-find-next-page-btn">${panelText.emptyPageFindNext}</button>
+            <span class="cleanplaats-empty-page-status" id="cleanplaats-empty-page-status"></span>
+        </div>
+    `);
+
+    const listingsEl = document.querySelector('.hz-Listings');
+    if (listingsEl) {
+        listingsEl.insertAdjacentElement('beforebegin', banner);
+    }
+
+    document.getElementById('cleanplaats-find-next-page-btn')?.addEventListener('click', async () => {
+        const btn = document.getElementById('cleanplaats-find-next-page-btn');
+        const status = document.getElementById('cleanplaats-empty-page-status');
+        if (!btn || !status) return;
+
+        btn.disabled = true;
+
+        const searchingPhrases = [
+            'Pagina\'s afstruinen…',
+            'Oplichters overslaan…',
+            'Prijzen vergelijken…',
+            'Hier misschien? Nee...',
+            'Zoeken naar koopjes…',
+            'Tweedehands goud zoeken…',
+            'Slopers overslaan…',
+            'Door de zooi heen ploegen…',
+            'Marktplaatsen afzoeken…',
+            'Even verder kijken…',
+            'Denk, denk, denk, ideetje!…',
+            'Spulletjes scannen…',
+        ];
+        let phraseIndex = Math.floor(Math.random() * searchingPhrases.length);
+        status.textContent = searchingPhrases[phraseIndex];
+        status.classList.add('searching');
+        const phraseInterval = setInterval(() => {
+            phraseIndex = (phraseIndex + 1) % searchingPhrases.length;
+            status.textContent = searchingPhrases[phraseIndex];
+        }, 1800);
+
+        const hash = window.location.hash.replace('#', '');
+        const hashParams = {};
+        hash.split('|').forEach(part => {
+            const colonIdx = part.indexOf(':');
+            if (colonIdx > 0) hashParams[part.slice(0, colonIdx)] = part.slice(colonIdx + 1);
+        });
+        const userLimit = parseInt(hashParams.limit) || CLEANPLAATS.settings.resultsPerPage || MARKTPLAATS_PAGE_SIZE;
+
+        const pageMatch = window.location.pathname.match(/\/p\/(\d+)\//);
+        const currentPage = pageMatch ? parseInt(pageMatch[1]) : 1;
+        const nextOffset = (currentPage - 1) * MARKTPLAATS_PAGE_SIZE + userLimit;
+
+        const foundOffset = await findFirstNonEmptyOffset(nextOffset, userLimit);
+        clearInterval(phraseInterval);
+        status.classList.remove('searching');
+
+        if (foundOffset == null) {
+            status.textContent = panelText.emptyPageNotFound;
+            btn.disabled = false;
+            return;
+        }
+
+        status.textContent = '🎯 Gevonden! Pagina laden…';
+        const targetPage = Math.floor(foundOffset / MARKTPLAATS_PAGE_SIZE) + 1;
+        setTimeout(() => { window.location.href = buildPageUrl(targetPage); }, 400);
+    });
 }
