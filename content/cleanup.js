@@ -781,11 +781,9 @@ function updateEmptyPageBanner() {
         const searchingPhrases = [
             'Pagina\'s afstruinen…',
             'Oplichters overslaan…',
-            'Prijzen vergelijken…',
             'Hier misschien? Nee...',
             'Zoeken naar koopjes…',
             'Tweedehands goud zoeken…',
-            'Slopers overslaan…',
             'Door de zooi heen ploegen…',
             'Marktplaatsen afzoeken…',
             'Even verder kijken…',

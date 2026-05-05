@@ -403,7 +403,7 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES = {
-    '2.1.0': {
+    '2.1.1': {
         intro: 'Cleanplaats 2.1.0 voegt een handige knop toe om snel de volgende pagina met zichtbare advertenties te vinden.',
         highlights: [
             'Staat een hele pagina vol met gefilterde advertenties? Er verschijnt nu automatisch een banner met de knop "Zoek volgende pagina met zichtbare advertenties" — Cleanplaats scant de volgende pagina\'s en springt direct naar de eerste pagina met iets te zien.'
