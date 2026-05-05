@@ -6,7 +6,6 @@
     "author": "",
     "permissions": [
       "storage",
-      "scripting",
       "tabs",
       "webNavigation",
       "declarativeNetRequest",
