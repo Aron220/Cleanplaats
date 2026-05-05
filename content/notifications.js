@@ -92,7 +92,7 @@ function showUpdatePopup(version) {
                 <p class="cleanplaats-info-intro">${updateContent.intro}</p>
             </div>
             <ol class="cleanplaats-info-steps">${stepsMarkup}</ol>
-            <p class="cleanplaats-info-note">${updateContent.note}</p>
+            ${updateContent.note ? `<p class="cleanplaats-info-note">${updateContent.note}</p>` : ''}
             <div class="cleanplaats-info-footer">
                 <button type="button" id="cleanplaats-update-popup-close" class="cleanplaats-info-button">Top, bedankt</button>
             </div>
