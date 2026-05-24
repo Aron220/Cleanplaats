@@ -204,6 +204,20 @@ function performCleanup() {
         });
     }
 
+    if (CLEANPLAATS.settings.blockedListings?.length > 0) {
+        document.querySelectorAll('.hz-Listing').forEach(listing => {
+            if (listing.hasAttribute('data-cleanplaats-hidden')) return;
+            const listingLink = listing.querySelector('a[href*="/v/"]');
+            const listingId = getListingIdFromUrl(listingLink?.href);
+            if (!listingId) return;
+            listing.dataset.cleanplaatsListingId = listingId;
+            if (CLEANPLAATS.settings.blockedListings.some(b => b.id === listingId)) {
+                listing.setAttribute('data-cleanplaats-hidden', 'true');
+                listing.style.display = 'none';
+            }
+        });
+    }
+
     applyViewedListingIndicators();
     updateStatsDisplay();
     updateEmptyPageBanner();
@@ -677,6 +691,9 @@ function buildSearchApiUrl(offset, limit) {
 }
 
 function isApiListingBlocked(apiListing) {
+    const listingId = (apiListing.itemId || '').toLowerCase();
+    if (listingId && CLEANPLAATS.settings.blockedListings?.some(b => b.id === listingId)) return true;
+
     const sellerName = apiListing.sellerInformation?.sellerName || '';
     if (sellerName && CLEANPLAATS.settings.blacklistedSellers.includes(sellerName)) return true;
 

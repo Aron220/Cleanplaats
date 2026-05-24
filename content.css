@@ -1280,7 +1280,8 @@
   }
 
   /* Modern button style */
-  .cleanplaats-unblacklist-btn {
+  .cleanplaats-unblacklist-btn,
+  .cleanplaats-unblock-listing-btn {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -1296,7 +1297,8 @@
     position: relative;
   }
 
-  .cleanplaats-unblacklist-btn::before {
+  .cleanplaats-unblacklist-btn::before,
+  .cleanplaats-unblock-listing-btn::before {
     content: "👁";
     font-size: 14px;
     text-decoration: line-through;
@@ -1304,12 +1306,14 @@
     transition: all 0.3s ease;
   }
 
-  .cleanplaats-unblacklist-btn:hover {
+  .cleanplaats-unblacklist-btn:hover,
+  .cleanplaats-unblock-listing-btn:hover {
     background: #4CAF50;
     transform: translateY(-1px);
   }
 
-  .cleanplaats-unblacklist-btn:hover::before {
+  .cleanplaats-unblacklist-btn:hover::before,
+  .cleanplaats-unblock-listing-btn:hover::before {
     text-decoration: none;
   }
 
@@ -1678,6 +1682,23 @@
     background: #e0e0e0;
   }
 
+  #cleanplaats-blocked-listings-close {
+    width: 100%;
+    margin-top: 12px;
+    padding: 8px;
+    background: #f0f0f0;
+    border: none;
+    border-radius: 6px;
+    color: #666;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+  }
+
+  #cleanplaats-blocked-listings-close:hover {
+    background: #e0e0e0;
+  }
+
   /* Style for the "Beheer blacklist termen" button */
   #cleanplaats-manage-terms {
     background-color: #2196F3;
@@ -1694,6 +1715,25 @@
   }
 
   #cleanplaats-manage-terms:hover {
+    background-color: #1976D2;
+  }
+
+  /* Style for the "Beheer verborgen advertenties" button */
+  #cleanplaats-manage-blocked-listings {
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;
+    margin-top: 15px;
+    transition: background-color 0.3s ease;
+    font-size: 14px;
+  }
+
+  #cleanplaats-manage-blocked-listings:hover {
     background-color: #1976D2;
   }
 
@@ -2108,4 +2148,25 @@
   @keyframes cleanplaats-status-pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.45; }
+  }
+
+  html.cleanplaats-dark-mode #cleanplaats-empty-page-banner {
+    background: #1a2332;
+    border-color: #2d3f56;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-empty-page-text {
+    color: #c8d6e8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-empty-page-btn {
+    background: #3a6bc9;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-empty-page-btn:hover:not(:disabled) {
+    background: #2f5ab0;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-empty-page-status {
+    color: #8fa8c4;
   }

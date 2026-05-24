@@ -9,6 +9,8 @@ function showTermsModal(triggerButton) {
 
     const blacklistModal = document.getElementById('cleanplaats-blacklist-modal');
     if (blacklistModal) blacklistModal.style.display = 'none';
+    const blockedListingsModal = document.getElementById('cleanplaats-blocked-listings-modal');
+    if (blockedListingsModal) blockedListingsModal.style.display = 'none';
 
     if (modal.style.display === 'block') {
         modal.style.display = 'none';
@@ -441,6 +443,7 @@ function injectBlacklistButtons() {
         }
     });
 
+    injectListingBlockButtons();
     injectProductDetailBlacklistButton();
 }
 
@@ -451,8 +454,10 @@ function showBlacklistModal(triggerButton) {
 
     const termsModal = document.getElementById('cleanplaats-terms-modal');
     const descriptionTermsModal = document.getElementById('cleanplaats-description-terms-modal');
+    const blockedListingsModal2 = document.getElementById('cleanplaats-blocked-listings-modal');
     if (termsModal) termsModal.style.display = 'none';
     if (descriptionTermsModal) descriptionTermsModal.style.display = 'none';
+    if (blockedListingsModal2) blockedListingsModal2.style.display = 'none';
 
     if (modal.style.display === 'block') {
         modal.style.display = 'none';
@@ -557,6 +562,194 @@ function setupBlacklistModalButtons() {
             const sellerName = btn.dataset.seller;
             showUnblacklistToast(sellerName);
             removeSellerFromBlacklist(sellerName);
+        };
+    });
+}
+
+function addListingToBlocklist(listingId, title) {
+    if (!listingId) return;
+    const blockedListings = CLEANPLAATS.settings.blockedListings || [];
+    if (blockedListings.some(b => b.id === listingId)) return;
+
+    const displayTitle = (title || listingId).substring(0, 80);
+    CLEANPLAATS.settings.blockedListings = [...blockedListings, { id: listingId, title: displayTitle }];
+    saveSettings().then(() => {
+        performCleanup();
+        updateBlockedListingsModal();
+        const panelText = getPanelLocaleText();
+        showBubbleNotification(panelText.listingToastHidden(displayTitle));
+    });
+}
+
+function removeListingFromBlocklist(listingId) {
+    const entry = (CLEANPLAATS.settings.blockedListings || []).find(b => b.id === listingId);
+    CLEANPLAATS.settings.blockedListings = (CLEANPLAATS.settings.blockedListings || []).filter(b => b.id !== listingId);
+    saveSettings().then(() => {
+        document.querySelectorAll(`[data-cleanplaats-listing-id="${CSS.escape(listingId)}"]`).forEach(listing => {
+            listing.removeAttribute('data-cleanplaats-hidden');
+            listing.style.display = '';
+        });
+        performCleanup();
+        injectBlacklistButtons();
+        updateBlockedListingsModal();
+        const panelText = getPanelLocaleText();
+        showBubbleNotification(panelText.listingToastShown(entry?.title || listingId));
+    });
+}
+
+function injectListingBlockButtons() {
+    const panelText = getPanelLocaleText();
+    const blockedListings = CLEANPLAATS.settings.blockedListings || [];
+
+    document.querySelectorAll('.hz-Listing').forEach(listing => {
+        if (listing.hasAttribute('data-cleanplaats-hidden')) return;
+
+        const listingLink = listing.querySelector('a[href*="/v/"]');
+        const listingId = getListingIdFromUrl(listingLink?.href);
+        if (!listingId) return;
+
+        listing.dataset.cleanplaatsListingId = listingId;
+
+        if (blockedListings.some(b => b.id === listingId)) {
+            listing.setAttribute('data-cleanplaats-hidden', 'true');
+            listing.style.display = 'none';
+            return;
+        }
+
+        if (listing.querySelector('.cleanplaats-listing-block-btn')) return;
+
+        const title = getListingTitleText(listing);
+
+        const btn = document.createElement('button');
+        btn.className = 'cleanplaats-blacklist-btn cleanplaats-listing-block-btn';
+        btn.textContent = panelText.hideListingButton;
+        btn.type = 'button';
+        btn.tabIndex = 0;
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            addListingToBlocklist(listingId, title);
+        });
+
+        const topRightMobile = listing.querySelector('.cleanplaats-seller-topright-mobile');
+        if (topRightMobile) {
+            topRightMobile.appendChild(btn);
+            return;
+        }
+
+        const carSellerEl = listing.querySelector('.hz-Listing-sellerName, .hz-Listing-sellerName-new');
+        if (carSellerEl && carSellerEl.querySelector('.cleanplaats-inline-btn')) {
+            carSellerEl.appendChild(btn);
+            return;
+        }
+
+        const sellerBtnRow = listing.querySelector('.cleanplaats-blacklist-btn-row');
+        if (sellerBtnRow) {
+            sellerBtnRow.appendChild(btn);
+            return;
+        }
+
+        const row = document.createElement('div');
+        row.className = 'cleanplaats-blacklist-btn-row';
+        row.appendChild(btn);
+
+        const sellerEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-name-new, .hz-Listing-sellerName, .hz-Listing-sellerName-new');
+        const injectionParent = sellerEl?.closest('a')?.parentElement || sellerEl?.parentElement;
+        if (injectionParent) {
+            injectionParent.insertBefore(row, sellerEl.nextSibling);
+            return;
+        }
+
+        const content = listing.querySelector('.hz-Listing-listview-content, .hz-Listing-listview-content-new');
+        if (content) content.appendChild(row);
+    });
+}
+
+function showBlockedListingsModal(triggerButton) {
+    const modal = document.getElementById('cleanplaats-blocked-listings-modal');
+    if (!modal) return;
+    const panelText = getPanelLocaleText();
+
+    const blacklistModal = document.getElementById('cleanplaats-blacklist-modal');
+    const termsModal = document.getElementById('cleanplaats-terms-modal');
+    if (blacklistModal) blacklistModal.style.display = 'none';
+    if (termsModal) termsModal.style.display = 'none';
+
+    if (modal.style.display === 'block') {
+        modal.style.display = 'none';
+        return;
+    }
+
+    const listings = CLEANPLAATS.settings.blockedListings || [];
+
+    modal.innerHTML = DOMPurify.sanitize(`
+        <div class="cleanplaats-blacklist-modal-content">
+            <h4>${panelText.blockedListingsModalTitle}</h4>
+            <ul id="cleanplaats-blocked-listings-list">
+                ${listings.length === 0 ? `<li><em>${panelText.blockedListingsEmpty}</em></li>` : listings.map(item => `
+                    <li>
+                        <span>${item.title || item.id}</span>
+                        <button class="cleanplaats-unblock-listing-btn" data-listing-id="${item.id}">${panelText.hiddenButton}</button>
+                    </li>
+                `).join('')}
+            </ul>
+            <button id="cleanplaats-blocked-listings-close" style="margin-top:10px;">${panelText.closeButton}</button>
+        </div>
+    `);
+
+    if (triggerButton) {
+        const rect = triggerButton.getBoundingClientRect();
+        modal.style.bottom = `${window.innerHeight - rect.top + 8}px`;
+        modal.style.removeProperty('top');
+    }
+    modal.style.display = 'block';
+
+    document.getElementById('cleanplaats-blocked-listings-close').onclick = () => {
+        modal.style.display = 'none';
+    };
+
+    setupBlockedListingsModalButtons();
+}
+
+function updateBlockedListingsModal() {
+    const modal = document.getElementById('cleanplaats-blocked-listings-modal');
+    if (!modal || modal.style.display === 'none') return;
+    const panelText = getPanelLocaleText();
+
+    const listings = CLEANPLAATS.settings.blockedListings || [];
+    const list = document.getElementById('cleanplaats-blocked-listings-list');
+
+    if (list) {
+        list.innerHTML = DOMPurify.sanitize(
+            listings.length === 0
+                ? `<li><em>${panelText.blockedListingsEmpty}</em></li>`
+                : listings.map(item => `
+                    <li>
+                        <span>${item.title || item.id}</span>
+                        <button class="cleanplaats-unblock-listing-btn" data-listing-id="${item.id}">${panelText.hiddenButton}</button>
+                    </li>
+                `).join('')
+        );
+        setupBlockedListingsModalButtons();
+    }
+}
+
+function setupBlockedListingsModalButtons() {
+    const panelText = getPanelLocaleText();
+    document.querySelectorAll('.cleanplaats-unblock-listing-btn').forEach(btn => {
+        btn.onmouseover = () => {
+            btn.style.background = 'green';
+            btn.textContent = panelText.unhideButton;
+        };
+        btn.onmouseout = () => {
+            btn.style.background = '#ff4d4d';
+            btn.textContent = panelText.hiddenButton;
+        };
+        btn.style.background = '#ff4d4d';
+        btn.style.color = 'white';
+        btn.onclick = () => {
+            const listingId = btn.dataset.listingId;
+            removeListingFromBlocklist(listingId);
         };
     });
 }

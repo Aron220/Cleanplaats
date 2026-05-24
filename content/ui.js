@@ -238,6 +238,7 @@ function createControlPanel() {
 
                 <button id="cleanplaats-manage-terms" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageTerms}</button>
                 <button id="cleanplaats-manage-blacklist" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageSellers}</button>
+                <button id="cleanplaats-manage-blocked-listings" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageBlockedListings}</button>
             </div>
             <div class="cleanplaats-panel-view" id="cleanplaats-view-preferences">
                 <div class="cleanplaats-panel-view-header">
@@ -339,6 +340,7 @@ function createControlPanel() {
             </div>
             <div id="cleanplaats-blacklist-modal" class="cleanplaats-blacklist-modal" style="display:none;"></div>
             <div id="cleanplaats-terms-modal" class="cleanplaats-terms-modal" style="display:none;"></div>
+            <div id="cleanplaats-blocked-listings-modal" class="cleanplaats-blacklist-modal" style="display:none;"></div>
         </div>
     `);
 
@@ -365,6 +367,11 @@ function createControlPanel() {
     document.getElementById('cleanplaats-manage-terms').addEventListener('click', (e) => {
         e.preventDefault();
         showTermsModal(e.currentTarget);
+    });
+
+    document.getElementById('cleanplaats-manage-blocked-listings').addEventListener('click', (e) => {
+        e.preventDefault();
+        showBlockedListingsModal(e.currentTarget);
     });
 
     if (!document.getElementById('cleanplaats-global-tooltip')) {
@@ -692,11 +699,15 @@ function setupEventListeners() {
 
                 const blacklistModal = document.getElementById('cleanplaats-blacklist-modal');
                 const termsModal = document.getElementById('cleanplaats-terms-modal');
+                const blockedListingsModal = document.getElementById('cleanplaats-blocked-listings-modal');
                 if (blacklistModal && blacklistModal.style.display === 'block') {
                     blacklistModal.style.display = 'none';
                 }
                 if (termsModal && termsModal.style.display === 'block') {
                     termsModal.style.display = 'none';
+                }
+                if (blockedListingsModal && blockedListingsModal.style.display === 'block') {
+                    blockedListingsModal.style.display = 'none';
                 }
 
                 panel.classList.remove('collapsed-ready');
