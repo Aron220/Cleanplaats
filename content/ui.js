@@ -2,6 +2,70 @@
  * Content-script control panel rendering and UI event handling.
  */
 
+function shouldShowDonationNudge() {
+    const s = CLEANPLAATS.settings;
+    if (s.donationNudgeClickedBmc) return false;
+    if ((s.totalActionsCount || 0) < 5) return false;
+    const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+    if (s.donationNudgeDismissedAt && (Date.now() - s.donationNudgeDismissedAt) < thirtyDays) return false;
+    return true;
+}
+
+function getDonationSectionHtml(panelText) {
+    if (shouldShowDonationNudge()) {
+        const count = CLEANPLAATS.settings.totalActionsCount || 0;
+        return `<div class="cleanplaats-donation-nudge" id="cleanplaats-donation-nudge">
+            <p class="cleanplaats-donation-nudge-text">${panelText.donationNudgeText(count)}</p>
+            <a
+                href="https://buymeacoffee.com/cleanplaats"
+                class="cleanplaats-bmc-button cleanplaats-donation-nudge-bmc"
+                id="cleanplaats-donation-bmc-link"
+                target="_blank"
+                rel="noopener"
+                title="${panelText.supportTitle}"
+            ><span class="cleanplaats-bmc-emoji">☕</span><span class="cleanplaats-bmc-text">${panelText.supportButton}</span></a>
+            <button class="cleanplaats-donation-nudge-dismiss" id="cleanplaats-donation-dismiss">${panelText.donationNudgeDismiss}</button>
+        </div>`;
+    }
+    return `<a
+        href="https://buymeacoffee.com/cleanplaats"
+        class="cleanplaats-bmc-button"
+        target="_blank"
+        rel="noopener"
+        title="${panelText.supportTitle}"
+    ><span class="cleanplaats-bmc-emoji">☕</span><span class="cleanplaats-bmc-text">${panelText.supportButton}</span></a>`;
+}
+
+function wireDonationNudgeEvents() {
+    const bmcLink = document.getElementById('cleanplaats-donation-bmc-link');
+    if (bmcLink) {
+        bmcLink.addEventListener('click', () => {
+            CLEANPLAATS.settings.donationNudgeClickedBmc = true;
+            saveSettings();
+        });
+    }
+    const dismissBtn = document.getElementById('cleanplaats-donation-dismiss');
+    if (dismissBtn) {
+        dismissBtn.addEventListener('click', () => {
+            CLEANPLAATS.settings.donationNudgeDismissedAt = Date.now();
+            saveSettings().then(() => refreshDonationNudge());
+        });
+    }
+}
+
+function refreshDonationNudge() {
+    const panel = document.getElementById('cleanplaats-panel');
+    if (!panel) return;
+    const panelText = getPanelLocaleText();
+    const existing = panel.querySelector('#cleanplaats-donation-nudge, .cleanplaats-bmc-button:not(.cleanplaats-donation-nudge-bmc)');
+    if (!existing) return;
+    const newHtml = DOMPurify.sanitize(getDonationSectionHtml(panelText));
+    const container = document.createElement('div');
+    container.innerHTML = newHtml;
+    existing.replaceWith(...container.childNodes);
+    wireDonationNudgeEvents();
+}
+
 function applyInitialPanelStateForPageLoad() {
     if (CLEANPLAATS.featureFlags.firstRun) {
         CLEANPLAATS.panelState.isCollapsed = false;
@@ -122,16 +186,7 @@ function createControlPanel() {
         <div class="cleanplaats-content">
             <div class="cleanplaats-panel-views" id="cleanplaats-panel-views">
             <div class="cleanplaats-panel-view" id="cleanplaats-view-filters">
-                <a
-                    href="https://buymeacoffee.com/cleanplaats"
-                    class="cleanplaats-bmc-button"
-                    target="_blank"
-                    rel="noopener"
-                    title="${panelText.supportTitle}"
-                >
-                    <span class="cleanplaats-bmc-emoji">☕</span>
-                    <span class="cleanplaats-bmc-text">${panelText.supportButton}</span>
-                </a>
+                ${getDonationSectionHtml(panelText)}
                 <div class="cleanplaats-options">
                     <div class="cleanplaats-section-title">${panelText.optionsTitle}</div>
                     <div class="cleanplaats-option">
@@ -373,6 +428,8 @@ function createControlPanel() {
         e.preventDefault();
         showBlockedListingsModal(e.currentTarget);
     });
+
+    wireDonationNudgeEvents();
 
     if (!document.getElementById('cleanplaats-global-tooltip')) {
         const tooltip = document.createElement('div');

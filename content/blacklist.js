@@ -2,6 +2,10 @@
  * Content-script seller and term blacklist management.
  */
 
+function incrementActionCount(n = 1) {
+    CLEANPLAATS.settings.totalActionsCount = (CLEANPLAATS.settings.totalActionsCount || 0) + n;
+}
+
 function showTermsModal(triggerButton) {
     const modal = document.getElementById('cleanplaats-terms-modal');
     if (!modal) return;
@@ -75,11 +79,13 @@ function showTermsModal(triggerButton) {
         const term = input.value.trim();
         if (term && !CLEANPLAATS.settings.blacklistedTerms.includes(term)) {
             CLEANPLAATS.settings.blacklistedTerms.push(term);
+            incrementActionCount();
             saveSettings().then(() => {
                 input.value = '';
                 updateTermsModal();
                 performCleanup();
                 showBlacklistTermToast(term);
+                refreshDonationNudge();
             });
         }
     };
@@ -89,11 +95,13 @@ function showTermsModal(triggerButton) {
         const term = input.value.trim();
         if (term && !CLEANPLAATS.settings.blacklistedDescriptionTerms.includes(term)) {
             CLEANPLAATS.settings.blacklistedDescriptionTerms.push(term);
+            incrementActionCount();
             saveSettings().then(() => {
                 input.value = '';
                 updateTermsModal();
                 performCleanup();
                 showBubbleNotification(panelText.descriptionTermToastHidden(term));
+                refreshDonationNudge();
             });
         }
     };
@@ -242,10 +250,12 @@ function addSellersToBlacklist(sellerNames) {
     if (normalizedSellerNames.length === 0) return;
 
     CLEANPLAATS.settings.blacklistedSellers.push(...normalizedSellerNames);
+    incrementActionCount(normalizedSellerNames.length);
     saveSettings().then(() => {
         performCleanup();
         injectBlacklistButtons();
         updateBlacklistModal();
+        refreshDonationNudge();
 
         if (normalizedSellerNames.length === 1) {
             showBlacklistToast(normalizedSellerNames[0]);
@@ -573,9 +583,11 @@ function addListingToBlocklist(listingId, title) {
 
     const displayTitle = (title || listingId).substring(0, 80);
     CLEANPLAATS.settings.blockedListings = [...blockedListings, { id: listingId, title: displayTitle }];
+    incrementActionCount();
     saveSettings().then(() => {
         performCleanup();
         updateBlockedListingsModal();
+        refreshDonationNudge();
         const panelText = getPanelLocaleText();
         showBubbleNotification(panelText.listingToastHidden(displayTitle));
     });

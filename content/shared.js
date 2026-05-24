@@ -244,7 +244,9 @@ function getPanelLocaleText() {
             emptyPageText: 'Toutes les annonces de cette page sont masquées par Cleanplaats.',
             emptyPageFindNext: 'Trouver la prochaine page avec des annonces visibles',
             emptyPageSearching: 'Recherche en cours…',
-            emptyPageNotFound: 'Aucune page avec des annonces visibles trouvée.'
+            emptyPageNotFound: 'Aucune page avec des annonces visibles trouvée.',
+            donationNudgeText: count => `Vous avez déjà filtré ${count} fois avec Cleanplaats 🎉 Si cela vous fait gagner du temps, pensez à faire un petit don.`,
+            donationNudgeDismiss: 'Peut-être plus tard'
         };
     }
 
@@ -255,6 +257,8 @@ function getPanelLocaleText() {
         reviewAriaLabel: linkLabel => `Laat een review achter voor Cleanplaats op ${linkLabel}`,
         supportTitle: 'Steun Cleanplaats met een kleine bijdrage',
         supportButton: 'Steun Cleanplaats',
+        donationNudgeText: count => `Je hebt al ${count} keer gefilterd met Cleanplaats 🎉 Als het je tijd bespaart, overweeg dan een kleine bijdrage.`,
+        donationNudgeDismiss: 'Misschien later',
         optionsTitle: 'Filteropties',
         topAdLabel: 'Topadvertenties',
         topAdTooltip: location.hostname.includes('2dehands.be')
@@ -382,7 +386,10 @@ var CLEANPLAATS = {
         resultsPerPage: 30,
         defaultSortMode: 'standard',
         sortPreferenceSource: 'cleanplaats',
-        expandPanelOnPageLoad: false
+        expandPanelOnPageLoad: false,
+        totalActionsCount: 0,
+        donationNudgeDismissedAt: 0,
+        donationNudgeClickedBmc: false
     },
 
     stats: {

@@ -1115,6 +1115,65 @@
     text-decoration: line-through;
   }
 
+  /* Donation nudge card */
+  .cleanplaats-donation-nudge {
+    box-sizing: border-box;
+    margin: 0 0 8px;
+    padding: 12px 14px;
+    background: linear-gradient(135deg, #fff8e8 0%, #fff2c6 100%);
+    border: 1px solid #f2c14e;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(242, 193, 78, 0.18);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cleanplaats-donation-nudge-text {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #5d3f00;
+    font-weight: 500;
+  }
+
+  .cleanplaats-donation-nudge .cleanplaats-bmc-button {
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .cleanplaats-donation-nudge-dismiss {
+    background: none;
+    border: none;
+    color: #a07820;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 0;
+    text-align: center;
+    text-decoration: underline;
+    opacity: 0.8;
+    transition: opacity 0.15s;
+  }
+
+  .cleanplaats-donation-nudge-dismiss:hover {
+    opacity: 1;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-donation-nudge {
+    background: linear-gradient(135deg, #2a2010 0%, #2e2614 100%);
+    border-color: #6b510a;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-donation-nudge-text {
+    color: #f0d080;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-donation-nudge-dismiss {
+    color: #c8a030;
+  }
+
   /* Buy Me Coffee Button */
   .cleanplaats-bmc-button {
     display: flex;
