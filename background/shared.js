@@ -45,3 +45,8 @@ var WAKEUP_NAVIGATION_FILTERS = [
     { hostSuffix: '2dehands.be' },
     { hostSuffix: '2ememain.be' }
 ];
+
+// Resolved once settings are loaded from storage. Handlers await this before
+// using defaultSortMode/resultsPerPage so Firefox cold-starts get correct values.
+var _resolveSettingsReady;
+var settingsReadyPromise = new Promise(function (resolve) { _resolveSettingsReady = resolve; });

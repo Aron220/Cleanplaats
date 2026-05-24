@@ -179,6 +179,7 @@ function loadSettings() {
                 }
 
                 setViewedListingsRuntime(items[CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY]);
+                persistSortPreference();
                 resolve();
             } catch (error) {
                 console.error('Cleanplaats: Failed to parse settings from storage', error);
@@ -188,10 +189,20 @@ function loadSettings() {
     });
 }
 
+function persistSortPreference() {
+    try {
+        window.localStorage.setItem(CLEANPLAATS_SORT_STORAGE_KEY, CLEANPLAATS.settings.defaultSortMode || 'standard');
+        window.localStorage.setItem(CLEANPLAATS_SORT_SOURCE_STORAGE_KEY, CLEANPLAATS.settings.sortPreferenceSource || 'cleanplaats');
+    } catch (error) {
+        console.warn('Cleanplaats: Failed to persist sort preference in localStorage', error);
+    }
+}
+
 function saveSettings() {
     return new Promise((resolve, reject) => {
         try {
             persistDarkModePreference(Boolean(CLEANPLAATS.settings.darkMode));
+            persistSortPreference();
             browserAPI.storage.local.set({
                 cleanplaatsSettings: JSON.stringify(CLEANPLAATS.settings),
                 panelState: JSON.stringify(CLEANPLAATS.panelState)

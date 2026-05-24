@@ -621,7 +621,7 @@ function hideElement(element) {
     try {
         element.setAttribute('data-original-style', element.style.cssText);
         element.setAttribute('data-cleanplaats-hidden', 'true');
-        element.style.display = 'none !important';
+        element.style.setProperty('display', 'none', 'important');
 
         return true;
     } catch (error) {

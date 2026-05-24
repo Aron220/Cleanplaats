@@ -3,7 +3,17 @@
     const DARK_MODE_CLASS = 'cleanplaats-dark-mode';
     const TWH_SITE_CLASS = 'cleanplaats-site-twh';
     const THEME_STORAGE_KEY = 'cleanplaats:darkMode';
+    const SORT_STORAGE_KEY = 'cleanplaats:sortMode';
+    const SORT_SOURCE_STORAGE_KEY = 'cleanplaats:sortSource';
     const STORAGE_KEY = 'cleanplaatsSettings';
+
+    const SORT_PARAMS = {
+        date_new_old:  { sortBy: 'SORT_INDEX', sortOrder: 'DECREASING' },
+        date_old_new:  { sortBy: 'SORT_INDEX', sortOrder: 'INCREASING' },
+        price_low_high: { sortBy: 'PRICE',      sortOrder: 'INCREASING' },
+        price_high_low: { sortBy: 'PRICE',      sortOrder: 'DECREASING' },
+        distance:       { sortBy: 'LOCATION',   sortOrder: 'INCREASING' }
+    };
     const EARLY_STYLE_ID = 'cleanplaats-early-dark-mode';
     const EARLY_DARK_MODE_CSS = `
 html.cleanplaats-dark-mode,
@@ -185,6 +195,37 @@ html.cleanplaats-dark-mode [class*="Skeleton-withAnimation"]::before {
         });
     }
 
+    function applyDefaultSort() {
+        try {
+            const href = location.href;
+            if (!href.includes('/q/') && !href.includes('/l/')) return;
+
+            const sortMode = window.localStorage.getItem(SORT_STORAGE_KEY);
+            if (!sortMode || sortMode === 'standard') return;
+
+            const sortSource = window.localStorage.getItem(SORT_SOURCE_STORAGE_KEY);
+            if (sortSource === 'marketplace') return;
+
+            const sortConfig = SORT_PARAMS[sortMode];
+            if (!sortConfig) return;
+
+            const hash = location.hash.replace('#', '');
+            const params = {};
+            hash.split('|').forEach(part => {
+                const idx = part.indexOf(':');
+                if (idx > 0) params[part.slice(0, idx)] = part.slice(idx + 1);
+            });
+
+            if (params.sortBy === sortConfig.sortBy && params.sortOrder === sortConfig.sortOrder) return;
+
+            params.sortBy = sortConfig.sortBy;
+            params.sortOrder = sortConfig.sortOrder;
+            const newHash = '#' + Object.entries(params).map(([k, v]) => `${k}:${v}`).join('|');
+            history.replaceState(null, '', location.pathname + location.search + newHash);
+        } catch (e) {}
+    }
+
     applyDarkMode(readDarkModePreference());
+    applyDefaultSort();
     registerStorageSync();
 })();

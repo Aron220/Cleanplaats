@@ -90,7 +90,8 @@ async function updateApiRequestRules(currentResultsPerPage, currentDefaultSortMo
     }
 }
 
-function handleHashNavigation(details) {
+async function handleHashNavigation(details) {
+    await settingsReadyPromise;
     if (details.frameId !== 0 || details.parentFrameId !== -1) return;
 
     console.log('Cleanplaats: handleHashNavigation triggered.', `URL: ${details.url}`, `Transition: ${details.transitionType}`);
@@ -127,7 +128,8 @@ function handleHashNavigation(details) {
     }
 }
 
-function handleHistoryStateUpdated(details) {
+async function handleHistoryStateUpdated(details) {
+    await settingsReadyPromise;
     if (details.frameId !== 0 || details.parentFrameId !== -1) return;
 
     console.log('Cleanplaats: handleHistoryStateUpdated triggered.', `URL: ${details.url}`, `Transition: ${details.transitionType}`);

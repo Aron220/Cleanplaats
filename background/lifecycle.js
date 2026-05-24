@@ -43,6 +43,36 @@ async function handleStorageChanges(changes, areaName) {
 async function initialize() {
     console.log('Cleanplaats background.js: initialize() called.', new Date().toISOString());
 
+    // Register navigation listeners SYNCHRONOUSLY before the async storage load.
+    // In Firefox MV3, the service worker dispatches pending events to whichever
+    // listeners are already registered when it wakes up. Registering inside the
+    // storage.local.get callback (async) means the event fires before the listener
+    // is ever added, so the URL rewrite never happens. Chrome queues events more
+    // generously, which is why the feature worked there but not in Firefox.
+    try {
+        if (browserAPI.webNavigation.onBeforeNavigate.hasListener(handleHashNavigation)) {
+            browserAPI.webNavigation.onBeforeNavigate.removeListener(handleHashNavigation);
+        }
+        browserAPI.webNavigation.onBeforeNavigate.addListener(handleHashNavigation, {
+            url: WAKEUP_NAVIGATION_FILTERS
+        });
+        console.log('Cleanplaats: Added webNavigation.onBeforeNavigate listener with wakeup filters.');
+    } catch (error) {
+        console.error('Cleanplaats: Error setting up onBeforeNavigate listener:', error);
+    }
+
+    try {
+        if (browserAPI.webNavigation.onHistoryStateUpdated.hasListener(handleHistoryStateUpdated)) {
+            browserAPI.webNavigation.onHistoryStateUpdated.removeListener(handleHistoryStateUpdated);
+        }
+        browserAPI.webNavigation.onHistoryStateUpdated.addListener(handleHistoryStateUpdated, {
+            url: WAKEUP_NAVIGATION_FILTERS
+        });
+        console.log('Cleanplaats: Added webNavigation.onHistoryStateUpdated listener with wakeup filters.');
+    } catch (error) {
+        console.error('Cleanplaats: Error setting up onHistoryStateUpdated listener:', error);
+    }
+
     browserAPI.storage.local.get(['cleanplaatsSettings'], async (result) => {
         if (browserAPI.runtime.lastError) {
             console.error('Cleanplaats: Error loading settings during initialize:', browserAPI.runtime.lastError);
@@ -65,6 +95,9 @@ async function initialize() {
         }
 
         console.log(`Cleanplaats: Initialized with settings - RPP: ${resultsPerPage}, Sort: ${defaultSortMode}, SortSource: ${sortPreferenceSource}`);
+
+        // Unblock any navigation handlers that fired before settings finished loading.
+        _resolveSettingsReady();
 
         await updateApiRequestRules(resultsPerPage, defaultSortMode);
 
@@ -91,30 +124,6 @@ async function initialize() {
             console.log('Cleanplaats: Added storage.onChanged listener.');
         } catch (error) {
             console.error('Cleanplaats: Error setting up storage listener:', error);
-        }
-
-        try {
-            if (browserAPI.webNavigation.onBeforeNavigate.hasListener(handleHashNavigation)) {
-                browserAPI.webNavigation.onBeforeNavigate.removeListener(handleHashNavigation);
-            }
-            browserAPI.webNavigation.onBeforeNavigate.addListener(handleHashNavigation, {
-                url: WAKEUP_NAVIGATION_FILTERS
-            });
-            console.log('Cleanplaats: Added webNavigation.onBeforeNavigate listener with wakeup filters.');
-        } catch (error) {
-            console.error('Cleanplaats: Error setting up onBeforeNavigate listener:', error);
-        }
-
-        try {
-            if (browserAPI.webNavigation.onHistoryStateUpdated.hasListener(handleHistoryStateUpdated)) {
-                browserAPI.webNavigation.onHistoryStateUpdated.removeListener(handleHistoryStateUpdated);
-            }
-            browserAPI.webNavigation.onHistoryStateUpdated.addListener(handleHistoryStateUpdated, {
-                url: WAKEUP_NAVIGATION_FILTERS
-            });
-            console.log('Cleanplaats: Added webNavigation.onHistoryStateUpdated listener with wakeup filters.');
-        } catch (error) {
-            console.error('Cleanplaats: Error setting up onHistoryStateUpdated listener:', error);
         }
 
         console.log('Cleanplaats: All listeners registered. Ready.');

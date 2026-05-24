@@ -6,6 +6,8 @@ var browserAPI = typeof browser !== 'undefined' ? browser : chrome;
 var CLEANPLAATS_DARK_MODE_CLASS = 'cleanplaats-dark-mode';
 var CLEANPLAATS_TWH_SITE_CLASS = 'cleanplaats-site-twh';
 var CLEANPLAATS_THEME_STORAGE_KEY = 'cleanplaats:darkMode';
+var CLEANPLAATS_SORT_STORAGE_KEY = 'cleanplaats:sortMode';
+var CLEANPLAATS_SORT_SOURCE_STORAGE_KEY = 'cleanplaats:sortSource';
 var CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY = 'cleanplaatsViewedListings';
 var CLEANPLAATS_MAX_VIEWED_LISTINGS = 1500;
 var CLEANPLAATS_FLOATING_OFFSET_VAR = '--cleanplaats-floating-offset';
