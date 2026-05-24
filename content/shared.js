@@ -422,6 +422,16 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES = {
+    '2.1.2': {
+        intro: 'Cleanplaats 2.1.2 laat je individuele advertenties verbergen — handig als je een bepaalde aanbieding niet meer wil zien zonder de hele verkoper te blokkeren.',
+        highlights: [
+            'Nieuwe knop "Verberg advertentie" op elke zoekresultaat — verberg een specifieke advertentie met één klik, zonder de verkoper te blokkeren.',
+            'Verborgen advertenties beheer je via "Beheer verborgen advertenties" in het paneel: zie alle verborgen advertenties en zet ze eenvoudig terug.',
+            'Firefox-fix: de ingestelde standaard sortering werd bij Firefox niet altijd correct toegepast — dit werkt nu betrouwbaar.',
+            'Donkere modus: de banner "Zoek volgende pagina" was slecht leesbaar in dark mode — dit is nu opgelost.'
+        ],
+        note: null
+    },
     '2.1.1': {
         intro: 'Cleanplaats 2.1.0 voegt een handige knop toe om snel de volgende pagina met zichtbare advertenties te vinden.',
         highlights: [
