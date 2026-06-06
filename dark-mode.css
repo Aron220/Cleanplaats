@@ -21,10 +21,25 @@ html.cleanplaats-dark-mode #footer-container,
 html.cleanplaats-dark-mode .hz-Accordion,
 html.cleanplaats-dark-mode .hz-Accordion-item,
 html.cleanplaats-dark-mode .hz-Accordion-body,
+html.cleanplaats-dark-mode .hz-Accordion-accordionItem,
+html.cleanplaats-dark-mode .hz-AccordionItem-accordionHeader,
+html.cleanplaats-dark-mode .hz-AccordionItem-accordionBody,
 html.cleanplaats-dark-mode .FooterLinkWrapper,
 html.cleanplaats-dark-mode .FooterLinkWrapper-listAccordion {
   background: var(--cleanplaats-dark-bg) !important;
   color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-AccordionHeader-content,
+html.cleanplaats-dark-mode .hz-AccordionHeader-content *,
+html.cleanplaats-dark-mode .Bids-info,
+html.cleanplaats-dark-mode .Bids-info span,
+html.cleanplaats-dark-mode .Bids-date {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-AccordionHeader-expandToggleIcon {
+  color: var(--cleanplaats-dark-text-muted) !important;
 }
 
 html.cleanplaats-dark-mode body,
@@ -454,6 +469,15 @@ html.cleanplaats-dark-mode [class*="FavoritesContainer-favorites_container"] .hz
   border-color: var(--cleanplaats-dark-link) !important;
 }
 
+html.cleanplaats-dark-mode .u-backgroundColorBackgroundInfoSoft {
+  background: rgba(56, 130, 200, 0.18) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Icon.hz-Icon--textInfo.hz-SvgIcon,
+html.cleanplaats-dark-mode .hz-Icon.hz-SvgIcon[class*="PaymentOfferCard-module-icon"] {
+  filter: invert(0.24) sepia(0.45) saturate(68.57) hue-rotate(193deg) brightness(0.91) contrast(0.87) !important;
+}
+
 html.cleanplaats-dark-mode .hz-Page-element--aside,
 html.cleanplaats-dark-mode .hz-Page-element--aside .hz-UtilsBlock.u-backgroundColorBackgroundSurface {
   background: var(--cleanplaats-dark-bg) !important;
@@ -878,6 +902,23 @@ html.cleanplaats-dark-mode .hz-Page-content .hz-Switch-Body .hz-Icon,
 html.cleanplaats-dark-mode .hz-Page-content .hz-Switch-Body [class*="SvgIcon"] {
   filter: invert(0.88) sepia(0.03) saturate(3) hue-rotate(175deg)
     brightness(1.06) contrast(0.98) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content [class*="BuyNow-module-buyNowContainer"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="BuyNow-module-buyNowSwitch"],
+html.cleanplaats-dark-mode .hz-Page-content [class*="BuyNow-module-buyNowText"] {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content [class*="BuyNow-module-buyNowText"] .hz-Text,
+html.cleanplaats-dark-mode .hz-Page-content [class*="BuyNow-module-buyNowText"] .hz-Link {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .hz-Page-content [class*="BuyNow-module-buyNowText"] .hz-Link {
+  color: var(--cleanplaats-dark-link) !important;
 }
 
 html.cleanplaats-dark-mode .hz-Header-searchBar {
@@ -2616,6 +2657,21 @@ html.cleanplaats-dark-mode .ListingHeader-price,
 html.cleanplaats-dark-mode .hz-FooterCategoryLinks-title,
 html.cleanplaats-dark-mode .hz-Title {
   color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .NoImage-root {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  border-color: var(--cleanplaats-dark-border) !important;
+}
+
+html.cleanplaats-dark-mode .NoImage-title,
+html.cleanplaats-dark-mode .NoImage-description {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .NoImage-root .hz-Icon {
+  filter: invert(0.78) sepia(0.06) saturate(3) hue-rotate(175deg)
+    brightness(1.08) contrast(0.96) !important;
 }
 
 html.cleanplaats-dark-mode .Gallery-container,
