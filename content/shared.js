@@ -429,6 +429,13 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES = {
+    '2.1.3': {
+        intro: 'Cleanplaats 2.1.3 lost een belangrijk Firefox-probleem op.',
+        highlights: [
+            'Firefox-fix: het ingestelde aantal resultaten per pagina werd in Firefox genegeerd (er werden altijd 30 resultaten getoond). Dit werkt nu net als in Chrome.'
+        ],
+        note: null
+    },
     '2.1.2': {
         intro: 'Cleanplaats 2.1.2 laat je individuele advertenties verbergen — handig als je een bepaalde aanbieding niet meer wil zien zonder de hele verkoper te blokkeren.',
         highlights: [

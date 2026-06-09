@@ -26,9 +26,7 @@ function messageListener(message, sender, sendResponse) {
 
 async function refreshSettingsAndRules() {
     try {
-        const result = await new Promise((resolve) => {
-            browserAPI.storage.local.get(['cleanplaatsSettings'], resolve);
-        });
+        const result = await browserAPI.storage.local.get(['cleanplaatsSettings']);
 
         if (result.cleanplaatsSettings) {
             const settings = JSON.parse(result.cleanplaatsSettings);

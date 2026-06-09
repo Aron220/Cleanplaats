@@ -73,61 +73,61 @@ async function initialize() {
         console.error('Cleanplaats: Error setting up onHistoryStateUpdated listener:', error);
     }
 
-    browserAPI.storage.local.get(['cleanplaatsSettings'], async (result) => {
-        if (browserAPI.runtime.lastError) {
-            console.error('Cleanplaats: Error loading settings during initialize:', browserAPI.runtime.lastError);
-        } else {
-            console.log('Cleanplaats: Settings loaded from storage:', result.cleanplaatsSettings);
-            try {
-                if (result.cleanplaatsSettings) {
-                    const settings = JSON.parse(result.cleanplaatsSettings);
-                    resultsPerPage = settings.resultsPerPage?.toString() || '30';
-                    defaultSortMode = settings.defaultSortMode || 'standard';
-                    sortPreferenceSource = settings.sortPreferenceSource || 'cleanplaats';
-                    await updateDarkModeStartupScript(Boolean(settings.darkMode));
-                } else {
-                    await updateDarkModeStartupScript(false);
-                }
-            } catch (error) {
-                console.error('Cleanplaats: Error parsing stored settings:', error, '. Using default settings.');
+    // Promise-style storage access works in both Chrome MV3 and Firefox.
+    try {
+        const result = await browserAPI.storage.local.get(['cleanplaatsSettings']);
+        console.log('Cleanplaats: Settings loaded from storage:', result.cleanplaatsSettings);
+        try {
+            if (result.cleanplaatsSettings) {
+                const settings = JSON.parse(result.cleanplaatsSettings);
+                resultsPerPage = settings.resultsPerPage?.toString() || '30';
+                defaultSortMode = settings.defaultSortMode || 'standard';
+                sortPreferenceSource = settings.sortPreferenceSource || 'cleanplaats';
+                await updateDarkModeStartupScript(Boolean(settings.darkMode));
+            } else {
                 await updateDarkModeStartupScript(false);
             }
-        }
-
-        console.log(`Cleanplaats: Initialized with settings - RPP: ${resultsPerPage}, Sort: ${defaultSortMode}, SortSource: ${sortPreferenceSource}`);
-
-        // Unblock any navigation handlers that fired before settings finished loading.
-        _resolveSettingsReady();
-
-        await updateApiRequestRules(resultsPerPage, defaultSortMode);
-
-        if (browserAPI.webRequest) {
-            try {
-                if (typeof browserAPI.webRequest.onBeforeRequest.hasListener === 'function') {
-                    if (browserAPI.webRequest.onBeforeRequest.hasListener(rewriteHashRequests_MV2_compat)) {
-                        browserAPI.webRequest.onBeforeRequest.removeListener(rewriteHashRequests_MV2_compat);
-                    }
-                    if (browserAPI.webRequest.onBeforeRequest.hasListener(rewriteApiRequests_MV2_compat)) {
-                        browserAPI.webRequest.onBeforeRequest.removeListener(rewriteApiRequests_MV2_compat);
-                    }
-                }
-            } catch (e) {
-                console.warn('Cleanplaats: Could not remove old webRequest listeners.', e);
-            }
-        }
-
-        try {
-            if (browserAPI.storage.onChanged.hasListener(handleStorageChanges)) {
-                browserAPI.storage.onChanged.removeListener(handleStorageChanges);
-            }
-            browserAPI.storage.onChanged.addListener(handleStorageChanges);
-            console.log('Cleanplaats: Added storage.onChanged listener.');
         } catch (error) {
-            console.error('Cleanplaats: Error setting up storage listener:', error);
+            console.error('Cleanplaats: Error parsing stored settings:', error, '. Using default settings.');
+            await updateDarkModeStartupScript(false);
         }
+    } catch (error) {
+        console.error('Cleanplaats: Error loading settings during initialize:', error);
+    }
 
-        console.log('Cleanplaats: All listeners registered. Ready.');
-    });
+    console.log(`Cleanplaats: Initialized with settings - RPP: ${resultsPerPage}, Sort: ${defaultSortMode}, SortSource: ${sortPreferenceSource}`);
+
+    // Unblock any navigation handlers that fired before settings finished loading.
+    _resolveSettingsReady();
+
+    await updateApiRequestRules(resultsPerPage, defaultSortMode);
+
+    if (browserAPI.webRequest) {
+        try {
+            if (typeof browserAPI.webRequest.onBeforeRequest.hasListener === 'function') {
+                if (browserAPI.webRequest.onBeforeRequest.hasListener(rewriteHashRequests_MV2_compat)) {
+                    browserAPI.webRequest.onBeforeRequest.removeListener(rewriteHashRequests_MV2_compat);
+                }
+                if (browserAPI.webRequest.onBeforeRequest.hasListener(rewriteApiRequests_MV2_compat)) {
+                    browserAPI.webRequest.onBeforeRequest.removeListener(rewriteApiRequests_MV2_compat);
+                }
+            }
+        } catch (e) {
+            console.warn('Cleanplaats: Could not remove old webRequest listeners.', e);
+        }
+    }
+
+    try {
+        if (browserAPI.storage.onChanged.hasListener(handleStorageChanges)) {
+            browserAPI.storage.onChanged.removeListener(handleStorageChanges);
+        }
+        browserAPI.storage.onChanged.addListener(handleStorageChanges);
+        console.log('Cleanplaats: Added storage.onChanged listener.');
+    } catch (error) {
+        console.error('Cleanplaats: Error setting up storage listener:', error);
+    }
+
+    console.log('Cleanplaats: All listeners registered. Ready.');
 }
 
 browserAPI.runtime.onInstalled.addListener(async (details) => {

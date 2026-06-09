@@ -29,11 +29,8 @@ var HASH_URL_PATTERNS = [
     'https://www.2ememain.be/l/',
     'https://www.2ememain.be/q/'
 ];
-var API_URL_PATTERNS = [
-    'https://www.marktplaats.nl/lrp/api/search*',
-    'https://www.2dehands.be/lrp/api/search*',
-    'https://www.2ememain.be/lrp/api/search*'
-];
+var API_URL_FILTER = '/lrp/api/search';
+var API_REQUEST_DOMAINS = ['marktplaats.nl', '2dehands.be', '2ememain.be'];
 var THEME_INIT_SCRIPT_ID = 'cleanplaats-theme-init';
 var THEME_MATCH_PATTERNS = [
     '*://*.marktplaats.nl/*',

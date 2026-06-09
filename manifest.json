@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Cleanplaats - Marktplaats zonder spam",
-    "version": "2.1.2",
+    "version": "2.1.3",
     "description": "Zelf in de hand wat je wel én niet wil zien op Marktplaats door te filteren",
     "author": "",
     "permissions": [
@@ -18,7 +18,15 @@
     ],
     "background": {
       "service_worker": "background.js",
-      "scripts": ["background.js"],
+      "scripts": [
+        "background/shared.js",
+        "background/url-rules.js",
+        "background/theme.js",
+        "background/messages.js",
+        "background/keepalive.js",
+        "background/lifecycle.js",
+        "background/init.js"
+      ],
       "preferred_environment": ["service_worker", "document"]
     },
     "content_scripts": [

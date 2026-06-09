@@ -68,11 +68,13 @@ async function updateApiRequestRules(currentResultsPerPage, currentDefaultSortMo
     const shouldModifyApi = currentResultsPerPage !== '30';
 
     if (shouldModifyApi) {
+        // A single substring urlFilter scoped by requestDomains; '|'-joined
+        // alternatives are not valid urlFilter syntax and Firefox rejects them.
         const rule = {
             id: API_RULE_ID,
             priority: 1,
             action: { type: 'redirect', redirect: { transform: { queryTransform: { removeParams: [], addOrReplaceParams: [] } } } },
-            condition: { urlFilter: API_URL_PATTERNS.map(p => p.replace('*', '')).join('|'), resourceTypes: ['xmlhttprequest'] }
+            condition: { urlFilter: API_URL_FILTER, requestDomains: API_REQUEST_DOMAINS, resourceTypes: ['xmlhttprequest'] }
         };
         if (currentResultsPerPage !== '30') {
             rule.action.redirect.transform.queryTransform.addOrReplaceParams.push({ key: 'limit', value: currentResultsPerPage });
@@ -110,19 +112,18 @@ async function handleHashNavigation(details) {
         browserAPI.tabs.update(details.tabId, { url: newUrl });
         if (details.transitionType === undefined) {
             console.log(`Cleanplaats: TransitionType was undefined. Attempting follow-up reload for ${newUrl}`);
-            setTimeout(() => {
-                browserAPI.tabs.get(details.tabId, (tab) => {
-                    if (browserAPI.runtime.lastError) {
-                        console.warn(`Cleanplaats: Error getting tab ${details.tabId} for reload: ${browserAPI.runtime.lastError.message}`);
-                        return;
-                    }
+            setTimeout(async () => {
+                try {
+                    const tab = await browserAPI.tabs.get(details.tabId);
                     if (tab && tab.url === newUrl) {
                         console.log(`Cleanplaats: Tab ${details.tabId} URL matches, proceeding with reload.`);
                         browserAPI.tabs.reload(details.tabId);
                     } else {
                         console.log(`Cleanplaats: Tab ${details.tabId} URL changed or tab closed (current: ${tab ? tab.url : 'N/A'}), skipping reload.`);
                     }
-                });
+                } catch (error) {
+                    console.warn(`Cleanplaats: Error getting tab ${details.tabId} for reload: ${error.message}`);
+                }
             }, 150);
         }
     }
