@@ -135,8 +135,13 @@ function setupObservers() {
         }
 
         if (shouldCleanup) {
-            performCleanup();
-            injectBlacklistButtons();
+            clearTimeout(CLEANPLAATS.runtime.cleanupTimer);
+            // Run the cleanup with a slight delay so that it doesnt crash the page if a lot of mutations happen in a short time
+            // This specifically happened on smaller viewports in the mobile layout
+            CLEANPLAATS.runtime.cleanupTimer = setTimeout(() => {
+                performCleanup();
+                injectBlacklistButtons();
+            }, 80);
         }
     });
 
