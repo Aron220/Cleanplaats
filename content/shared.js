@@ -421,6 +421,7 @@ var CLEANPLAATS = {
     runtime: {
         lastSellerAgeWarningKey: '',
         sellerAgeCheckTimer: 0,
+        cleanupTimer: 0,
         viewedListings: {}
     },
 
