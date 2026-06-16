@@ -6,3 +6,14 @@ update_notes.txt
 .output/
 .wxt/
 node_modules/
+
+# Cloudflare Worker backend lives in its own PRIVATE repo (server/) — never track it here
+server/
+
+# Wrangler local state / secrets (defensive — these should only ever live under server/)
+.wrangler/
+.dev.vars
+.dev.vars.*
+*.env
+.env.*
+wrangler-account.json

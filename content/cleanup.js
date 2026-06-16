@@ -340,7 +340,7 @@ function removeOpvalStickerListings() {
 }
 
 function removeReservedListings() {
-    const count = findAndHideListings('.hz-Listing-price, [class*="ListingPrice_hz-Listing-price"]', [
+    const count = findAndHideListings('.hz-Listing-price, [class*="ListingPrice_hz-Listing-price"], .hz-StructuredListing-price', [
         'gereserveerd',
         'réservé'
     ]);
@@ -614,7 +614,7 @@ function findAndHideListings(selector, textContent) {
         document.querySelectorAll(selector).forEach(el => {
             const elementText = el.textContent?.trim().toLowerCase();
             if (elementText && expectedTexts.includes(elementText)) {
-                const listing = el.closest('.hz-Listing');
+                const listing = el.closest('.hz-Listing, .hz-StructuredListing');
                 if (listing && !listing.hasAttribute('data-cleanplaats-hidden') && hideElement(listing)) {
                     count++;
                 }

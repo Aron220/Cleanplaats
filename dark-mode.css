@@ -2624,19 +2624,25 @@ html.cleanplaats-dark-mode .Gallery-root,
 html.cleanplaats-dark-mode .Gallery-container,
 html.cleanplaats-dark-mode .SellerInfoExpanded-root,
 html.cleanplaats-dark-mode .SellerContactOptions-root,
+html.cleanplaats-dark-mode [class*="SellerContactOptions"][class*="-root"],
 html.cleanplaats-dark-mode .SellerLocationSection-root,
 html.cleanplaats-dark-mode .hz-Breadcrumbs,
+html.cleanplaats-dark-mode [class*="Breadcrumbs"][class*="-root"],
 html.cleanplaats-dark-mode .hz-FooterCategoryLinks,
-html.cleanplaats-dark-mode .hz-FooterCategoryLinks-block {
+html.cleanplaats-dark-mode .hz-FooterCategoryLinks-block,
+html.cleanplaats-dark-mode .hz-Page-content .hz-Page-section--separated {
   background: transparent !important;
   color: var(--cleanplaats-dark-text) !important;
 }
 
 html.cleanplaats-dark-mode .hz-Breadcrumbs,
+html.cleanplaats-dark-mode [class*="Breadcrumbs"][class*="-root"],
 html.cleanplaats-dark-mode .SellerInfoExpanded-root,
 html.cleanplaats-dark-mode .SellerContactOptions-root,
+html.cleanplaats-dark-mode [class*="SellerContactOptions"][class*="-root"],
 html.cleanplaats-dark-mode .SellerLocationSection-root,
-html.cleanplaats-dark-mode .hz-FooterCategoryLinks {
+html.cleanplaats-dark-mode .hz-FooterCategoryLinks,
+html.cleanplaats-dark-mode .hz-Page-content .hz-Page-section--separated {
   border-color: var(--cleanplaats-dark-border-subtle) !important;
 }
 

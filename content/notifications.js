@@ -53,6 +53,10 @@ function shouldShowUpdatePopup(currentVersion) {
         return false;
     }
 
+    if (CLEANPLAATS.settings.showUpdatePopups === false) {
+        return false;
+    }
+
     return CLEANPLAATS.panelState.lastSeenVersion !== currentVersion;
 }
 
@@ -93,6 +97,15 @@ function showUpdatePopup(version) {
             </div>
             <ol class="cleanplaats-info-steps">${stepsMarkup}</ol>
             ${updateContent.note ? `<p class="cleanplaats-info-note">${updateContent.note}</p>` : ''}
+            <div class="cleanplaats-info-option">
+                <label class="cleanplaats-switch">
+                    <input type="checkbox" id="cleanplaats-update-popup-dont-show-again">
+                    <span class="cleanplaats-switch-slider"></span>
+                </label>
+                <label for="cleanplaats-update-popup-dont-show-again" class="cleanplaats-option-label">
+                    <span class="cleanplaats-option-label-text">${getPanelLocaleText().updatePopupDontShowAgainLabel}</span>
+                </label>
+            </div>
             <div class="cleanplaats-info-footer">
                 <button type="button" id="cleanplaats-update-popup-close" class="cleanplaats-info-button">Top, bedankt</button>
             </div>
@@ -125,7 +138,16 @@ function showUpdatePopup(version) {
         popupLogo.src = browserAPI.runtime.getURL('icons/icon128.png');
     }
     document.getElementById('cleanplaats-update-popup-close')?.addEventListener('click', () => {
+        const dontShowAgain = document.getElementById('cleanplaats-update-popup-dont-show-again')?.checked;
         closePopup();
+
+        if (dontShowAgain) {
+            CLEANPLAATS.settings.showUpdatePopups = false;
+            saveSettings().catch(error => {
+                console.error('Cleanplaats: Failed to store update popup preference', error);
+            });
+        }
+
         showBubbleNotification(`Veel plezier met ${version}`);
     });
 }

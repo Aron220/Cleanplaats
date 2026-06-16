@@ -1018,6 +1018,14 @@
     font-size: 0.92rem;
   }
 
+  .cleanplaats-info-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.92rem;
+    color: #475569;
+  }
+
   .cleanplaats-info-footer {
     display: flex;
     justify-content: flex-end;
@@ -2228,4 +2236,1369 @@
 
   html.cleanplaats-dark-mode .cleanplaats-empty-page-status {
     color: #8fa8c4;
+  }
+
+  /* ===== Zoekmeldingen (search alerts) — full-screen overlay =====
+     Calm, neutral design: ink buttons and quiet surfaces; the brand orange
+     only appears as a small accent (bell tile, NEW badge, premium). */
+
+  .cleanplaats-alerts-manage-btn {
+    background-color: #e8710a;
+  }
+
+  .cleanplaats-alerts-manage-btn:hover {
+    background-color: #c95f06;
+  }
+
+  .cleanplaats-alerts-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483646;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    background: rgba(15, 18, 24, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: cleanplaats-alerts-fade-in 0.18s ease;
+  }
+
+  @keyframes cleanplaats-alerts-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes cleanplaats-alerts-rise {
+    from { opacity: 0; transform: translateY(14px) scale(0.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .cleanplaats-alerts-card {
+    display: flex;
+    flex-direction: column;
+    width: min(680px, 100%);
+    max-height: min(86vh, 820px);
+    background: #ffffff;
+    color: #2b3442;
+    border-radius: 16px;
+    box-shadow: 0 24px 64px rgba(10, 14, 22, 0.35), 0 2px 8px rgba(10, 14, 22, 0.18);
+    overflow: hidden;
+    font-family: inherit;
+    animation: cleanplaats-alerts-rise 0.22s cubic-bezier(0.2, 0.9, 0.3, 1);
+  }
+
+  .cleanplaats-alerts-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+    background: #fff;
+    border-bottom: 1px solid #e6e9ee;
+  }
+
+  .cleanplaats-alerts-header-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .cleanplaats-alerts-bell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    flex: none;
+    color: #e8710a;
+    background: #fdf0e3;
+    border-radius: 12px;
+  }
+
+  .cleanplaats-alerts-header-title h3 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    color: #222b38;
+  }
+
+  .cleanplaats-alerts-tagline {
+    display: block;
+    font-size: 12px;
+    color: #66707f;
+    margin-top: 1px;
+  }
+
+  .cleanplaats-alerts-close {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 10px;
+    background: #f0f2f5;
+    color: #66707f;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .cleanplaats-alerts-close:hover {
+    background: #e3e7ed;
+    color: #222b38;
+  }
+
+  .cleanplaats-alerts-body {
+    overflow-y: auto;
+    padding: 16px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* The body is the scroll container; don't let sections with their own
+     overflow (channel list, match feed) get flex-shrunk into slivers. */
+  .cleanplaats-alerts-body > * {
+    flex: none;
+  }
+
+  .cleanplaats-alerts-loading {
+    padding: 36px 0;
+    text-align: center;
+    color: #97a0ae;
+    font-size: 14px;
+  }
+
+  /* --- Login --- */
+
+  .cleanplaats-alerts-login {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+    padding: 28px 12px 20px;
+  }
+
+  .cleanplaats-alerts-login-icon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e8710a;
+    border-radius: 16px;
+    background: #fdf0e3;
+  }
+
+  .cleanplaats-alerts-login h4 {
+    margin: 4px 0 0;
+    font-size: 17px;
+    color: inherit;
+  }
+
+  .cleanplaats-alerts-login p {
+    margin: 0;
+    max-width: 380px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #66707f;
+  }
+
+  .cleanplaats-alerts-form-row {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    max-width: 420px;
+    margin-top: 8px;
+  }
+
+  .cleanplaats-alerts-form-row input {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1.5px solid #d8dde5;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #fff;
+    color: #2b3442;
+  }
+
+  .cleanplaats-alerts-form-row input:focus {
+    outline: none;
+    border-color: #222b38;
+    box-shadow: 0 0 0 3px rgba(34, 43, 56, 0.12);
+  }
+
+  .cleanplaats-alerts-code-input {
+    text-align: center;
+    font-size: 18px !important;
+    letter-spacing: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cleanplaats-alerts-primary-btn {
+    flex: none;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 10px;
+    background: #222b38;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+
+  .cleanplaats-alerts-primary-btn:hover:not(:disabled) {
+    background: #323d4d;
+  }
+
+  .cleanplaats-alerts-primary-btn:active {
+    transform: scale(0.98);
+  }
+
+  .cleanplaats-alerts-primary-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  .cleanplaats-alerts-secondary-btn {
+    padding: 8px 14px;
+    border: 1.5px solid #d8dde5;
+    border-radius: 10px;
+    background: #fff;
+    color: #2b3442;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .cleanplaats-alerts-secondary-btn:hover {
+    border-color: #222b38;
+    background: #f6f7f9;
+  }
+
+  .cleanplaats-alerts-text-btn {
+    border: none;
+    background: none;
+    padding: 4px 6px;
+    color: #66707f;
+    font-size: 12.5px;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .cleanplaats-alerts-text-btn:hover {
+    color: #222b38;
+  }
+
+  .cleanplaats-alerts-text-btn-danger:hover {
+    color: #b3261e;
+  }
+
+  .cleanplaats-alerts-text-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .cleanplaats-alerts-login-links {
+    display: flex;
+    gap: 12px;
+    margin-top: 2px;
+  }
+
+  .cleanplaats-alerts-form-error {
+    width: 100%;
+    max-width: 420px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #fdecea;
+    color: #b3261e;
+    font-size: 13px;
+    text-align: left;
+  }
+
+  /* --- Account bar --- */
+
+  .cleanplaats-alerts-account {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    padding: 12px 14px;
+    background: #f6f7f9;
+    border: 1px solid #e6e9ee;
+    border-radius: 12px;
+  }
+
+  .cleanplaats-alerts-account-id {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .cleanplaats-alerts-account-email {
+    font-size: 13px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 220px;
+  }
+
+  .cleanplaats-alerts-tier {
+    flex: none;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .cleanplaats-alerts-tier-free {
+    background: #e3e7ed;
+    color: #4d5765;
+  }
+
+  .cleanplaats-alerts-tier-premium {
+    background: #fdf0e3;
+    border: 1px solid #f0c89e;
+    color: #c95f06;
+  }
+
+  .cleanplaats-alerts-stats {
+    display: flex;
+    gap: 18px;
+  }
+
+  .cleanplaats-alerts-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 56px;
+  }
+
+  .cleanplaats-alerts-stat-value {
+    font-size: 17px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: #222b38;
+    line-height: 1.1;
+  }
+
+  .cleanplaats-alerts-stat-max {
+    font-size: 12px;
+    font-weight: 600;
+    color: #97a0ae;
+  }
+
+  .cleanplaats-alerts-stat-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #97a0ae;
+    margin-top: 2px;
+  }
+
+  /* --- Create --- */
+
+  .cleanplaats-alerts-create {
+    padding: 14px;
+    border: 1px solid #e6e9ee;
+    border-radius: 12px;
+    background: #f6f7f9;
+  }
+
+  .cleanplaats-alerts-create-title {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #66707f;
+    margin-bottom: 8px;
+  }
+
+  .cleanplaats-alerts-create .cleanplaats-alerts-form-row {
+    max-width: none;
+    margin-top: 0;
+  }
+
+  .cleanplaats-alerts-create-note {
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: #66707f;
+  }
+
+  .cleanplaats-alerts-hint {
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #f6f7f9;
+    color: #66707f;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* --- Alert cards --- */
+
+  .cleanplaats-alerts-section-title {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #97a0ae;
+    margin: 4px 2px -6px;
+  }
+
+  .cleanplaats-alerts-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 4px 2px -6px;
+  }
+
+  .cleanplaats-alerts-section-header .cleanplaats-alerts-section-title {
+    margin: 0;
+  }
+
+  .cleanplaats-alerts-sort-select {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #66707f;
+    background: #f0f2f5;
+    border: none;
+    border-radius: 6px;
+    padding: 3px 6px;
+    cursor: pointer;
+    outline: none;
+    transition: background 0.15s;
+    font-family: inherit;
+  }
+
+  .cleanplaats-alerts-sort-select:hover {
+    background: #e3e7ed;
+    color: #222b38;
+  }
+
+  .cleanplaats-alerts-filter-chip {
+    font-size: 11px;
+    font-weight: 500;
+    color: #e8710a;
+    background: #fdf0e3;
+    border-radius: 4px;
+    padding: 2px 6px;
+    white-space: nowrap;
+  }
+
+  .cleanplaats-alerts-filter-none {
+    font-size: 11px;
+    color: #b0bac8;
+    font-style: italic;
+  }
+
+  /* --- Per-alert filter block --- */
+
+  .cleanplaats-alerts-filter-block {
+    border-top: 1px solid #f0f2f5;
+    margin: 2px -2px 0;
+  }
+
+  .cleanplaats-alerts-filter-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 8px;
+    padding: 7px 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    color: #66707f;
+    transition: background 0.15s ease, color 0.15s ease;
+    font-family: inherit;
+  }
+
+  .cleanplaats-alerts-filter-trigger:hover {
+    background: #f6f7f9;
+    color: #2b3442;
+  }
+
+  .cleanplaats-alerts-filter-trigger-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .cleanplaats-alerts-filter-trigger svg {
+    flex: none;
+  }
+
+  .cleanplaats-alerts-filter-count {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #e8710a;
+    background: #fdf0e3;
+    border-radius: 20px;
+    padding: 1px 8px;
+    letter-spacing: 0.01em;
+  }
+
+  .cleanplaats-alerts-filter-count-zero {
+    color: #97a0ae;
+    background: #f0f2f5;
+    font-weight: 600;
+  }
+
+  .cleanplaats-alerts-filter-chevron {
+    display: flex;
+    color: #b0bac8;
+    transition: transform 0.2s ease;
+  }
+
+  .cleanplaats-alerts-filter-block-open .cleanplaats-alerts-filter-chevron {
+    transform: rotate(180deg);
+  }
+
+  .cleanplaats-alerts-filter-editor {
+    padding: 4px 10px 10px;
+    animation: cleanplaats-alerts-fade-in 0.16s ease;
+  }
+
+  .cleanplaats-alerts-filter-editor-intro {
+    margin: 0 0 8px;
+    font-size: 11.5px;
+    color: #97a0ae;
+    line-height: 1.45;
+  }
+
+  .cleanplaats-alerts-filter-opts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 10px;
+  }
+
+  .cleanplaats-alerts-filter-opt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px;
+    border-radius: 7px;
+    font-size: 12.5px;
+    color: #2b3442;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.12s ease;
+  }
+
+  .cleanplaats-alerts-filter-opt:hover {
+    background: #f6f7f9;
+  }
+
+  .cleanplaats-alerts-filter-opt input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .cleanplaats-alerts-filter-opt-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    flex: none;
+    border-radius: 5px;
+    border: 1.5px solid #d3d9e0;
+    background: #fff;
+    color: #fff;
+    transition: background 0.12s ease, border-color 0.12s ease;
+  }
+
+  .cleanplaats-alerts-filter-opt-box svg {
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 0.12s ease, transform 0.12s ease;
+  }
+
+  .cleanplaats-alerts-filter-opt input:checked + .cleanplaats-alerts-filter-opt-box {
+    background: #e8710a;
+    border-color: #e8710a;
+  }
+
+  .cleanplaats-alerts-filter-opt input:checked + .cleanplaats-alerts-filter-opt-box svg {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .cleanplaats-alerts-filter-opt input:focus-visible + .cleanplaats-alerts-filter-opt-box {
+    box-shadow: 0 0 0 3px rgba(232, 113, 10, 0.25);
+  }
+
+  .cleanplaats-alerts-filter-opt-label {
+    line-height: 1.3;
+  }
+
+  .cleanplaats-alerts-filter-always {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 8px;
+    padding: 7px 9px;
+    border-radius: 7px;
+    background: #f0f8f2;
+    color: #2e7d4f;
+    font-size: 11.5px;
+    line-height: 1.4;
+  }
+
+  .cleanplaats-alerts-filter-always svg {
+    flex: none;
+    color: #3aa76d;
+  }
+
+  .cleanplaats-alerts-filter-global {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #e3e7ed;
+  }
+
+  .cleanplaats-alerts-filter-global-head {
+    font-size: 11px;
+    font-weight: 700;
+    color: #66707f;
+    margin-bottom: 5px;
+  }
+
+  .cleanplaats-alerts-filter-global-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 5px;
+  }
+
+  .cleanplaats-alerts-filter-global-hint {
+    font-size: 11px;
+    color: #97a0ae;
+    line-height: 1.45;
+  }
+
+  .cleanplaats-alerts-list,
+  .cleanplaats-alerts-matches {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cleanplaats-alerts-matches {
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+
+  .cleanplaats-alerts-empty {
+    padding: 16px 14px;
+    border-radius: 10px;
+    background: #f6f7f9;
+    color: #97a0ae;
+    font-size: 13px;
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  .cleanplaats-alerts-alert {
+    padding: 12px 14px;
+    border: 1px solid #e6e9ee;
+    border-radius: 12px;
+    background: #fff;
+    transition: border-color 0.15s ease;
+  }
+
+  .cleanplaats-alerts-alert:hover {
+    border-color: #cfd6df;
+  }
+
+  .cleanplaats-alerts-alert-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .cleanplaats-alerts-status-dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #2e9e5b;
+  }
+
+  .cleanplaats-alerts-alert-active .cleanplaats-alerts-status-dot {
+    animation: cleanplaats-alerts-pulse 2.4s ease infinite;
+  }
+
+  @keyframes cleanplaats-alerts-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(46, 158, 91, 0.4); }
+    50% { box-shadow: 0 0 0 5px rgba(46, 158, 91, 0); }
+  }
+
+  .cleanplaats-alerts-alert-paused .cleanplaats-alerts-status-dot {
+    background: #97a0ae;
+  }
+
+  .cleanplaats-alerts-card-label {
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #222b38;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  a.cleanplaats-alerts-card-label:hover {
+    color: #e8710a;
+  }
+
+  .cleanplaats-alerts-match-badge {
+    flex: none;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: #eef1f5;
+    color: #4d5765;
+    font-size: 11.5px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cleanplaats-alerts-alert-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    margin-top: 9px;
+  }
+
+  .cleanplaats-alerts-meta {
+    font-size: 11.5px;
+    color: #97a0ae;
+  }
+
+  .cleanplaats-alerts-alert-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* Labeled mini-switches: icon + name + track. State is unmistakable. */
+  .cleanplaats-alerts-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 9px 0 10px;
+    border: 1px solid #e6e9ee;
+    border-radius: 999px;
+    background: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    color: #97a0ae;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .cleanplaats-alerts-switch svg {
+    flex: none;
+  }
+
+  .cleanplaats-alerts-switch:hover {
+    border-color: #cfd6df;
+  }
+
+  .cleanplaats-alerts-switch.on {
+    color: #2b3442;
+  }
+
+  .cleanplaats-alerts-switch-label {
+    white-space: nowrap;
+  }
+
+  .cleanplaats-alerts-switch-track {
+    position: relative;
+    flex: none;
+    width: 28px;
+    height: 16px;
+    border-radius: 999px;
+    background: #cfd6df;
+    transition: background 0.15s ease;
+  }
+
+  .cleanplaats-alerts-switch-track::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(10, 14, 22, 0.25);
+    transition: left 0.15s ease;
+  }
+
+  .cleanplaats-alerts-switch.on .cleanplaats-alerts-switch-track {
+    background: #2e9e5b;
+  }
+
+  .cleanplaats-alerts-switch.on .cleanplaats-alerts-switch-track::after {
+    left: 14px;
+  }
+
+  .cleanplaats-alerts-delete {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid #e6e9ee;
+    border-radius: 999px;
+    background: #fff;
+    color: #97a0ae;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  }
+
+  .cleanplaats-alerts-delete:hover {
+    border-color: #e98a85;
+    background: #fdecea;
+    color: #b3261e;
+  }
+
+  /* --- Match feed --- */
+
+  .cleanplaats-alerts-match {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border: 1px solid #e6e9ee;
+    border-radius: 12px;
+    background: #fff;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s ease;
+  }
+
+  .cleanplaats-alerts-match:hover {
+    border-color: #97a0ae;
+  }
+
+  .cleanplaats-alerts-match-thumb {
+    flex: none;
+    width: 56px;
+    height: 56px;
+    border-radius: 9px;
+    object-fit: cover;
+    background: #f0f2f5;
+  }
+
+  .cleanplaats-alerts-match-thumb-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #97a0ae;
+  }
+
+  .cleanplaats-alerts-match-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .cleanplaats-alerts-match-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #222b38;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cleanplaats-alerts-new {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: #e8710a;
+    color: #fff;
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    vertical-align: 1px;
+  }
+
+  .cleanplaats-alerts-match-sub {
+    display: flex;
+    gap: 5px;
+    font-size: 12px;
+    color: #66707f;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .cleanplaats-alerts-match-price {
+    font-weight: 700;
+    color: #2b3442;
+  }
+
+  .cleanplaats-alerts-match-alert-label {
+    font-size: 11px;
+    color: #97a0ae;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* --- Notification channels --- */
+
+  .cleanplaats-alerts-channel-list {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e6e9ee;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .cleanplaats-alerts-channel-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    background: #fff;
+  }
+
+  .cleanplaats-alerts-channel-row + .cleanplaats-alerts-channel-row {
+    border-top: 1px solid #eef1f5;
+  }
+
+  .cleanplaats-alerts-channel-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex: none;
+    border-radius: 10px;
+    background: #f0f2f5;
+    color: #97a0ae;
+  }
+
+  .cleanplaats-alerts-channel-icon.on {
+    background: #e9f6ec;
+    color: #2e9e5b;
+  }
+
+  .cleanplaats-alerts-channel-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .cleanplaats-alerts-channel-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #222b38;
+  }
+
+  .cleanplaats-alerts-channel-sub {
+    font-size: 12px;
+    color: #66707f;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cleanplaats-alerts-channel-sub-on {
+    color: #2e9e5b;
+    font-weight: 600;
+  }
+
+  .cleanplaats-alerts-channel-actions {
+    display: flex;
+    align-items: center;
+    flex: none;
+    gap: 4px;
+  }
+
+  .cleanplaats-alerts-channel-state {
+    font-size: 12px;
+    font-weight: 600;
+    color: #97a0ae;
+  }
+
+  .cleanplaats-alerts-telegram-hint {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #fff8f1;
+    border: 1px solid #f0c89e;
+    color: #8a5210;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+
+  /* --- Footer --- */
+
+  .cleanplaats-alerts-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 10px;
+    border-top: 1px solid #e6e9ee;
+  }
+
+  /* --- Dark mode --- */
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-card {
+    background: #10161f;
+    color: #dde4ee;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-header {
+    background: #10161f;
+    border-color: #243044;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-header-title h3 {
+    color: #dde4ee;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-tagline {
+    color: #8fa0b8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-bell,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-login-icon {
+    background: #2a1c0d;
+    color: #f59a3e;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-close {
+    background: #18202c;
+    color: #8fa0b8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-close:hover {
+    background: #243044;
+    color: #dde4ee;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-login p {
+    color: #8fa8c4;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-form-row input {
+    background: #18202c;
+    border-color: #2c3a4d;
+    color: #dde4ee;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-form-row input:focus {
+    border-color: #8fa0b8;
+    box-shadow: 0 0 0 3px rgba(143, 160, 184, 0.18);
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-primary-btn {
+    background: #e6ecf4;
+    color: #131a24;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-primary-btn:hover:not(:disabled) {
+    background: #ffffff;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-secondary-btn {
+    background: #18202c;
+    border-color: #2c3a4d;
+    color: #dde4ee;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-secondary-btn:hover {
+    background: #243044;
+    border-color: #8fa0b8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-text-btn {
+    color: #8fa0b8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-text-btn:hover {
+    color: #dde4ee;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-text-btn-danger:hover {
+    color: #f28b82;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-account,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-hint,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-empty,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create {
+    background: #18202c;
+    border-color: #243044;
+    color: #aebbcd;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-title,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-note {
+    color: #8fa0b8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-stat-value {
+    color: #dde4ee;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-tier-free {
+    background: #243044;
+    color: #aebbcd;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-tier-premium {
+    background: #2a1c0d;
+    border-color: #8a5210;
+    color: #f59a3e;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-alert,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-match,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-channel-row {
+    background: #151d29;
+    border-color: #243044;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-alert:hover {
+    border-color: #3a4759;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-match:hover {
+    border-color: #8fa0b8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-card-label,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-match-title,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-channel-name {
+    color: #dde4ee;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-match-price {
+    color: #dde4ee;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-match-badge {
+    background: #243044;
+    color: #aebbcd;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-switch {
+    background: #18202c;
+    border-color: #2c3a4d;
+    color: #6e7b8d;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-switch:hover {
+    border-color: #3a4759;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-switch.on {
+    color: #dde4ee;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-switch-track {
+    background: #3a4759;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-switch.on .cleanplaats-alerts-switch-track {
+    background: #2e9e5b;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-delete {
+    background: #18202c;
+    border-color: #2c3a4d;
+    color: #6e7b8d;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-delete:hover {
+    background: #2a1214;
+    border-color: #b3261e;
+    color: #f28b82;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-match-thumb {
+    background: #243044;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-channel-icon {
+    background: #243044;
+    color: #6e7b8d;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-channel-icon.on {
+    background: #14271a;
+    color: #6fcf8a;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-channel-sub {
+    color: #8fa0b8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-channel-sub-on {
+    color: #6fcf8a;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-channel-row + .cleanplaats-alerts-channel-row {
+    border-top-color: #1d2735;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-footer {
+    border-color: #243044;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-telegram-hint {
+    background: #1c1610;
+    border-color: #8a5210;
+    color: #e8b87a;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-form-error {
+    background: #2a1214;
+    color: #f28b82;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-sort-select {
+    background: #1d2735;
+    color: #8fa0b8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-sort-select:hover {
+    background: #243044;
+    color: #dde4ee;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-filter-chip {
+    background: #2a1c0d;
+    color: #f59a3e;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-filter-none {
+    color: #3a4759;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-filter-block {
+    border-top-color: #1d2735;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-filter-trigger {
+    color: #8fa0b8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-filter-trigger:hover {
+    background: #151d29;
+    color: #dde4ee;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-filter-count {
+    background: #2a1c0d;
+    color: #f59a3e;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-filter-count-zero {
+    background: #1d2735;
+    color: #8fa0b8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-filter-editor-intro,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-filter-global-hint {
+    color: #6b7889;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-filter-opt {
+    color: #dde4ee;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-filter-opt:hover {
+    background: #151d29;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-filter-opt-box {
+    background: #10161f;
+    border-color: #3a4759;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-filter-opt input:checked + .cleanplaats-alerts-filter-opt-box {
+    background: #e8710a;
+    border-color: #e8710a;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-filter-always {
+    background: #112019;
+    color: #6fcf8a;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-filter-always svg {
+    color: #5bbd7a;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-filter-global {
+    border-top-color: #243044;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-filter-global-head {
+    color: #8fa0b8;
+  }
+
+  @media (max-width: 560px) {
+    .cleanplaats-alerts-overlay {
+      padding: 0;
+      align-items: flex-end;
+    }
+
+    .cleanplaats-alerts-card {
+      width: 100%;
+      max-height: 94vh;
+      border-radius: 16px 16px 0 0;
+    }
+
+    .cleanplaats-alerts-stats {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .cleanplaats-alerts-alert-actions {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .cleanplaats-alerts-filter-opts {
+      grid-template-columns: 1fr;
+    }
   }

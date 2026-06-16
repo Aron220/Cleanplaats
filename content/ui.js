@@ -294,6 +294,7 @@ function createControlPanel() {
                 <button id="cleanplaats-manage-terms" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageTerms}</button>
                 <button id="cleanplaats-manage-blacklist" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageSellers}</button>
                 <button id="cleanplaats-manage-blocked-listings" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageBlockedListings}</button>
+                ${isMarktplaatsSite() ? `<button id="cleanplaats-manage-alerts" class="cleanplaats-button cleanplaats-blacklist-manage-btn cleanplaats-alerts-manage-btn">🔔 ${panelText.alertsManageButton || 'Zoekmeldingen'}</button>` : ''}
             </div>
             <div class="cleanplaats-panel-view" id="cleanplaats-view-preferences">
                 <div class="cleanplaats-panel-view-header">
@@ -317,6 +318,18 @@ function createControlPanel() {
                             <span class="cleanplaats-option-label-text">
                                 ${panelText.expandPanelOnPageLoadLabel}
                                 <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.expandPanelOnPageLoadTooltip}">?</span>
+                            </span>
+                        </label>
+                    </div>
+                    <div class="cleanplaats-option cleanplaats-option-preference">
+                        <label class="cleanplaats-switch">
+                            <input type="checkbox" id="showUpdatePopups" ${CLEANPLAATS.settings.showUpdatePopups ? 'checked' : ''}>
+                            <span class="cleanplaats-switch-slider"></span>
+                        </label>
+                        <label for="showUpdatePopups" class="cleanplaats-option-label">
+                            <span class="cleanplaats-option-label-text">
+                                ${panelText.showUpdatePopupsLabel}
+                                <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.showUpdatePopupsTooltip}">?</span>
                             </span>
                         </label>
                     </div>
@@ -428,6 +441,14 @@ function createControlPanel() {
         e.preventDefault();
         showBlockedListingsModal(e.currentTarget);
     });
+
+    const manageAlertsButton = document.getElementById('cleanplaats-manage-alerts');
+    if (manageAlertsButton) {
+        manageAlertsButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            showAlertsModal();
+        });
+    }
 
     wireDonationNudgeEvents();
 
@@ -757,6 +778,7 @@ function setupEventListeners() {
                 const blacklistModal = document.getElementById('cleanplaats-blacklist-modal');
                 const termsModal = document.getElementById('cleanplaats-terms-modal');
                 const blockedListingsModal = document.getElementById('cleanplaats-blocked-listings-modal');
+                const alertsModal = document.getElementById('cleanplaats-alerts-modal');
                 if (blacklistModal && blacklistModal.style.display === 'block') {
                     blacklistModal.style.display = 'none';
                 }
@@ -765,6 +787,9 @@ function setupEventListeners() {
                 }
                 if (blockedListingsModal && blockedListingsModal.style.display === 'block') {
                     blockedListingsModal.style.display = 'none';
+                }
+                if (alertsModal && alertsModal.style.display !== 'none') {
+                    alertsModal.style.display = 'none';
                 }
 
                 panel.classList.remove('collapsed-ready');
@@ -829,7 +854,7 @@ function setupEventListeners() {
     });
 
     ['removeTopAds', 'removeDagtoppers', 'removePromotedListings',
-        'removeOpvalStickers', 'removeReservedListings', 'expandPanelOnPageLoad', 'showViewedListingsIndicator', 'removeFavoriteRelatedAds', 'sellerAgeWarningEnabled'].forEach(id => {
+        'removeOpvalStickers', 'removeReservedListings', 'expandPanelOnPageLoad', 'showUpdatePopups', 'showViewedListingsIndicator', 'removeFavoriteRelatedAds', 'sellerAgeWarningEnabled'].forEach(id => {
         const checkbox = document.getElementById(id);
         if (checkbox) {
             checkbox.addEventListener('change', handleCheckboxChange);
@@ -898,7 +923,7 @@ function handleCheckboxChange(event) {
                 return;
             }
 
-            if (setting === 'expandPanelOnPageLoad') {
+            if (setting === 'expandPanelOnPageLoad' || setting === 'showUpdatePopups') {
                 showSettingFeedback();
                 return;
             }

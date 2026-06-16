@@ -183,6 +183,9 @@ function getPanelLocaleText() {
             preferencesIntro: '',
             expandPanelOnPageLoadLabel: 'Déplier le panneau à l’ouverture de la page',
             expandPanelOnPageLoadTooltip: 'Si cette option est désactivée, le panneau reste replié en bas à droite à chaque chargement de page (sauf la toute première visite).',
+            showUpdatePopupsLabel: 'Afficher les notifications de mise à jour',
+            showUpdatePopupsTooltip: "Affiche une fenêtre 'Quoi de neuf ?' après une mise à jour de Cleanplaats.",
+            updatePopupDontShowAgainLabel: 'Ne plus afficher ceci lors des prochaines mises à jour',
             darkModeLabel: 'Mode sombre',
             darkModeTooltip: 'Active un thème sombre pour 2ememain et le panneau Cleanplaats. Expérimental: si la visibilité pose problème, désactivez-le.',
             resultsPerPageLabel: 'Résultats par page :',
@@ -301,6 +304,9 @@ function getPanelLocaleText() {
         preferencesIntro: '',
         expandPanelOnPageLoadLabel: 'Paneel uitklappen bij openen pagina',
         expandPanelOnPageLoadTooltip: 'Uit: het paneel start bij elke pagina ingeklapt (behalve de allereerste keer). Aan: onthoudt of het paneel uit- of ingeklapt was.',
+        showUpdatePopupsLabel: 'Toon updatemeldingen',
+        showUpdatePopupsTooltip: "Toon na een update van Cleanplaats een 'Wat is er nieuw?'-pop-up.",
+        updatePopupDontShowAgainLabel: 'Laat dit niet meer zien bij volgende updates',
         darkModeLabel: 'Donkere modus',
         darkModeTooltip: 'Schakelt een donker thema in voor Marktplaats en het Cleanplaats-paneel. Experimenteel: werkt meestal goed, maar zet het uit als iets slecht leesbaar is.',
         resultsPerPageLabel: 'Resultaten per pagina:',
@@ -362,7 +368,10 @@ function getPanelLocaleText() {
         emptyPageText: 'Alle advertenties op deze pagina zijn verborgen door Cleanplaats.',
         emptyPageFindNext: 'Zoek volgende pagina met zichtbare advertenties',
         emptyPageSearching: 'Zoeken…',
-        emptyPageNotFound: 'Geen pagina met zichtbare advertenties gevonden.'
+        emptyPageNotFound: 'Geen pagina met zichtbare advertenties gevonden.',
+        // Other alert strings live in content/alerts.js (ALERTS_TEXT): the
+        // feature is Marktplaats-only, so it isn't translated per locale.
+        alertsManageButton: 'Zoekmeldingen'
     };
 }
 
@@ -387,6 +396,7 @@ var CLEANPLAATS = {
         defaultSortMode: 'standard',
         sortPreferenceSource: 'cleanplaats',
         expandPanelOnPageLoad: false,
+        showUpdatePopups: true,
         totalActionsCount: 0,
         donationNudgeDismissedAt: 0,
         donationNudgeClickedBmc: false
@@ -429,6 +439,13 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES = {
+    '2.1.4': {
+        intro: 'Cleanplaats 2.1.4 is een kleine onderhoudsupdate.',
+        highlights: [
+            'Fix: gereserveerde advertenties werden bij sommige zoekresultaten niet altijd verborgen, ook al stond de filter "Gereserveerde" aan. Dit is nu opgelost.'
+        ],
+        note: null
+    },
     '2.1.3': {
         intro: 'Cleanplaats 2.1.3 lost een belangrijk Firefox-probleem op.',
         highlights: [
