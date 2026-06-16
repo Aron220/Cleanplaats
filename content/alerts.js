@@ -558,7 +558,7 @@ function renderAlertsShell(overlay) {
         <div class="cleanplaats-alerts-card" role="dialog" aria-label="${ALERTS_TEXT.modalTitle}">
             <div class="cleanplaats-alerts-header">
                 <div class="cleanplaats-alerts-header-title">
-                    <span class="cleanplaats-alerts-bell">${alertIcon('bell', 20)}</span>
+                    <span class="cleanplaats-alerts-bell"><img id="cleanplaats-alerts-bell-img" alt="" width="42" height="42"></span>
                     <div>
                         <h3>${ALERTS_TEXT.modalTitle}</h3>
                         <span class="cleanplaats-alerts-tagline">${ALERTS_TEXT.tagline}</span>
@@ -571,6 +571,10 @@ function renderAlertsShell(overlay) {
             </div>
         </div>
     `);
+    // Set the src in JS: DOMPurify strips the chrome-extension:// scheme from
+    // sanitized markup, so the image must be assigned after sanitizing.
+    const bellImg = document.getElementById('cleanplaats-alerts-bell-img');
+    if (bellImg) bellImg.src = browserAPI.runtime.getURL('icons/alert-icon.png');
     document.getElementById('cleanplaats-alerts-close').onclick = hideAlertsModal;
 }
 
@@ -1137,7 +1141,9 @@ function wireAlertsDashboardEvents() {
 
     // Both "Koppelen" and "Ander account koppelen" open the same step-by-step
     // connect screen; the bot hands out a code and the user types it back here.
-    const startTelegramLink = () => renderTelegramConnect(me);
+    // (This runs in wireAlertsDashboardEvents, which has no `me` in scope — read
+    // it from the runtime, which loadAlertsDashboard populated.)
+    const startTelegramLink = () => renderTelegramConnect(cleanplaatsAlertsRuntime.me);
 
     // "Koppelen" and "Ander account koppelen" are the same flow: the user
     // messages the bot, gets a code, and types it back to claim the chat.

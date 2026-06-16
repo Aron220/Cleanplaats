@@ -2312,9 +2312,17 @@
     width: 42px;
     height: 42px;
     flex: none;
-    color: #e8710a;
-    background: #fdf0e3;
-    border-radius: 12px;
+    border-radius: 50%;
+    overflow: hidden;
+  }
+
+  /* The icon is a self-contained round badge; scale it up slightly so its
+     orange circle fills the round tile and the off-white margin is cropped. */
+  .cleanplaats-alerts-bell img {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+    display: block;
   }
 
   .cleanplaats-alerts-header-title h3 {
