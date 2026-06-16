@@ -59,6 +59,12 @@ var ALERTS_TEXT = {
     matchCount: count => `${count} gevonden`,
     lastChecked: 'Laatste controle',
     neverChecked: 'Nog niet gecontroleerd',
+    validityLeft: n => `Verloopt over ${n} ${n === 1 ? 'dag' : 'dagen'}`,
+    validityExpired: 'Verlopen',
+    extendButton: 'Verleng',
+    reactivateButton: 'Reactiveren',
+    extendedToast: 'Zoekmelding verlengd.',
+    reactivatedToast: 'Zoekmelding gereactiveerd.',
     channelEmail: 'E-mail',
     channelTelegram: 'Telegram',
     statusLabel: 'Actief',
@@ -187,6 +193,19 @@ function formatAlertRelativeTime(timestamp) {
     } catch (error) {
         return '';
     }
+}
+
+/**
+ * Validity window state for an alert. Returns null when the alert never
+ * expires (expires_at missing/NULL). `soon` flags the last few days so the UI
+ * can nudge with a Verleng button.
+ */
+function getAlertValidity(alert) {
+    if (!alert || !alert.expires_at) return null;
+    const msLeft = alert.expires_at - Date.now();
+    if (msLeft <= 0) return { expired: true, daysLeft: 0, soon: false };
+    const daysLeft = Math.ceil(msLeft / (24 * 60 * 60 * 1000));
+    return { expired: false, daysLeft, soon: daysLeft <= 3 };
 }
 
 function formatAlertMatchPrice(match) {
@@ -711,13 +730,42 @@ function renderAlertsDashboard(me, alerts, matches) {
     const alertItems = alerts.length === 0
         ? `<div class="cleanplaats-alerts-empty">${ALERTS_TEXT.empty}</div>`
         : alerts.map(alert => {
-            const statusClass = alert.enabled ? 'active' : 'paused';
+            const validity = getAlertValidity(alert);
+            const statusClass = validity && validity.expired
+                ? 'expired'
+                : (alert.enabled ? 'active' : 'paused');
             const lastChecked = alert.last_checked_at
                 ? `${ALERTS_TEXT.lastChecked}: ${formatAlertRelativeTime(alert.last_checked_at)}`
                 : ALERTS_TEXT.neverChecked;
             const labelHtml = alert.search_url
                 ? `<a href="${escapeAlertText(alert.search_url)}" class="cleanplaats-alerts-card-label">${escapeAlertText(alert.label)}</a>`
                 : `<span class="cleanplaats-alerts-card-label">${escapeAlertText(alert.label)}</span>`;
+
+            let validityHtml = '';
+            if (validity) {
+                if (validity.expired) {
+                    validityHtml = ` · <span class="cleanplaats-alerts-validity cleanplaats-alerts-validity-expired">${ALERTS_TEXT.validityExpired}</span>`;
+                } else {
+                    const soonClass = validity.soon ? ' cleanplaats-alerts-validity-soon' : '';
+                    validityHtml = ` · <span class="cleanplaats-alerts-validity${soonClass}">${ALERTS_TEXT.validityLeft(validity.daysLeft)}</span>`;
+                }
+            }
+
+            // Expired alerts can only come back via Reactiveren (which resets the
+            // window); re-enabling with the plain switch would just re-lapse next
+            // poll, so the status switch is replaced. Active alerts get a subtle
+            // Verleng nudge only in their final days.
+            const extendBtn = validity && validity.expired
+                ? `<button class="cleanplaats-alerts-extend-btn cleanplaats-alerts-extend-btn-primary" data-alert-id="${alert.id}" data-extend="1">${ALERTS_TEXT.reactivateButton}</button>`
+                : (validity && validity.soon
+                    ? `<button class="cleanplaats-alerts-extend-btn" data-alert-id="${alert.id}" data-extend="1">${ALERTS_TEXT.extendButton}</button>`
+                    : '');
+            const statusSwitch = validity && validity.expired
+                ? ''
+                : `<button class="cleanplaats-alerts-switch cleanplaats-alerts-switch-status ${alert.enabled ? 'on' : ''}" data-alert-id="${alert.id}" data-enabled="${alert.enabled ? '1' : '0'}" role="switch" aria-checked="${alert.enabled ? 'true' : 'false'}">
+                                <span class="cleanplaats-alerts-switch-label">${alert.enabled ? ALERTS_TEXT.activeLabel : ALERTS_TEXT.pausedLabel}</span><span class="cleanplaats-alerts-switch-track"></span>
+                            </button>`;
+
             return `
                 <div class="cleanplaats-alerts-alert cleanplaats-alerts-alert-${statusClass}" data-alert-id="${alert.id}">
                     <div class="cleanplaats-alerts-alert-top">
@@ -726,7 +774,7 @@ function renderAlertsDashboard(me, alerts, matches) {
                         <span class="cleanplaats-alerts-match-badge">${ALERTS_TEXT.matchCount(alert.match_count || 0)}</span>
                     </div>
                     <div class="cleanplaats-alerts-alert-bottom">
-                        <span class="cleanplaats-alerts-meta">${lastChecked}</span>
+                        <span class="cleanplaats-alerts-meta">${lastChecked}${validityHtml}</span>
                         <span class="cleanplaats-alerts-alert-actions">
                             <button class="cleanplaats-alerts-switch ${alert.notify_email ? 'on' : ''}" data-channel="email" data-alert-id="${alert.id}" data-value="${alert.notify_email ? '1' : '0'}" role="switch" aria-checked="${alert.notify_email ? 'true' : 'false'}">
                                 ${alertIcon('mail', 14)}<span class="cleanplaats-alerts-switch-label">${ALERTS_TEXT.channelEmail}</span><span class="cleanplaats-alerts-switch-track"></span>
@@ -734,9 +782,8 @@ function renderAlertsDashboard(me, alerts, matches) {
                             <button class="cleanplaats-alerts-switch ${alert.notify_telegram ? 'on' : ''}" data-channel="telegram" data-alert-id="${alert.id}" data-value="${alert.notify_telegram ? '1' : '0'}" role="switch" aria-checked="${alert.notify_telegram ? 'true' : 'false'}">
                                 ${alertIcon('send', 14)}<span class="cleanplaats-alerts-switch-label">${ALERTS_TEXT.channelTelegram}</span><span class="cleanplaats-alerts-switch-track"></span>
                             </button>
-                            <button class="cleanplaats-alerts-switch cleanplaats-alerts-switch-status ${alert.enabled ? 'on' : ''}" data-alert-id="${alert.id}" data-enabled="${alert.enabled ? '1' : '0'}" role="switch" aria-checked="${alert.enabled ? 'true' : 'false'}">
-                                <span class="cleanplaats-alerts-switch-label">${alert.enabled ? ALERTS_TEXT.activeLabel : ALERTS_TEXT.pausedLabel}</span><span class="cleanplaats-alerts-switch-track"></span>
-                            </button>
+                            ${statusSwitch}
+                            ${extendBtn}
                             <button class="cleanplaats-alerts-delete" data-alert-id="${alert.id}" title="${ALERTS_TEXT.deleteButton}" aria-label="${ALERTS_TEXT.deleteButton}">${alertIcon('trash', 15)}</button>
                         </span>
                     </div>
@@ -882,6 +929,23 @@ function wireAlertsDashboardEvents() {
                     card.classList.toggle('cleanplaats-alerts-alert-paused', !nextEnabled);
                 }
             }).catch(() => showBubbleNotification(ALERTS_TEXT.errorToast));
+        };
+    });
+
+    body.querySelectorAll('.cleanplaats-alerts-extend-btn').forEach(button => {
+        button.onclick = () => {
+            const wasExpired = button.classList.contains('cleanplaats-alerts-extend-btn-primary');
+            button.disabled = true;
+            alertsApiFetch(`/api/alerts/${button.dataset.alertId}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ extend: true })
+            }).then(() => {
+                showBubbleNotification(wasExpired ? ALERTS_TEXT.reactivatedToast : ALERTS_TEXT.extendedToast);
+                loadAlertsDashboard();
+            }).catch(() => {
+                button.disabled = false;
+                showBubbleNotification(ALERTS_TEXT.errorToast);
+            });
         };
     });
 

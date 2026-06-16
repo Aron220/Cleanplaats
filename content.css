@@ -3093,6 +3093,58 @@
     color: #b3261e;
   }
 
+  /* Expired alerts get an amber dot to set them apart from manual pause. */
+  .cleanplaats-alerts-alert-expired .cleanplaats-alerts-status-dot {
+    background: #e8710a;
+  }
+
+  /* Validity chip inside the meta line. */
+  .cleanplaats-alerts-validity {
+    font-weight: 600;
+  }
+
+  .cleanplaats-alerts-validity-soon {
+    color: #c2710b;
+  }
+
+  .cleanplaats-alerts-validity-expired {
+    color: #b3261e;
+  }
+
+  /* Verleng / Reactiveren pill. Matches the switch/delete sizing. */
+  .cleanplaats-alerts-extend-btn {
+    height: 30px;
+    padding: 0 12px;
+    border: 1px solid #e6e9ee;
+    border-radius: 999px;
+    background: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4d5765;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  }
+
+  .cleanplaats-alerts-extend-btn:hover {
+    border-color: #cfd6df;
+  }
+
+  .cleanplaats-alerts-extend-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  .cleanplaats-alerts-extend-btn-primary {
+    border-color: #e8710a;
+    background: #e8710a;
+    color: #fff;
+  }
+
+  .cleanplaats-alerts-extend-btn-primary:hover {
+    border-color: #cf6309;
+    background: #cf6309;
+  }
+
   /* --- Match feed --- */
 
   .cleanplaats-alerts-match {
@@ -3451,6 +3503,35 @@
     background: #2a1214;
     border-color: #b3261e;
     color: #f28b82;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-validity-soon {
+    color: #f0a64e;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-validity-expired {
+    color: #f28b82;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-extend-btn {
+    background: #18202c;
+    border-color: #2c3a4d;
+    color: #aebbcd;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-extend-btn:hover {
+    border-color: #3a4759;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-extend-btn-primary {
+    border-color: #e8710a;
+    background: #e8710a;
+    color: #fff;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-extend-btn-primary:hover {
+    border-color: #f0822a;
+    background: #f0822a;
   }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-match-thumb {
