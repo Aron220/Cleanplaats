@@ -740,6 +740,80 @@ function handleSellerAgeThresholdInput() {
         });
 }
 
+/**
+ * Collapse or expand the control panel programmatically, driving the same
+ * animation the header click uses. Used both by the header toggle and by the
+ * Zoekmeldingen modal (which tucks the panel away while it's open).
+ *
+ * @param {boolean} targetCollapsed - desired collapsed state
+ * @param {{persist?: boolean}} [options] - persist:false for temporary,
+ *        modal-driven collapses that shouldn't change the saved preference.
+ */
+function setPanelCollapsed(targetCollapsed, options = {}) {
+    const { persist = true } = options;
+    const panel = document.getElementById('cleanplaats-panel');
+    if (!panel || panel.classList.contains('animating')) return;
+    if (CLEANPLAATS.panelState.isCollapsed === targetCollapsed) return;
+
+    const toggle = document.getElementById('cleanplaats-toggle');
+
+    // Anchored sub-modals (blacklist/terms/blocked listings) hang off the panel,
+    // so fold them away with it. The alerts modal is intentionally left alone —
+    // it lives independently and manages the panel itself.
+    ['cleanplaats-blacklist-modal', 'cleanplaats-terms-modal', 'cleanplaats-blocked-listings-modal'].forEach(id => {
+        const subModal = document.getElementById(id);
+        if (subModal && subModal.style.display === 'block') {
+            subModal.style.display = 'none';
+        }
+    });
+
+    panel.classList.remove('collapsed-ready');
+    updateCollapsedPanelIcon(panel);
+    panel.classList.add('animating');
+
+    CLEANPLAATS.panelState.isCollapsed = targetCollapsed;
+    panel.classList.toggle('collapsed', targetCollapsed);
+
+    if (!targetCollapsed) {
+        const activeViewEl = document.getElementById(
+            CLEANPLAATS.panelState.activeView === 'preferences'
+                ? 'cleanplaats-view-preferences'
+                : 'cleanplaats-view-filters'
+        );
+        syncPanelViewContainerHeight(activeViewEl);
+    }
+
+    if (toggle) {
+        toggle.textContent = targetCollapsed ? '▲' : '▼';
+    }
+
+    const fallbackTimeout = setTimeout(() => {
+        panel.classList.remove('animating');
+        if (targetCollapsed) {
+            panel.classList.add('collapsed-ready');
+            updateCollapsedPanelIcon(panel);
+        }
+    }, 600);
+
+    const onTransitionEnd = (event) => {
+        if (targetCollapsed && event.propertyName === 'width') {
+            panel.classList.add('collapsed-ready');
+            updateCollapsedPanelIcon(panel);
+            panel.classList.remove('animating');
+            panel.removeEventListener('transitionend', onTransitionEnd);
+            clearTimeout(fallbackTimeout);
+        } else if (!targetCollapsed && event.propertyName === 'max-height') {
+            panel.classList.remove('animating');
+            updateCollapsedPanelIcon(panel);
+            panel.removeEventListener('transitionend', onTransitionEnd);
+            clearTimeout(fallbackTimeout);
+        }
+    };
+    panel.addEventListener('transitionend', onTransitionEnd);
+
+    if (persist) saveSettings();
+}
+
 function setupEventListeners() {
     const panel = document.getElementById('cleanplaats-panel');
     const toggle = document.getElementById('cleanplaats-toggle');
@@ -774,69 +848,7 @@ function setupEventListeners() {
             if (canToggle) {
                 e.preventDefault();
                 e.stopPropagation();
-
-                const blacklistModal = document.getElementById('cleanplaats-blacklist-modal');
-                const termsModal = document.getElementById('cleanplaats-terms-modal');
-                const blockedListingsModal = document.getElementById('cleanplaats-blocked-listings-modal');
-                const alertsModal = document.getElementById('cleanplaats-alerts-modal');
-                if (blacklistModal && blacklistModal.style.display === 'block') {
-                    blacklistModal.style.display = 'none';
-                }
-                if (termsModal && termsModal.style.display === 'block') {
-                    termsModal.style.display = 'none';
-                }
-                if (blockedListingsModal && blockedListingsModal.style.display === 'block') {
-                    blockedListingsModal.style.display = 'none';
-                }
-                if (alertsModal && alertsModal.style.display !== 'none') {
-                    alertsModal.style.display = 'none';
-                }
-
-                panel.classList.remove('collapsed-ready');
-                updateCollapsedPanelIcon(panel);
-                panel.classList.add('animating');
-
-                CLEANPLAATS.panelState.isCollapsed = !CLEANPLAATS.panelState.isCollapsed;
-                panel.classList.toggle('collapsed', CLEANPLAATS.panelState.isCollapsed);
-
-                if (!CLEANPLAATS.panelState.isCollapsed) {
-                    const activeViewEl = document.getElementById(
-                        CLEANPLAATS.panelState.activeView === 'preferences'
-                            ? 'cleanplaats-view-preferences'
-                            : 'cleanplaats-view-filters'
-                    );
-                    syncPanelViewContainerHeight(activeViewEl);
-                }
-
-                if (toggle) {
-                    toggle.textContent = CLEANPLAATS.panelState.isCollapsed ? '▲' : '▼';
-                }
-
-                const fallbackTimeout = setTimeout(() => {
-                    panel.classList.remove('animating');
-                    if (CLEANPLAATS.panelState.isCollapsed) {
-                        panel.classList.add('collapsed-ready');
-                        updateCollapsedPanelIcon(panel);
-                    }
-                }, 600);
-
-                const onTransitionEnd = (event) => {
-                    if (CLEANPLAATS.panelState.isCollapsed && event.propertyName === 'width') {
-                        panel.classList.add('collapsed-ready');
-                        updateCollapsedPanelIcon(panel);
-                        panel.classList.remove('animating');
-                        panel.removeEventListener('transitionend', onTransitionEnd);
-                        clearTimeout(fallbackTimeout);
-                    } else if (!CLEANPLAATS.panelState.isCollapsed && event.propertyName === 'max-height') {
-                        panel.classList.remove('animating');
-                        updateCollapsedPanelIcon(panel);
-                        panel.removeEventListener('transitionend', onTransitionEnd);
-                        clearTimeout(fallbackTimeout);
-                    }
-                };
-                panel.addEventListener('transitionend', onTransitionEnd);
-
-                saveSettings();
+                setPanelCollapsed(!CLEANPLAATS.panelState.isCollapsed);
             }
         });
     }

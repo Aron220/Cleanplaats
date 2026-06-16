@@ -2253,7 +2253,7 @@
   .cleanplaats-alerts-overlay {
     position: fixed;
     inset: 0;
-    z-index: 2147483646;
+    z-index: 2147483647;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2277,8 +2277,8 @@
   .cleanplaats-alerts-card {
     display: flex;
     flex-direction: column;
-    width: min(680px, 100%);
-    max-height: min(86vh, 820px);
+    width: min(1040px, 94vw);
+    max-height: min(88vh, 860px);
     background: #ffffff;
     color: #2b3442;
     border-radius: 16px;
@@ -2293,7 +2293,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 16px 20px;
+    padding: 18px 24px;
     background: #fff;
     border-bottom: 1px solid #e6e9ee;
   }
@@ -2354,10 +2354,10 @@
 
   .cleanplaats-alerts-body {
     overflow-y: auto;
-    padding: 16px 20px 20px;
+    padding: 20px 28px 24px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 18px;
   }
 
   /* The body is the scroll container; don't let sections with their own
@@ -2530,37 +2530,45 @@
 
   .cleanplaats-alerts-account {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 10px 16px;
-    padding: 12px 14px;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px 18px;
     background: #f6f7f9;
     border: 1px solid #e6e9ee;
-    border-radius: 12px;
+    border-radius: 14px;
   }
 
-  .cleanplaats-alerts-account-id {
+  /* Secondary, muted account line — recedes behind the usage/frequency anchor. */
+  .cleanplaats-alerts-account-meta {
     display: flex;
     align-items: center;
     gap: 8px;
     min-width: 0;
+    font-size: 12px;
+    color: #97a0ae;
   }
 
+  .cleanplaats-alerts-account-mail {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .cleanplaats-alerts-account-mail svg { flex: none; }
+
   .cleanplaats-alerts-account-email {
-    font-size: 13px;
-    font-weight: 600;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 220px;
+    max-width: 360px;
   }
 
   .cleanplaats-alerts-tier {
     flex: none;
-    padding: 2px 8px;
+    padding: 1px 7px;
     border-radius: 999px;
-    font-size: 10.5px;
+    font-size: 9.5px;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -2568,7 +2576,7 @@
 
   .cleanplaats-alerts-tier-free {
     background: #e3e7ed;
-    color: #4d5765;
+    color: #6b7585;
   }
 
   .cleanplaats-alerts-tier-premium {
@@ -2577,39 +2585,54 @@
     color: #c95f06;
   }
 
-  .cleanplaats-alerts-stats {
+  /* The anchor row: usage count + check frequency carry the visual weight. */
+  .cleanplaats-alerts-account-main {
     display: flex;
-    gap: 18px;
-  }
-
-  .cleanplaats-alerts-stat {
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    min-width: 56px;
+    flex-wrap: wrap;
+    gap: 10px 18px;
   }
 
-  .cleanplaats-alerts-stat-value {
-    font-size: 17px;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
+  .cleanplaats-alerts-usage {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+  }
+
+  .cleanplaats-alerts-usage-value {
+    font-size: 23px;
+    font-weight: 800;
     color: #222b38;
-    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
   }
 
-  .cleanplaats-alerts-stat-max {
-    font-size: 12px;
-    font-weight: 600;
-    color: #97a0ae;
+  .cleanplaats-alerts-usage-max {
+    font-size: 15px;
+    font-weight: 700;
+    color: #a4adba;
   }
 
-  .cleanplaats-alerts-stat-label {
-    font-size: 10.5px;
+  .cleanplaats-alerts-usage-label {
+    font-size: 13.5px;
     font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: #97a0ae;
-    margin-top: 2px;
+    color: #66707f;
+  }
+
+  .cleanplaats-alerts-freq {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding-left: 18px;
+    border-left: 1px solid #dfe3ea;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4d5765;
+  }
+
+  .cleanplaats-alerts-freq svg {
+    flex: none;
+    color: #e8710a;
   }
 
   /* --- Create --- */
@@ -2906,7 +2929,7 @@
   }
 
   .cleanplaats-alerts-matches {
-    max-height: 320px;
+    max-height: 460px;
     overflow-y: auto;
     padding-right: 2px;
   }
@@ -2922,7 +2945,7 @@
   }
 
   .cleanplaats-alerts-alert {
-    padding: 12px 14px;
+    padding: 14px 16px;
     border: 1px solid #e6e9ee;
     border-radius: 12px;
     background: #fff;
@@ -2993,8 +3016,8 @@
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 8px 10px;
-    margin-top: 9px;
+    gap: 10px 12px;
+    margin-top: 12px;
   }
 
   .cleanplaats-alerts-meta {
@@ -3006,24 +3029,25 @@
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
   }
 
-  /* Labeled mini-switches: icon + name + track. State is unmistakable. */
+  /* Labeled mini-switches: icon + name + track. State is unmistakable.
+     Kept low-chrome (faint border, soft fill) so a row of them reads calm. */
   .cleanplaats-alerts-switch {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     height: 30px;
     padding: 0 9px 0 10px;
-    border: 1px solid #e6e9ee;
+    border: 1px solid #edf0f4;
     border-radius: 999px;
-    background: #fff;
+    background: #fafbfc;
     font-size: 12px;
     font-weight: 600;
     color: #97a0ae;
     cursor: pointer;
-    transition: color 0.15s ease, border-color 0.15s ease;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
   }
 
   .cleanplaats-alerts-switch svg {
@@ -3036,6 +3060,8 @@
 
   .cleanplaats-alerts-switch.on {
     color: #2b3442;
+    background: #fff;
+    border-color: #e6e9ee;
   }
 
   .cleanplaats-alerts-switch-label {
@@ -3071,6 +3097,253 @@
 
   .cleanplaats-alerts-switch.on .cleanplaats-alerts-switch-track::after {
     left: 14px;
+  }
+
+  /* Telegram toggle before an account is linked: dashed + dimmed so it reads as
+     "not set up yet". Clicking it starts the connect flow, hence the orange
+     hover hint. */
+  .cleanplaats-alerts-switch-locked {
+    border-style: dashed;
+    border-color: #d4dae2;
+    color: #aab3bf;
+  }
+
+  .cleanplaats-alerts-switch-locked:hover {
+    border-color: #e8710a;
+    color: #c95f06;
+  }
+
+  .cleanplaats-alerts-switch-locked .cleanplaats-alerts-switch-track {
+    opacity: 0.45;
+  }
+
+  /* Fast, styled tooltip for the locked toggle. Native title= takes ~1.5s to
+     appear (long enough to click first); this shows after 120ms so the reason
+     is on screen before a click can land. */
+  .cleanplaats-alerts-switch-locked[data-tip] {
+    position: relative;
+  }
+
+  .cleanplaats-alerts-switch-locked[data-tip]::after,
+  .cleanplaats-alerts-switch-locked[data-tip]::before {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease, transform 0.12s ease;
+    transition-delay: 0.12s;
+    z-index: 40;
+  }
+
+  .cleanplaats-alerts-switch-locked[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 9px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    width: max-content;
+    max-width: 230px;
+    padding: 9px 11px;
+    border-radius: 9px;
+    background: #222b38;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.45;
+    text-align: left;
+    white-space: normal;
+    box-shadow: 0 8px 24px rgba(20, 28, 40, 0.24);
+  }
+
+  .cleanplaats-alerts-switch-locked[data-tip]::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 3px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #222b38;
+  }
+
+  .cleanplaats-alerts-switch-locked[data-tip]:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .cleanplaats-alerts-switch-locked[data-tip]:hover::before {
+    opacity: 1;
+  }
+
+  /* --- Telegram connect screen --- */
+
+  .cleanplaats-alerts-connect {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 2px 2px 8px;
+  }
+
+  .cleanplaats-alerts-connect-back {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: #66707f;
+    font-weight: 600;
+  }
+
+  .cleanplaats-alerts-connect-back:hover {
+    color: #222b38;
+  }
+
+  .cleanplaats-alerts-connect-head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+  }
+
+  .cleanplaats-alerts-connect-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #fef0e2, #fcdcbf);
+    color: #e8710a;
+  }
+
+  .cleanplaats-alerts-connect-head h4 {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 800;
+    color: #1f2733;
+  }
+
+  .cleanplaats-alerts-connect-head p {
+    margin: 0;
+    max-width: 430px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #66707f;
+  }
+
+  .cleanplaats-alerts-connect-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .cleanplaats-alerts-connect-step {
+    display: flex;
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid #edf0f4;
+    border-radius: 14px;
+    background: #fafbfc;
+  }
+
+  .cleanplaats-alerts-connect-num {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    background: #222b38;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .cleanplaats-alerts-connect-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cleanplaats-alerts-connect-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1f2733;
+  }
+
+  .cleanplaats-alerts-connect-sub {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #66707f;
+  }
+
+  .cleanplaats-alerts-connect-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .cleanplaats-alerts-connect-code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #2b3442;
+    background: #fff;
+    border: 1px solid #e6e9ee;
+    border-radius: 8px;
+    padding: 7px 12px;
+  }
+
+  .cleanplaats-alerts-copy {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #e6e9ee;
+    border-radius: 8px;
+    background: #fff;
+    color: #66707f;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .cleanplaats-alerts-copy:hover {
+    border-color: #e8710a;
+    color: #e8710a;
+  }
+
+  .cleanplaats-alerts-connect-open {
+    text-decoration: none;
+  }
+
+  .cleanplaats-alerts-connect-verify {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+    max-width: 320px;
+  }
+
+  .cleanplaats-alerts-connect-input {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1.5px solid #d8dde5;
+    border-radius: 10px;
+    background: #fff;
+    color: #2b3442;
+  }
+
+  .cleanplaats-alerts-connect-input:focus {
+    outline: none;
+    border-color: #222b38;
+    box-shadow: 0 0 0 3px rgba(34, 43, 56, 0.12);
   }
 
   .cleanplaats-alerts-delete {
@@ -3150,25 +3423,26 @@
   .cleanplaats-alerts-match {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 8px 10px;
+    gap: 14px;
+    padding: 10px 12px;
     border: 1px solid #e6e9ee;
     border-radius: 12px;
     background: #fff;
     text-decoration: none;
     color: inherit;
-    transition: border-color 0.15s ease;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
 
   .cleanplaats-alerts-match:hover {
-    border-color: #97a0ae;
+    border-color: #f0c89e;
+    box-shadow: 0 2px 10px rgba(232, 113, 10, 0.10);
   }
 
   .cleanplaats-alerts-match-thumb {
     flex: none;
-    width: 56px;
-    height: 56px;
-    border-radius: 9px;
+    width: 84px;
+    height: 84px;
+    border-radius: 10px;
     object-fit: cover;
     background: #f0f2f5;
   }
@@ -3183,17 +3457,20 @@
   .cleanplaats-alerts-match-info {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
     min-width: 0;
+    flex: 1;
   }
 
   .cleanplaats-alerts-match-title {
-    font-size: 13.5px;
+    font-size: 14px;
     font-weight: 600;
     color: #222b38;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   .cleanplaats-alerts-new {
@@ -3210,8 +3487,8 @@
 
   .cleanplaats-alerts-match-sub {
     display: flex;
-    gap: 5px;
-    font-size: 12px;
+    gap: 6px;
+    font-size: 12.5px;
     color: #66707f;
     overflow: hidden;
     white-space: nowrap;
@@ -3307,16 +3584,6 @@
     font-size: 12px;
     font-weight: 600;
     color: #97a0ae;
-  }
-
-  .cleanplaats-alerts-telegram-hint {
-    padding: 10px 12px;
-    border-radius: 10px;
-    background: #fff8f1;
-    border: 1px solid #f0c89e;
-    color: #8a5210;
-    font-size: 12.5px;
-    line-height: 1.5;
   }
 
   /* --- Footer --- */
@@ -3426,8 +3693,17 @@
     color: #8fa0b8;
   }
 
-  html.cleanplaats-dark-mode .cleanplaats-alerts-stat-value {
-    color: #dde4ee;
+  html.cleanplaats-dark-mode .cleanplaats-alerts-usage-value {
+    color: #f0f4fa;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-usage-label,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-freq {
+    color: #aebbcd;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-freq {
+    border-left-color: #2c3a4f;
   }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-tier-free {
@@ -3453,7 +3729,8 @@
   }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-match:hover {
-    border-color: #8fa0b8;
+    border-color: #8a5210;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
   }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-card-label,
@@ -3483,6 +3760,18 @@
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-switch.on {
     color: #dde4ee;
+    background: #1d2735;
+    border-color: #34435a;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-switch-locked {
+    border-color: #34435a;
+    color: #6e7b8d;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-switch-locked:hover {
+    border-color: #e8710a;
+    color: #f0822a;
   }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-switch-track {
@@ -3564,10 +3853,73 @@
     border-color: #243044;
   }
 
-  html.cleanplaats-dark-mode .cleanplaats-alerts-telegram-hint {
-    background: #1c1610;
-    border-color: #8a5210;
-    color: #e8b87a;
+  html.cleanplaats-dark-mode .cleanplaats-alerts-switch-locked[data-tip]::after {
+    background: #0e1521;
+    color: #e7edf5;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-switch-locked[data-tip]::before {
+    border-top-color: #0e1521;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-connect-back {
+    color: #8fa0b8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-connect-back:hover {
+    color: #e7edf5;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-connect-logo {
+    background: linear-gradient(135deg, #3a2a18, #4a3017);
+    color: #f0822a;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-connect-head h4 {
+    color: #f0f4fa;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-connect-head p,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-connect-sub {
+    color: #8fa0b8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-connect-step {
+    background: #161f2c;
+    border-color: #243044;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-connect-num {
+    background: #2c3a4f;
+    color: #e7edf5;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-connect-title {
+    color: #f0f4fa;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-connect-code,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-copy {
+    background: #1d2735;
+    border-color: #34435a;
+    color: #cdd7e4;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-copy:hover {
+    border-color: #e8710a;
+    color: #f0822a;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-connect-input {
+    background: #1d2735;
+    border-color: #34435a;
+    color: #e7edf5;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-connect-input:focus {
+    border-color: #5b6b82;
+    box-shadow: 0 0 0 3px rgba(91, 107, 130, 0.25);
   }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-form-error {
@@ -3669,9 +4021,8 @@
       border-radius: 16px 16px 0 0;
     }
 
-    .cleanplaats-alerts-stats {
-      width: 100%;
-      justify-content: space-between;
+    .cleanplaats-alerts-account-main {
+      gap: 8px 14px;
     }
 
     .cleanplaats-alerts-alert-actions {

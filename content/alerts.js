@@ -19,12 +19,16 @@ var cleanplaatsAlertsRuntime = {
     token: '',
     apiBase: '',
     me: null,
-    pendingEmail: ''
+    pendingEmail: '',
+    // Remembers whether the control panel was expanded when the modal opened,
+    // so closing the modal can restore it (the modal collapses the panel out
+    // of the way while it's open).
+    panelWasExpanded: false
 };
 
 var ALERTS_TEXT = {
     modalTitle: 'Zoekmeldingen',
-    tagline: 'Nieuwe advertenties direct in je inbox — ook als je browser dicht is.',
+    tagline: 'Krijg nieuwe advertenties direct in je inbox — ook als je browser dicht is.',
     intro: 'Krijg een melding zodra er een nieuwe advertentie verschijnt die aan je zoekopdracht voldoet — ook als je browser dicht is. Je Cleanplaats-filters worden automatisch toegepast.',
     loginTitle: 'Inloggen of account maken',
     loginIntro: 'Met een account ontvang je meldingen per e-mail en werken je zoekmeldingen op al je apparaten.',
@@ -41,23 +45,22 @@ var ALERTS_TEXT = {
     logout: 'Uitloggen',
     tierFree: 'Gratis',
     tierPremium: 'Premium',
-    statAlerts: 'Meldingen',
-    statInterval: 'Controle elke',
-    statFound: 'Gevonden',
-    createTitle: 'Nieuwe melding',
-    createButton: 'Maak melding',
+    usageLabel: 'meldingen',
+    checkFrequency: m => `Controleert elke ${m} minuten`,
+    createTitle: 'Maak een zoekmelding',
+    createButton: 'Zoekmelding maken',
     labelPlaceholder: 'Zoekterm, bijv. iphone 15 pro',
     createTermMissing: 'Vul een zoekterm in.',
     createContextHint: 'Filters van je huidige zoekopdracht (categorie, locatie) gaan mee zolang je de zoekterm niet wijzigt.',
-    atLimit: 'Je gebruikt al je beschikbare meldingen. Verwijder er een om een nieuwe te maken.',
-    listTitle: 'Je meldingen',
-    empty: 'Nog geen meldingen. Zoek iets op Marktplaats en maak je eerste melding.',
+    atLimit: 'Je hebt al je zoekmeldingen gebruikt. Verwijder er een om ruimte te maken voor een nieuwe.',
+    listTitle: 'Jouw zoekmeldingen',
+    empty: 'Je hebt nog geen zoekmeldingen. Zoek iets op Marktplaats en maak je eerste melding aan.',
     deleteButton: 'Verwijder',
     deleteConfirm: 'Weet je zeker dat je deze melding wilt verwijderen?',
     pausedLabel: 'Gepauzeerd',
     activeLabel: 'Actief',
     matchCount: count => `${count} gevonden`,
-    lastChecked: 'Laatste controle',
+    lastChecked: 'Laatst gecontroleerd',
     neverChecked: 'Nog niet gecontroleerd',
     validityLeft: n => `Verloopt over ${n} ${n === 1 ? 'dag' : 'dagen'}`,
     validityExpired: 'Verlopen',
@@ -69,18 +72,35 @@ var ALERTS_TEXT = {
     channelTelegram: 'Telegram',
     statusLabel: 'Actief',
     matchesTitle: 'Gevonden advertenties',
-    matchesEmpty: 'Nog geen advertenties gevonden. Na de eerste controle (binnen enkele minuten) verschijnen ze hier.',
+    matchesEmpty: 'Nog niets gevonden. Zodra de eerste controle klaar is — binnen enkele minuten — verschijnen de advertenties hier.',
     newBadge: 'NIEUW',
-    channelsTitle: 'Meldingskanalen',
-    emailAlwaysOn: 'Altijd aan',
+    channelsTitle: 'Hoe je meldingen ontvangt',
+    emailAlwaysOn: 'Staat altijd aan',
     telegramConnect: 'Koppelen',
     telegramLinked: 'Gekoppeld',
-    telegramNotLinked: 'Niet gekoppeld',
+    telegramNotLinked: 'Nog niet gekoppeld',
+    telegramLockedHint: 'Koppel eerst Telegram om hier meldingen via Telegram te krijgen. Klik om te koppelen.',
     telegramRelink: 'Ander account koppelen',
     telegramUnlink: 'Ontkoppelen',
     telegramUnlinkConfirm: 'Telegram ontkoppelen? Je ontvangt dan geen meldingen meer via Telegram.',
     telegramUnlinkedToast: 'Telegram ontkoppeld.',
-    telegramManualHint: (bot, code) => `Werkt de knop niet? Open Telegram (bijv. op je telefoon), zoek @${bot} en stuur dit bericht: ${code}`,
+    // Code-based linking flow (the bot sends you a code, you type it back here).
+    telegramConnectTitle: 'Telegram koppelen',
+    telegramConnectIntro: 'Krijg nieuwe advertenties direct in je Telegram-chat — werkt ook als je alleen Telegram op je telefoon hebt.',
+    telegramStep1Title: 'Open onze bot in Telegram',
+    telegramStep1Body: 'Open Telegram en zoek deze bot:',
+    telegramStep1Open: 'Open in Telegram',
+    telegramStep2Title: 'Stuur het bericht',
+    telegramStep2Body: 'Tik op Start of stuur dit bericht naar de bot:',
+    telegramStep3Title: 'Vul de code in',
+    telegramStep3Body: 'De bot stuurt je een code van 6 cijfers terug. Typ die hier in:',
+    telegramCodePlaceholder: '123456',
+    telegramVerifyButton: 'Koppelen',
+    telegramVerifying: 'Koppelen…',
+    telegramVerifyError: 'Deze code klopt niet of is verlopen. Stuur de bot opnieuw een bericht voor een nieuwe code.',
+    telegramLinkedToast: 'Telegram gekoppeld! Je ontvangt nu ook meldingen via Telegram.',
+    telegramBack: 'Terug',
+    telegramCopied: 'Gekopieerd',
     createdToast: 'Zoekmelding aangemaakt! Binnen enkele minuten zie je hier de huidige advertenties; daarna krijg je meldingen bij nieuwe.',
     deletedToast: 'Zoekmelding verwijderd.',
     limitToast: 'Je hebt het maximum aantal meldingen bereikt.',
@@ -100,7 +120,7 @@ var ALERTS_TEXT = {
     filterDagtoppers: 'Dagtoppers',
     filterReserved: 'Gereserveerd',
     filterOpval: 'Opvalstickers',
-    filterCountActive: n => `${n} aan`,
+    filterCountActive: n => `${n} actief`,
     filterNoneActive: 'Alles tonen',
     filterAlwaysExcluded: 'Top- en bedrijfsadvertenties krijg je nooit als melding.',
     filterGlobalListsTitle: 'Geblokkeerde verkopers & woorden',
@@ -166,7 +186,10 @@ var ALERTS_ICONS = {
     image: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>',
     filter: '<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>',
     chevron: '<path d="m6 9 6 6 6-6"/>',
-    check: '<path d="M20 6 9 17l-5-5"/>'
+    check: '<path d="M20 6 9 17l-5-5"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    arrowLeft: '<path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>',
+    copy: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'
 };
 
 function alertIcon(name, size) {
@@ -484,6 +507,16 @@ function getAlertsOverlay() {
 function hideAlertsModal() {
     const overlay = document.getElementById('cleanplaats-alerts-modal');
     if (overlay) overlay.style.display = 'none';
+    restorePanelAfterAlerts();
+}
+
+// The modal takes over the screen, so we tuck the control panel back into its
+// bubble while it's open and bring it back exactly as it was on close.
+function restorePanelAfterAlerts() {
+    if (cleanplaatsAlertsRuntime.panelWasExpanded && typeof setPanelCollapsed === 'function') {
+        setPanelCollapsed(false, { persist: false });
+    }
+    cleanplaatsAlertsRuntime.panelWasExpanded = false;
 }
 
 function showAlertsModal() {
@@ -501,6 +534,15 @@ function showAlertsModal() {
 
     renderAlertsShell(overlay);
     overlay.style.display = 'flex';
+
+    // Get the control panel out of the way (remembering its state so close can
+    // restore it). Don't persist — this is a temporary, modal-driven collapse.
+    if (typeof CLEANPLAATS !== 'undefined' && CLEANPLAATS.panelState) {
+        cleanplaatsAlertsRuntime.panelWasExpanded = !CLEANPLAATS.panelState.isCollapsed;
+        if (cleanplaatsAlertsRuntime.panelWasExpanded && typeof setPanelCollapsed === 'function') {
+            setPanelCollapsed(true, { persist: false });
+        }
+    }
 
     initAlertsRuntime().then(() => {
         if (!cleanplaatsAlertsRuntime.token) {
@@ -655,6 +697,129 @@ function renderAlertsCodeView() {
     };
 }
 
+/* ===== Telegram koppelen ===== */
+
+/**
+ * The step-by-step Telegram connect screen. The bot hands out a short code when
+ * the user messages it; they type that code back here to claim the chat. This
+ * replaces the old t.me deep-link, which silently failed without the Telegram
+ * desktop app. Returns the user to the dashboard on success or via "Terug".
+ */
+function renderTelegramConnect(me) {
+    const bot = (me && me.telegramBot) || '';
+    const botHandle = bot ? '@' + bot : 'onze Telegram-bot';
+    const tmeUrl = bot ? `https://t.me/${bot}` : '';
+    const startCmd = '/start';
+
+    const copyBtn = target => `<button class="cleanplaats-alerts-copy" type="button" data-copy-target="${target}" aria-label="${ALERTS_TEXT.telegramCopied}">${alertIcon('copy', 14)}</button>`;
+
+    const body = setAlertsBody(`
+        <div class="cleanplaats-alerts-connect">
+            <button class="cleanplaats-alerts-text-btn cleanplaats-alerts-connect-back" id="cleanplaats-tg-back">
+                ${alertIcon('arrowLeft', 15)}<span>${ALERTS_TEXT.telegramBack}</span>
+            </button>
+
+            <div class="cleanplaats-alerts-connect-head">
+                <span class="cleanplaats-alerts-connect-logo">${alertIcon('send', 22)}</span>
+                <h4>${ALERTS_TEXT.telegramConnectTitle}</h4>
+                <p>${ALERTS_TEXT.telegramConnectIntro}</p>
+            </div>
+
+            <ol class="cleanplaats-alerts-connect-steps">
+                <li class="cleanplaats-alerts-connect-step">
+                    <span class="cleanplaats-alerts-connect-num">1</span>
+                    <div class="cleanplaats-alerts-connect-body">
+                        <span class="cleanplaats-alerts-connect-title">${ALERTS_TEXT.telegramStep1Title}</span>
+                        <span class="cleanplaats-alerts-connect-sub">${ALERTS_TEXT.telegramStep1Body}</span>
+                        <div class="cleanplaats-alerts-connect-actions">
+                            <code class="cleanplaats-alerts-connect-code" id="cleanplaats-tg-bot">${escapeAlertText(botHandle)}</code>
+                            ${bot ? copyBtn('cleanplaats-tg-bot') : ''}
+                            ${tmeUrl ? `<a class="cleanplaats-alerts-secondary-btn cleanplaats-alerts-connect-open" id="cleanplaats-tg-open" href="${tmeUrl}" target="_blank" rel="noopener noreferrer">${ALERTS_TEXT.telegramStep1Open}</a>` : ''}
+                        </div>
+                    </div>
+                </li>
+                <li class="cleanplaats-alerts-connect-step">
+                    <span class="cleanplaats-alerts-connect-num">2</span>
+                    <div class="cleanplaats-alerts-connect-body">
+                        <span class="cleanplaats-alerts-connect-title">${ALERTS_TEXT.telegramStep2Title}</span>
+                        <span class="cleanplaats-alerts-connect-sub">${ALERTS_TEXT.telegramStep2Body}</span>
+                        <div class="cleanplaats-alerts-connect-actions">
+                            <code class="cleanplaats-alerts-connect-code" id="cleanplaats-tg-cmd">${startCmd}</code>
+                            ${copyBtn('cleanplaats-tg-cmd')}
+                        </div>
+                    </div>
+                </li>
+                <li class="cleanplaats-alerts-connect-step">
+                    <span class="cleanplaats-alerts-connect-num">3</span>
+                    <div class="cleanplaats-alerts-connect-body">
+                        <span class="cleanplaats-alerts-connect-title">${ALERTS_TEXT.telegramStep3Title}</span>
+                        <span class="cleanplaats-alerts-connect-sub">${ALERTS_TEXT.telegramStep3Body}</span>
+                        <div class="cleanplaats-alerts-connect-verify">
+                            <input type="text" id="cleanplaats-tg-code" class="cleanplaats-alerts-code-input cleanplaats-alerts-connect-input" inputmode="numeric" maxlength="6" placeholder="${ALERTS_TEXT.telegramCodePlaceholder}" autocomplete="one-time-code">
+                            <button id="cleanplaats-tg-verify" class="cleanplaats-alerts-primary-btn">${ALERTS_TEXT.telegramVerifyButton}</button>
+                        </div>
+                        <div class="cleanplaats-alerts-form-error" id="cleanplaats-tg-error" style="display:none;"></div>
+                    </div>
+                </li>
+            </ol>
+        </div>
+    `);
+    if (!body) return;
+
+    document.getElementById('cleanplaats-tg-back').onclick = () => loadAlertsDashboard();
+
+    body.querySelectorAll('.cleanplaats-alerts-copy').forEach(button => {
+        button.onclick = () => {
+            const target = document.getElementById(button.dataset.copyTarget);
+            const value = target ? target.textContent.trim() : '';
+            if (!value || !navigator.clipboard) return;
+            navigator.clipboard.writeText(value)
+                .then(() => showBubbleNotification(ALERTS_TEXT.telegramCopied))
+                .catch(() => {});
+        };
+    });
+
+    const input = document.getElementById('cleanplaats-tg-code');
+    const verifyBtn = document.getElementById('cleanplaats-tg-verify');
+    const errorEl = document.getElementById('cleanplaats-tg-error');
+
+    const showError = message => {
+        if (!errorEl) return;
+        errorEl.textContent = message;
+        errorEl.style.display = 'block';
+    };
+
+    input.oninput = () => {
+        input.value = input.value.replace(/\D/g, '').slice(0, 6);
+        if (errorEl) errorEl.style.display = 'none';
+    };
+
+    const verify = () => {
+        const code = input.value.trim();
+        if (!/^\d{6}$/.test(code)) {
+            showError('Vul de 6-cijferige code in.');
+            return;
+        }
+        verifyBtn.disabled = true;
+        verifyBtn.textContent = ALERTS_TEXT.telegramVerifying;
+        alertsApiFetch('/api/telegram/verify', {
+            method: 'POST',
+            body: JSON.stringify({ code })
+        }).then(() => {
+            showBubbleNotification(ALERTS_TEXT.telegramLinkedToast);
+            loadAlertsDashboard();
+        }).catch(error => {
+            verifyBtn.disabled = false;
+            verifyBtn.textContent = ALERTS_TEXT.telegramVerifyButton;
+            showError((error && error.message) || ALERTS_TEXT.telegramVerifyError);
+        });
+    };
+
+    verifyBtn.onclick = verify;
+    input.onkeydown = event => { if (event.key === 'Enter') verify(); };
+    input.focus();
+}
+
 /* ===== Dashboard ===== */
 
 function loadAlertsDashboard() {
@@ -683,28 +848,20 @@ function loadAlertsDashboard() {
 function renderAlertsDashboard(me, alerts, matches) {
     const context = getAlertSearchContext();
     const atLimit = (me.alertCount || alerts.length) >= me.maxAlerts;
-    const totalMatches = alerts.reduce((sum, alert) => sum + (alert.match_count || 0), 0);
     const tierLabel = me.tier === 'premium' ? ALERTS_TEXT.tierPremium : ALERTS_TEXT.tierFree;
 
     const accountBar = `
         <div class="cleanplaats-alerts-account">
-            <div class="cleanplaats-alerts-account-id">
-                <span class="cleanplaats-alerts-account-email" title="${escapeAlertText(me.email)}">${escapeAlertText(me.email)}</span>
+            <div class="cleanplaats-alerts-account-meta">
+                <span class="cleanplaats-alerts-account-mail">${alertIcon('mail', 13)}<span class="cleanplaats-alerts-account-email" title="${escapeAlertText(me.email)}">${escapeAlertText(me.email)}</span></span>
                 <span class="cleanplaats-alerts-tier cleanplaats-alerts-tier-${me.tier === 'premium' ? 'premium' : 'free'}">${tierLabel}</span>
             </div>
-            <div class="cleanplaats-alerts-stats">
-                <div class="cleanplaats-alerts-stat">
-                    <span class="cleanplaats-alerts-stat-value">${me.alertCount || 0}<span class="cleanplaats-alerts-stat-max">/${me.maxAlerts}</span></span>
-                    <span class="cleanplaats-alerts-stat-label">${ALERTS_TEXT.statAlerts}</span>
-                </div>
-                <div class="cleanplaats-alerts-stat">
-                    <span class="cleanplaats-alerts-stat-value">${me.intervalMinutes}<span class="cleanplaats-alerts-stat-max">min</span></span>
-                    <span class="cleanplaats-alerts-stat-label">${ALERTS_TEXT.statInterval}</span>
-                </div>
-                <div class="cleanplaats-alerts-stat">
-                    <span class="cleanplaats-alerts-stat-value">${totalMatches}</span>
-                    <span class="cleanplaats-alerts-stat-label">${ALERTS_TEXT.statFound}</span>
-                </div>
+            <div class="cleanplaats-alerts-account-main">
+                <span class="cleanplaats-alerts-usage">
+                    <span class="cleanplaats-alerts-usage-value">${me.alertCount || 0}<span class="cleanplaats-alerts-usage-max"> / ${me.maxAlerts}</span></span>
+                    <span class="cleanplaats-alerts-usage-label">${ALERTS_TEXT.usageLabel}</span>
+                </span>
+                <span class="cleanplaats-alerts-freq">${alertIcon('clock', 15)}<span>${ALERTS_TEXT.checkFrequency(me.intervalMinutes)}</span></span>
             </div>
         </div>
     `;
@@ -766,6 +923,17 @@ function renderAlertsDashboard(me, alerts, matches) {
                                 <span class="cleanplaats-alerts-switch-label">${alert.enabled ? ALERTS_TEXT.activeLabel : ALERTS_TEXT.pausedLabel}</span><span class="cleanplaats-alerts-switch-track"></span>
                             </button>`;
 
+            // Telegram has no value until an account is linked. Until then the
+            // toggle is "locked": it can't be switched on (that would set a flag
+            // nothing reads), and clicking it starts the connect-Telegram flow.
+            const telegramSwitch = me.telegramLinked
+                ? `<button class="cleanplaats-alerts-switch ${alert.notify_telegram ? 'on' : ''}" data-channel="telegram" data-alert-id="${alert.id}" data-value="${alert.notify_telegram ? '1' : '0'}" role="switch" aria-checked="${alert.notify_telegram ? 'true' : 'false'}">
+                                ${alertIcon('send', 14)}<span class="cleanplaats-alerts-switch-label">${ALERTS_TEXT.channelTelegram}</span><span class="cleanplaats-alerts-switch-track"></span>
+                            </button>`
+                : `<button class="cleanplaats-alerts-switch cleanplaats-alerts-switch-locked" data-channel="telegram" data-alert-id="${alert.id}" data-locked="1" type="button" aria-label="${ALERTS_TEXT.telegramLockedHint}" data-tip="${ALERTS_TEXT.telegramLockedHint}">
+                                ${alertIcon('send', 14)}<span class="cleanplaats-alerts-switch-label">${ALERTS_TEXT.channelTelegram}</span><span class="cleanplaats-alerts-switch-track"></span>
+                            </button>`;
+
             return `
                 <div class="cleanplaats-alerts-alert cleanplaats-alerts-alert-${statusClass}" data-alert-id="${alert.id}">
                     <div class="cleanplaats-alerts-alert-top">
@@ -779,9 +947,7 @@ function renderAlertsDashboard(me, alerts, matches) {
                             <button class="cleanplaats-alerts-switch ${alert.notify_email ? 'on' : ''}" data-channel="email" data-alert-id="${alert.id}" data-value="${alert.notify_email ? '1' : '0'}" role="switch" aria-checked="${alert.notify_email ? 'true' : 'false'}">
                                 ${alertIcon('mail', 14)}<span class="cleanplaats-alerts-switch-label">${ALERTS_TEXT.channelEmail}</span><span class="cleanplaats-alerts-switch-track"></span>
                             </button>
-                            <button class="cleanplaats-alerts-switch ${alert.notify_telegram ? 'on' : ''}" data-channel="telegram" data-alert-id="${alert.id}" data-value="${alert.notify_telegram ? '1' : '0'}" role="switch" aria-checked="${alert.notify_telegram ? 'true' : 'false'}">
-                                ${alertIcon('send', 14)}<span class="cleanplaats-alerts-switch-label">${ALERTS_TEXT.channelTelegram}</span><span class="cleanplaats-alerts-switch-track"></span>
-                            </button>
+                            ${telegramSwitch}
                             ${statusSwitch}
                             ${extendBtn}
                             <button class="cleanplaats-alerts-delete" data-alert-id="${alert.id}" title="${ALERTS_TEXT.deleteButton}" aria-label="${ALERTS_TEXT.deleteButton}">${alertIcon('trash', 15)}</button>
@@ -822,7 +988,6 @@ function renderAlertsDashboard(me, alerts, matches) {
                 <span class="cleanplaats-alerts-channel-actions">${telegramActions}</span>
             </div>
         </div>
-        <div class="cleanplaats-alerts-telegram-hint" id="cleanplaats-alert-telegram-hint" style="display:none;"></div>
     `;
 
     setAlertsBody(`
@@ -830,6 +995,7 @@ function renderAlertsDashboard(me, alerts, matches) {
         ${createSection}
         <div class="cleanplaats-alerts-section-title">${ALERTS_TEXT.listTitle}</div>
         <div class="cleanplaats-alerts-list">${alertItems}</div>
+        ${channelsSection}
         <div class="cleanplaats-alerts-section-header">
             <span class="cleanplaats-alerts-section-title">${ALERTS_TEXT.matchesTitle}</span>
             <select id="cleanplaats-alerts-sort" class="cleanplaats-alerts-sort-select">
@@ -839,7 +1005,6 @@ function renderAlertsDashboard(me, alerts, matches) {
             </select>
         </div>
         <div class="cleanplaats-alerts-matches" id="cleanplaats-alerts-matches-list">${matchItems}</div>
-        ${channelsSection}
         <div class="cleanplaats-alerts-footer">
             <button class="cleanplaats-alerts-text-btn" id="cleanplaats-alerts-logout">${ALERTS_TEXT.logout} (${escapeAlertText(me.email)})</button>
         </div>
@@ -951,6 +1116,12 @@ function wireAlertsDashboardEvents() {
 
     body.querySelectorAll('.cleanplaats-alerts-switch[data-channel]').forEach(button => {
         button.onclick = () => {
+            // A locked Telegram toggle (no account linked yet) can't carry a
+            // setting, so clicking it kicks off the connect flow instead.
+            if (button.dataset.locked === '1') {
+                startTelegramLink();
+                return;
+            }
             const next = button.dataset.value !== '1';
             const field = button.dataset.channel === 'email' ? 'notifyEmail' : 'notifyTelegram';
             alertsApiFetch(`/api/alerts/${button.dataset.alertId}`, {
@@ -964,26 +1135,12 @@ function wireAlertsDashboardEvents() {
         };
     });
 
-    const startTelegramLink = () => {
-        alertsApiFetch('/api/telegram/link', { method: 'POST' })
-            .then(data => {
-                if (!data.url) return;
-                window.open(data.url, '_blank', 'noopener,noreferrer');
+    // Both "Koppelen" and "Ander account koppelen" open the same step-by-step
+    // connect screen; the bot hands out a code and the user types it back here.
+    const startTelegramLink = () => renderTelegramConnect(me);
 
-                // The t.me button needs the Telegram app; offer a manual
-                // fallback so phone-only users can link too.
-                const hint = document.getElementById('cleanplaats-alert-telegram-hint');
-                if (hint && data.bot && data.code) {
-                    hint.textContent = ALERTS_TEXT.telegramManualHint(data.bot, data.code);
-                    hint.style.display = 'block';
-                }
-            })
-            .catch(() => showBubbleNotification(ALERTS_TEXT.errorToast));
-    };
-
-    // "Koppelen" and "Ander account koppelen" are the same flow: a fresh link
-    // code, and the webhook overwrites telegram_chat_id with whichever chat
-    // sends it.
+    // "Koppelen" and "Ander account koppelen" are the same flow: the user
+    // messages the bot, gets a code, and types it back to claim the chat.
     ['cleanplaats-alert-telegram-link', 'cleanplaats-alert-telegram-relink'].forEach(id => {
         const button = document.getElementById(id);
         if (button) button.onclick = startTelegramLink;
