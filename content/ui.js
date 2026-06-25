@@ -2,6 +2,11 @@
  * Content-script control panel rendering and UI event handling.
  */
 
+// Zoekmeldingen needs the alerts server's e-mail sending, which isn't on
+// production SES access yet. Keep the feature fully out of the build (see
+// manifest.json, where content/alerts.js is excluded) until that's ready.
+const CLEANPLAATS_ALERTS_FEATURE_ENABLED = false;
+
 function shouldShowDonationNudge() {
     const s = CLEANPLAATS.settings;
     if (s.donationNudgeClickedBmc) return false;
@@ -294,7 +299,7 @@ function createControlPanel() {
                 <button id="cleanplaats-manage-terms" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageTerms}</button>
                 <button id="cleanplaats-manage-blacklist" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageSellers}</button>
                 <button id="cleanplaats-manage-blocked-listings" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageBlockedListings}</button>
-                ${isMarktplaatsSite() ? `<button id="cleanplaats-manage-alerts" class="cleanplaats-button cleanplaats-blacklist-manage-btn cleanplaats-alerts-manage-btn">🔔 ${panelText.alertsManageButton || 'Zoekmeldingen'}</button>` : ''}
+                ${(CLEANPLAATS_ALERTS_FEATURE_ENABLED && isMarktplaatsSite()) ? `<button id="cleanplaats-manage-alerts" class="cleanplaats-button cleanplaats-blacklist-manage-btn cleanplaats-alerts-manage-btn">🔔 ${panelText.alertsManageButton || 'Zoekmeldingen'}</button>` : ''}
             </div>
             <div class="cleanplaats-panel-view" id="cleanplaats-view-preferences">
                 <div class="cleanplaats-panel-view-header">
