@@ -329,6 +329,37 @@ function injectProductDetailBlacklistButton() {
     }
 }
 
+// Marktplaats renders desktop/tablet/mweb listing variants side by side and hides
+// the inactive ones with CSS, so querySelector's first DOM match isn't necessarily
+// the one currently on screen. Prefer a visible match, falling back to the first one.
+function getVisibleMatch(listing, selector) {
+    const matches = listing.querySelectorAll(selector);
+    for (const el of matches) {
+        if (el.offsetParent !== null) return el;
+    }
+    return matches[0] || null;
+}
+
+function getListingContentWrapper(listing) {
+    const selectorsByPriority = [
+        '.hz-Listing-listview-content--mweb',
+        '.hz-Listing-listview-content--tablet',
+        '.hz-Listing-listview-content--desktop',
+        '.hz-Listing-listview-content-horizontal',
+        '.hz-Listing-listview-content',
+        '.hz-Listing-listview-content-new'
+    ];
+    for (const sel of selectorsByPriority) {
+        const el = listing.querySelector(sel);
+        if (el && el.offsetParent !== null) return el;
+    }
+    for (const sel of selectorsByPriority) {
+        const el = listing.querySelector(sel);
+        if (el) return el;
+    }
+    return null;
+}
+
 function injectBlacklistButtons() {
     const panelText = getPanelLocaleText();
     document.querySelectorAll('.hz-Listing').forEach(listing => {
@@ -340,13 +371,13 @@ function injectBlacklistButtons() {
         let sellerElement = null;
         let isCarAdvert = false;
 
-        const carSellerElement = listing.querySelector('.hz-Listing-sellerName, .hz-Listing-sellerName-new');
+        const carSellerElement = getVisibleMatch(listing, '.hz-Listing-sellerName, .hz-Listing-sellerName-new');
         if (carSellerElement) {
             sellerName = carSellerElement.textContent.trim();
             sellerElement = carSellerElement;
             isCarAdvert = true;
         } else {
-            const sellerNameEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-name-new');
+            const sellerNameEl = getVisibleMatch(listing, '.hz-Listing-seller-name, .hz-Listing-seller-name-new');
             if (sellerNameEl) {
                 sellerName = sellerNameEl.textContent.trim();
                 const sellerLink = sellerNameEl.closest('a');
@@ -390,7 +421,7 @@ function injectBlacklistButtons() {
                   </svg>
                 </button>
             `);
-            const content = listing.querySelector('.hz-Listing-listview-content, .hz-Listing-listview-content-new');
+            const content = getListingContentWrapper(listing);
             if (content && content.firstChild) {
                 content.insertBefore(topRow, content.firstChild);
             } else if (content) {
@@ -653,7 +684,7 @@ function injectListingBlockButtons() {
             return;
         }
 
-        const carSellerEl = listing.querySelector('.hz-Listing-sellerName, .hz-Listing-sellerName-new');
+        const carSellerEl = getVisibleMatch(listing, '.hz-Listing-sellerName, .hz-Listing-sellerName-new');
         if (carSellerEl && carSellerEl.querySelector('.cleanplaats-inline-btn')) {
             carSellerEl.appendChild(btn);
             return;
@@ -669,14 +700,14 @@ function injectListingBlockButtons() {
         row.className = 'cleanplaats-blacklist-btn-row';
         row.appendChild(btn);
 
-        const sellerEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-name-new, .hz-Listing-sellerName, .hz-Listing-sellerName-new');
+        const sellerEl = getVisibleMatch(listing, '.hz-Listing-seller-name, .hz-Listing-seller-name-new, .hz-Listing-sellerName, .hz-Listing-sellerName-new');
         const injectionParent = sellerEl?.closest('a')?.parentElement || sellerEl?.parentElement;
         if (injectionParent) {
             injectionParent.insertBefore(row, sellerEl.nextSibling);
             return;
         }
 
-        const content = listing.querySelector('.hz-Listing-listview-content, .hz-Listing-listview-content-new');
+        const content = getListingContentWrapper(listing);
         if (content) content.appendChild(row);
     });
 }
