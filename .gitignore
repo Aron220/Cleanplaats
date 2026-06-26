@@ -6,6 +6,7 @@ update_notes.txt
 .output/
 .wxt/
 node_modules/
+.mcp.json
 
 # Cloudflare Worker backend lives in its own PRIVATE repo (server/) — never track it here
 server/

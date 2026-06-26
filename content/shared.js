@@ -443,7 +443,10 @@ var CLEANPLAATS_UPDATE_NOTES = {
     '2.1.4': {
         intro: 'Cleanplaats 2.1.4 is een kleine onderhoudsupdate.',
         highlights: [
-            'Fix: gereserveerde advertenties werden bij sommige zoekresultaten niet altijd verborgen, ook al stond de filter "Gereserveerde" aan. Dit is nu opgelost.'
+            'Fix: de Marktplaats-pagina kon vastlopen op mobiele schermformaten. Dit is opgelost.',
+            'Fix: de knop "Verberg verkoper" werkte niet meer doordat Marktplaats de opmaak van advertenties had aangepast. Dit werkt nu weer.',
+            'Fix: gereserveerde advertenties werden bij sommige zoekresultaten niet altijd verborgen, ook al stond de filter "Gereserveerde" aan. Dit is nu opgelost.',
+            'Fix: een nieuw soort advertentie liet een leeg wit vakje achter in het rasteroverzicht. Dit wordt nu verborgen.'
         ],
         note: null
     },

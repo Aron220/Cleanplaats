@@ -472,7 +472,9 @@ function removeAllAds() {
         'li.bannerContainerLoading',
         '.bannerContainerLoading',
         '.bannerContainerLoading .hz-Banner',
-        '.bannerContainerLoading .hz-Banner--fluid'
+        '.bannerContainerLoading .hz-Banner--fluid',
+        '.BrandTileBanner-container',
+        '[data-testid="brand-tile-banner"]'
     ];
 
     adSelectors.forEach(selector => {
