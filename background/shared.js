@@ -8,7 +8,6 @@ var browserAPI = typeof browser !== 'undefined' ? browser : chrome;
 
 var resultsPerPage = '30';
 var defaultSortMode = 'standard';
-var sortPreferenceSource = 'cleanplaats';
 var lastMarktplaatsActivity = Date.now();
 
 var SORT_MODES = {

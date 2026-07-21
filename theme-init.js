@@ -4,7 +4,6 @@
     const TWH_SITE_CLASS = 'cleanplaats-site-twh';
     const THEME_STORAGE_KEY = 'cleanplaats:darkMode';
     const SORT_STORAGE_KEY = 'cleanplaats:sortMode';
-    const SORT_SOURCE_STORAGE_KEY = 'cleanplaats:sortSource';
     const STORAGE_KEY = 'cleanplaatsSettings';
 
     const SORT_PARAMS = {
@@ -202,9 +201,6 @@ html.cleanplaats-dark-mode [class*="Skeleton-withAnimation"]::before {
 
             const sortMode = window.localStorage.getItem(SORT_STORAGE_KEY);
             if (!sortMode || sortMode === 'standard') return;
-
-            const sortSource = window.localStorage.getItem(SORT_SOURCE_STORAGE_KEY);
-            if (sortSource === 'marketplace') return;
 
             const sortConfig = SORT_PARAMS[sortMode];
             if (!sortConfig) return;

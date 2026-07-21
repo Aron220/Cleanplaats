@@ -192,7 +192,6 @@ function loadSettings() {
 function persistSortPreference() {
     try {
         window.localStorage.setItem(CLEANPLAATS_SORT_STORAGE_KEY, CLEANPLAATS.settings.defaultSortMode || 'standard');
-        window.localStorage.setItem(CLEANPLAATS_SORT_SOURCE_STORAGE_KEY, CLEANPLAATS.settings.sortPreferenceSource || 'cleanplaats');
     } catch (error) {
         console.warn('Cleanplaats: Failed to persist sort preference in localStorage', error);
     }

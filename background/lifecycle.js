@@ -10,7 +10,6 @@ async function handleStorageChanges(changes, areaName) {
         const newSettingsData = JSON.parse(changes.cleanplaatsSettings.newValue || '{}');
         const newResultsPerPage = newSettingsData.resultsPerPage?.toString() || '30';
         const newDefaultSortMode = newSettingsData.defaultSortMode || 'standard';
-        const newSortPreferenceSource = newSettingsData.sortPreferenceSource || 'cleanplaats';
         const darkModeEnabled = Boolean(newSettingsData.darkMode);
 
         let settingsActuallyChanged = false;
@@ -22,11 +21,6 @@ async function handleStorageChanges(changes, areaName) {
         if (newDefaultSortMode !== defaultSortMode) {
             console.log(`Cleanplaats: Default sort mode changed from ${defaultSortMode} to ${newDefaultSortMode}`);
             defaultSortMode = newDefaultSortMode;
-            settingsActuallyChanged = true;
-        }
-        if (newSortPreferenceSource !== sortPreferenceSource) {
-            console.log(`Cleanplaats: Sort preference source changed from ${sortPreferenceSource} to ${newSortPreferenceSource}`);
-            sortPreferenceSource = newSortPreferenceSource;
             settingsActuallyChanged = true;
         }
 
@@ -82,7 +76,6 @@ async function initialize() {
                 const settings = JSON.parse(result.cleanplaatsSettings);
                 resultsPerPage = settings.resultsPerPage?.toString() || '30';
                 defaultSortMode = settings.defaultSortMode || 'standard';
-                sortPreferenceSource = settings.sortPreferenceSource || 'cleanplaats';
                 await updateDarkModeStartupScript(Boolean(settings.darkMode));
             } else {
                 await updateDarkModeStartupScript(false);
@@ -95,7 +88,7 @@ async function initialize() {
         console.error('Cleanplaats: Error loading settings during initialize:', error);
     }
 
-    console.log(`Cleanplaats: Initialized with settings - RPP: ${resultsPerPage}, Sort: ${defaultSortMode}, SortSource: ${sortPreferenceSource}`);
+    console.log(`Cleanplaats: Initialized with settings - RPP: ${resultsPerPage}, Sort: ${defaultSortMode}`);
 
     // Unblock any navigation handlers that fired before settings finished loading.
     _resolveSettingsReady();

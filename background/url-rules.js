@@ -29,26 +29,25 @@ function buildHashOptions(options) {
     return hashStr;
 }
 
-function getModifiedUrlIfNeeded(urlString, currentResultsPerPage, currentDefaultSortMode, currentSortPreferenceSource) {
+function getModifiedUrlIfNeeded(urlString, currentResultsPerPage, currentDefaultSortMode) {
     const url = new URL(urlString);
     const options = parseHashOptions(url.hash);
     let needsRewrite = false;
     const hasExplicitSort = Boolean(options.sortBy && options.sortOrder);
-    const shouldApplyCleanplaatsSort = currentSortPreferenceSource !== 'marketplace';
 
     if (!Object.prototype.hasOwnProperty.call(options, 'limit') || options.limit !== currentResultsPerPage) {
         options.limit = currentResultsPerPage;
         needsRewrite = true;
     }
 
-    if (shouldApplyCleanplaatsSort && currentDefaultSortMode !== 'standard') {
+    if (currentDefaultSortMode !== 'standard') {
         const sortConfig = SORT_MODES[currentDefaultSortMode];
         if (sortConfig && (!hasExplicitSort || options.sortBy !== sortConfig.sortBy || options.sortOrder !== sortConfig.sortOrder)) {
             options.sortBy = sortConfig.sortBy;
             options.sortOrder = sortConfig.sortOrder;
             needsRewrite = true;
         }
-    } else if (shouldApplyCleanplaatsSort && currentDefaultSortMode === 'standard' && hasExplicitSort) {
+    } else if (hasExplicitSort) {
         delete options.sortBy;
         delete options.sortOrder;
         needsRewrite = true;
@@ -104,7 +103,7 @@ async function handleHashNavigation(details) {
         return;
     }
 
-    const newUrl = getModifiedUrlIfNeeded(details.url, resultsPerPage, defaultSortMode, sortPreferenceSource);
+    const newUrl = getModifiedUrlIfNeeded(details.url, resultsPerPage, defaultSortMode);
     console.log(`Cleanplaats: handleHashNavigation - Original URL: ${details.url}, Processed newUrl: ${newUrl}`);
 
     if (newUrl && newUrl !== details.url) {
@@ -141,7 +140,7 @@ async function handleHistoryStateUpdated(details) {
         return;
     }
 
-    const newUrl = getModifiedUrlIfNeeded(details.url, resultsPerPage, defaultSortMode, sortPreferenceSource);
+    const newUrl = getModifiedUrlIfNeeded(details.url, resultsPerPage, defaultSortMode);
     console.log(`Cleanplaats: handleHistoryStateUpdated - Original URL: ${details.url}, Processed newUrl: ${newUrl}`);
 
     if (newUrl && newUrl !== details.url) {

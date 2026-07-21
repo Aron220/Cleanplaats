@@ -1011,7 +1011,6 @@ function setupSortDropdownListener() {
         const value = e.target.value;
 
         CLEANPLAATS.settings.defaultSortMode = value;
-        CLEANPLAATS.settings.sortPreferenceSource = 'cleanplaats';
         wakeUpBackground();
 
         saveSettings().then(() => {

@@ -32,7 +32,6 @@ async function refreshSettingsAndRules() {
             const settings = JSON.parse(result.cleanplaatsSettings);
             const newResultsPerPage = settings.resultsPerPage?.toString() || '30';
             const newDefaultSortMode = settings.defaultSortMode || 'standard';
-            const newSortPreferenceSource = settings.sortPreferenceSource || 'cleanplaats';
             const darkModeEnabled = Boolean(settings.darkMode);
 
             let settingsChanged = false;
@@ -44,11 +43,6 @@ async function refreshSettingsAndRules() {
             if (newDefaultSortMode !== defaultSortMode) {
                 console.log(`Cleanplaats: Refreshing sort mode from ${defaultSortMode} to ${newDefaultSortMode}`);
                 defaultSortMode = newDefaultSortMode;
-                settingsChanged = true;
-            }
-            if (newSortPreferenceSource !== sortPreferenceSource) {
-                console.log(`Cleanplaats: Refreshing sort source from ${sortPreferenceSource} to ${newSortPreferenceSource}`);
-                sortPreferenceSource = newSortPreferenceSource;
                 settingsChanged = true;
             }
 

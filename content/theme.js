@@ -17,12 +17,11 @@ function syncSiteThemeClass() {
 function syncCleanplaatsSortMode(sortMode) {
     if (!sortMode) return;
 
-    const modeChanged = CLEANPLAATS.settings.defaultSortMode !== sortMode;
-    const sourceChanged = CLEANPLAATS.settings.sortPreferenceSource !== 'marketplace';
-    if (!modeChanged && !sourceChanged) return;
+    // Picking a sort in Marktplaats' own dropdown adopts it as the Cleanplaats
+    // default, so it keeps being applied on later navigations too.
+    if (CLEANPLAATS.settings.defaultSortMode === sortMode) return;
 
     CLEANPLAATS.settings.defaultSortMode = sortMode;
-    CLEANPLAATS.settings.sortPreferenceSource = 'marketplace';
 
     const cleanplaatsDropdown = document.getElementById('cleanplaats-sort-dropdown');
     if (cleanplaatsDropdown && cleanplaatsDropdown.value !== sortMode) {
