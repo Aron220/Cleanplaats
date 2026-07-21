@@ -12,6 +12,11 @@ function performCleanupAndCheckForEmptyPage() {
     clearBubbleNotification();
     scheduleSellerAgeWarningCheck({ resetState: true });
 
+    // Marktplaats pages client-side, so this is the only moment we learn we are
+    // looking at a different result set. Without this the counters keep summing
+    // across every page visited and report far more removals than the page holds.
+    resetStats();
+
     const checkContentLoaded = setInterval(() => {
         if (document.querySelector('.hz-Listing') || document.querySelector('#adsense-container')) {
             clearInterval(checkContentLoaded);

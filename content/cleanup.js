@@ -120,9 +120,12 @@ function updateStatsDisplay() {
     updateElementText('cleanplaats-dagtoppers-count', stats.dagtoppersRemoved);
     updateElementText('cleanplaats-promoted-count', stats.promotedListingsRemoved);
     updateElementText('cleanplaats-stickers-count', stats.opvalStickersRemoved);
+    updateElementText('cleanplaats-reserved-count', stats.reservedRemoved);
+    updateElementText('cleanplaats-userblocked-count', stats.userBlockedRemoved);
     updateElementText('cleanplaats-otherads-count', stats.otherAdsRemoved);
 
-    const total = stats.topAdsRemoved + stats.dagtoppersRemoved + stats.promotedListingsRemoved + stats.opvalStickersRemoved + stats.otherAdsRemoved;
+    const total = stats.topAdsRemoved + stats.dagtoppersRemoved + stats.promotedListingsRemoved
+        + stats.opvalStickersRemoved + stats.reservedRemoved + stats.userBlockedRemoved + stats.otherAdsRemoved;
     stats.totalRemoved = total;
 
     updateElementText('cleanplaats-total-count-stats', total);
@@ -157,13 +160,18 @@ function performCleanup() {
     if (CLEANPLAATS.settings.removeOpvalStickers) removeOpvalStickerListings();
     if (CLEANPLAATS.settings.removeReservedListings) removeReservedListings();
 
+    // Everything below hides listings on the user's own instructions rather than
+    // because of a filter, so it counts towards its own statistic. Without that
+    // these disappear from the page while every counter stays at zero, which makes
+    // an empty page look like the filters are over-blocking.
+    let userBlockedCount = 0;
+
     document.querySelectorAll('.hz-Listing').forEach(listing => {
         const sellerNameEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-name-new, .hz-Listing-seller-link, .hz-Listing-sellerName, .hz-Listing-sellerName-new');
         if (!sellerNameEl) return;
         const sellerName = sellerNameEl.textContent.trim();
-        if (CLEANPLAATS.settings.blacklistedSellers.includes(sellerName)) {
-            listing.setAttribute('data-cleanplaats-hidden', 'true');
-            listing.style.display = 'none';
+        if (CLEANPLAATS.settings.blacklistedSellers.includes(sellerName) && hideElement(listing)) {
+            userBlockedCount++;
         }
     });
 
@@ -173,8 +181,7 @@ function performCleanup() {
         CLEANPLAATS.settings.blacklistedTerms.forEach(term => {
             if (title.includes(term.toLowerCase())) {
                 const listingEl = link.closest('.hz-StructuredListing') || link;
-                listingEl.setAttribute('data-cleanplaats-hidden', 'true');
-                listingEl.style.display = 'none';
+                if (hideElement(listingEl)) userBlockedCount++;
             }
         });
     });
@@ -183,9 +190,8 @@ function performCleanup() {
         const title = getListingTitleText(listing);
         if (!title) return;
         CLEANPLAATS.settings.blacklistedTerms.forEach(term => {
-            if (title.includes(term.toLowerCase())) {
-                listing.setAttribute('data-cleanplaats-hidden', 'true');
-                listing.style.display = 'none';
+            if (title.includes(term.toLowerCase()) && hideElement(listing)) {
+                userBlockedCount++;
             }
         });
     });
@@ -196,9 +202,8 @@ function performCleanup() {
             const description = getListingDescriptionText(listing);
             if (!description) return;
             CLEANPLAATS.settings.blacklistedDescriptionTerms.forEach(term => {
-                if (description.includes(term.toLowerCase())) {
-                    listing.setAttribute('data-cleanplaats-hidden', 'true');
-                    listing.style.display = 'none';
+                if (description.includes(term.toLowerCase()) && hideElement(listing)) {
+                    userBlockedCount++;
                 }
             });
         });
@@ -211,12 +216,13 @@ function performCleanup() {
             const listingId = getListingIdFromUrl(listingLink?.href);
             if (!listingId) return;
             listing.dataset.cleanplaatsListingId = listingId;
-            if (CLEANPLAATS.settings.blockedListings.some(b => b.id === listingId)) {
-                listing.setAttribute('data-cleanplaats-hidden', 'true');
-                listing.style.display = 'none';
+            if (CLEANPLAATS.settings.blockedListings.some(b => b.id === listingId) && hideElement(listing)) {
+                userBlockedCount++;
             }
         });
     }
+
+    CLEANPLAATS.stats.userBlockedRemoved += userBlockedCount;
 
     applyViewedListingIndicators();
     updateStatsDisplay();
@@ -291,6 +297,25 @@ function removePromotedListings() {
         });
     });
 
+    // Zakelijke verkopers buy placement through Admarkt, which gives their
+    // listings an 'a'-prefixed id instead of the organic 'm'. Most of them render
+    // no "Bezoek website" link at all, so the selectors above miss them entirely —
+    // on a padded search that is the difference between hiding 5 of 35 listings
+    // and hiding all 35.
+    document.querySelectorAll('.hz-Listing').forEach(listing => {
+        try {
+            if (listing.hasAttribute('data-cleanplaats-hidden') || !isAdmarktListing(listing)) {
+                return;
+            }
+
+            if (hideElement(listing)) {
+                count++;
+            }
+        } catch (error) {
+            console.error('Cleanplaats: Error processing Admarkt listing', error);
+        }
+    });
+
     document.querySelectorAll('.hz-StructuredListing').forEach(listing => {
         try {
             if (listing.hasAttribute('data-cleanplaats-hidden') || !isHomepagePartnerListing(listing)) {
@@ -306,6 +331,13 @@ function removePromotedListings() {
     });
 
     CLEANPLAATS.stats.promotedListingsRemoved += count;
+}
+
+function isAdmarktListing(listing) {
+    const listingLink = listing.querySelector('a[href*="/v/"]');
+    if (!listingLink) return false;
+
+    return (getListingIdFromUrl(listingLink.href) || '').startsWith('a');
 }
 
 function isHomepagePartnerListing(listing) {
@@ -344,7 +376,7 @@ function removeReservedListings() {
         'gereserveerd',
         'réservé'
     ]);
-    CLEANPLAATS.stats.otherAdsRemoved += count;
+    CLEANPLAATS.stats.reservedRemoved += count;
 }
 
 function removeAllAds() {
@@ -650,43 +682,94 @@ function hideElement(element) {
 
 const MARKTPLAATS_PAGE_SIZE = 30;
 
-function buildSearchApiUrl(offset, limit) {
-    const hash = window.location.hash.replace('#', '');
+function parseLocationHashParams() {
     const hashParams = {};
-    hash.split('|').forEach(part => {
+    window.location.hash.replace('#', '').split('|').forEach(part => {
         const colonIdx = part.indexOf(':');
         if (colonIdx > 0) {
             hashParams[part.slice(0, colonIdx)] = part.slice(colonIdx + 1);
         }
     });
+    return hashParams;
+}
 
-    const sortBy = hashParams.sortBy || 'SORT_INDEX';
-    const sortOrder = hashParams.sortOrder || 'DECREASING';
+// The search term lives in the URL, but in two different places: in the path on
+// /q/<term>/ pages and in the hash on category pages (/l/<cat>/#q:<term>). The
+// hash never reaches the server, so __NEXT_DATA__ reports an empty searchQuery
+// there — searching without the term returns a far larger, unrelated result set.
+function getSearchQueryFromUrl() {
+    const hashQuery = parseLocationHashParams().q;
+    if (hashQuery) return decodeURIComponent(hashQuery).replace(/\+/g, ' ').trim();
+
+    const pathQuery = (window.location.pathname.match(/\/q\/([^/]+)/) || [, ''])[1];
+    if (pathQuery) return decodeURIComponent(pathQuery).replace(/[-+]/g, ' ').trim();
+
+    return '';
+}
+
+function getNextDataQuery() {
+    try {
+        const nextDataEl = document.getElementById('__NEXT_DATA__');
+        if (!nextDataEl) return null;
+
+        const nextData = JSON.parse(nextDataEl.textContent);
+        const query = nextData.query || {};
+
+        // Marktplaats navigates client-side between searches, so __NEXT_DATA__ can
+        // still describe a *previous* search. The path is the one part it can never
+        // get wrong, so use the rendered categories to check it is still current.
+        const categories = nextData.props?.pageProps?.searchRequestAndResponse?.searchRequest?.categories;
+        const path = window.location.pathname;
+        if (path.startsWith('/l/') && categories) {
+            const keys = [categories.l1Category?.key, categories.l2Category?.key].filter(Boolean);
+            if (keys.some(key => !path.includes(`/${key}/`))) return null;
+        }
+
+        const urlQuery = getSearchQueryFromUrl();
+        const dataQuery = String(query.searchQuery || '').trim();
+        if (!urlQuery && dataQuery) return null;
+
+        // The URL wins: on category pages the term only exists in the hash.
+        return { ...query, searchQuery: urlQuery };
+    } catch (error) {
+        return null;
+    }
+}
+
+// Rebuilds the search the page itself is showing. Every parameter has to match
+// Marktplaats' own request: adding a sort order or a title-and-description flag
+// the page did not use returns a completely different result set, so the offsets
+// we scan would no longer line up with the /p/N/ pages we send the user to.
+function buildSearchApiUrl(offset, limit) {
+    const hashParams = parseLocationHashParams();
+    const query = getNextDataQuery();
+    if (query === null) return null;
 
     const params = new URLSearchParams();
     params.set('limit', limit);
     params.set('offset', offset);
 
-    try {
-        const nextDataEl = document.getElementById('__NEXT_DATA__');
-        if (nextDataEl) {
-            const nextData = JSON.parse(nextDataEl.textContent);
-            const q = nextData.query || {};
-            if (q.searchQuery) params.set('query', q.searchQuery);
-            if (q.l1CategoryId) params.set('l1CategoryId', q.l1CategoryId);
-            if (q.l2CategoryId) params.set('l2CategoryId', q.l2CategoryId);
-            if (q.postcode) params.set('postcode', q.postcode);
-            if (q.attributesValuesIds) params.set('attributesValuesIds', q.attributesValuesIds);
-            if (q.attributesValuesKeys) params.set('attributesValuesKeys', q.attributesValuesKeys);
-        }
-    } catch (e) {}
+    if (query.searchQuery) params.set('query', query.searchQuery);
+    if (query.l1CategoryId) params.set('l1CategoryId', query.l1CategoryId);
+    if (query.l2CategoryId) params.set('l2CategoryId', query.l2CategoryId);
+    if (query.postcode) params.set('postcode', query.postcode);
+    if (query.distanceMeters) params.set('distanceMeters', query.distanceMeters);
+    if (query.attributesValuesIds) params.set('attributesValuesIds', query.attributesValuesIds);
+    if (query.attributesValuesKeys) params.set('attributesValuesKeys', query.attributesValuesKeys);
+    if (query.textAttributesValuesKeys) params.set('textAttributesValuesKeys', query.textAttributesValuesKeys);
+    if (query.searchInTitleAndDescription) params.set('searchInTitleAndDescription', query.searchInTitleAndDescription);
 
-    // Hash postcode overrides __NEXT_DATA__ postcode
+    // Hash params override __NEXT_DATA__ (that is what the page does too).
     if (hashParams.postcode) params.set('postcode', hashParams.postcode);
+    if (hashParams.distanceMeters) params.set('distanceMeters', hashParams.distanceMeters);
 
-    params.set('sortBy', sortBy);
-    params.set('sortOrder', sortOrder);
-    params.set('searchInTitleAndDescription', 'true');
+    // "Standaard" sorting means *no* sort parameters at all — sending
+    // sortBy=SORT_INDEX instead changes which listings the search returns.
+    if (hashParams.sortBy && hashParams.sortOrder) {
+        params.set('sortBy', hashParams.sortBy);
+        params.set('sortOrder', hashParams.sortOrder);
+    }
+
     params.set('viewOptions', 'list-view');
 
     return `/lrp/api/search?${params.toString()}`;
@@ -707,11 +790,51 @@ function isApiListingBlocked(apiListing) {
         if (CLEANPLAATS.settings.blacklistedDescriptionTerms.some(term => description.includes(term.toLowerCase()))) return true;
     }
 
+    if (CLEANPLAATS.settings.removeTopAds && apiListing.priorityProduct === 'TOPADVERTENTIE') return true;
     if (CLEANPLAATS.settings.removeDagtoppers && apiListing.priorityProduct === 'DAGTOPPER') return true;
     if (CLEANPLAATS.settings.removeReservedListings && apiListing.reserved === true) return true;
     if (CLEANPLAATS.settings.removeOpvalStickers && apiListing.traits?.includes('ETALAGE')) return true;
 
+    // API mirror of removePromotedListings(): showWebsiteUrl renders the "Bezoek
+    // website" seller link, an 'a'-prefixed itemId means the placement was bought
+    // through Admarkt. Both must match the DOM rules or the scanner will send the
+    // user to a page that then turns out to be empty after all.
+    if (CLEANPLAATS.settings.removePromotedListings
+        && (apiListing.sellerInformation?.showWebsiteUrl === true || listingId.startsWith('a'))) return true;
+
     return false;
+}
+
+function getPageListingIds() {
+    return [...document.querySelectorAll('.hz-Listing')]
+        .map(listing => getListingIdFromUrl(listing.querySelector('a[href*="/v/"]')?.href))
+        .filter(Boolean);
+}
+
+// Before sending the user anywhere, confirm the search we rebuilt actually
+// reproduces the page they are looking at. If it does not, our offsets describe
+// a different result set and every verdict below would be meaningless.
+async function searchMatchesCurrentPage(currentOffset, pageSize) {
+    const pageIds = getPageListingIds();
+    if (!pageIds.length) return false;
+
+    const apiUrl = buildSearchApiUrl(currentOffset, pageSize);
+    if (!apiUrl) return false;
+
+    try {
+        const resp = await fetch(apiUrl);
+        if (!resp.ok) return false;
+        const data = await resp.json();
+        const apiIds = [...(data.topBlock || []), ...(data.listings || [])]
+            .map(listing => (listing.itemId || '').toLowerCase());
+
+        // Paid placements rotate between requests, so require a solid majority
+        // rather than an exact match.
+        const overlap = pageIds.filter(id => apiIds.includes(id)).length;
+        return overlap >= pageIds.length / 2;
+    } catch (error) {
+        return false;
+    }
 }
 
 async function findFirstNonEmptyOffset(startOffset, pageSize) {
@@ -722,19 +845,29 @@ async function findFirstNonEmptyOffset(startOffset, pageSize) {
         const offsets = Array.from({ length: BATCH }, (_, i) => startOffset + (scanned + i) * MARKTPLAATS_PAGE_SIZE);
 
         const results = await Promise.all(offsets.map(async offset => {
+            const apiUrl = buildSearchApiUrl(offset, pageSize);
+            if (!apiUrl) return { offset, exhausted: true };
             try {
-                const resp = await fetch(buildSearchApiUrl(offset, pageSize));
-                if (!resp.ok) return null;
+                const resp = await fetch(apiUrl);
+                if (!resp.ok) return { offset, exhausted: false };
                 const data = await resp.json();
-                if (!data.listings?.length) return null;
-                return data.listings.some(l => !isApiListingBlocked(l)) ? offset : null;
+                // topBlock listings render above the result list, so they count
+                // towards a page having something visible left.
+                const listings = [...(data.topBlock || []), ...(data.listings || [])];
+                if (!listings.length) return { offset, exhausted: true };
+                const hasVisible = listings.some(l => !isApiListingBlocked(l));
+                return { offset, exhausted: false, hasVisible };
             } catch (e) {
-                return null;
+                return { offset, exhausted: false };
             }
         }));
 
-        const found = results.find(r => r != null);
-        if (found != null) return found;
+        const found = results.find(r => r.hasVisible);
+        if (found) return found.offset;
+
+        // Every remaining offset is past the end of the result set; scanning
+        // another 95 pages of nothing only makes the user wait.
+        if (results.every(r => r.exhausted)) return null;
     }
     return null;
 }
@@ -817,12 +950,7 @@ function updateEmptyPageBanner() {
             status.textContent = searchingPhrases[phraseIndex];
         }, 1800);
 
-        const hash = window.location.hash.replace('#', '');
-        const hashParams = {};
-        hash.split('|').forEach(part => {
-            const colonIdx = part.indexOf(':');
-            if (colonIdx > 0) hashParams[part.slice(0, colonIdx)] = part.slice(colonIdx + 1);
-        });
+        const hashParams = parseLocationHashParams();
         const userLimit = parseInt(hashParams.limit) || CLEANPLAATS.settings.resultsPerPage || MARKTPLAATS_PAGE_SIZE;
 
         const pageMatch = window.location.pathname.match(/\/p\/(\d+)\//);
@@ -831,6 +959,15 @@ function updateEmptyPageBanner() {
         // so each scanned offset exactly matches what a /p/N/ URL will load.
         const currentPageOffset = (currentPage - 1) * MARKTPLAATS_PAGE_SIZE;
         const nextOffset = Math.ceil((currentPageOffset + userLimit) / MARKTPLAATS_PAGE_SIZE) * MARKTPLAATS_PAGE_SIZE;
+
+        const canSearch = await searchMatchesCurrentPage(currentPageOffset, userLimit);
+        if (!canSearch) {
+            clearInterval(phraseInterval);
+            status.classList.remove('searching');
+            status.textContent = panelText.emptyPageSearchUnavailable;
+            btn.disabled = false;
+            return;
+        }
 
         const foundOffset = await findFirstNonEmptyOffset(nextOffset, userLimit);
         clearInterval(phraseInterval);

@@ -286,6 +286,14 @@ function createControlPanel() {
                         <span class="cleanplaats-stat-value" id="cleanplaats-stickers-count">0</span>
                     </div>
                     <div class="cleanplaats-stat-item">
+                        <span class="cleanplaats-stat-label">${panelText.statsReserved}</span>
+                        <span class="cleanplaats-stat-value" id="cleanplaats-reserved-count">0</span>
+                    </div>
+                    <div class="cleanplaats-stat-item">
+                        <span class="cleanplaats-stat-label">${panelText.statsUserBlocked}</span>
+                        <span class="cleanplaats-stat-value" id="cleanplaats-userblocked-count">0</span>
+                    </div>
+                    <div class="cleanplaats-stat-item">
                         <span class="cleanplaats-stat-label">${panelText.statsOther}</span>
                         <span class="cleanplaats-stat-value" id="cleanplaats-otherads-count">0</span>
                     </div>

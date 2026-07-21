@@ -202,6 +202,8 @@ function getPanelLocaleText() {
             statsDagtoppers: 'Tops du jour :',
             statsBusiness: 'Professionnel :',
             statsStickers: 'Autocollants :',
+            statsReserved: 'Réservées :',
+            statsUserBlocked: 'Masquées par vous :',
             statsOther: 'Autres :',
             statsTotal: 'Total :',
             manageTerms: 'Gérer les termes masqués',
@@ -247,6 +249,7 @@ function getPanelLocaleText() {
             emptyPageFindNext: 'Trouver la prochaine page avec des annonces visibles',
             emptyPageSearching: 'Recherche en cours…',
             emptyPageNotFound: 'Aucune page avec des annonces visibles trouvée.',
+            emptyPageSearchUnavailable: 'Recherche impossible pour cette recherche.',
             donationNudgeText: count => `Vous avez déjà filtré ${count} fois avec Cleanplaats 🎉 Si cela vous fait gagner du temps, pensez à faire un petit don.`,
             donationNudgeDismiss: 'Peut-être plus tard'
         };
@@ -323,6 +326,8 @@ function getPanelLocaleText() {
         statsDagtoppers: 'Dagtoppers:',
         statsBusiness: 'Bedrijf:',
         statsStickers: 'Stickers:',
+        statsReserved: 'Gereserveerd:',
+        statsUserBlocked: 'Door jou verborgen:',
         statsOther: 'Overig:',
         statsTotal: 'Totaal:',
         manageTerms: 'Beheer blacklist-termen',
@@ -368,6 +373,7 @@ function getPanelLocaleText() {
         emptyPageFindNext: 'Zoek volgende pagina met zichtbare advertenties',
         emptyPageSearching: 'Zoeken…',
         emptyPageNotFound: 'Geen pagina met zichtbare advertenties gevonden.',
+        emptyPageSearchUnavailable: 'Zoeken lukt niet voor deze zoekopdracht.',
         // Other alert strings live in content/alerts.js (ALERTS_TEXT): the
         // feature is Marktplaats-only, so it isn't translated per locale.
         alertsManageButton: 'Zoekmeldingen'
@@ -405,6 +411,8 @@ var CLEANPLAATS = {
         dagtoppersRemoved: 0,
         promotedListingsRemoved: 0,
         opvalStickersRemoved: 0,
+        reservedRemoved: 0,
+        userBlockedRemoved: 0,
         otherAdsRemoved: 0,
         totalRemoved: 0
     },
