@@ -446,6 +446,16 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES = {
+    '2.1.5': {
+        intro: 'Cleanplaats 2.1.5 lost een sorteerbug op en maakt de statistieken en de "zoek volgende pagina"-knop betrouwbaarder.',
+        highlights: [
+            'Fix: de standaard sortering kon terugspringen naar "Standaard" of vastlopen op een verkeerde volgorde. Sorteren via het paneel of via Marktplaats zelf werkt nu weer consistent.',
+            'Fix: "Zoek volgende pagina met zichtbare advertenties" stuurde je bij sommige zoekopdrachten (met een zoekterm binnen een categorie, of een niet-standaard sortering) naar een verkeerde pagina. Dit werkt nu betrouwbaar, en je krijgt een duidelijke melding als zoeken niet mogelijk is.',
+            'De statistieken tonen nu aparte tellingen voor "Gereserveerd" en "Door jou verborgen", in plaats van dat deze werden opgeteld bij "Overig". Het totaal klopt hierdoor weer.',
+            'Met de filter "Bedrijfsadvertenties" aan werden advertenties met een "Bezoek website"-link al verborgen, maar advertenties van zakelijke verkopers zonder die link werden gemist. Deze worden nu ook verborgen.'
+        ],
+        note: null
+    },
     '2.1.4': {
         intro: 'Cleanplaats 2.1.4 is een kleine onderhoudsupdate.',
         highlights: [
