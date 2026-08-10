@@ -10,7 +10,8 @@ var CLEANPLAATS_SORT_STORAGE_KEY = 'cleanplaats:sortMode';
 var CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY = 'cleanplaatsViewedListings';
 var CLEANPLAATS_MAX_VIEWED_LISTINGS = 1500;
 var CLEANPLAATS_FLOATING_OFFSET_VAR = '--cleanplaats-floating-offset';
-var MARKTPLAATS_DESKTOP_LOGO_MATCH = /\/tenant--nlnl(?:\.[a-z0-9]+)?\.svg$/i;
+// Marktplaats renamed this asset from tenant--nlnl to brand-logo--nlnl; match both.
+var MARKTPLAATS_DESKTOP_LOGO_MATCH = /\/(?:tenant|brand-logo)--nlnl(?:\.[a-z0-9]+)?\.svg$/i;
 var CLEANPLAATS_DARK_LOGO_PATH = 'icons/marktplaats-logo-darkmode.svg';
 var cleanplaatsStorageSyncRegistered = false;
 var notificationTimeout;
