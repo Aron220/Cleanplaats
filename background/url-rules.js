@@ -91,6 +91,36 @@ async function updateApiRequestRules(currentResultsPerPage, currentDefaultSortMo
     }
 }
 
+// Blocks ad/tracking requests outright. resourceTypes is intentionally omitted:
+// declarativeNetRequest then matches every type *except* main_frame, so the page
+// itself always loads. initiatorDomains keeps the rules from firing anywhere but
+// the three marketplace sites.
+async function updateAdBlockingRules(promotedListingsHidden) {
+    const activeRules = promotedListingsHidden
+        ? AD_BLOCK_RULES.concat(PROMOTED_BLOCK_RULES)
+        : AD_BLOCK_RULES;
+
+    const rulesToAdd = activeRules.map(rule => ({
+        id: rule.id,
+        priority: 1,
+        action: { type: 'block' },
+        condition: {
+            urlFilter: rule.urlFilter,
+            initiatorDomains: API_REQUEST_DOMAINS
+        }
+    }));
+
+    try {
+        await browserAPI.declarativeNetRequest.updateDynamicRules({
+            removeRuleIds: ALL_BLOCK_RULE_IDS,
+            addRules: rulesToAdd
+        });
+        console.log(`Cleanplaats: Ad blocking rules updated (${rulesToAdd.length} active, promoted=${promotedListingsHidden}).`);
+    } catch (error) {
+        console.error('Cleanplaats: Error updating ad blocking rules:', error, JSON.stringify(rulesToAdd));
+    }
+}
+
 async function handleHashNavigation(details) {
     await settingsReadyPromise;
     if (details.frameId !== 0 || details.parentFrameId !== -1) return;

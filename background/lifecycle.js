@@ -11,6 +11,7 @@ async function handleStorageChanges(changes, areaName) {
         const newResultsPerPage = newSettingsData.resultsPerPage?.toString() || '30';
         const newDefaultSortMode = newSettingsData.defaultSortMode || 'standard';
         const darkModeEnabled = Boolean(newSettingsData.darkMode);
+        const newRemovePromotedListings = newSettingsData.removePromotedListings !== false;
 
         let settingsActuallyChanged = false;
         if (newResultsPerPage !== resultsPerPage) {
@@ -28,6 +29,12 @@ async function handleStorageChanges(changes, areaName) {
 
         if (settingsActuallyChanged) {
             await updateApiRequestRules(resultsPerPage, defaultSortMode);
+        }
+
+        if (newRemovePromotedListings !== removePromotedListings) {
+            console.log(`Cleanplaats: removePromotedListings changed from ${removePromotedListings} to ${newRemovePromotedListings}`);
+            removePromotedListings = newRemovePromotedListings;
+            await updateAdBlockingRules(removePromotedListings);
         }
     } catch (error) {
         console.error('Cleanplaats: Error parsing settings in handleStorageChanges:', error);
@@ -76,6 +83,7 @@ async function initialize() {
                 const settings = JSON.parse(result.cleanplaatsSettings);
                 resultsPerPage = settings.resultsPerPage?.toString() || '30';
                 defaultSortMode = settings.defaultSortMode || 'standard';
+                removePromotedListings = settings.removePromotedListings !== false;
                 await updateDarkModeStartupScript(Boolean(settings.darkMode));
             } else {
                 await updateDarkModeStartupScript(false);
@@ -94,6 +102,7 @@ async function initialize() {
     _resolveSettingsReady();
 
     await updateApiRequestRules(resultsPerPage, defaultSortMode);
+    await updateAdBlockingRules(removePromotedListings);
 
     if (browserAPI.webRequest) {
         try {
@@ -137,6 +146,13 @@ browserAPI.runtime.onInstalled.addListener(async (details) => {
         } catch (error) {
             console.error('Cleanplaats: Error clearing dynamic rules on install/update:', error);
         }
+
+        // initialize() runs at top level when the worker starts, which is before
+        // this handler fires, so the clear above also wipes the rules it just
+        // installed. Wait for the settings it loaded, then put them back.
+        await settingsReadyPromise;
+        await updateApiRequestRules(resultsPerPage, defaultSortMode);
+        await updateAdBlockingRules(removePromotedListings);
     }
 });
 

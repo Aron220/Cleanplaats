@@ -786,7 +786,13 @@ function isApiListingBlocked(apiListing) {
     if (CLEANPLAATS.settings.blacklistedTerms.some(term => title.includes(term.toLowerCase()))) return true;
 
     if (CLEANPLAATS.settings.blacklistedDescriptionTerms?.length > 0) {
-        const description = (apiListing.description || '').toLowerCase();
+        // Category-specific listings (cars, real estate) put their body text in
+        // categorySpecificDescription and leave description empty, so checking
+        // only the latter silently skips those listings.
+        const description = [apiListing.description, apiListing.categorySpecificDescription]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
         if (CLEANPLAATS.settings.blacklistedDescriptionTerms.some(term => description.includes(term.toLowerCase()))) return true;
     }
 
