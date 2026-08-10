@@ -651,8 +651,7 @@ function injectListingBlockButtons() {
     document.querySelectorAll('.hz-Listing').forEach(listing => {
         if (listing.hasAttribute('data-cleanplaats-hidden')) return;
 
-        const listingLink = listing.querySelector('a[href*="/v/"]');
-        const listingId = getListingIdFromUrl(listingLink?.href);
+        const listingId = getListingCardId(listing);
         if (!listingId) return;
 
         listing.dataset.cleanplaatsListingId = listingId;

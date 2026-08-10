@@ -74,6 +74,58 @@ function getListingIdFromUrl(url) {
     return '';
 }
 
+function hashStringToId(value) {
+    let hash = 5381;
+    for (let i = 0; i < value.length; i++) {
+        hash = ((hash << 5) + hash) ^ value.charCodeAt(i);
+        hash >>>= 0;
+    }
+    return hash.toString(36);
+}
+
+// Marktplaats flags some ads as "thin content" and renders their cards without an href
+// on the cover link (role="link" plus a JS click handler instead), so those cards carry
+// no item id anywhere in the DOM. Fall back to a fingerprint of the card's own content
+// so they can still be blocked individually.
+function getListingCardFingerprint(listing) {
+    if (!(listing instanceof Element)) return '';
+
+    const imageSrc = listing.querySelector('img[src*="marktplaats.com"]')?.getAttribute('src') || '';
+    const imageId = imageSrc.match(/\/images\/([0-9a-f-]{8,})/i)?.[1] || '';
+
+    const title = typeof getListingTitleText === 'function' ? getListingTitleText(listing) : '';
+
+    // The car-advert layout gets our own "hide seller" button appended inside the seller
+    // element, so read the seller name without any Cleanplaats markup: the fingerprint has
+    // to be identical before and after we inject buttons.
+    const sellerElement = listing.querySelector(
+        '.hz-Listing-seller-name, .hz-Listing-seller-name-new, .hz-Listing-sellerName, .hz-Listing-sellerName-new'
+    );
+    let seller = '';
+    if (sellerElement) {
+        const sellerClone = sellerElement.cloneNode(true);
+        sellerClone.querySelectorAll('[class*="cleanplaats-"]').forEach(node => node.remove());
+        seller = sellerClone.textContent.trim();
+    }
+
+    const price = listing.querySelector('[class*="hz-Listing-price"]')?.textContent?.trim() || '';
+
+    if (!imageId && !title) return '';
+
+    return `cp${hashStringToId([imageId, title, seller, price].join('|'))}`;
+}
+
+// Preferred id for a search-result card: the real Marktplaats item id when the card
+// links to the listing, otherwise a stable content fingerprint.
+function getListingCardId(listing) {
+    if (!(listing instanceof Element)) return '';
+
+    const listingId = getListingIdFromUrl(listing.querySelector('a[href*="/v/"]')?.href);
+    if (listingId) return listingId;
+
+    return getListingCardFingerprint(listing);
+}
+
 function normalizeSellerAgeText(text) {
     return (text || '')
         .trim()
