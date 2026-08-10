@@ -47,6 +47,41 @@ html.cleanplaats-dark-mode [class*="CampaignBanner-module-"] * {
   color: var(--cleanplaats-dark-text) !important;
 }
 
+/* The /cp/91/auto-* landing pages decorate three sections with a "smudge" SVG:
+   the buy/lease hero (CarsPageContent-withSmudge), the sell hero
+   (SellPageContent-heroSection, which carries the smudge with no -withSmudge
+   modifier) and the sell nudge (SellNudge-withSmudge). The fills are hardcoded
+   creams (#f8f0e4 / #fdf6f0), and because they arrive as a background-image
+   the native dark theme cannot reach them: the sections' background-color and
+   text both flip to the dark tokens while the smudge stays cream, leaving
+   light text on a cream shape.
+
+   All three use the same path, so one rule swaps in a translucent-white copy
+   of it. Painting the shape as a wash rather than a fixed colour keeps it a
+   few percent lighter than whichever background-color the tokens supply — the
+   dark surface behind the heroes, the brand brown behind the sell nudge —
+   which both matches the barely-there contrast the shape has in light mode and
+   can only ever raise contrast against the light text on top.
+   background-size/position/repeat still come from their own rule. */
+html.cleanplaats-dark-mode [class*="-withSmudge"],
+html.cleanplaats-dark-mode [class*="SellPageContent-heroSection"] {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1866" height="864" fill="none" viewBox="0 0 1866 864"><path fill="%23ffffff" fill-opacity=".06" d="M1747.24.16 1634.41 0a114.08 114.08 0 0 0-80.85 33.443l-245.13 245.271c59.53-75.623 6.85-191.392-93.7-191.535l-112.84-.16a114.08 114.08 0 0 0-80.85 33.441L862.878 278.715c59.532-75.624 6.851-191.393-93.699-191.536l-112.837-.16a114.08 114.08 0 0 0-80.852 33.441L35.001 661.267C-39.769 736.081 13.186 864 118.926 864h112.991a114.08 114.08 0 0 0 80.69-33.443l243.192-243.335c-59.577 75.681-6.761 191.535 93.87 191.535h112.99c30.265 0 59.29-12.03 80.69-33.443l158.001-158.092c-59.579 75.681-6.763 191.535 93.87 191.535h112.99c30.26 0 59.29-12.03 80.69-33.443l542.1-542.42C1905.71 128.138 1852.9.311 1747.24.161"/></svg>') !important;
+}
+
+/* The kenteken field on /cp/91/auto-verkopen/ is deliberately painted Dutch
+   licence-plate yellow (#f5cc4d) in both themes, but its text colour is left on
+   the generic text token, which flips to near-white in dark mode — ~1.3:1 on
+   the yellow. The plate is correct; only the ink has to stay dark, so pin it to
+   the navy the light theme uses. */
+html.cleanplaats-dark-mode .hz-TextField--licensePlate .hz-TextField-input {
+  color: #2d3c4d !important;
+  caret-color: #2d3c4d !important;
+}
+
+html.cleanplaats-dark-mode .hz-TextField--licensePlate .hz-TextField-input::placeholder {
+  color: rgba(45, 60, 77, 0.7) !important;
+}
+
 /* Saved searches rows hardcode a white card background. */
 html.cleanplaats-dark-mode [class*="SavedSearchItem-module-listItem"] {
   background: var(--cleanplaats-dark-bg-elevated) !important;

@@ -20,3 +20,5 @@ server/
 wrangler-account.json
 
 claude.md
+# Playwright MCP scratch output (screenshots, snapshots, console logs)
+.playwright-mcp/
