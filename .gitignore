@@ -18,3 +18,5 @@ server/
 *.env
 .env.*
 wrangler-account.json
+
+claude.md
