@@ -1126,7 +1126,7 @@
   /* Donation nudge card */
   .cleanplaats-donation-nudge {
     box-sizing: border-box;
-    margin: 0 0 8px;
+    margin: 15px 0 8px;
     padding: 12px 14px;
     background: linear-gradient(135deg, #fff8e8 0%, #fff2c6 100%);
     border: 1px solid #f2c14e;
@@ -1189,7 +1189,8 @@
     justify-content: center;
     gap: 8px;
     box-sizing: border-box;
-    margin: 0px auto 8px;
+    /* Sits below the manage buttons, which carry margin-top: 15px of their own. */
+    margin: 15px auto 8px;
     padding: 10px 18px;
     background: linear-gradient(180deg, #fff2c6 0%, #ffe29a 100%);
     color: #6f4b00;
@@ -2242,12 +2243,294 @@
      Calm, neutral design: ink buttons and quiet surfaces; the brand orange
      only appears as a small accent (bell tile, NEW badge, premium). */
 
-  .cleanplaats-alerts-manage-btn {
-    background-color: #e8710a;
+  /* Panel entry point. An ink card at the top of the filters view: it is the
+     one thing in the panel that isn't a filter toggle, and the dark surface
+     both sets it apart from the switches below and carries over into the
+     overlay, which uses the same ink. The brand orange stays where it earns
+     attention — the icon tile and the NEW badge. */
+  .cleanplaats-alerts-promo {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0 0 12px;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #222b38 0%, #2f3d50 100%);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(34, 43, 56, 0.24);
+    text-align: left;
+    font-family: inherit;
   }
 
-  .cleanplaats-alerts-manage-btn:hover {
-    background-color: #c95f06;
+  .cleanplaats-alerts-promo-compact {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    cursor: pointer;
+    transition: background 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
+  }
+
+  .cleanplaats-alerts-promo-compact:hover,
+  .cleanplaats-alerts-promo-compact:focus-visible {
+    background: linear-gradient(135deg, #2a3547 0%, #3a4a61 100%);
+    box-shadow: 0 6px 18px rgba(34, 43, 56, 0.3);
+    transform: translateY(-1px);
+  }
+
+  .cleanplaats-alerts-promo-compact:active {
+    transform: translateY(0);
+  }
+
+  .cleanplaats-alerts-promo-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cleanplaats-alerts-promo-icon {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+  }
+
+  .cleanplaats-alerts-promo-img {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: block;
+  }
+
+  .cleanplaats-alerts-promo-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .cleanplaats-alerts-promo-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+  }
+
+  .cleanplaats-alerts-promo-badge {
+    flex: none;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #e8710a;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.4;
+  }
+
+  .cleanplaats-alerts-promo-sub {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.72);
+    line-height: 1.35;
+  }
+
+  /* The panel is only 280px wide, so the compact row has to stay on one line:
+     the label truncates rather than pushing the pill and chevron down. */
+  .cleanplaats-alerts-promo-compact .cleanplaats-alerts-promo-title,
+  .cleanplaats-alerts-promo-compact .cleanplaats-alerts-promo-sub {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* Unread matches waiting in the overlay — the one number that should pull
+     someone back in, so it gets the accent rather than the muted subtitle. */
+  .cleanplaats-alerts-promo-count {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: rgba(232, 113, 10, 0.95);
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .cleanplaats-alerts-promo-arrow {
+    flex: none;
+    display: flex;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.5);
+    transition: transform 0.15s ease, color 0.15s ease;
+  }
+
+  .cleanplaats-alerts-promo-compact:hover .cleanplaats-alerts-promo-arrow {
+    color: rgba(255, 255, 255, 0.85);
+    transform: translateX(2px);
+  }
+
+  .cleanplaats-alerts-promo-text {
+    margin: 10px 0 0;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .cleanplaats-alerts-promo-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .cleanplaats-alerts-promo-start {
+    flex: 1 1 auto;
+    padding: 9px 12px;
+    border: none;
+    border-radius: 8px;
+    background: #fff;
+    color: #222b38;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+
+  .cleanplaats-alerts-promo-start:hover {
+    background: #f0f3f7;
+  }
+
+  .cleanplaats-alerts-promo-start:active {
+    transform: scale(0.98);
+  }
+
+  .cleanplaats-alerts-promo-later {
+    flex: none;
+    padding: 9px 6px;
+    border: none;
+    background: none;
+    color: rgba(255, 255, 255, 0.62);
+    font-family: inherit;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+
+  .cleanplaats-alerts-promo-later:hover {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  /* Walkthrough coach marks. The bubble is fixed to the viewport and placed
+     from JS, so it never inherits the overlay's scroll or stacking context. */
+  .cleanplaats-alerts-walk-target {
+    position: relative;
+    z-index: 1;
+    border-radius: 12px;
+    box-shadow: 0 0 0 3px rgba(232, 113, 10, 0.85), 0 0 0 9px rgba(232, 113, 10, 0.18);
+    animation: cleanplaats-alerts-walk-pulse 1.8s ease-in-out infinite;
+  }
+
+  @keyframes cleanplaats-alerts-walk-pulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(232, 113, 10, 0.85), 0 0 0 9px rgba(232, 113, 10, 0.18); }
+    50% { box-shadow: 0 0 0 3px rgba(232, 113, 10, 0.85), 0 0 0 14px rgba(232, 113, 10, 0.05); }
+  }
+
+  .cleanplaats-alerts-walk-bubble {
+    position: fixed;
+    top: -9999px;
+    left: -9999px;
+    z-index: 2147483647;
+    box-sizing: border-box;
+    width: 290px;
+    max-width: calc(100vw - 24px);
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: #222b38;
+    color: #fff;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+    font-family: Arial, sans-serif;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .cleanplaats-alerts-walk-bubble-ready {
+    opacity: 1;
+  }
+
+  .cleanplaats-alerts-walk-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 5px;
+  }
+
+  .cleanplaats-alerts-walk-body {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .cleanplaats-alerts-walk-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .cleanplaats-alerts-walk-counter {
+    flex: 1 1 auto;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  .cleanplaats-alerts-walk-skip {
+    flex: none;
+    padding: 7px 8px;
+    border: none;
+    background: none;
+    color: rgba(255, 255, 255, 0.62);
+    font-family: inherit;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+
+  .cleanplaats-alerts-walk-skip:hover {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .cleanplaats-alerts-walk-next {
+    flex: none;
+    padding: 7px 14px;
+    border: none;
+    border-radius: 8px;
+    background: #fff;
+    color: #222b38;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .cleanplaats-alerts-walk-next:hover {
+    background: #eef2f7;
   }
 
   .cleanplaats-alerts-overlay {
@@ -2717,6 +3000,320 @@
     color: #66707f;
     font-size: 13px;
     line-height: 1.5;
+  }
+
+  /* --- Sub-views: account, pricing, limit --- */
+
+  .cleanplaats-alerts-subview-header {
+    margin-bottom: 4px;
+  }
+
+  .cleanplaats-alerts-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px 6px 6px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #f2f4f7;
+    color: #4a5566;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .cleanplaats-alerts-back:hover {
+    background: #e6e9ee;
+  }
+
+  .cleanplaats-alerts-subview-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1d2430;
+  }
+
+  .cleanplaats-alerts-subview-sub {
+    margin: 6px 0 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #66707f;
+  }
+
+  .cleanplaats-alerts-block-btn {
+    display: block;
+    width: 100%;
+    margin-top: 14px;
+    text-align: center;
+  }
+
+  /* Account details */
+
+  .cleanplaats-alerts-detail-list {
+    margin-top: 14px;
+    border: 1px solid #e6e9ee;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .cleanplaats-alerts-detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #eef1f4;
+  }
+
+  .cleanplaats-alerts-detail-row:last-child {
+    border-bottom: none;
+  }
+
+  .cleanplaats-alerts-detail-label {
+    flex: none;
+    font-size: 12.5px;
+    color: #66707f;
+  }
+
+  .cleanplaats-alerts-detail-value {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d2430;
+  }
+
+  /* Pricing */
+
+  .cleanplaats-alerts-plans {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .cleanplaats-alerts-plan {
+    padding: 16px;
+    border: 1px solid #e6e9ee;
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  .cleanplaats-alerts-plan-current {
+    border-color: #cfd6e0;
+    background: #f8f9fb;
+  }
+
+  .cleanplaats-alerts-plan-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .cleanplaats-alerts-plan-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1d2430;
+  }
+
+  .cleanplaats-alerts-plan-badge {
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: #e9edf2;
+    color: #5b6675;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .cleanplaats-alerts-plan-badge-soon {
+    background: rgba(232, 113, 10, 0.14);
+    color: #b45f09;
+  }
+
+  .cleanplaats-alerts-plan-price {
+    margin-top: 10px;
+    font-size: 22px;
+    font-weight: 800;
+    color: #1d2430;
+  }
+
+  .cleanplaats-alerts-plan-period {
+    font-size: 12px;
+    font-weight: 500;
+    color: #78828f;
+  }
+
+  .cleanplaats-alerts-plan-features {
+    list-style: none;
+    margin: 14px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .cleanplaats-alerts-plan-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: #4a5566;
+  }
+
+  .cleanplaats-alerts-plan-features svg {
+    flex: none;
+    margin-top: 2px;
+    color: #2f7d4f;
+  }
+
+  /* Limit */
+
+  .cleanplaats-alerts-limit-meter {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .cleanplaats-alerts-limit-count {
+    font-size: 30px;
+    font-weight: 800;
+    color: #e8710a;
+    line-height: 1;
+  }
+
+  .cleanplaats-alerts-limit-count-label {
+    font-size: 13px;
+    color: #66707f;
+  }
+
+  .cleanplaats-alerts-limit-body {
+    margin: 12px 0 18px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #4a5566;
+  }
+
+  .cleanplaats-alerts-limit-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cleanplaats-alerts-limit-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid #e6e9ee;
+    border-radius: 10px;
+  }
+
+  .cleanplaats-alerts-limit-item-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #1d2430;
+  }
+
+  .cleanplaats-alerts-limit-item-meta {
+    flex: none;
+    font-size: 12px;
+    color: #78828f;
+  }
+
+  .cleanplaats-alerts-limit-premium {
+    margin-top: 20px;
+    padding: 14px 16px;
+    border: 1px solid #e6e9ee;
+    border-radius: 12px;
+    background: #f8f9fb;
+  }
+
+  .cleanplaats-alerts-limit-premium-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .cleanplaats-alerts-limit-premium-icon {
+    display: flex;
+    color: #e8710a;
+  }
+
+  .cleanplaats-alerts-limit-premium-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1d2430;
+  }
+
+  .cleanplaats-alerts-limit-premium-body {
+    margin: 8px 0 6px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #66707f;
+  }
+
+  .cleanplaats-alerts-upgrade-done {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 14px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    background: #eef7f1;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #2f7d4f;
+  }
+
+  /* Account bar as a button */
+
+  /* The bar keeps its column layout from .cleanplaats-alerts-account; the
+     chevron is pinned instead of added as a third row, with padding reserved
+     on the right so the e-mail truncates before it reaches it. */
+  .cleanplaats-alerts-account-link {
+    position: relative;
+    width: 100%;
+    padding-right: 40px;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .cleanplaats-alerts-account-link:hover {
+    background: #eef1f5;
+    border-color: #d5dbe3;
+  }
+
+  .cleanplaats-alerts-account-chevron {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    display: flex;
+    align-items: center;
+    color: #98a2b0;
+    transform: translateY(-50%) rotate(-90deg);
+  }
+
+  .cleanplaats-alerts-account-link:hover .cleanplaats-alerts-account-chevron {
+    color: #667283;
   }
 
   /* --- Alert cards --- */
@@ -3787,6 +4384,82 @@
   html.cleanplaats-dark-mode .cleanplaats-alerts-create-title,
   html.cleanplaats-dark-mode .cleanplaats-alerts-create-note {
     color: #8fa0b8;
+  }
+
+  /* Sub-views: account, pricing, limit */
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-back {
+    background: #1c2532;
+    color: #aebbcd;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-back:hover {
+    background: #253243;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-subview-title,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-detail-value,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-plan-name,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-plan-price,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-limit-item-label,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-limit-premium-title {
+    color: #e7edf8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-subview-sub,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-detail-label,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-limit-count-label,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-limit-body,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-limit-premium-body,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-plan-features li,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-plan-period,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-limit-item-meta {
+    color: #8fa0b8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-detail-list,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-plan,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-limit-item,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-limit-premium {
+    background: #18202c;
+    border-color: #243044;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-detail-row {
+    border-bottom-color: #243044;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-plan-current {
+    background: #141b25;
+    border-color: #2d3c52;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-plan-badge {
+    background: #253243;
+    color: #9fb0c6;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-plan-badge-soon {
+    background: rgba(242, 131, 15, 0.2);
+    color: #f0a94a;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-limit-count {
+    color: #f2830f;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-plan-features svg {
+    color: #6cc48d;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-upgrade-done {
+    background: #16241c;
+    color: #6cc48d;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-account-link:hover {
+    background: #1c2532;
+    border-color: #2d3c52;
   }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-create-warning {

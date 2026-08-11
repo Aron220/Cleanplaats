@@ -427,6 +427,52 @@ html.cleanplaats-dark-mode .cleanplaats-detail-blacklist-btn[aria-disabled="true
   border-color: var(--cleanplaats-dark-border);
 }
 
+/* Zoekmeldingen entry point. In light mode the ink card stands out by being
+   darker than the panel; against the dark panel it has to do the opposite and
+   sit above the surface, so the same card gets a lighter fill plus a hairline
+   to keep its edge readable. */
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-alerts-promo {
+  background: linear-gradient(135deg, #2e3d51 0%, #3b4d66 100%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(166, 189, 214, 0.16);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-alerts-promo-compact:hover,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-alerts-promo-compact:focus-visible {
+  background: linear-gradient(135deg, #38495f 0%, #465a76 100%);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  border-color: rgba(166, 189, 214, 0.28);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-alerts-promo-title {
+  color: #fff;
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-alerts-promo-sub {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-alerts-promo-text {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+/* The badge and count keep the brand orange, but the flat tone that reads as
+   an accent on white turns muddy here; lifting it keeps the contrast. */
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-alerts-promo-badge,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-alerts-promo-count {
+  background: #f2830f;
+  color: #1b232e;
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-alerts-promo-start {
+  background: #f3f7fb;
+  color: #1b232e;
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-alerts-promo-start:hover {
+  background: #fff;
+}
+
 .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-header h3,
 .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-contact,
 .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-option-label,

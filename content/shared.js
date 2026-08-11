@@ -434,7 +434,21 @@ function getPanelLocaleText() {
         emptyPageSearchUnavailable: 'Zoeken lukt niet voor deze zoekopdracht.',
         // Other alert strings live in content/alerts.js (ALERTS_TEXT): the
         // feature is Marktplaats-only, so it isn't translated per locale.
-        alertsManageButton: 'Zoekmeldingen'
+        alertsManageButton: 'Zoekmeldingen',
+        alertsPromoNewBadge: 'NIEUW',
+        alertsPromoIntroText: 'Laat Cleanplaats voor je zoeken. Je krijgt een bericht zodra er een nieuwe advertentie verschijnt — ook als je browser dicht is.',
+        alertsPromoIntroStart: 'Laat me zien hoe',
+        alertsPromoIntroLater: 'Later',
+        alertsPromoTagline: 'Als eerste bij een nieuwe advertentie',
+        // "Melding" is the message you receive, not the thing you set up, so the
+        // card counts zoekopdrachten — otherwise the number reads as unread mail.
+        alertsPromoNoAlerts: 'Nog geen zoekopdracht ingesteld',
+        alertsPromoActiveCount: n => `${n} actieve zoekopdracht${n === 1 ? '' : 'en'}`,
+        // Bare number: at 280px the panel has no room for a worded pill without
+        // truncating the title. The aria-label carries the meaning.
+        alertsPromoNewMatches: n => String(n),
+        alertsPromoAriaLabel: 'Zoekmeldingen openen',
+        alertsPromoAriaLabelWithNew: n => `Zoekmeldingen openen, ${n} nieuwe advertentie${n === 1 ? '' : 's'} gevonden`
     };
 }
 
@@ -461,7 +475,14 @@ var CLEANPLAATS = {
         showUpdatePopups: true,
         totalActionsCount: 0,
         donationNudgeDismissedAt: 0,
-        donationNudgeClickedBmc: false
+        donationNudgeClickedBmc: false,
+        // Zoekmeldingen entry point. The intro pitch shows until the user acts
+        // on it (either button), after which the card falls back to its compact
+        // form. `alertsSummary` is the last state the modal saw, so the compact
+        // card can say something useful without an API call on every page load.
+        alertsIntroDismissed: false,
+        alertsWalkthroughDone: false,
+        alertsSummary: null
     },
 
     stats: {

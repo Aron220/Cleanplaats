@@ -7,6 +7,135 @@
 // listed in manifest.json for the modal to exist at all.
 const CLEANPLAATS_ALERTS_FEATURE_ENABLED = true;
 
+function isAlertsEntryPointVisible() {
+    return CLEANPLAATS_ALERTS_FEATURE_ENABLED && isMarktplaatsSite();
+}
+
+/**
+ * Subtitle and unread pill for the compact card. Falls back to the pitch until
+ * the modal has been opened once, because "0 meldingen" reads as a broken
+ * feature rather than an invitation.
+ *
+ * The pill is returned separately: the panel is 280px wide, and keeping it
+ * inside the subtitle wraps the row onto three lines.
+ */
+function getAlertsPromoStatus(panelText) {
+    const summary = CLEANPLAATS.settings.alertsSummary;
+    if (!summary || typeof summary.totalCount !== 'number') {
+        return { sub: panelText.alertsPromoTagline, count: 0 };
+    }
+    if (summary.totalCount === 0) {
+        return { sub: panelText.alertsPromoNoAlerts, count: 0 };
+    }
+
+    const activeCount = typeof summary.activeCount === 'number' ? summary.activeCount : summary.totalCount;
+    return {
+        sub: panelText.alertsPromoActiveCount(activeCount),
+        count: summary.newMatchCount || 0
+    };
+}
+
+function getAlertsPromoHtml(panelText) {
+    if (!isAlertsEntryPointVisible()) return '';
+
+    const title = panelText.alertsManageButton || 'Zoekmeldingen';
+    const icon = `<span class="cleanplaats-alerts-promo-icon" aria-hidden="true"><img class="cleanplaats-alerts-promo-img" alt="" width="34" height="34"></span>`;
+
+    // First encounter: pitch the feature and offer the walkthrough. Everything
+    // after that is a compact row that opens the modal straight away.
+    if (!CLEANPLAATS.settings.alertsIntroDismissed) {
+        return `<div class="cleanplaats-alerts-promo cleanplaats-alerts-promo-intro" id="cleanplaats-alerts-promo">
+            <div class="cleanplaats-alerts-promo-head">
+                ${icon}
+                <span class="cleanplaats-alerts-promo-copy">
+                    <span class="cleanplaats-alerts-promo-title">${title}<span class="cleanplaats-alerts-promo-badge">${panelText.alertsPromoNewBadge}</span></span>
+                    <span class="cleanplaats-alerts-promo-sub">${panelText.alertsPromoTagline}</span>
+                </span>
+            </div>
+            <p class="cleanplaats-alerts-promo-text">${panelText.alertsPromoIntroText}</p>
+            <div class="cleanplaats-alerts-promo-actions">
+                <button type="button" class="cleanplaats-alerts-promo-start" id="cleanplaats-alerts-promo-start">${panelText.alertsPromoIntroStart}</button>
+                <button type="button" class="cleanplaats-alerts-promo-later" id="cleanplaats-alerts-promo-later">${panelText.alertsPromoIntroLater}</button>
+            </div>
+        </div>`;
+    }
+
+    const status = getAlertsPromoStatus(panelText);
+    const ariaLabel = status.count > 0
+        ? panelText.alertsPromoAriaLabelWithNew(status.count)
+        : panelText.alertsPromoAriaLabel;
+    return `<button type="button" class="cleanplaats-alerts-promo cleanplaats-alerts-promo-compact" id="cleanplaats-alerts-promo" aria-label="${ariaLabel}">
+        ${icon}
+        <span class="cleanplaats-alerts-promo-copy">
+            <span class="cleanplaats-alerts-promo-title">${title}</span>
+            <span class="cleanplaats-alerts-promo-sub">${status.sub}</span>
+        </span>
+        ${status.count > 0 ? `<span class="cleanplaats-alerts-promo-count" aria-hidden="true">${panelText.alertsPromoNewMatches(status.count)}</span>` : ''}
+        <span class="cleanplaats-alerts-promo-arrow" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </span>
+    </button>`;
+}
+
+/**
+ * DOMPurify strips the chrome-extension:// scheme, so the icon source has to be
+ * assigned after the markup is sanitized — same reason as the modal's header.
+ */
+function applyAlertsPromoIcon(root) {
+    const image = (root || document).querySelector('.cleanplaats-alerts-promo-img');
+    if (image) image.src = browserAPI.runtime.getURL('icons/alert-icon.png');
+}
+
+function dismissAlertsPromoIntro() {
+    CLEANPLAATS.settings.alertsIntroDismissed = true;
+    return saveSettings().catch(error => {
+        console.error('Cleanplaats: Failed to store alerts intro state', error);
+    });
+}
+
+function wireAlertsPromoEvents() {
+    const promo = document.getElementById('cleanplaats-alerts-promo');
+    if (!promo) return;
+
+    // The compact card is itself the button; the intro card carries two.
+    if (promo.classList.contains('cleanplaats-alerts-promo-compact')) {
+        promo.addEventListener('click', (event) => {
+            event.preventDefault();
+            showAlertsModal();
+        });
+        return;
+    }
+
+    document.getElementById('cleanplaats-alerts-promo-start')?.addEventListener('click', () => {
+        dismissAlertsPromoIntro().then(() => {
+            refreshAlertsPromo();
+            showAlertsModal({ walkthrough: true });
+        });
+    });
+
+    document.getElementById('cleanplaats-alerts-promo-later')?.addEventListener('click', () => {
+        dismissAlertsPromoIntro().then(() => refreshAlertsPromo());
+    });
+}
+
+function refreshAlertsPromo() {
+    const panel = document.getElementById('cleanplaats-panel');
+    if (!panel) return;
+    const existing = panel.querySelector('#cleanplaats-alerts-promo');
+    if (!existing) return;
+
+    const container = document.createElement('div');
+    container.innerHTML = DOMPurify.sanitize(getAlertsPromoHtml(getPanelLocaleText()));
+    const replacement = container.firstElementChild;
+    if (!replacement) {
+        existing.remove();
+        return;
+    }
+    existing.replaceWith(replacement);
+    applyAlertsPromoIcon(panel);
+    wireAlertsPromoEvents();
+}
+
 function shouldShowDonationNudge() {
     const s = CLEANPLAATS.settings;
     if (s.donationNudgeClickedBmc) return false;
@@ -191,7 +320,7 @@ function createControlPanel() {
         <div class="cleanplaats-content">
             <div class="cleanplaats-panel-views" id="cleanplaats-panel-views">
             <div class="cleanplaats-panel-view" id="cleanplaats-view-filters">
-                ${getDonationSectionHtml(panelText)}
+                ${getAlertsPromoHtml(panelText)}
                 <div class="cleanplaats-options">
                     <div class="cleanplaats-section-title">${panelText.optionsTitle}</div>
                     <div class="cleanplaats-option">
@@ -307,7 +436,7 @@ function createControlPanel() {
                 <button id="cleanplaats-manage-terms" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageTerms}</button>
                 <button id="cleanplaats-manage-blacklist" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageSellers}</button>
                 <button id="cleanplaats-manage-blocked-listings" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageBlockedListings}</button>
-                ${(CLEANPLAATS_ALERTS_FEATURE_ENABLED && isMarktplaatsSite()) ? `<button id="cleanplaats-manage-alerts" class="cleanplaats-button cleanplaats-blacklist-manage-btn cleanplaats-alerts-manage-btn">🔔 ${panelText.alertsManageButton || 'Zoekmeldingen'}</button>` : ''}
+                ${getDonationSectionHtml(panelText)}
             </div>
             <div class="cleanplaats-panel-view" id="cleanplaats-view-preferences">
                 <div class="cleanplaats-panel-view-header">
@@ -455,14 +584,8 @@ function createControlPanel() {
         showBlockedListingsModal(e.currentTarget);
     });
 
-    const manageAlertsButton = document.getElementById('cleanplaats-manage-alerts');
-    if (manageAlertsButton) {
-        manageAlertsButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            showAlertsModal();
-        });
-    }
-
+    applyAlertsPromoIcon(panel);
+    wireAlertsPromoEvents();
     wireDonationNudgeEvents();
 
     if (!document.getElementById('cleanplaats-global-tooltip')) {
