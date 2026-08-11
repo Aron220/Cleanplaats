@@ -3517,6 +3517,55 @@
 
   /* --- Notification channels --- */
 
+  /* Shown when no Telegram account is linked: without one, nothing is
+     delivered, so it sits above everything else in the dashboard. */
+  .cleanplaats-alerts-notice {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    border: 1px solid #f2d9b0;
+    border-radius: 12px;
+    background: #fdf6ea;
+  }
+
+  .cleanplaats-alerts-notice-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex: none;
+    border-radius: 10px;
+    background: #f8e6c8;
+    color: #b8791f;
+  }
+
+  .cleanplaats-alerts-notice-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .cleanplaats-alerts-notice-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #7a5310;
+  }
+
+  .cleanplaats-alerts-notice-body {
+    font-size: 12px;
+    line-height: 1.45;
+    color: #8a6524;
+  }
+
+  .cleanplaats-alerts-notice .cleanplaats-alerts-secondary-btn {
+    flex: none;
+  }
+
   .cleanplaats-alerts-channel-list {
     display: flex;
     flex-direction: column;
@@ -3855,6 +3904,24 @@
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-channel-row + .cleanplaats-alerts-channel-row {
     border-top-color: #1d2735;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-notice {
+    background: #241d10;
+    border-color: #4a3a1c;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-notice-icon {
+    background: #3a2d14;
+    color: #e0ab55;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-notice-title {
+    color: #f0d6a4;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-notice-body {
+    color: #c9b083;
   }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-footer {

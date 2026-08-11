@@ -55,6 +55,7 @@
           "content/notifications.js",
           "content/cleanup.js",
           "content/blacklist.js",
+          "content/alerts.js",
           "content/ui.js",
           "content/observers.js",
           "content/init.js",

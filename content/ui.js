@@ -2,10 +2,10 @@
  * Content-script control panel rendering and UI event handling.
  */
 
-// Zoekmeldingen needs the alerts server's e-mail sending, which isn't on
-// production SES access yet. Keep the feature fully out of the build (see
-// manifest.json, where content/alerts.js is excluded) until that's ready.
-const CLEANPLAATS_ALERTS_FEATURE_ENABLED = false;
+// Zoekmeldingen (search alerts). Kill switch for the whole feature: flipping
+// this to false hides the entry point, though content/alerts.js also has to be
+// listed in manifest.json for the modal to exist at all.
+const CLEANPLAATS_ALERTS_FEATURE_ENABLED = true;
 
 function shouldShowDonationNudge() {
     const s = CLEANPLAATS.settings;

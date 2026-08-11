@@ -28,10 +28,10 @@ var cleanplaatsAlertsRuntime = {
 
 var ALERTS_TEXT = {
     modalTitle: 'Zoekmeldingen',
-    tagline: 'Krijg nieuwe advertenties direct in je inbox — ook als je browser dicht is.',
+    tagline: 'Krijg nieuwe advertenties direct in je Telegram — ook als je browser dicht is.',
     intro: 'Krijg een melding zodra er een nieuwe advertentie verschijnt die aan je zoekopdracht voldoet — ook als je browser dicht is. Je Cleanplaats-filters worden automatisch toegepast.',
     loginTitle: 'Inloggen of account maken',
-    loginIntro: 'Met een account ontvang je meldingen per e-mail en werken je zoekmeldingen op al je apparaten.',
+    loginIntro: 'Je e-mailadres is je account: je krijgt er een inlogcode op, en je zoekmeldingen werken daarmee op al je apparaten.',
     emailPlaceholder: 'jouw@email.nl',
     emailButton: 'Stuur inlogcode',
     emailSending: 'Versturen…',
@@ -68,18 +68,20 @@ var ALERTS_TEXT = {
     reactivateButton: 'Reactiveren',
     extendedToast: 'Zoekmelding verlengd.',
     reactivatedToast: 'Zoekmelding gereactiveerd.',
-    channelEmail: 'E-mail',
     channelTelegram: 'Telegram',
     statusLabel: 'Actief',
     matchesTitle: 'Gevonden advertenties',
     matchesEmpty: 'Nog niets gevonden. Zodra de eerste controle klaar is — binnen enkele minuten — verschijnen de advertenties hier.',
     newBadge: 'NIEUW',
     channelsTitle: 'Hoe je meldingen ontvangt',
-    emailAlwaysOn: 'Staat altijd aan',
-    telegramConnect: 'Koppelen',
     telegramLinked: 'Gekoppeld',
     telegramNotLinked: 'Nog niet gekoppeld',
     telegramLockedHint: 'Koppel eerst Telegram om hier meldingen via Telegram te krijgen. Klik om te koppelen.',
+    // Telegram is the only delivery channel, so an unlinked account gets
+    // nothing pushed to it — say that plainly instead of letting people wait.
+    telegramRequiredTitle: 'Je ontvangt nog geen meldingen',
+    telegramRequiredBody: 'Meldingen worden via Telegram verstuurd. Koppel Telegram om nieuwe advertenties binnen te krijgen — gevonden advertenties zie je hieronder ook zonder koppeling.',
+    telegramRequiredButton: 'Telegram koppelen',
     telegramRelink: 'Ander account koppelen',
     telegramUnlink: 'Ontkoppelen',
     telegramUnlinkConfirm: 'Telegram ontkoppelen? Je ontvangt dan geen meldingen meer via Telegram.',
@@ -231,21 +233,30 @@ function getAlertValidity(alert) {
     return { expired: false, daysLeft, soon: daysLeft <= 3 };
 }
 
+// Marktplaats sends price_cents: 0 for listings without a fixed price (FAST_BID,
+// SEE_DESCRIPTION) — about a third of a result page — so only an amount above
+// zero is a real price. MIN_BID is the exception: its amount is the starting bid.
+// Keep in sync with formatPrice() in the alerts server's src/notify.js.
+var ALERT_PRICE_TYPE_LABELS = {
+    FAST_BID: 'Bieden',
+    MIN_BID: 'Bieden',
+    SEE_DESCRIPTION: 'Zie omschrijving',
+    NOTK: 'N.o.t.k.',
+    FREE: 'Gratis',
+    RESERVED: 'Gereserveerd',
+    EXCHANGE: 'Ruilen',
+    ON_REQUEST: 'Op aanvraag'
+};
+
 function formatAlertMatchPrice(match) {
-    if (Number.isFinite(match.price_cents)) {
+    if (Number.isFinite(match.price_cents) && match.price_cents > 0) {
         const euros = match.price_cents / 100;
-        return Number.isInteger(euros)
+        const amount = Number.isInteger(euros)
             ? `€ ${euros.toLocaleString('nl-NL')}`
             : `€ ${euros.toFixed(2).replace('.', ',')}`;
+        return match.price_type === 'MIN_BID' ? `Bieden vanaf ${amount}` : amount;
     }
-    const typeLabels = {
-        FAST_BID: 'Bieden',
-        SEE_DESCRIPTION: 'Zie omschrijving',
-        NOTK: 'N.o.t.k.',
-        FREE: 'Gratis',
-        ON_REQUEST: 'Op aanvraag'
-    };
-    return typeLabels[match.price_type] || '';
+    return ALERT_PRICE_TYPE_LABELS[match.price_type] || '';
 }
 
 function sortAlertMatches(matches, mode) {
@@ -948,9 +959,6 @@ function renderAlertsDashboard(me, alerts, matches) {
                     <div class="cleanplaats-alerts-alert-bottom">
                         <span class="cleanplaats-alerts-meta">${lastChecked}${validityHtml}</span>
                         <span class="cleanplaats-alerts-alert-actions">
-                            <button class="cleanplaats-alerts-switch ${alert.notify_email ? 'on' : ''}" data-channel="email" data-alert-id="${alert.id}" data-value="${alert.notify_email ? '1' : '0'}" role="switch" aria-checked="${alert.notify_email ? 'true' : 'false'}">
-                                ${alertIcon('mail', 14)}<span class="cleanplaats-alerts-switch-label">${ALERTS_TEXT.channelEmail}</span><span class="cleanplaats-alerts-switch-track"></span>
-                            </button>
                             ${telegramSwitch}
                             ${statusSwitch}
                             ${extendBtn}
@@ -965,24 +973,17 @@ function renderAlertsDashboard(me, alerts, matches) {
     cleanplaatsAlertsRuntime.cachedMatches = matches;
     const matchItems = renderAlertMatchItems(sortAlertMatches(matches, 'newest'));
 
-    const telegramActions = me.telegramLinked
-        ? `<button class="cleanplaats-alerts-text-btn" id="cleanplaats-alert-telegram-relink">${ALERTS_TEXT.telegramRelink}</button>
-           <button class="cleanplaats-alerts-text-btn cleanplaats-alerts-text-btn-danger" id="cleanplaats-alert-telegram-unlink">${ALERTS_TEXT.telegramUnlink}</button>`
-        : `<button id="cleanplaats-alert-telegram-link" class="cleanplaats-alerts-secondary-btn">${ALERTS_TEXT.telegramConnect}</button>`;
+    // Only rendered inside channelsSection, which requires a linked account.
+    const telegramActions = `
+        <button class="cleanplaats-alerts-text-btn" id="cleanplaats-alert-telegram-relink">${ALERTS_TEXT.telegramRelink}</button>
+        <button class="cleanplaats-alerts-text-btn cleanplaats-alerts-text-btn-danger" id="cleanplaats-alert-telegram-unlink">${ALERTS_TEXT.telegramUnlink}</button>`;
 
-    const channelsSection = `
+    // Only worth showing once Telegram is linked: before that the notice at the
+    // top already carries the same "Koppelen" button, and this row would just
+    // repeat it.
+    const channelsSection = !me.telegramLinked ? '' : `
         <div class="cleanplaats-alerts-section-title">${ALERTS_TEXT.channelsTitle}</div>
         <div class="cleanplaats-alerts-channel-list">
-            <div class="cleanplaats-alerts-channel-row">
-                <span class="cleanplaats-alerts-channel-icon on">${alertIcon('mail', 18)}</span>
-                <span class="cleanplaats-alerts-channel-info">
-                    <span class="cleanplaats-alerts-channel-name">${ALERTS_TEXT.channelEmail}</span>
-                    <span class="cleanplaats-alerts-channel-sub">${escapeAlertText(me.email)}</span>
-                </span>
-                <span class="cleanplaats-alerts-channel-actions">
-                    <span class="cleanplaats-alerts-channel-state">${ALERTS_TEXT.emailAlwaysOn}</span>
-                </span>
-            </div>
             <div class="cleanplaats-alerts-channel-row">
                 <span class="cleanplaats-alerts-channel-icon ${me.telegramLinked ? 'on' : ''}">${alertIcon('send', 18)}</span>
                 <span class="cleanplaats-alerts-channel-info">
@@ -994,8 +995,23 @@ function renderAlertsDashboard(me, alerts, matches) {
         </div>
     `;
 
+    // Telegram is the only channel that pushes anything out, so an unlinked
+    // account silently receives nothing. Lead with that rather than letting
+    // someone create alerts and wonder why it stays quiet.
+    const telegramRequiredNotice = me.telegramLinked ? '' : `
+        <div class="cleanplaats-alerts-notice">
+            <span class="cleanplaats-alerts-notice-icon">${alertIcon('send', 18)}</span>
+            <span class="cleanplaats-alerts-notice-info">
+                <span class="cleanplaats-alerts-notice-title">${ALERTS_TEXT.telegramRequiredTitle}</span>
+                <span class="cleanplaats-alerts-notice-body">${ALERTS_TEXT.telegramRequiredBody}</span>
+            </span>
+            <button id="cleanplaats-alert-telegram-link-notice" class="cleanplaats-alerts-secondary-btn">${ALERTS_TEXT.telegramRequiredButton}</button>
+        </div>
+    `;
+
     setAlertsBody(`
         ${accountBar}
+        ${telegramRequiredNotice}
         ${createSection}
         <div class="cleanplaats-alerts-section-title">${ALERTS_TEXT.listTitle}</div>
         <div class="cleanplaats-alerts-list">${alertItems}</div>
@@ -1127,7 +1143,9 @@ function wireAlertsDashboardEvents() {
                 return;
             }
             const next = button.dataset.value !== '1';
-            const field = button.dataset.channel === 'email' ? 'notifyEmail' : 'notifyTelegram';
+            // Telegram is the only channel with a switch; the e-mail one is gone
+            // while server-side e-mail notifications are off.
+            const field = 'notifyTelegram';
             alertsApiFetch(`/api/alerts/${button.dataset.alertId}`, {
                 method: 'PATCH',
                 body: JSON.stringify({ [field]: next })
@@ -1147,7 +1165,7 @@ function wireAlertsDashboardEvents() {
 
     // "Koppelen" and "Ander account koppelen" are the same flow: the user
     // messages the bot, gets a code, and types it back to claim the chat.
-    ['cleanplaats-alert-telegram-link', 'cleanplaats-alert-telegram-relink'].forEach(id => {
+    ['cleanplaats-alert-telegram-link-notice', 'cleanplaats-alert-telegram-relink'].forEach(id => {
         const button = document.getElementById(id);
         if (button) button.onclick = startTelegramLink;
     });
