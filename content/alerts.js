@@ -15,6 +15,11 @@ var CLEANPLAATS_ALERTS_API_BASE = 'https://cleanplaats-alerts.aron-vanderwal-46a
 var CLEANPLAATS_ALERTS_TOKEN_KEY = 'cleanplaatsAlertsToken';
 var CLEANPLAATS_ALERTS_API_BASE_KEY = 'cleanplaatsAlertsApiBase';
 
+// Mirrors the LIMIT in the server's /api/matches. Only used to tell the user
+// when a list is showing everything versus only the most recent slice; if the
+// two ever drift the note is slightly off, nothing breaks.
+var ALERT_MATCHES_PAGE_SIZE = 60;
+
 var cleanplaatsAlertsRuntime = {
     token: '',
     apiBase: '',
@@ -40,7 +45,10 @@ var cleanplaatsAlertsRuntime = {
     walkthroughReposition: null,
     // Last loaded alerts/matches, so the sub-views can render without refetching.
     cachedAlerts: null,
-    cachedMatches: null
+    cachedMatches: null,
+    // Which alert's match view is on screen, so a slow /api/matches response
+    // can tell whether it still has a view to render into.
+    openAlertMatchesId: null
 };
 
 var ALERTS_TEXT = {
@@ -176,6 +184,14 @@ var ALERTS_TEXT = {
     accountSinceLabel: 'Lid sinds',
     accountPricingLink: 'Bekijk wat er in elk abonnement zit',
     backToAlerts: 'Terug',
+
+    // Per-alert match view — the shared feed, narrowed to one search.
+    alertMatchesOpen: label => `Bekijk de gevonden advertenties van ${label}`,
+    alertMatchesTitle: 'Gevonden advertenties',
+    alertMatchesSearchLink: 'Open deze zoekopdracht op Marktplaats',
+    alertMatchesEmpty: 'Deze zoekmelding heeft nog niets gevonden. Zodra de eerste controle klaar is verschijnen de advertenties hier.',
+    alertMatchesError: 'We konden de advertenties van deze zoekmelding niet laden. Probeer het zo nog eens.',
+    alertMatchesTruncated: n => `Je ziet de ${n} recentste advertenties van deze zoekmelding.`,
 
     // Limit view — shown when someone tries to add one too many.
     limitTitle: 'Je zit op je maximum',
@@ -420,9 +436,15 @@ function buildAlertFilterBlockHtml(alert) {
     `;
 }
 
-function renderAlertMatchItems(matches) {
+/**
+ * `options.hideAlertLabel` drops the "which alert found this" line: in the
+ * per-alert view every row has the same answer, and the heading already gave
+ * it. `options.emptyText` lets that view say something about *this* search
+ * rather than about the feed as a whole.
+ */
+function renderAlertMatchItems(matches, options = {}) {
     if (!matches || matches.length === 0) {
-        return `<div class="cleanplaats-alerts-empty">${ALERTS_TEXT.matchesEmpty}</div>`;
+        return `<div class="cleanplaats-alerts-empty">${options.emptyText || ALERTS_TEXT.matchesEmpty}</div>`;
     }
     return matches.map(match => {
         // "NIEUW" means new *to this user*: found after the last time they
@@ -443,11 +465,52 @@ function renderAlertMatchItems(matches) {
                         ${match.city ? `<span>· ${escapeAlertText(match.city)}</span>` : ''}
                         <span>· ${formatAlertRelativeTime(match.found_at)}</span>
                     </span>
-                    <span class="cleanplaats-alerts-match-alert-label">${escapeAlertText(match.alert_label || '')}</span>
+                    ${options.hideAlertLabel ? '' : `<span class="cleanplaats-alerts-match-alert-label">${escapeAlertText(match.alert_label || '')}</span>`}
                 </span>
             </a>
         `;
     }).join('');
+}
+
+/**
+ * The heading-with-sorter plus the list itself. Shared by the dashboard feed
+ * and the per-alert view so both sort identically; wireAlertMatchesSort()
+ * re-renders into the same ids.
+ */
+function buildAlertMatchesSectionHtml(matches, title, options = {}) {
+    // Nothing to sort yet: the dropdown would just be a control that does
+    // nothing next to a message saying there is nothing here.
+    const sorter = (matches && matches.length > 0) ? `
+            <select id="cleanplaats-alerts-sort" class="cleanplaats-alerts-sort-select">
+                <option value="newest">${ALERTS_TEXT.sortNewest}</option>
+                <option value="price_asc">${ALERTS_TEXT.sortPriceAsc}</option>
+                <option value="price_desc">${ALERTS_TEXT.sortPriceDesc}</option>
+            </select>` : '';
+
+    return `
+        <div class="cleanplaats-alerts-section-header">
+            <span class="cleanplaats-alerts-section-title">${title}</span>${sorter}
+        </div>
+        <div class="cleanplaats-alerts-matches" id="cleanplaats-alerts-matches-list">${renderAlertMatchItems(sortAlertMatches(matches, 'newest'), options)}</div>
+    `;
+}
+
+/**
+ * `getMatches` is a getter rather than an array because the dashboard's feed
+ * is replaced wholesale by a refresh; reading it at change-time keeps the
+ * sorter pointed at whatever is currently on screen.
+ */
+function wireAlertMatchesSort(getMatches, options = {}) {
+    const sortSelect = document.getElementById('cleanplaats-alerts-sort');
+    if (!sortSelect) return;
+    sortSelect.addEventListener('change', () => {
+        const matchesList = document.getElementById('cleanplaats-alerts-matches-list');
+        const matches = getMatches();
+        if (!matchesList || !matches) return;
+        const sorted = sortAlertMatches(matches, sortSelect.value);
+        matchesList.innerHTML = DOMPurify.sanitize(renderAlertMatchItems(sorted, options));
+        wireAlertMatchLinks(matchesList);
+    });
 }
 
 /**
@@ -645,6 +708,7 @@ function hideAlertsModal() {
     // Next time the panel opens it should use the visit the server stamped
     // during this one, so what we just looked at is no longer "NIEUW".
     cleanplaatsAlertsRuntime.matchesSeenAt = null;
+    cleanplaatsAlertsRuntime.openAlertMatchesId = null;
     endAlertsWalkthrough({ disarm: true });
     restorePanelAfterAlerts();
     // The card summarises what this session just loaded, so bring it up to date
@@ -1217,6 +1281,77 @@ function renderAlertsLimitView(alerts) {
     });
 }
 
+/**
+ * One alert's matches. The dashboard feed mixes every search together, which
+ * answers "what came in" but not "did *this* search find anything" — that
+ * second question is what this view is for.
+ *
+ * It refetches instead of filtering the cached feed: that feed is capped at 60
+ * rows across all alerts, so a busy search can be badly under-represented in
+ * it while its own card promises a much higher count.
+ */
+function renderAlertMatchesView(alertId) {
+    const alert = (cleanplaatsAlertsRuntime.cachedAlerts || [])
+        .find(item => String(item.id) === String(alertId));
+    if (!alert) {
+        loadAlertsDashboard();
+        return;
+    }
+
+    cleanplaatsAlertsRuntime.openAlertMatchesId = String(alert.id);
+
+    const subtitle = alert.search_url
+        ? `<a class="cleanplaats-alerts-subview-link" href="${escapeAlertText(alert.search_url)}">${ALERTS_TEXT.alertMatchesSearchLink}</a>`
+        : '';
+    const header = alertsViewHeader(escapeAlertText(alert.label), subtitle);
+
+    const body = setAlertsBody(`
+        ${header}
+        <div class="cleanplaats-alerts-loading">${ALERTS_TEXT.loading}</div>
+    `);
+    if (!body) return;
+    wireAlertsBackButton();
+    wireAlertMatchLinks(body);
+
+    // Every row here belongs to the same alert, so repeating its label under
+    // each one would be noise; the heading already says which search this is.
+    const itemOptions = { hideAlertLabel: true, emptyText: ALERTS_TEXT.alertMatchesEmpty };
+
+    alertsApiFetch(`/api/matches?alertId=${encodeURIComponent(alert.id)}`)
+        .then(data => {
+            // A slow response must not paint over a view the user has already
+            // left, or over a different alert they opened in the meantime.
+            if (cleanplaatsAlertsRuntime.openAlertMatchesId !== String(alert.id)) return;
+
+            const matches = data.matches || [];
+            const truncated = matches.length >= ALERT_MATCHES_PAGE_SIZE;
+            const nextBody = setAlertsBody(`
+                ${header}
+                ${buildAlertMatchesSectionHtml(matches, ALERTS_TEXT.alertMatchesTitle, itemOptions)}
+                ${truncated ? `<div class="cleanplaats-alerts-matches-note">${ALERTS_TEXT.alertMatchesTruncated(ALERT_MATCHES_PAGE_SIZE)}</div>` : ''}
+            `);
+            if (!nextBody) return;
+            wireAlertsBackButton();
+            wireAlertMatchLinks(nextBody);
+            wireAlertMatchesSort(() => matches, itemOptions);
+        })
+        .catch(error => {
+            if (cleanplaatsAlertsRuntime.openAlertMatchesId !== String(alert.id)) return;
+            // Same as the dashboard: a session that expired while the panel was
+            // open should land on the login view, not on an error about matches.
+            if (error.status === 401) {
+                storeAlertsToken('').then(() => renderAlertsLoginView());
+                return;
+            }
+            console.error('Cleanplaats: Failed to load matches for alert', error);
+            const errorBody = setAlertsBody(`
+                ${header}
+                <div class="cleanplaats-alerts-empty">${ALERTS_TEXT.alertMatchesError}</div>
+            `);
+            if (errorBody) wireAlertsBackButton();
+        });
+}
+
 function wireAlertsLogout() {
     const logout = document.getElementById('cleanplaats-alerts-logout');
     if (!logout) return;
@@ -1260,6 +1395,9 @@ function wireAlertsUpgradeButton() {
 /* ===== Dashboard ===== */
 
 function loadAlertsDashboard() {
+    // Leaving a per-alert view: anything still in flight for it is now stale.
+    cleanplaatsAlertsRuntime.openAlertMatchesId = null;
+
     const body = setAlertsBody(`<div class="cleanplaats-alerts-loading">${ALERTS_TEXT.loading}</div>`);
     if (!body) return;
 
@@ -1349,6 +1487,14 @@ function renderAlertsDashboard(me, alerts, matches) {
                 ? `<a href="${escapeAlertText(alert.search_url)}" class="cleanplaats-alerts-card-label">${escapeAlertText(alert.label)}</a>`
                 : `<span class="cleanplaats-alerts-card-label">${escapeAlertText(alert.label)}</span>`;
 
+            // The count is the natural way in: it is already the thing that
+            // says how much there is to look at. With nothing found it stays a
+            // plain label — a button that opens an empty list is a small lie.
+            const matchCount = alert.match_count || 0;
+            const matchBadge = matchCount > 0
+                ? `<button type="button" class="cleanplaats-alerts-match-badge cleanplaats-alerts-match-badge-link" data-open-matches="${alert.id}" aria-label="${escapeAlertText(ALERTS_TEXT.alertMatchesOpen(alert.label))}">${ALERTS_TEXT.matchCount(matchCount)}${alertIcon('chevron', 13)}</button>`
+                : `<span class="cleanplaats-alerts-match-badge">${ALERTS_TEXT.matchCount(matchCount)}</span>`;
+
             let validityHtml = '';
             if (validity) {
                 if (validity.expired) {
@@ -1390,7 +1536,7 @@ function renderAlertsDashboard(me, alerts, matches) {
                     <div class="cleanplaats-alerts-alert-top">
                         <span class="cleanplaats-alerts-status-dot"></span>
                         ${labelHtml}
-                        <span class="cleanplaats-alerts-match-badge">${ALERTS_TEXT.matchCount(alert.match_count || 0)}</span>
+                        ${matchBadge}
                     </div>
                     <div class="cleanplaats-alerts-alert-bottom">
                         <span class="cleanplaats-alerts-meta">${lastChecked}${validityHtml}</span>
@@ -1409,7 +1555,6 @@ function renderAlertsDashboard(me, alerts, matches) {
     // Kept so the limit view can list the running searches without refetching.
     cleanplaatsAlertsRuntime.cachedAlerts = alerts;
     cleanplaatsAlertsRuntime.cachedMatches = matches;
-    const matchItems = renderAlertMatchItems(sortAlertMatches(matches, 'newest'));
 
     // Only rendered inside channelsSection, which requires a linked account.
     const telegramActions = `
@@ -1454,15 +1599,7 @@ function renderAlertsDashboard(me, alerts, matches) {
         <div class="cleanplaats-alerts-section-title">${ALERTS_TEXT.listTitle}</div>
         <div class="cleanplaats-alerts-list">${alertItems}</div>
         ${channelsSection}
-        <div class="cleanplaats-alerts-section-header">
-            <span class="cleanplaats-alerts-section-title">${ALERTS_TEXT.matchesTitle}</span>
-            <select id="cleanplaats-alerts-sort" class="cleanplaats-alerts-sort-select">
-                <option value="newest">${ALERTS_TEXT.sortNewest}</option>
-                <option value="price_asc">${ALERTS_TEXT.sortPriceAsc}</option>
-                <option value="price_desc">${ALERTS_TEXT.sortPriceDesc}</option>
-            </select>
-        </div>
-        <div class="cleanplaats-alerts-matches" id="cleanplaats-alerts-matches-list">${matchItems}</div>
+        ${buildAlertMatchesSectionHtml(matches, ALERTS_TEXT.matchesTitle)}
         <div class="cleanplaats-alerts-footer">
             <button class="cleanplaats-alerts-text-btn" id="cleanplaats-alerts-open-pricing">${ALERTS_TEXT.accountPricingLink}</button>
         </div>
@@ -1679,17 +1816,13 @@ function wireAlertsDashboardEvents() {
     }
 
     wireAlertMatchLinks(body);
+    wireAlertMatchesSort(() => cleanplaatsAlertsRuntime.cachedMatches);
 
-    const sortSelect = document.getElementById('cleanplaats-alerts-sort');
-    if (sortSelect) {
-        sortSelect.addEventListener('change', () => {
-            const matchesList = document.getElementById('cleanplaats-alerts-matches-list');
-            if (!matchesList || !cleanplaatsAlertsRuntime.cachedMatches) return;
-            const sorted = sortAlertMatches(cleanplaatsAlertsRuntime.cachedMatches, sortSelect.value);
-            matchesList.innerHTML = DOMPurify.sanitize(renderAlertMatchItems(sorted));
-            wireAlertMatchLinks(matchesList);
+    body.querySelectorAll('[data-open-matches]').forEach(button => {
+        button.addEventListener('click', () => {
+            renderAlertMatchesView(button.dataset.openMatches);
         });
-    }
+    });
 
     wireAlertFilterControls(body);
 }
@@ -1753,7 +1886,9 @@ function wireAlertFilterControls(body) {
 }
 
 function wireAlertMatchLinks(container) {
-    (container || document).querySelectorAll('.cleanplaats-alerts-match, .cleanplaats-alerts-card-label[href]').forEach(link => {
+    // Every link out of the panel goes to a new tab: the overlay lives on the
+    // Marktplaats page, so navigating in place would throw it away.
+    (container || document).querySelectorAll('.cleanplaats-alerts-match, .cleanplaats-alerts-card-label[href], .cleanplaats-alerts-subview-link[href]').forEach(link => {
         if (!link.getAttribute('href')) return;
         link.addEventListener('click', event => {
             event.preventDefault();

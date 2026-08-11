@@ -3043,6 +3043,16 @@
     color: #66707f;
   }
 
+  .cleanplaats-alerts-subview-link {
+    color: #e8710a;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .cleanplaats-alerts-subview-link:hover {
+    text-decoration: underline;
+  }
+
   .cleanplaats-alerts-block-btn {
     display: block;
     width: 100%;
@@ -3651,6 +3661,37 @@
     font-size: 11.5px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
+  }
+
+  /* The same badge, but it opens this alert's own match list. The chevron is
+     what separates it from the plain count on an alert that found nothing. */
+  button.cleanplaats-alerts-match-badge-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    border: none;
+    font-family: inherit;
+    line-height: 1.5;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  button.cleanplaats-alerts-match-badge-link svg {
+    margin-right: -3px;
+    transform: rotate(-90deg);
+    opacity: 0.65;
+  }
+
+  button.cleanplaats-alerts-match-badge-link:hover {
+    background: #fdead6;
+    color: #b7560a;
+  }
+
+  .cleanplaats-alerts-matches-note {
+    margin-top: 10px;
+    font-size: 11.5px;
+    color: #97a0ae;
+    text-align: center;
   }
 
   .cleanplaats-alerts-alert-bottom {
@@ -4521,6 +4562,19 @@
   html.cleanplaats-dark-mode .cleanplaats-alerts-match-badge {
     background: #243044;
     color: #aebbcd;
+  }
+
+  html.cleanplaats-dark-mode button.cleanplaats-alerts-match-badge-link:hover {
+    background: #3a2a17;
+    color: #f0a55a;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-matches-note {
+    color: #78849a;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-subview-link {
+    color: #f0a55a;
   }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-switch {
