@@ -2673,6 +2673,21 @@
     color: #66707f;
   }
 
+  .cleanplaats-alerts-create-warning {
+    margin-top: 8px;
+    padding: 9px 11px;
+    border: 1px solid #f2d9b0;
+    border-radius: 8px;
+    background: #fdf6ea;
+    font-size: 12px;
+    line-height: 1.45;
+    color: #7a5310;
+  }
+
+  .cleanplaats-alerts-create-warning[hidden] {
+    display: none;
+  }
+
   .cleanplaats-alerts-hint {
     padding: 12px 14px;
     border-radius: 10px;
@@ -3748,6 +3763,12 @@
   html.cleanplaats-dark-mode .cleanplaats-alerts-create-title,
   html.cleanplaats-dark-mode .cleanplaats-alerts-create-note {
     color: #8fa0b8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-warning {
+    border-color: #4a3a1c;
+    background: #241d10;
+    color: #f0d6a4;
   }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-usage-value {

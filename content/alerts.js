@@ -52,6 +52,8 @@ var ALERTS_TEXT = {
     labelPlaceholder: 'Zoekterm, bijv. iphone 15 pro',
     createTermMissing: 'Vul een zoekterm in.',
     createContextHint: 'Filters van je huidige zoekopdracht (categorie, locatie) gaan mee zolang je de zoekterm niet wijzigt.',
+    createBroadWarning: count => `Deze zoekopdracht is breed: ${count.toLocaleString('nl-NL')} advertenties. ` +
+        'Je krijgt er waarschijnlijk veel meldingen van. Verfijn eerst je zoekopdracht met een prijs, categorie of afstand.',
     atLimit: 'Je hebt al je zoekmeldingen gebruikt. Verwijder er een om ruimte te maken voor een nieuwe.',
     listTitle: 'Jouw zoekmeldingen',
     empty: 'Je hebt nog geen zoekmeldingen. Zoek iets op Marktplaats en maak je eerste melding aan.',
@@ -895,6 +897,7 @@ function renderAlertsDashboard(me, alerts, matches) {
                     <button id="cleanplaats-alert-create" class="cleanplaats-alerts-primary-btn">＋ ${ALERTS_TEXT.createButton}</button>
                 </div>
                 ${context ? `<div class="cleanplaats-alerts-create-note" id="cleanplaats-alert-create-note">${ALERTS_TEXT.createContextHint}</div>` : ''}
+                <div class="cleanplaats-alerts-create-warning" id="cleanplaats-alert-broad-warning" hidden></div>
             </div>
         `;
     }
@@ -1031,6 +1034,41 @@ function renderAlertsDashboard(me, alerts, matches) {
     `);
 
     wireAlertsDashboardEvents();
+    warnWhenSearchIsBroad(context);
+}
+
+// Roughly where a search stops making a useful alert. A well-aimed query sits
+// far below it ("macbook air m1": 339, "eames stoel": 1.486), while the ones
+// that bury you in notifications sit far above ("playstation 5": 20.033,
+// "iphone": 40.204, "stoel": 337.959).
+var CLEANPLAATS_ALERTS_BROAD_RESULT_COUNT = 5000;
+
+/**
+ * Warns before the fact when the current search is so broad that the alert
+ * would fire constantly. Runs after render and stays silent on any failure:
+ * a missing count is no reason to hold up the dashboard.
+ */
+function warnWhenSearchIsBroad(context) {
+    const element = document.getElementById('cleanplaats-alert-broad-warning');
+    if (!element || !context || !context.searchParams) return;
+
+    const params = new URLSearchParams({ limit: '1', offset: '0' });
+    Object.entries(context.searchParams).forEach(([key, value]) => {
+        if (Array.isArray(value)) value.forEach(item => params.append(`${key}[]`, item));
+        else params.set(key, value);
+    });
+
+    // Same-origin on every supported site, so this rides along on the session
+    // the user already has.
+    fetch(`/lrp/api/search?${params.toString()}`, { headers: { 'Accept': 'application/json' } })
+        .then(response => (response.ok ? response.json() : null))
+        .then(data => {
+            const count = data && data.totalResultCount;
+            if (!Number.isFinite(count) || count < CLEANPLAATS_ALERTS_BROAD_RESULT_COUNT) return;
+            element.textContent = ALERTS_TEXT.createBroadWarning(count);
+            element.hidden = false;
+        })
+        .catch(() => {});
 }
 
 function wireAlertsDashboardEvents() {
