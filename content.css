@@ -270,6 +270,12 @@
     border-top: 1px solid #f0f0f0;
   }
 
+  /* The mail address gets its own row: at 280px wide, three tiles side by side
+     squeeze every label into an ellipsis. */
+  .cleanplaats-contact-wide {
+    grid-column: 1 / -1;
+  }
+
   .cleanplaats-contact {
     display: flex;
     align-items: center;
@@ -2560,8 +2566,8 @@
   .cleanplaats-alerts-card {
     display: flex;
     flex-direction: column;
-    width: min(1040px, 94vw);
-    max-height: min(88vh, 860px);
+    width: min(1240px, 96vw);
+    max-height: min(92vh, 940px);
     background: #ffffff;
     color: #2b3442;
     border-radius: 16px;
@@ -2569,6 +2575,14 @@
     overflow: hidden;
     font-family: inherit;
     animation: cleanplaats-alerts-rise 0.22s cubic-bezier(0.2, 0.9, 0.3, 1);
+  }
+
+  /* The dashboard claims the full height it is allowed: its two columns each
+     want their own scroll, which needs a height to scroll against. The other
+     views (login, pairing code) keep shrink-wrapping, since a login form
+     stranded in a 900px card looks like something failed to load. */
+  .cleanplaats-alerts-card:has(.cleanplaats-alerts-body-split) {
+    height: min(92vh, 940px);
   }
 
   .cleanplaats-alerts-header {
@@ -2610,7 +2624,7 @@
 
   .cleanplaats-alerts-header-title h3 {
     margin: 0;
-    font-size: 17px;
+    font-size: 19px;
     font-weight: 700;
     letter-spacing: 0.01em;
     color: #222b38;
@@ -2618,7 +2632,7 @@
 
   .cleanplaats-alerts-tagline {
     display: block;
-    font-size: 12px;
+    font-size: 13px;
     color: #66707f;
     margin-top: 1px;
   }
@@ -2667,16 +2681,77 @@
 
   .cleanplaats-alerts-body {
     overflow-y: auto;
-    padding: 20px 28px 24px;
+    padding: 22px 30px 26px;
     display: flex;
     flex-direction: column;
     gap: 18px;
+    min-height: 0;
+    flex: 1;
   }
 
   /* The body is the scroll container; don't let sections with their own
      overflow (channel list, match feed) get flex-shrunk into slivers. */
   .cleanplaats-alerts-body > * {
     flex: none;
+  }
+
+  /* Single-column views (login, account, pricing, one alert's finds) keep a
+     readable measure and sit centred. The card is wide for the dashboard's
+     sake; letting a table of six rows stretch across all of it puts its labels
+     and values half a screen apart. */
+  .cleanplaats-alerts-body:not(.cleanplaats-alerts-body-split) > * {
+    width: 100%;
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* --- The wide dashboard: two columns --- */
+
+  /* Managing searches on the left, what they found on the right. Stacked, the
+     same content is one narrow ribbon down the middle of a wide card, and
+     every list ends up behind a scroll. */
+  .cleanplaats-alerts-body-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+    gap: 0 30px;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .cleanplaats-alerts-col {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 6px;
+  }
+
+  .cleanplaats-alerts-col > * {
+    flex: none;
+  }
+
+  /* The left column ends with the footer links, which belong at the bottom of
+     the column rather than trailing straight after the last search. */
+  .cleanplaats-alerts-col-manage .cleanplaats-alerts-footer {
+    margin-top: auto;
+  }
+
+  /* The feed column *is* the scroller here, so the list drops its own box. */
+  .cleanplaats-alerts-body-split .cleanplaats-alerts-matches {
+    max-height: none;
+    overflow: visible;
+  }
+
+  /* Keep the heading and its sorter in place while the feed scrolls under it. */
+  .cleanplaats-alerts-col-feed .cleanplaats-alerts-section-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    margin: 0;
+    padding: 2px 0 10px;
+    background: #ffffff;
   }
 
   .cleanplaats-alerts-loading {
@@ -2958,12 +3033,11 @@
   }
 
   .cleanplaats-alerts-create-title {
-    font-size: 11.5px;
+    font-size: 15px;
     font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: #66707f;
-    margin-bottom: 8px;
+    letter-spacing: -0.005em;
+    color: #222b38;
+    margin-bottom: 10px;
   }
 
   .cleanplaats-alerts-create .cleanplaats-alerts-form-row {
@@ -3282,14 +3356,33 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    flex-wrap: wrap;
+    gap: 4px 12px;
     margin-top: 14px;
     padding: 11px 14px;
     border-radius: 10px;
     background: #eef7f1;
-    font-size: 12.5px;
+    font-size: 13px;
     font-weight: 600;
     color: #2f7d4f;
+  }
+
+  .cleanplaats-alerts-upgrade-done-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* The way back off the list. Muted on purpose: it should be findable without
+     competing with the confirmation it sits next to. */
+  .cleanplaats-alerts-upgrade-done .cleanplaats-alerts-text-btn {
+    color: #4f7a62;
+    font-weight: 500;
+    padding: 0;
+  }
+
+  .cleanplaats-alerts-upgrade-done .cleanplaats-alerts-text-btn:hover {
+    color: #1f5a38;
   }
 
   /* Account bar as a button */
@@ -3328,21 +3421,22 @@
 
   /* --- Alert cards --- */
 
+  /* Plain, readable headings. The old tiny grey uppercase labels were hard to
+     read and did not look like headings so much as leftover chrome. */
   .cleanplaats-alerts-section-title {
-    font-size: 11.5px;
+    font-size: 15px;
     font-weight: 700;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    color: #97a0ae;
-    margin: 4px 2px -6px;
+    letter-spacing: -0.005em;
+    color: #222b38;
+    margin: 6px 2px -4px;
   }
 
   .cleanplaats-alerts-section-header {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     justify-content: space-between;
     gap: 8px;
-    margin: 4px 2px -6px;
+    margin: 6px 2px -4px;
   }
 
   .cleanplaats-alerts-section-header .cleanplaats-alerts-section-title {
@@ -3350,7 +3444,7 @@
   }
 
   .cleanplaats-alerts-sort-select {
-    font-size: 11.5px;
+    font-size: 12.5px;
     font-weight: 600;
     color: #66707f;
     background: #f0f2f5;
@@ -3591,7 +3685,7 @@
     border-radius: 10px;
     background: #f6f7f9;
     color: #97a0ae;
-    font-size: 13px;
+    font-size: 13.5px;
     font-style: italic;
     line-height: 1.5;
   }
@@ -3639,7 +3733,7 @@
   .cleanplaats-alerts-card-label {
     flex: 1;
     min-width: 0;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     color: #222b38;
     text-decoration: none;
@@ -3658,7 +3752,7 @@
     border-radius: 999px;
     background: #eef1f5;
     color: #4d5765;
-    font-size: 11.5px;
+    font-size: 12.5px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
   }
@@ -3689,7 +3783,7 @@
 
   .cleanplaats-alerts-matches-note {
     margin-top: 10px;
-    font-size: 11.5px;
+    font-size: 12px;
     color: #97a0ae;
     text-align: center;
   }
@@ -3704,7 +3798,7 @@
   }
 
   .cleanplaats-alerts-meta {
-    font-size: 11.5px;
+    font-size: 12.5px;
     color: #97a0ae;
   }
 
@@ -4146,7 +4240,7 @@
   }
 
   .cleanplaats-alerts-match-title {
-    font-size: 14px;
+    font-size: 14.5px;
     font-weight: 600;
     color: #222b38;
     line-height: 1.35;
@@ -4183,7 +4277,7 @@
   }
 
   .cleanplaats-alerts-match-alert-label {
-    font-size: 11px;
+    font-size: 11.5px;
     color: #97a0ae;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -4318,14 +4412,172 @@
     color: #97a0ae;
   }
 
+  /* --- Contact --- */
+
+  .cleanplaats-alerts-contact {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+    padding: 13px 15px;
+    border: 1px solid #e6e9ee;
+    border-radius: 12px;
+    background: #f6f7f9;
+  }
+
+  .cleanplaats-alerts-contact-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex: none;
+    border-radius: 10px;
+    background: #eef1f5;
+    color: #66707f;
+  }
+
+  .cleanplaats-alerts-contact-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cleanplaats-alerts-contact-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #222b38;
+  }
+
+  .cleanplaats-alerts-contact-body {
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: #66707f;
+  }
+
+  .cleanplaats-alerts-contact .cleanplaats-alerts-secondary-btn {
+    flex: none;
+  }
+
+  /* --- The opening snapshot, collapsed --- */
+
+  .cleanplaats-alerts-baseline {
+    margin-top: 4px;
+    border: 1px solid #e6e9ee;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .cleanplaats-alerts-baseline-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 8px;
+    padding: 11px 14px;
+    border: none;
+    background: #f6f7f9;
+    color: #4d5765;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .cleanplaats-alerts-baseline-trigger:hover {
+    background: #eef1f5;
+    color: #222b38;
+  }
+
+  .cleanplaats-alerts-baseline-trigger-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+
+  .cleanplaats-alerts-baseline-chevron {
+    display: flex;
+    transition: transform 0.18s ease;
+  }
+
+  .cleanplaats-alerts-baseline-trigger-open .cleanplaats-alerts-baseline-chevron {
+    transform: rotate(180deg);
+  }
+
+  .cleanplaats-alerts-baseline-panel {
+    padding: 12px 14px 14px;
+    border-top: 1px solid #e6e9ee;
+  }
+
+  .cleanplaats-alerts-baseline-panel[hidden] {
+    display: none;
+  }
+
+  /* Expanding this is a deliberate "show me everything", so it grows the view
+     rather than opening a second scrollbar inside the one already there. */
+  .cleanplaats-alerts-baseline-panel .cleanplaats-alerts-matches {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .cleanplaats-alerts-baseline-hint {
+    margin: 0 0 10px;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: #66707f;
+  }
+
   /* --- Footer --- */
 
   .cleanplaats-alerts-footer {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    padding-top: 10px;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    margin-top: 4px;
+    padding-top: 14px;
     border-top: 1px solid #e6e9ee;
+  }
+
+  .cleanplaats-alerts-footer-hint {
+    font-size: 12px;
+    line-height: 1.45;
+    color: #97a0ae;
+  }
+
+  /* Leaving has to be as easy to find as arriving was. The old text link was
+     small, grey and easy to miss, which reads as an account you can't get out
+     of. */
+  .cleanplaats-alerts-danger-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border: 1px solid #e7b4b0;
+    border-radius: 10px;
+    background: #fdf3f2;
+    color: #b3261e;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .cleanplaats-alerts-danger-btn:hover {
+    border-color: #b3261e;
+    background: #b3261e;
+    color: #fff;
+  }
+
+  .cleanplaats-alerts-danger-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
   }
 
   /* --- Dark mode --- */
@@ -4335,7 +4587,8 @@
     color: #dde4ee;
   }
 
-  html.cleanplaats-dark-mode .cleanplaats-alerts-header {
+  html.cleanplaats-dark-mode .cleanplaats-alerts-header,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-col-feed .cleanplaats-alerts-section-header {
     background: #10161f;
     border-color: #243044;
   }
@@ -4422,9 +4675,13 @@
     color: #aebbcd;
   }
 
-  html.cleanplaats-dark-mode .cleanplaats-alerts-create-title,
   html.cleanplaats-dark-mode .cleanplaats-alerts-create-note {
     color: #8fa0b8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-title,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-section-title {
+    color: #e7edf8;
   }
 
   /* Sub-views: account, pricing, limit */
@@ -4700,6 +4957,61 @@
     border-color: #243044;
   }
 
+  html.cleanplaats-dark-mode .cleanplaats-alerts-footer-hint,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-contact-body,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-baseline-hint {
+    color: #8fa0b8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-contact,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-baseline {
+    background: #18202c;
+    border-color: #243044;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-contact-title {
+    color: #e7edf8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-contact-icon {
+    background: #1f2a38;
+    color: #9fb0c6;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-baseline-trigger {
+    background: #18202c;
+    color: #aebbcd;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-baseline-trigger:hover {
+    background: #1f2a38;
+    color: #e7edf8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-baseline-panel {
+    border-color: #243044;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-danger-btn {
+    border-color: #5c2a2a;
+    background: #2a1618;
+    color: #f08b83;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-danger-btn:hover {
+    border-color: #a8322a;
+    background: #a8322a;
+    color: #fff;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-upgrade-done .cleanplaats-alerts-text-btn {
+    color: #7fb79a;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-upgrade-done .cleanplaats-alerts-text-btn:hover {
+    color: #b6dfc9;
+  }
+
   html.cleanplaats-dark-mode .cleanplaats-alerts-switch-locked[data-tip]::after {
     background: #0e1521;
     color: #e7edf5;
@@ -4854,6 +5166,36 @@
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-filter-global-head {
     color: #8fa0b8;
+  }
+
+  /* Too narrow for two columns: back to one, and the card shrink-wraps again
+     so a short dashboard doesn't stretch into a mostly empty sheet. */
+  @media (max-width: 1000px) {
+    .cleanplaats-alerts-card:has(.cleanplaats-alerts-body-split) {
+      height: auto;
+    }
+
+    .cleanplaats-alerts-body-split {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      overflow-y: auto;
+    }
+
+    .cleanplaats-alerts-col {
+      overflow: visible;
+      padding-right: 0;
+    }
+
+    .cleanplaats-alerts-body-split .cleanplaats-alerts-matches {
+      max-height: 460px;
+      overflow-y: auto;
+    }
+
+    .cleanplaats-alerts-col-feed .cleanplaats-alerts-section-header {
+      position: static;
+      padding: 0;
+    }
   }
 
   @media (max-width: 560px) {
