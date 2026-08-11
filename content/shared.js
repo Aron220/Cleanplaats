@@ -13,6 +13,11 @@ var CLEANPLAATS_FLOATING_OFFSET_VAR = '--cleanplaats-floating-offset';
 // Marktplaats renamed this asset from tenant--nlnl to brand-logo--nlnl; match both.
 var MARKTPLAATS_DESKTOP_LOGO_MATCH = /\/(?:tenant|brand-logo)--nlnl(?:\.[a-z0-9]+)?\.svg$/i;
 var CLEANPLAATS_DARK_LOGO_PATH = 'icons/marktplaats-logo-darkmode.svg';
+// Search results render as .hz-Listing, but the homepage feed ("Voor jou" / "In je
+// buurt") renders as .hz-StructuredListing cards and never contains a single
+// .hz-Listing. Anything that waits for "the listings are there" has to accept both,
+// otherwise it waits forever on the homepage.
+var CLEANPLAATS_LISTING_SELECTOR = '.hz-Listing, .hz-StructuredListing';
 var cleanplaatsStorageSyncRegistered = false;
 var notificationTimeout;
 var notificationVisible = false;
@@ -481,6 +486,7 @@ var CLEANPLAATS = {
         lastSellerAgeWarningKey: '',
         sellerAgeCheckTimer: 0,
         cleanupTimer: 0,
+        lastCleanupAt: 0,
         viewedListings: {}
     },
 

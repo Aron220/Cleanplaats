@@ -17,16 +17,78 @@ function performCleanupAndCheckForEmptyPage() {
     // across every page visited and report far more removals than the page holds.
     resetStats();
 
+    let attempts = 0;
     const checkContentLoaded = setInterval(() => {
-        if (document.querySelector('.hz-Listing') || document.querySelector('#adsense-container')) {
-            clearInterval(checkContentLoaded);
-            console.log('Cleanplaats: Running cleanup after navigation');
-            performCleanup();
-            injectBlacklistButtons();
+        const hasContent = document.querySelector(CLEANPLAATS_LISTING_SELECTOR)
+            || document.querySelector('#adsense-container');
 
-            setTimeout(checkForEmptyPage, 500);
+        // Give up after ~10s instead of polling for the lifetime of the tab: some
+        // pages (a listing detail page, an empty search) never render a card at all.
+        if (!hasContent && ++attempts < 100) {
+            return;
         }
+
+        clearInterval(checkContentLoaded);
+
+        if (!hasContent) {
+            return;
+        }
+
+        console.log('Cleanplaats: Running cleanup after navigation');
+        performCleanup();
+        injectBlacklistButtons();
+
+        setTimeout(checkForEmptyPage, 500);
     }, 100);
+}
+
+// Debounce so a burst of mutations collapses into one pass (a full cleanup per
+// mutation froze the page on mobile viewports), but with a hard ceiling: the
+// homepage feed mutates continuously while the user scrolls, and a plain trailing
+// debounce keeps getting pushed forward so the cleanup never actually runs.
+const CLEANPLAATS_CLEANUP_DEBOUNCE_MS = 80;
+const CLEANPLAATS_CLEANUP_MAX_DELAY_MS = 500;
+
+const CLEANPLAATS_OBSERVER_OPTIONS = {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['class', 'style', 'hidden', 'aria-hidden']
+};
+
+function runScheduledCleanup() {
+    clearTimeout(CLEANPLAATS.runtime.cleanupTimer);
+    CLEANPLAATS.runtime.cleanupTimer = 0;
+    CLEANPLAATS.runtime.lastCleanupAt = Date.now();
+
+    // Hiding listings and injecting our own buttons happens *inside* listing cards,
+    // which is exactly what triggers a cleanup now. Stop observing for the duration
+    // of the pass so our own writes cannot schedule the next one forever.
+    const observer = CLEANPLAATS.observers.mutation;
+    observer?.disconnect();
+
+    try {
+        performCleanup();
+        injectBlacklistButtons();
+    } finally {
+        observer?.observe(document, CLEANPLAATS_OBSERVER_OPTIONS);
+    }
+}
+
+function scheduleCleanup() {
+    const now = Date.now();
+
+    if (!CLEANPLAATS.runtime.lastCleanupAt) {
+        CLEANPLAATS.runtime.lastCleanupAt = now;
+    }
+
+    if (now - CLEANPLAATS.runtime.lastCleanupAt >= CLEANPLAATS_CLEANUP_MAX_DELAY_MS) {
+        runScheduledCleanup();
+        return;
+    }
+
+    clearTimeout(CLEANPLAATS.runtime.cleanupTimer);
+    CLEANPLAATS.runtime.cleanupTimer = setTimeout(runScheduledCleanup, CLEANPLAATS_CLEANUP_DEBOUNCE_MS);
 }
 
 function setupObservers() {
@@ -49,11 +111,18 @@ function setupObservers() {
 
         for (const mutation of mutations) {
             if (mutation.type === 'childList' && mutation.addedNodes.length) {
+                // Marktplaats regularly rewrites the *inside* of a card that is already
+                // in the DOM instead of replacing the card node: the homepage feed appends
+                // empty .hz-StructuredListing skeletons while scrolling and only fills in
+                // the link, title and price afterwards, and the mobile layout re-renders
+                // listing bodies in place. Neither shows up as an added listing node, so
+                // without this the filters only ever see the empty shell and the finished
+                // card is never re-checked.
                 const listingMutationTarget = mutation.target?.nodeType === Node.ELEMENT_NODE
-                    ? mutation.target.closest?.('.hz-Listing, .hz-StructuredListing')
+                    ? mutation.target.closest?.(CLEANPLAATS_LISTING_SELECTOR)
                     : null;
 
-                if (window.innerWidth < 700 && listingMutationTarget) {
+                if (listingMutationTarget) {
                     shouldCleanup = true;
                     break;
                 }
@@ -140,24 +209,12 @@ function setupObservers() {
         }
 
         if (shouldCleanup) {
-            clearTimeout(CLEANPLAATS.runtime.cleanupTimer);
-            // Run the cleanup with a slight delay so that it doesnt crash the page if a lot of mutations happen in a short time
-            // This specifically happened on smaller viewports in the mobile layout
-            CLEANPLAATS.runtime.cleanupTimer = setTimeout(() => {
-                performCleanup();
-                injectBlacklistButtons();
-            }, 80);
+            scheduleCleanup();
         }
     });
 
-    observer.observe(document, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['class', 'style', 'hidden', 'aria-hidden']
-    });
-
     CLEANPLAATS.observers.mutation = observer;
+    observer.observe(document, CLEANPLAATS_OBSERVER_OPTIONS);
 }
 
 function handleNavigation() {

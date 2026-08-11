@@ -118,8 +118,9 @@ function initCleanplaats() {
                     scheduleSellerAgeWarningCheck({ resetState: true });
                     showOnboarding(currentVersion);
 
+                    let cleanupWaitAttempts = 0;
                     const tryCleanup = () => {
-                        if (document.querySelector('.hz-Listing') || document.querySelector('#adsense-container')) {
+                        if (document.querySelector(CLEANPLAATS_LISTING_SELECTOR) || document.querySelector('#adsense-container')) {
                             performInitialCleanup();
                             injectBlacklistButtons();
                             setTimeout(checkForEmptyPage, 300);
@@ -145,7 +146,9 @@ function initCleanplaats() {
                                     clearInterval(interval);
                                 }
                             }, 80);
-                        } else {
+                        } else if (++cleanupWaitAttempts < 250) {
+                            // Pages without any listing card (account, messages, …) would
+                            // otherwise keep this poll alive for as long as the tab is open.
                             setTimeout(tryCleanup, 60);
                         }
                     };
