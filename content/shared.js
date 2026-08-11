@@ -436,7 +436,7 @@ function getPanelLocaleText() {
         // feature is Marktplaats-only, so it isn't translated per locale.
         alertsManageButton: 'Zoekmeldingen',
         alertsPromoNewBadge: 'NIEUW',
-        alertsPromoIntroText: 'Laat Cleanplaats voor je zoeken. Je krijgt een bericht zodra er een nieuwe advertentie verschijnt — ook als je browser dicht is.',
+        alertsPromoIntroText: 'Laat Cleanplaats voor je zoeken. Je krijgt een bericht zodra er een nieuwe advertentie verschijnt, ook als je browser dicht is.',
         alertsPromoIntroStart: 'Laat me zien hoe',
         alertsPromoIntroLater: 'Later',
         alertsPromoTagline: 'Als eerste bij een nieuwe advertentie',
@@ -527,7 +527,7 @@ var CLEANPLAATS = {
 
 var CLEANPLAATS_UPDATE_NOTES = {
     '2.1.6': {
-        intro: 'Cleanplaats 2.1.6 introduceert Zoekmeldingen: krijg een bericht in Telegram zodra er een nieuwe advertentie verschijnt voor je zoekopdracht — ook als je browser dicht is.',
+        intro: 'Cleanplaats 2.1.6 introduceert Zoekmeldingen: krijg een bericht in Telegram zodra er een nieuwe advertentie verschijnt voor je zoekopdracht, ook als je browser dicht is.',
         highlights: [
             'Nieuwe knop "Zoekmeldingen" onderin het paneel. Zoek iets op Marktplaats en klik erop: je zoekterm staat al ingevuld, en de categorie, locatie en afstand van je huidige zoekopdracht gaan automatisch mee.',
             'Meldingen komen binnen via Telegram, dus ook als je browser dicht is of je computer uit staat. Je koppelt Telegram eenmalig met een code van 6 cijfers die je van de bot krijgt.',
@@ -564,26 +564,26 @@ var CLEANPLAATS_UPDATE_NOTES = {
         note: null
     },
     '2.1.2': {
-        intro: 'Cleanplaats 2.1.2 laat je individuele advertenties verbergen — handig als je een bepaalde aanbieding niet meer wil zien zonder de hele verkoper te blokkeren.',
+        intro: 'Cleanplaats 2.1.2 laat je individuele advertenties verbergen. Handig als je een bepaalde aanbieding niet meer wil zien zonder de hele verkoper te blokkeren.',
         highlights: [
-            'Nieuwe knop "Verberg advertentie" op elke zoekresultaat — verberg een specifieke advertentie met één klik, zonder de verkoper te blokkeren.',
+            'Nieuwe knop "Verberg advertentie" op elke zoekresultaat: verberg een specifieke advertentie met één klik, zonder de verkoper te blokkeren.',
             'Verborgen advertenties beheer je via "Beheer verborgen advertenties" in het paneel: zie alle verborgen advertenties en zet ze eenvoudig terug.',
-            'Firefox-fix: de ingestelde standaard sortering werd bij Firefox niet altijd correct toegepast — dit werkt nu betrouwbaar.',
-            'Donkere modus: de banner "Zoek volgende pagina" was slecht leesbaar in dark mode — dit is nu opgelost.'
+            'Firefox-fix: de ingestelde standaard sortering werd bij Firefox niet altijd correct toegepast. Dit werkt nu betrouwbaar.',
+            'Donkere modus: de banner "Zoek volgende pagina" was slecht leesbaar in dark mode. Dit is nu opgelost.'
         ],
         note: null
     },
     '2.1.1': {
         intro: 'Cleanplaats 2.1.0 voegt een handige knop toe om snel de volgende pagina met zichtbare advertenties te vinden.',
         highlights: [
-            'Staat een hele pagina vol met gefilterde advertenties? Er verschijnt nu automatisch een banner met de knop "Zoek volgende pagina met zichtbare advertenties" — Cleanplaats scant de volgende pagina\'s en springt direct naar de eerste pagina met iets te zien.'
+            'Staat een hele pagina vol met gefilterde advertenties? Er verschijnt nu automatisch een banner met de knop "Zoek volgende pagina met zichtbare advertenties". Cleanplaats scant de volgende pagina\'s en springt direct naar de eerste pagina met iets te zien.'
         ],
         note: null
     },
     '2.0.9': {
         intro: 'Cleanplaats 2.0.9 breidt de blacklist uit met beschrijvingen, voegt een bekeken-indicator toe en verbetert de donkere modus.',
         highlights: [
-            'Blacklist-termen werken nu ook op advertentiebeschrijvingen — voeg termen toe via "Beheer blacklist-termen" onder het kopje "In beschrijvingen".',
+            'Blacklist-termen werken nu ook op advertentiebeschrijvingen. Voeg termen toe via "Beheer blacklist-termen" onder het kopje "In beschrijvingen".',
             'Bekeken advertenties krijgen een subtiele indicator zodat je ze makkelijker herkent. Dit kun je in- of uitschakelen via Voorkeuren.',
             'De donkere modus dekt nu ook de "Direct kopen"-pagina correct af.'
         ],

@@ -45,8 +45,8 @@ var cleanplaatsAlertsRuntime = {
 
 var ALERTS_TEXT = {
     modalTitle: 'Zoekmeldingen',
-    tagline: 'Krijg nieuwe advertenties direct in je Telegram — ook als je browser dicht is.',
-    intro: 'Krijg een melding zodra er een nieuwe advertentie verschijnt die aan je zoekopdracht voldoet — ook als je browser dicht is. Je Cleanplaats-filters worden automatisch toegepast.',
+    tagline: 'Krijg nieuwe advertenties direct in je Telegram, ook als je browser dicht is.',
+    intro: 'Krijg een melding zodra er een nieuwe advertentie verschijnt die aan je zoekopdracht voldoet, ook als je browser dicht is. Je Cleanplaats-filters worden automatisch toegepast.',
     loginTitle: 'Inloggen of account maken',
     loginIntro: 'Je e-mailadres is je account: je krijgt er een inlogcode op, en je zoekmeldingen werken daarmee op al je apparaten.',
     emailPlaceholder: 'jouw@email.nl',
@@ -92,7 +92,7 @@ var ALERTS_TEXT = {
     channelTelegram: 'Telegram',
     statusLabel: 'Actief',
     matchesTitle: 'Gevonden advertenties',
-    matchesEmpty: 'Nog niets gevonden. Zodra de eerste controle klaar is — binnen enkele minuten — verschijnen de advertenties hier.',
+    matchesEmpty: 'Nog niets gevonden. Zodra de eerste controle klaar is, binnen enkele minuten, verschijnen de advertenties hier.',
     newBadge: 'NIEUW',
     channelsTitle: 'Hoe je meldingen ontvangt',
     telegramLinked: 'Gekoppeld',
@@ -101,7 +101,7 @@ var ALERTS_TEXT = {
     // Telegram is the only delivery channel, so an unlinked account gets
     // nothing pushed to it — say that plainly instead of letting people wait.
     telegramRequiredTitle: 'Je ontvangt nog geen meldingen',
-    telegramRequiredBody: 'Meldingen worden via Telegram verstuurd. Koppel Telegram om nieuwe advertenties binnen te krijgen — gevonden advertenties zie je hieronder ook zonder koppeling.',
+    telegramRequiredBody: 'Meldingen worden via Telegram verstuurd. Koppel Telegram om nieuwe advertenties binnen te krijgen. Gevonden advertenties zie je hieronder ook zonder koppeling.',
     telegramRequiredButton: 'Telegram koppelen',
     telegramRelink: 'Ander account koppelen',
     telegramUnlink: 'Ontkoppelen',
@@ -109,7 +109,7 @@ var ALERTS_TEXT = {
     telegramUnlinkedToast: 'Telegram ontkoppeld.',
     // Code-based linking flow (the bot sends you a code, you type it back here).
     telegramConnectTitle: 'Telegram koppelen',
-    telegramConnectIntro: 'Krijg nieuwe advertenties direct in je Telegram-chat — werkt ook als je alleen Telegram op je telefoon hebt.',
+    telegramConnectIntro: 'Krijg nieuwe advertenties direct in je Telegram-chat. Werkt ook als je alleen Telegram op je telefoon hebt.',
     telegramStep1Title: 'Open onze bot in Telegram',
     telegramStep1Body: 'Open Telegram en zoek deze bot:',
     telegramStep1Open: 'Open in Telegram',
@@ -159,7 +159,7 @@ var ALERTS_TEXT = {
     upgradeSoon: 'Binnenkort',
     upgradeButton: 'Hou me op de hoogte',
     upgradeSending: 'Bezig…',
-    upgradeRegistered: 'Je staat op de lijst — we mailen je zodra Premium er is.',
+    upgradeRegistered: 'Je staat op de lijst. We mailen je zodra Premium er is.',
     upgradeToast: 'Bedankt! Je hoort van ons zodra Premium beschikbaar is.',
 
     // Account view
@@ -1027,7 +1027,7 @@ function wireAlertsBackButton() {
 }
 
 function formatAlertsMemberSince(timestamp) {
-    if (!timestamp) return '—';
+    if (!timestamp) return 'Onbekend';
     return new Date(timestamp).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
