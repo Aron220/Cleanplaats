@@ -20,6 +20,11 @@ var cleanplaatsAlertsRuntime = {
     apiBase: '',
     me: null,
     pendingEmail: '',
+    // When the user last looked at the feed *before* opening this panel. Kept
+    // for as long as the modal stays open — including across refreshes — so
+    // the "NIEUW" badges don't vanish the moment you press refresh. Reset on
+    // close, so a later visit starts from the freshly stamped server value.
+    matchesSeenAt: null,
     // Remembers whether the control panel was expanded when the modal opened,
     // so closing the modal can restore it (the modal collapses the panel out
     // of the way while it's open).
@@ -64,6 +69,9 @@ var ALERTS_TEXT = {
     matchCount: count => `${count} gevonden`,
     lastChecked: 'Laatst gecontroleerd',
     neverChecked: 'Nog niet gecontroleerd',
+    nextCheckIn: m => `Volgende controle over ${m} ${m === 1 ? 'minuut' : 'minuten'}`,
+    nextCheckSoon: 'Volgende controle: zo',
+    refreshButton: 'Vernieuwen',
     validityLeft: n => `Verloopt over ${n} ${n === 1 ? 'dag' : 'dagen'}`,
     validityExpired: 'Verlopen',
     extendButton: 'Verleng',
@@ -193,6 +201,7 @@ var ALERTS_ICONS = {
     check: '<path d="M20 6 9 17l-5-5"/>',
     clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
     arrowLeft: '<path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>',
+    refresh: '<path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/>',
     copy: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'
 };
 
@@ -220,6 +229,19 @@ function formatAlertRelativeTime(timestamp) {
     } catch (error) {
         return '';
     }
+}
+
+/**
+ * When the next poll is due. The cron runs every minute and picks up alerts
+ * whose interval has elapsed, so this is accurate to about a minute — hence
+ * "zo" rather than a countdown to the second once we're inside that window.
+ */
+function formatAlertNextCheck(lastCheckedAt, intervalMinutes) {
+    const interval = Number(intervalMinutes) > 0 ? Number(intervalMinutes) : 0;
+    if (!lastCheckedAt || !interval) return '';
+    const remaining = lastCheckedAt + interval * 60 * 1000 - Date.now();
+    if (remaining <= 60 * 1000) return ALERTS_TEXT.nextCheckSoon;
+    return ALERTS_TEXT.nextCheckIn(Math.round(remaining / 60000));
 }
 
 /**
@@ -340,7 +362,11 @@ function renderAlertMatchItems(matches) {
         return `<div class="cleanplaats-alerts-empty">${ALERTS_TEXT.matchesEmpty}</div>`;
     }
     return matches.map(match => {
-        const isNew = !match.is_baseline && (Date.now() - match.found_at) < 24 * 60 * 60 * 1000;
+        // "NIEUW" means new *to this user*: found after the last time they
+        // looked. Baseline listings (the snapshot from the alert's first poll)
+        // never qualify — they were already there when the alert was made.
+        const seenAt = cleanplaatsAlertsRuntime.matchesSeenAt || 0;
+        const isNew = !match.is_baseline && match.found_at > seenAt;
         const thumb = match.image_url
             ? `<img class="cleanplaats-alerts-match-thumb" src="${escapeAlertText(match.image_url)}" alt="" loading="lazy">`
             : `<span class="cleanplaats-alerts-match-thumb cleanplaats-alerts-match-thumb-empty">${alertIcon('image', 20)}</span>`;
@@ -520,6 +546,9 @@ function getAlertsOverlay() {
 function hideAlertsModal() {
     const overlay = document.getElementById('cleanplaats-alerts-modal');
     if (overlay) overlay.style.display = 'none';
+    // Next time the panel opens it should use the visit the server stamped
+    // during this one, so what we just looked at is no longer "NIEUW".
+    cleanplaatsAlertsRuntime.matchesSeenAt = null;
     restorePanelAfterAlerts();
 }
 
@@ -577,7 +606,10 @@ function renderAlertsShell(overlay) {
                         <span class="cleanplaats-alerts-tagline">${ALERTS_TEXT.tagline}</span>
                     </div>
                 </div>
-                <button class="cleanplaats-alerts-close" id="cleanplaats-alerts-close" aria-label="${ALERTS_TEXT.closeButton}">${alertIcon('close', 16)}</button>
+                <div class="cleanplaats-alerts-header-actions">
+                    <button class="cleanplaats-alerts-refresh" id="cleanplaats-alerts-refresh" title="${ALERTS_TEXT.refreshButton}" aria-label="${ALERTS_TEXT.refreshButton}" hidden>${alertIcon('refresh', 16)}</button>
+                    <button class="cleanplaats-alerts-close" id="cleanplaats-alerts-close" aria-label="${ALERTS_TEXT.closeButton}">${alertIcon('close', 16)}</button>
+                </div>
             </div>
             <div class="cleanplaats-alerts-body" id="cleanplaats-alerts-body">
                 <div class="cleanplaats-alerts-loading">${ALERTS_TEXT.loading}</div>
@@ -589,13 +621,33 @@ function renderAlertsShell(overlay) {
     const bellImg = document.getElementById('cleanplaats-alerts-bell-img');
     if (bellImg) bellImg.src = browserAPI.runtime.getURL('icons/alert-icon.png');
     document.getElementById('cleanplaats-alerts-close').onclick = hideAlertsModal;
+    // The panel lives on the page, so reloading Marktplaats to see whether
+    // anything new came in would close it. This refreshes just the panel.
+    const refreshButton = document.getElementById('cleanplaats-alerts-refresh');
+    refreshButton.onclick = () => {
+        // One turn of the icon: without it a refresh that returns the same
+        // data looks like the button did nothing.
+        refreshButton.classList.remove('cleanplaats-alerts-refresh-spinning');
+        void refreshButton.offsetWidth;
+        refreshButton.classList.add('cleanplaats-alerts-refresh-spinning');
+        loadAlertsDashboard();
+    };
 }
 
 function setAlertsBody(html) {
     const body = document.getElementById('cleanplaats-alerts-body');
     if (!body) return null;
     body.innerHTML = DOMPurify.sanitize(html);
+    // Default the refresh button off on every view change; only the dashboard
+    // turns it back on. Refreshing a half-typed login code or pairing code
+    // would throw the input away.
+    setAlertsRefreshVisible(false);
     return body;
+}
+
+function setAlertsRefreshVisible(visible) {
+    const button = document.getElementById('cleanplaats-alerts-refresh');
+    if (button) button.hidden = !visible;
 }
 
 function showAlertsInlineError(message) {
@@ -851,6 +903,12 @@ function loadAlertsDashboard() {
         alertsApiFetch('/api/matches')
     ]).then(([me, alertsData, matchesData]) => {
         cleanplaatsAlertsRuntime.me = me;
+        // Only the first load of this panel session decides the cut-off; every
+        // refresh after that keeps it, so pressing refresh never clears badges
+        // the user hasn't actually looked at yet.
+        if (cleanplaatsAlertsRuntime.matchesSeenAt === null) {
+            cleanplaatsAlertsRuntime.matchesSeenAt = matchesData.matchesSeenAt || 0;
+        }
         renderAlertsDashboard(me, alertsData.alerts || [], matchesData.matches || []);
     }).catch(error => {
         if (error.status === 401) {
@@ -909,9 +967,16 @@ function renderAlertsDashboard(me, alerts, matches) {
             const statusClass = validity && validity.expired
                 ? 'expired'
                 : (alert.enabled ? 'active' : 'paused');
-            const lastChecked = alert.last_checked_at
+            // For a running alert, when the next check lands is the useful
+            // fact; how long ago the last one was only matters when nothing
+            // is scheduled (paused, or lapsed).
+            const isRunning = alert.enabled && !(validity && validity.expired);
+            const nextCheck = isRunning && alert.last_checked_at
+                ? formatAlertNextCheck(alert.last_checked_at, me.intervalMinutes)
+                : '';
+            const lastChecked = nextCheck || (alert.last_checked_at
                 ? `${ALERTS_TEXT.lastChecked}: ${formatAlertRelativeTime(alert.last_checked_at)}`
-                : ALERTS_TEXT.neverChecked;
+                : ALERTS_TEXT.neverChecked);
             const labelHtml = alert.search_url
                 ? `<a href="${escapeAlertText(alert.search_url)}" class="cleanplaats-alerts-card-label">${escapeAlertText(alert.label)}</a>`
                 : `<span class="cleanplaats-alerts-card-label">${escapeAlertText(alert.label)}</span>`;
@@ -1035,6 +1100,7 @@ function renderAlertsDashboard(me, alerts, matches) {
 
     wireAlertsDashboardEvents();
     warnWhenSearchIsBroad(context);
+    setAlertsRefreshVisible(true);
 }
 
 // Roughly where a search stops making a useful alert. A well-aimed query sits
