@@ -2,6 +2,7 @@
 .vscode
 *.zip
 update_notes.txt
+todo.txt
 .codex
 .output/
 .wxt/
