@@ -238,47 +238,66 @@ function unhideListingsByTerm(term) {
     });
 }
 
-function addSellerToBlacklist(sellerName) {
-    addSellersToBlacklist([sellerName]);
+// sellerId is optional: the buttons on listings and on a detail page can supply
+// one, the "add by name" input in the modal cannot.
+function addSellerToBlacklist(sellerName, sellerId) {
+    addSellersToBlacklist([{ id: sellerId || '', name: sellerName }]);
 }
 
-function addSellersToBlacklist(sellerNames) {
-    const normalizedSellerNames = sellerNames
-        .map(name => name.trim())
+function addSellersToBlacklist(sellers) {
+    const existingKeys = new Set(getBlacklistedSellerEntries().map(getBlacklistedSellerKey));
+
+    const newEntries = sellers
+        .map(normalizeBlacklistedSellerEntry)
         .filter(Boolean)
-        .filter((name, index, arr) => arr.indexOf(name) === index)
-        .filter(name => !CLEANPLAATS.settings.blacklistedSellers.includes(name));
+        .filter(entry => {
+            const key = getBlacklistedSellerKey(entry);
+            if (existingKeys.has(key)) return false;
+            existingKeys.add(key);
+            return true;
+        });
 
-    if (normalizedSellerNames.length === 0) return;
+    if (newEntries.length === 0) return;
 
-    CLEANPLAATS.settings.blacklistedSellers.push(...normalizedSellerNames);
-    incrementActionCount(normalizedSellerNames.length);
+    CLEANPLAATS.settings.blacklistedSellers.push(...newEntries);
+    incrementActionCount(newEntries.length);
     saveSettings().then(() => {
         performCleanup();
         injectBlacklistButtons();
         updateBlacklistModal();
         refreshDonationNudge();
 
-        if (normalizedSellerNames.length === 1) {
-            showBlacklistToast(normalizedSellerNames[0]);
+        if (newEntries.length === 1) {
+            showBlacklistToast(getBlacklistedSellerLabel(newEntries[0]));
             return;
         }
 
-        showBulkBlacklistToast(normalizedSellerNames.length);
+        showBulkBlacklistToast(newEntries.length);
     });
 }
 
-function removeSellerFromBlacklist(sellerName) {
-    CLEANPLAATS.settings.blacklistedSellers = CLEANPLAATS.settings.blacklistedSellers.filter(s => s !== sellerName);
+function removeSellerFromBlacklist(entryKey) {
+    const removed = getBlacklistedSellerEntries().find(entry => getBlacklistedSellerKey(entry) === entryKey);
+
+    CLEANPLAATS.settings.blacklistedSellers = CLEANPLAATS.settings.blacklistedSellers
+        .filter(entry => getBlacklistedSellerKey(entry) !== entryKey);
+
     saveSettings().then(() => {
-        document.querySelectorAll('.hz-Listing').forEach(listing => {
-            const sellerNameEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-name-new, .hz-Listing-seller-link, .hz-Listing-sellerName, .hz-Listing-sellerName-new');
-            if (!sellerNameEl) return;
-            if (sellerNameEl.textContent.trim() === sellerName) {
-                listing.removeAttribute('data-cleanplaats-hidden');
-                listing.style.display = '';
-            }
-        });
+        if (removed) {
+            document.querySelectorAll('.hz-Listing').forEach(listing => {
+                const sellerNameEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-name-new, .hz-Listing-seller-link, .hz-Listing-sellerName, .hz-Listing-sellerName-new');
+                if (!sellerNameEl) return;
+
+                const matches = removed.id
+                    ? getListingSellerId(listing) === removed.id
+                    : sellerNameEl.textContent.trim() === removed.name;
+
+                if (matches) {
+                    listing.removeAttribute('data-cleanplaats-hidden');
+                    listing.style.display = '';
+                }
+            });
+        }
         performCleanup();
         injectBlacklistButtons();
         updateBlacklistModal();
@@ -302,7 +321,8 @@ function injectProductDetailBlacklistButton() {
         return;
     }
 
-    const isBlacklisted = CLEANPLAATS.settings.blacklistedSellers.includes(sellerName);
+    const sellerId = getDetailPageSellerId();
+    const isBlacklisted = isSellerBlacklisted(sellerId, sellerName);
     const detailRow = existingRow || document.createElement('div');
     detailRow.className = 'cleanplaats-detail-blacklist-row';
 
@@ -318,7 +338,7 @@ function injectProductDetailBlacklistButton() {
         button.addEventListener('click', (event) => {
             event.preventDefault();
             event.stopPropagation();
-            addSellerToBlacklist(sellerName);
+            addSellerToBlacklist(sellerName, sellerId);
         });
     }
 
@@ -362,6 +382,7 @@ function getListingContentWrapper(listing) {
 
 function injectBlacklistButtons() {
     const panelText = getPanelLocaleText();
+    indexSellerIdsFromNextData();
     document.querySelectorAll('.hz-Listing').forEach(listing => {
         const oldBtn = listing.querySelector('.cleanplaats-blacklist-btn-row');
         const oldTopRight = listing.querySelector('.cleanplaats-seller-topright-mobile');
@@ -392,7 +413,9 @@ function injectBlacklistButtons() {
 
         if (!sellerName) return;
 
-        if (CLEANPLAATS.settings.blacklistedSellers.includes(sellerName)) {
+        const sellerId = getListingSellerId(listing);
+
+        if (isSellerBlacklisted(sellerId, sellerName)) {
             listing.setAttribute('data-cleanplaats-hidden', 'true');
             listing.style.display = 'none';
             return;
@@ -431,7 +454,7 @@ function injectBlacklistButtons() {
                 e.preventDefault();
                 e.stopPropagation();
                 if (confirm(`Wil je alle advertenties van ${sellerName} verbergen?`)) {
-                    addSellerToBlacklist(sellerName);
+                    addSellerToBlacklist(sellerName, sellerId);
                 }
             };
             return;
@@ -458,7 +481,7 @@ function injectBlacklistButtons() {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                addSellerToBlacklist(sellerName);
+                addSellerToBlacklist(sellerName, sellerId);
             });
 
             carSellerElement.appendChild(btn);
@@ -475,7 +498,7 @@ function injectBlacklistButtons() {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                addSellerToBlacklist(sellerName);
+                addSellerToBlacklist(sellerName, sellerId);
             });
 
             btnRow.appendChild(btn);
@@ -509,7 +532,7 @@ function showBlacklistModal(triggerButton) {
         return;
     }
 
-    const sellers = CLEANPLAATS.settings.blacklistedSellers;
+    const sellers = getBlacklistedSellerEntries();
 
     modal.innerHTML = DOMPurify.sanitize(`
         <div class="cleanplaats-blacklist-modal-content">
@@ -517,8 +540,8 @@ function showBlacklistModal(triggerButton) {
             <ul id="cleanplaats-blacklist-list">
                 ${sellers.length === 0 ? `<li><em>${panelText.sellersEmpty}</em></li>` : sellers.map(seller => `
                     <li>
-                        <span>${seller}</span>
-                        <button class="cleanplaats-unblacklist-btn" data-seller="${seller}">${panelText.hiddenButton}</button>
+                        <span>${escapeHtmlText(getBlacklistedSellerLabel(seller))}</span>
+                        <button class="cleanplaats-unblacklist-btn" data-seller-key="${escapeHtmlText(getBlacklistedSellerKey(seller))}">${panelText.hiddenButton}</button>
                     </li>
                 `).join('')}
             </ul>
@@ -550,7 +573,9 @@ function showBlacklistModal(triggerButton) {
 
         if (sellerNames.length === 0) return;
 
-        addSellersToBlacklist(sellerNames);
+        // Typed by hand, so these stay name-based: the user has no way to know a
+        // seller's id, and every seller carrying that name is what they mean.
+        addSellersToBlacklist(sellerNames.map(name => ({ id: '', name })));
         input.value = '';
     };
 
@@ -571,7 +596,7 @@ function updateBlacklistModal() {
     if (!modal || modal.style.display === 'none') return;
     const panelText = getPanelLocaleText();
 
-    const sellers = CLEANPLAATS.settings.blacklistedSellers;
+    const sellers = getBlacklistedSellerEntries();
     const list = document.getElementById('cleanplaats-blacklist-list');
 
     if (list) {
@@ -580,8 +605,8 @@ function updateBlacklistModal() {
                 ? `<li><em>${panelText.sellersEmpty}</em></li>`
                 : sellers.map(seller => `
                     <li>
-                        <span>${seller}</span>
-                        <button class="cleanplaats-unblacklist-btn" data-seller="${seller}">${panelText.hiddenButton}</button>
+                        <span>${escapeHtmlText(getBlacklistedSellerLabel(seller))}</span>
+                        <button class="cleanplaats-unblacklist-btn" data-seller-key="${escapeHtmlText(getBlacklistedSellerKey(seller))}">${panelText.hiddenButton}</button>
                     </li>
                 `).join('')
         );
@@ -604,9 +629,10 @@ function setupBlacklistModalButtons() {
         btn.style.background = '#ff4d4d';
         btn.style.color = 'white';
         btn.onclick = () => {
-            const sellerName = btn.dataset.seller;
-            showUnblacklistToast(sellerName);
-            removeSellerFromBlacklist(sellerName);
+            const entryKey = btn.dataset.sellerKey;
+            const entry = getBlacklistedSellerEntries().find(e => getBlacklistedSellerKey(e) === entryKey);
+            showUnblacklistToast(getBlacklistedSellerLabel(entry));
+            removeSellerFromBlacklist(entryKey);
         };
     });
 }

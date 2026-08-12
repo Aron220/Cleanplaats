@@ -166,11 +166,13 @@ function performCleanup() {
     // an empty page look like the filters are over-blocking.
     let userBlockedCount = 0;
 
+    indexSellerIdsFromNextData();
+
     document.querySelectorAll('.hz-Listing').forEach(listing => {
         const sellerNameEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-name-new, .hz-Listing-seller-link, .hz-Listing-sellerName, .hz-Listing-sellerName-new');
         if (!sellerNameEl) return;
         const sellerName = sellerNameEl.textContent.trim();
-        if (CLEANPLAATS.settings.blacklistedSellers.includes(sellerName) && hideElement(listing)) {
+        if (isSellerBlacklisted(getListingSellerId(listing), sellerName) && hideElement(listing)) {
             userBlockedCount++;
         }
     });
@@ -779,7 +781,7 @@ function isApiListingBlocked(apiListing) {
     if (listingId && CLEANPLAATS.settings.blockedListings?.some(b => b.id === listingId)) return true;
 
     const sellerName = apiListing.sellerInformation?.sellerName || '';
-    if (sellerName && CLEANPLAATS.settings.blacklistedSellers.includes(sellerName)) return true;
+    if (isSellerBlacklisted(apiListing.sellerInformation?.sellerId, sellerName)) return true;
 
     const title = (apiListing.title || '').toLowerCase();
     if (CLEANPLAATS.settings.blacklistedTerms.some(term => title.includes(term.toLowerCase()))) return true;
@@ -830,8 +832,11 @@ async function searchMatchesCurrentPage(currentOffset, pageSize) {
         const resp = await fetch(apiUrl);
         if (!resp.ok) return false;
         const data = await resp.json();
-        const apiIds = [...(data.topBlock || []), ...(data.listings || [])]
-            .map(listing => (listing.itemId || '').toLowerCase());
+        const apiListings = [...(data.topBlock || []), ...(data.listings || [])];
+        // This response describes the page the user is on, so it is also the
+        // cheapest source of seller ids for cards __NEXT_DATA__ no longer covers.
+        indexSellerIdsFromApiListings(apiListings);
+        const apiIds = apiListings.map(listing => (listing.itemId || '').toLowerCase());
 
         // Paid placements rotate between requests, so require a solid majority
         // rather than an exact match.

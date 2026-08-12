@@ -131,6 +131,180 @@ function getListingCardId(listing) {
     return getListingCardFingerprint(listing);
 }
 
+/* ===== Seller identity =====
+ *
+ * Seller *names* are not unique on Marktplaats: two accounts can both be called
+ * "Demi". Blocking by name therefore hid every seller sharing the name with the
+ * one the user actually blocked. Blocks made through our own buttons now record
+ * the numeric sellerId instead.
+ *
+ * The rendered listing card carries no seller id anywhere — no profile link, no
+ * data attribute — so the id has to come from the page's own search payload,
+ * keyed by item id. __NEXT_DATA__ covers every listing the page server-rendered;
+ * the search API responses cleanup.js already fetches fill in the rest.
+ */
+
+// Entries are stored as { id, name }. `id` is empty for entries the user typed
+// by hand (there is no id to type) and for blocks made before ids existed —
+// those keep matching on name, because there is no way to tell afterwards which
+// of two identically named sellers was meant.
+function normalizeBlacklistedSellerEntry(entry) {
+    if (typeof entry === 'string') {
+        const name = entry.trim();
+        return name ? { id: '', name } : null;
+    }
+
+    if (entry && typeof entry === 'object') {
+        const id = entry.id === null || entry.id === undefined ? '' : String(entry.id).trim();
+        const name = String(entry.name || '').trim();
+        if (!id && !name) return null;
+        return { id, name };
+    }
+
+    return null;
+}
+
+function getBlacklistedSellerEntries() {
+    return (CLEANPLAATS.settings.blacklistedSellers || [])
+        .map(normalizeBlacklistedSellerEntry)
+        .filter(Boolean);
+}
+
+// Stable key for an entry, used as the value of the unblock buttons' dataset so
+// a name-only and an id-based entry for the same seller stay distinguishable.
+function getBlacklistedSellerKey(entry) {
+    const normalized = normalizeBlacklistedSellerEntry(entry);
+    if (!normalized) return '';
+    return normalized.id ? `id:${normalized.id}` : `name:${normalized.name}`;
+}
+
+// Seller names are free text and really do contain markup characters
+// ("Shiro Neko (>w<)"), so both the label and the key attribute built from them
+// have to be escaped or the unblock button loses the entry it points at.
+function escapeHtmlText(text) {
+    return String(text === null || text === undefined ? '' : text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function getBlacklistedSellerLabel(entry) {
+    const normalized = normalizeBlacklistedSellerEntry(entry);
+    if (!normalized) return '';
+    return normalized.name || `#${normalized.id}`;
+}
+
+// An id-based entry deliberately does not fall back to matching on name: doing
+// so would hide the very lookalike sellers this exists to stop hiding. When the
+// id cannot be resolved the listing stays visible and the next page load, which
+// does resolve it, hides it again.
+function isSellerBlacklisted(sellerId, sellerName) {
+    const id = sellerId === null || sellerId === undefined ? '' : String(sellerId).trim();
+    const name = (sellerName || '').trim();
+
+    return getBlacklistedSellerEntries().some(entry => {
+        if (entry.id) return Boolean(id) && entry.id === id;
+        return Boolean(name) && entry.name === name;
+    });
+}
+
+function rememberSellerId(itemId, sellerId) {
+    const key = String(itemId || '').toLowerCase();
+    if (!key || sellerId === null || sellerId === undefined || sellerId === '') return;
+    CLEANPLAATS.runtime.sellerIdsByListingId[key] = String(sellerId);
+}
+
+function indexSellerIdsFromApiListings(apiListings) {
+    (apiListings || []).forEach(listing => {
+        rememberSellerId(listing?.itemId, listing?.sellerInformation?.sellerId);
+    });
+}
+
+// Marktplaats replaces __NEXT_DATA__ on client-side navigation, so this is read
+// on every cleanup pass and merged into the map rather than replacing it: ids
+// learned from an earlier search stay valid for cards still on the page.
+function indexSellerIdsFromNextData() {
+    try {
+        const nextDataEl = document.getElementById('__NEXT_DATA__');
+        if (!nextDataEl) return;
+
+        const response = JSON.parse(nextDataEl.textContent)?.props?.pageProps?.searchRequestAndResponse;
+        if (!response) return;
+
+        indexSellerIdsFromApiListings([...(response.listings || []), ...(response.topBlock || [])]);
+    } catch (error) {
+        // A parse failure only costs us id resolution on this pass.
+    }
+}
+
+function getListingSellerId(listing) {
+    if (!(listing instanceof Element)) return '';
+
+    const itemId = getListingIdFromUrl(listing.querySelector('a[href*="/v/"]')?.href);
+    if (!itemId) return '';
+
+    return CLEANPLAATS.runtime.sellerIdsByListingId[itemId] || '';
+}
+
+// The listing page and the detail page are different rendering stacks: the
+// detail page has no __NEXT_DATA__ and no seller link either, but it does assign
+// window.__CONFIG__ in an inline script. Content scripts run in an isolated
+// world and cannot read page globals, so parse the script's own text.
+function getDetailPageSellerId() {
+    if (!isProductDetailPage()) return '';
+
+    const cached = CLEANPLAATS.runtime.detailPageSellerId;
+    if (cached && cached.path === window.location.pathname) return cached.sellerId;
+
+    let sellerId = '';
+    try {
+        const script = [...document.querySelectorAll('script:not([src])')]
+            .find(node => node.textContent.includes('__CONFIG__'));
+
+        if (script) {
+            const match = script.textContent.match(/__CONFIG__\s*=\s*(\{)/);
+            if (match) {
+                const json = extractJsonObject(script.textContent, match.index + match[0].length - 1);
+                sellerId = json ? String(JSON.parse(json)?.listing?.seller?.id || '') : '';
+            }
+        }
+    } catch (error) {
+        sellerId = '';
+    }
+
+    CLEANPLAATS.runtime.detailPageSellerId = { path: window.location.pathname, sellerId };
+    return sellerId;
+}
+
+// __CONFIG__ is followed by more script, so the object has to be cut out by
+// brace balance rather than by a greedy match to the last '}' in the file.
+function extractJsonObject(text, startIndex) {
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+
+    for (let i = startIndex; i < text.length; i++) {
+        const char = text[i];
+
+        if (inString) {
+            if (escaped) escaped = false;
+            else if (char === '\\') escaped = true;
+            else if (char === '"') inString = false;
+            continue;
+        }
+
+        if (char === '"') inString = true;
+        else if (char === '{') depth++;
+        else if (char === '}') {
+            depth--;
+            if (depth === 0) return text.slice(startIndex, i + 1);
+        }
+    }
+
+    return '';
+}
+
 function normalizeSellerAgeText(text) {
     return (text || '')
         .trim()
@@ -514,7 +688,11 @@ var CLEANPLAATS = {
         sellerAgeCheckTimer: 0,
         cleanupTimer: 0,
         lastCleanupAt: 0,
-        viewedListings: {}
+        viewedListings: {},
+        // itemId -> sellerId, learned from the page's own search payloads. See
+        // the seller identity section above.
+        sellerIdsByListingId: {},
+        detailPageSellerId: null
     },
 
     featureFlags: {
