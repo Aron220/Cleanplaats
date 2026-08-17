@@ -610,7 +610,6 @@ html.cleanplaats-dark-mode .cleanplaats-detail-blacklist-btn[aria-disabled="true
   background-color: #4c5f72;
 }
 
-.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-checkbox input:checked + .cleanplaats-switch-slider,
 .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-switch input:checked + .cleanplaats-switch-slider {
   background-color: var(--cleanplaats-dark-accent);
 }

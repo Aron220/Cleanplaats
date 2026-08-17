@@ -488,36 +488,6 @@
     gap: 12px;
   }
   
-  .cleanplaats-checkbox {
-    position: relative;
-    height: 18px;
-    width: 18px;
-    margin-right: 10px;
-    appearance: none;
-    border: 2px solid #9e9e9e;
-    border-radius: 3px;
-    outline: none;
-    cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
-  }
-  
-  .cleanplaats-checkbox:checked {
-    background: #4CAF50;
-    border-color: #4CAF50;
-  }
-  
-  .cleanplaats-checkbox:checked::after {
-    content: "";
-    position: absolute;
-    left: 5px;
-    top: 2px;
-    width: 5px;
-    height: 10px;
-    border: solid white;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-  }
-  
   .cleanplaats-option > label,
   .cleanplaats-option-main > label {
     display: flex;
@@ -792,12 +762,6 @@
   }
   
   /* Tooltip */
-  .cleanplaats-tooltip {
-    position: relative;
-    display: inline-block;
-    margin-left: 6px;
-  }
-  
   .cleanplaats-tooltip-icon {
     margin-left: 8px;
     display: inline-flex;
@@ -810,34 +774,6 @@
     border-radius: 50%;
     font-size: 11px;
     cursor: help;
-  }
-  
-  .cleanplaats-tooltip-text {
-    visibility: hidden;
-    background-color: #555;
-    color: #fff;
-    text-align: left;
-    border-radius: 6px;
-    padding: 8px 12px;
-    position: absolute;
-    z-index: 2147483647; /* Same as panel - tooltips are positioned within panel context */
-    bottom: 125%;
-    left: 50%; /* Center horizontally */
-    transform: translateX(-50%); /* Center horizontally */
-    width: 135px;
-    font-size: 12px;
-    line-height: 1.4;
-    opacity: 0;
-    transition: opacity 0.3s;
-    pointer-events: none;
-    white-space: normal;
-    word-wrap: break-word;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  }
-
-  .cleanplaats-tooltip:hover .cleanplaats-tooltip-text {
-    visibility: visible;
-    opacity: 1;
   }
   
   /* First-time onboarding */
@@ -3739,115 +3675,6 @@
     text-align: left;
   }
 
-  /* --- Account bar --- */
-
-  .cleanplaats-alerts-account {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 14px 18px;
-    background: #f6f7f9;
-    border: 1px solid #e6e9ee;
-    border-radius: 14px;
-  }
-
-  /* Secondary, muted account line — recedes behind the usage/frequency anchor. */
-  .cleanplaats-alerts-account-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-    font-size: 12px;
-    color: #6b7688;
-  }
-
-  .cleanplaats-alerts-account-mail {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-  }
-
-  .cleanplaats-alerts-account-mail svg { flex: none; }
-
-  .cleanplaats-alerts-account-email {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 360px;
-  }
-
-  .cleanplaats-alerts-tier {
-    flex: none;
-    padding: 1px 7px;
-    border-radius: 999px;
-    font-size: 9.5px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  .cleanplaats-alerts-tier-free {
-    background: #e3e7ed;
-    color: #6b7585;
-  }
-
-  .cleanplaats-alerts-tier-premium {
-    background: #fdf0e3;
-    border: 1px solid #f0c89e;
-    color: #c95f06;
-  }
-
-  /* The anchor row: usage count + check frequency carry the visual weight. */
-  .cleanplaats-alerts-account-main {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px 18px;
-  }
-
-  .cleanplaats-alerts-usage {
-    display: flex;
-    align-items: baseline;
-    gap: 7px;
-  }
-
-  .cleanplaats-alerts-usage-value {
-    font-size: 23px;
-    font-weight: 800;
-    color: #222b38;
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
-  }
-
-  .cleanplaats-alerts-usage-max {
-    font-size: 15px;
-    font-weight: 700;
-    color: #a4adba;
-  }
-
-  .cleanplaats-alerts-usage-label {
-    font-size: 13.5px;
-    font-weight: 600;
-    color: #66707f;
-  }
-
-  .cleanplaats-alerts-freq {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding-left: 18px;
-    border-left: 1px solid #dfe3ea;
-    font-size: 13px;
-    font-weight: 600;
-    color: #4d5765;
-  }
-
-  .cleanplaats-alerts-freq svg {
-    flex: none;
-    color: #e8710a;
-  }
-
   /* --- Create --- */
 
   .cleanplaats-alerts-create {
@@ -3890,15 +3717,6 @@
 
   .cleanplaats-alerts-create-warning[hidden] {
     display: none;
-  }
-
-  .cleanplaats-alerts-hint {
-    padding: 12px 14px;
-    border-radius: 10px;
-    background: #f6f7f9;
-    color: #66707f;
-    font-size: 13px;
-    line-height: 1.5;
   }
 
   /* --- Sub-views: account, pricing, limit --- */
@@ -4210,40 +4028,6 @@
     color: #1f5a38;
   }
 
-  /* Account bar as a button */
-
-  /* The bar keeps its column layout from .cleanplaats-alerts-account; the
-     chevron is pinned instead of added as a third row, with padding reserved
-     on the right so the e-mail truncates before it reaches it. */
-  .cleanplaats-alerts-account-link {
-    position: relative;
-    width: 100%;
-    padding-right: 40px;
-    font-family: inherit;
-    text-align: left;
-    cursor: pointer;
-    transition: border-color 0.15s ease, background 0.15s ease;
-  }
-
-  .cleanplaats-alerts-account-link:hover {
-    background: #eef1f5;
-    border-color: #d5dbe3;
-  }
-
-  .cleanplaats-alerts-account-chevron {
-    position: absolute;
-    top: 50%;
-    right: 14px;
-    display: flex;
-    align-items: center;
-    color: #98a2b0;
-    transform: translateY(-50%) rotate(-90deg);
-  }
-
-  .cleanplaats-alerts-account-link:hover .cleanplaats-alerts-account-chevron {
-    color: #667283;
-  }
-
   /* --- Alert cards --- */
 
   /* Plain, readable headings. The old tiny grey uppercase labels were hard to
@@ -4492,16 +4276,12 @@
     line-height: 1.45;
   }
 
-  .cleanplaats-alerts-list,
+  /* A scroll box inside a scrolling surface gives the same list two scrollbars
+     and two places to be lost in. The surface scrolls; the list just stacks. */
   .cleanplaats-alerts-matches {
     display: flex;
     flex-direction: column;
     gap: 8px;
-  }
-
-  /* A scroll box inside a scrolling surface gives the same list two scrollbars
-     and two places to be lost in. The surface scrolls; the list just stacks. */
-  .cleanplaats-alerts-matches {
     padding-right: 2px;
   }
 
@@ -4513,25 +4293,6 @@
     font-size: 13.5px;
     font-style: italic;
     line-height: 1.5;
-  }
-
-  .cleanplaats-alerts-alert {
-    padding: 14px 16px;
-    border: 1px solid #e6e9ee;
-    border-radius: 12px;
-    background: #fff;
-    transition: border-color 0.15s ease;
-  }
-
-  .cleanplaats-alerts-alert:hover {
-    border-color: #cfd6df;
-  }
-
-  .cleanplaats-alerts-alert-top {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
   }
 
   .cleanplaats-alerts-status-dot {
@@ -4611,27 +4372,6 @@
     font-size: 12px;
     color: #6b7688;
     text-align: center;
-  }
-
-  .cleanplaats-alerts-alert-bottom {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 10px 12px;
-    margin-top: 12px;
-  }
-
-  .cleanplaats-alerts-meta {
-    font-size: 12.5px;
-    color: #6b7688;
-  }
-
-  .cleanplaats-alerts-alert-actions {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
   }
 
   /* Labeled mini-switches: icon + name + track. State is unmistakable.
@@ -4973,19 +4713,6 @@
     background: #e8710a;
   }
 
-  /* Validity chip inside the meta line. */
-  .cleanplaats-alerts-validity {
-    font-weight: 600;
-  }
-
-  .cleanplaats-alerts-validity-soon {
-    color: #c2710b;
-  }
-
-  .cleanplaats-alerts-validity-expired {
-    color: #b3261e;
-  }
-
   /* Verleng / Reactiveren pill. Matches the switch/delete sizing. */
   .cleanplaats-alerts-extend-btn {
     height: 30px;
@@ -5130,55 +4857,6 @@
 
   /* --- Notification channels --- */
 
-  /* Shown when no Telegram account is linked: without one, nothing is
-     delivered, so it sits above everything else in the dashboard. */
-  .cleanplaats-alerts-notice {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 14px;
-    margin-bottom: 14px;
-    border: 1px solid #f2d9b0;
-    border-radius: 12px;
-    background: #fdf6ea;
-  }
-
-  .cleanplaats-alerts-notice-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    flex: none;
-    border-radius: 10px;
-    background: #f8e6c8;
-    color: #b8791f;
-  }
-
-  .cleanplaats-alerts-notice-info {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .cleanplaats-alerts-notice-title {
-    font-size: 13.5px;
-    font-weight: 600;
-    color: #7a5310;
-  }
-
-  .cleanplaats-alerts-notice-body {
-    font-size: 12px;
-    line-height: 1.45;
-    color: #8a6524;
-  }
-
-  .cleanplaats-alerts-notice .cleanplaats-alerts-secondary-btn {
-    flex: none;
-  }
-
   .cleanplaats-alerts-channel-list {
     display: flex;
     flex-direction: column;
@@ -5248,12 +4926,6 @@
     align-items: center;
     flex: none;
     gap: 4px;
-  }
-
-  .cleanplaats-alerts-channel-state {
-    font-size: 12px;
-    font-weight: 600;
-    color: #6b7688;
   }
 
   /* --- Contact --- */
@@ -5431,8 +5103,7 @@
     color: #dde4ee;
   }
 
-  html.cleanplaats-dark-mode .cleanplaats-alerts-header,
-  html.cleanplaats-dark-mode .cleanplaats-alerts-col-feed .cleanplaats-alerts-section-header {
+  html.cleanplaats-dark-mode .cleanplaats-alerts-header {
     background: #10161f;
     border-color: #243044;
   }
@@ -5510,8 +5181,6 @@
     color: #f28b82;
   }
 
-  html.cleanplaats-dark-mode .cleanplaats-alerts-account,
-  html.cleanplaats-dark-mode .cleanplaats-alerts-hint,
   html.cleanplaats-dark-mode .cleanplaats-alerts-empty,
   html.cleanplaats-dark-mode .cleanplaats-alerts-create {
     background: #18202c;
@@ -5599,50 +5268,16 @@
     color: #6cc48d;
   }
 
-  html.cleanplaats-dark-mode .cleanplaats-alerts-account-link:hover {
-    background: #1c2532;
-    border-color: #2d3c52;
-  }
-
   html.cleanplaats-dark-mode .cleanplaats-alerts-create-warning {
     border-color: #4a3a1c;
     background: #241d10;
     color: #f0d6a4;
   }
 
-  html.cleanplaats-dark-mode .cleanplaats-alerts-usage-value {
-    color: #f0f4fa;
-  }
-
-  html.cleanplaats-dark-mode .cleanplaats-alerts-usage-label,
-  html.cleanplaats-dark-mode .cleanplaats-alerts-freq {
-    color: #aebbcd;
-  }
-
-  html.cleanplaats-dark-mode .cleanplaats-alerts-freq {
-    border-left-color: #2c3a4f;
-  }
-
-  html.cleanplaats-dark-mode .cleanplaats-alerts-tier-free {
-    background: #243044;
-    color: #aebbcd;
-  }
-
-  html.cleanplaats-dark-mode .cleanplaats-alerts-tier-premium {
-    background: #2a1c0d;
-    border-color: #8a5210;
-    color: #f59a3e;
-  }
-
-  html.cleanplaats-dark-mode .cleanplaats-alerts-alert,
   html.cleanplaats-dark-mode .cleanplaats-alerts-match,
   html.cleanplaats-dark-mode .cleanplaats-alerts-channel-row {
     background: #151d29;
     border-color: #243044;
-  }
-
-  html.cleanplaats-dark-mode .cleanplaats-alerts-alert:hover {
-    border-color: #3a4759;
   }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-match:hover {
@@ -5724,14 +5359,6 @@
     color: #f28b82;
   }
 
-  html.cleanplaats-dark-mode .cleanplaats-alerts-validity-soon {
-    color: #f0a64e;
-  }
-
-  html.cleanplaats-dark-mode .cleanplaats-alerts-validity-expired {
-    color: #f28b82;
-  }
-
   html.cleanplaats-dark-mode .cleanplaats-alerts-extend-btn {
     background: #18202c;
     border-color: #2c3a4d;
@@ -5777,24 +5404,6 @@
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-channel-row + .cleanplaats-alerts-channel-row {
     border-top-color: #1d2735;
-  }
-
-  html.cleanplaats-dark-mode .cleanplaats-alerts-notice {
-    background: #241d10;
-    border-color: #4a3a1c;
-  }
-
-  html.cleanplaats-dark-mode .cleanplaats-alerts-notice-icon {
-    background: #3a2d14;
-    color: #e0ab55;
-  }
-
-  html.cleanplaats-dark-mode .cleanplaats-alerts-notice-title {
-    color: #f0d6a4;
-  }
-
-  html.cleanplaats-dark-mode .cleanplaats-alerts-notice-body {
-    color: #c9b083;
   }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-footer {
