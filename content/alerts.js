@@ -308,7 +308,8 @@ var ALERTS_TEXT = {
     limitPremiumTitle: 'Meer tegelijk laten lopen?',
     limitPremiumBody: (plan, freePlan) => `Premium geeft je ${plan.maxAlerts} zoekmeldingen in plaats van ` +
         `${freePlan.maxAlerts}, en controleert elke ${plan.intervalMinutes} minuten in plaats van ` +
-        `${freePlan.intervalMinutes}. Het is er nog niet, maar we laten het weten zodra het zover is.`,
+        `${freePlan.intervalMinutes}. Het is er nog niet en wat er precies in komt kan nog veranderen, ` +
+        'maar we laten het weten zodra het zover is.',
     limitFreedToast: 'Er is weer ruimte. Zet je nieuwe zoekmelding aan.',
 
     // Pricing view
@@ -321,6 +322,9 @@ var ALERTS_TEXT = {
     // makes the expensive column look longer, not better. This says what is
     // different and lets the free column carry the rest.
     pricingPremiumIncludes: 'Alles uit Gratis, plus:',
+    // Nothing here is sold yet, so the list is a plan and not a promise. Saying
+    // that on the card itself is cheaper than disappointing someone later.
+    pricingPremiumProvisional: 'Premium is nog in de maak. Wat er precies in komt, staat nog niet vast en kan nog veranderen.',
     pricingFeatureAlerts: n => `${n} ${n === 1 ? 'zoekmelding' : 'zoekmeldingen'} tegelijk`,
     pricingFeatureInterval: m => `Controle elke ${m} minuten`,
     pricingFeatureIntervalFaster: (m, freeM) => `Drie keer sneller: elke ${m} minuten in plaats van ${freeM}`,
@@ -1507,7 +1511,7 @@ function renderAlertsAccountView() {
     document.getElementById('cleanplaats-alerts-open-pricing').onclick = renderAlertsPricingView;
 }
 
-function buildPricingPlanHtml({ name, priceLabel, current, soon, features, includesLine }) {
+function buildPricingPlanHtml({ name, priceLabel, current, soon, features, includesLine, note }) {
     return `
         <div class="cleanplaats-alerts-plan ${current ? 'cleanplaats-alerts-plan-current' : ''}">
             <div class="cleanplaats-alerts-plan-head">
@@ -1520,6 +1524,7 @@ function buildPricingPlanHtml({ name, priceLabel, current, soon, features, inclu
             <ul class="cleanplaats-alerts-plan-features">
                 ${features.map(feature => `<li>${alertIcon('check', 14)}<span>${feature}</span></li>`).join('')}
             </ul>
+            ${note ? `<p class="cleanplaats-alerts-plan-note">${note}</p>` : ''}
         </div>
     `;
 }
@@ -1570,7 +1575,10 @@ function renderAlertsPricingView() {
                     ALERTS_TEXT.pricingFeatureIntervalFaster(premium.intervalMinutes, free.intervalMinutes),
                     ALERTS_TEXT.pricingFeatureAlertsMore(premium.maxAlerts, free.maxAlerts),
                     ALERTS_TEXT.pricingFeatureValidityLonger(premium.validDays, free.validDays)
-                ]
+                ],
+                // Only while it is still a plan: once premium can be bought,
+                // the list has to stand as it is.
+                note: premium.available ? '' : ALERTS_TEXT.pricingPremiumProvisional
             })}
         </div>
         ${me.tier === 'premium' ? '' : buildUpgradeInterestSlotHtml()}

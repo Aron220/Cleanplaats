@@ -3932,6 +3932,17 @@
     color: #2f7d4f;
   }
 
+  /* The caveat under a plan that cannot be bought yet: readable, but plainly
+     not one of the checkmarks above it. */
+  .cleanplaats-alerts-plan-note {
+    margin: 14px 0 0;
+    padding-top: 12px;
+    border-top: 1px solid #eef0f4;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: #78828f;
+  }
+
   /* Limit */
 
   .cleanplaats-alerts-limit-meter {
@@ -5291,6 +5302,11 @@
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-plan-features svg {
     color: #6cc48d;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-plan-note {
+    border-top-color: #243044;
+    color: #7d8da3;
   }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-upgrade-done {
