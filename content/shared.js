@@ -368,12 +368,12 @@ function getSellerAgeWarningThresholdDays() {
 function getPanelLocaleText() {
     if (is2ememainLocale()) {
         return {
-            feedbackLabel: 'Retour',
             feedbackText: 'Issues GitHub',
             feedbackAriaLabel: 'Ouvrir GitHub issues pour les demandes de fonctionnalité, modifications et bugs',
             contactLabel: 'Contact',
             contactText: 'info@cleanplaats.com',
             contactAriaLabel: 'Envoyer un e-mail à info@cleanplaats.com',
+            reviewLabel: 'Avis',
             reviewAriaLabel: linkLabel => `Laisser un avis sur Cleanplaats sur ${linkLabel}`,
             supportTitle: 'Soutenir Cleanplaats',
             supportButton: 'Soutenir Cleanplaats',
@@ -491,12 +491,12 @@ function getPanelLocaleText() {
     }
 
     return {
-        feedbackLabel: 'Feedback',
         feedbackText: 'GitHub issues',
         feedbackAriaLabel: 'Open GitHub issues voor functieverzoeken, wijzigingen en bugs',
         contactLabel: 'Vragen of feedback? Mail ons',
         contactText: 'info@cleanplaats.com',
         contactAriaLabel: 'Stuur een e-mail naar info@cleanplaats.com',
+        reviewLabel: 'Review',
         reviewAriaLabel: linkLabel => `Laat een review achter voor Cleanplaats op ${linkLabel}`,
         supportTitle: 'Steun Cleanplaats met een kleine bijdrage',
         supportButton: 'Steun Cleanplaats',

@@ -1,5 +1,8 @@
 /* Base Panel Styling */
 .cleanplaats-panel {
+    /* One source for the header ceiling: the header animates against it when
+       the panel folds, and the content subtracts it to stay inside 82vh. */
+    --cleanplaats-header-max: 160px;
     position: fixed;
     bottom: calc(20px + var(--cleanplaats-floating-offset, 0px));
     right: 20px;
@@ -72,6 +75,10 @@
   /* Header Styling */
   .cleanplaats-header {
     display: flex;
+    /* The panel is a flex column capped at 82vh, so a long filter list used to
+       squeeze the header instead of scrolling itself — and with overflow
+       hidden, the row holding GitHub and the review link was what got eaten. */
+    flex: none;
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
@@ -81,13 +88,26 @@
     user-select: none;
     opacity: 1;
     visibility: visible;
-    max-height: 120px;
+    /* Tall enough for the title row plus both contact rows. It was 120px, which
+       silently cut off the GitHub and review links once the mail address moved
+       onto a row of its own. The collapse animation still needs a number here,
+       so it stays a ceiling rather than becoming `none`. */
+    max-height: var(--cleanplaats-header-max);
     overflow: hidden;
     transition: opacity 0.25s ease-out,
                 max-height 0.35s ease-in-out,
                 padding-top 0.35s ease-in-out, padding-bottom 0.35s ease-in-out,
                 margin-top 0.35s ease-in-out, margin-bottom 0.35s ease-in-out,
                 border-width 0.35s ease-in-out;
+  }
+
+  /* The ceiling above exists for the fold animation, not for everyday layout.
+     Once the panel is open and still, drop it: a header that is a few pixels
+     taller than expected — a larger font, a longer translation — must push the
+     content down rather than silently swallow its own bottom row. */
+  .cleanplaats-panel:not(.collapsed):not(.animating) .cleanplaats-header {
+    max-height: none;
+    overflow: visible;
   }
 
   .cleanplaats-header-main {
@@ -311,6 +331,16 @@
     font-size: 12px;
   }
 
+  /* GitHub and the store review sit side by side under the mail address, one
+     line each: their icons carry what the second line used to spell out, and
+     the full sentence is still on the link itself. */
+  .cleanplaats-contact-compact .cleanplaats-contact-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .cleanplaats-contact-copy {
     display: flex;
     flex-direction: column;
@@ -336,7 +366,7 @@
     padding: 12px 15px;
     flex: 1 1 auto;
     min-height: 0;
-    max-height: calc(82vh - 120px);
+    max-height: calc(82vh - var(--cleanplaats-header-max));
     opacity: 1;
     visibility: visible;
     overflow-y: auto;
