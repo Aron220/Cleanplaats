@@ -620,10 +620,10 @@ function getPanelLocaleText() {
         alertsPromoIntroStart: 'Laat me zien hoe',
         alertsPromoIntroLater: 'Later',
         alertsPromoTagline: 'Als eerste bij een nieuwe advertentie',
-        // "Melding" is the message you receive, not the thing you set up, so the
-        // card counts zoekopdrachten — otherwise the number reads as unread mail.
-        alertsPromoNoAlerts: 'Nog geen zoekopdracht ingesteld',
-        alertsPromoActiveCount: n => `${n} actieve zoekopdracht${n === 1 ? '' : 'en'}`,
+        // One word throughout the feature: a "zoekmelding" is what you switch
+        // on, a "zoekopdracht" is the Marktplaats search it watches.
+        alertsPromoNoAlerts: 'Nog geen zoekmelding ingesteld',
+        alertsPromoActiveCount: n => `${n} actieve zoekmelding${n === 1 ? '' : 'en'}`,
         // Bare number: at 280px the panel has no room for a worded pill without
         // truncating the title. The aria-label carries the meaning.
         alertsPromoNewMatches: n => String(n),
@@ -714,11 +714,11 @@ var CLEANPLAATS_UPDATE_NOTES = {
         intro: 'Cleanplaats 2.1.6 introduceert Zoekmeldingen: krijg een bericht in Telegram zodra er een nieuwe advertentie verschijnt voor je zoekopdracht, ook als je browser dicht is.',
         highlights: [
             'Nieuwe knop "Zoekmeldingen" onderin het paneel. Zoek iets op Marktplaats en klik erop: je zoekterm staat al ingevuld, en de categorie, locatie en afstand van je huidige zoekopdracht gaan automatisch mee.',
-            'Meldingen komen binnen via Telegram, dus ook als je browser dicht is of je computer uit staat. Je koppelt Telegram eenmalig met een code van 6 cijfers die je van de bot krijgt.',
+            'Meldingen komen binnen via Telegram, dus ook als je browser dicht is of je computer uit staat. Je koppelt Telegram eenmalig met een code van 6 cijfers die je van de bot krijgt, of door de QR-code te scannen met je telefoon.',
             'Je Cleanplaats-filters gelden ook voor je meldingen: dagtoppers, gereserveerde advertenties, opvalstickers en je geblokkeerde verkopers en woorden worden er automatisch uitgehouden. Top- en bedrijfsadvertenties krijg je nooit als melding.',
-            'Gratis kun je 2 zoekmeldingen aanzetten, die elke 15 minuten worden gecontroleerd. Gevonden advertenties zie je altijd terug in het overzicht, ook zonder Telegram.'
+            'Gratis laat je één zoekmelding lopen, die elke 15 minuten wordt gecontroleerd. Gevonden advertenties zie je altijd terug in het overzicht, ook zonder Telegram.'
         ],
-        note: 'Zoekmeldingen is splinternieuw. Werkt er iets niet zoals je verwacht? Laat het weten via de GitHub-link in het paneel.'
+        note: 'Zoekmeldingen is splinternieuw. Werkt er iets niet zoals je verwacht? Mail dan naar info@cleanplaats.com, elk bericht komt bij de maker terecht.'
     },
     '2.1.5': {
         intro: 'Cleanplaats 2.1.5 lost een sorteerbug op en maakt de statistieken en de "zoek volgende pagina"-knop betrouwbaarder.',

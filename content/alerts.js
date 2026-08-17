@@ -46,17 +46,41 @@ var cleanplaatsAlertsRuntime = {
     // Last loaded alerts/matches, so the sub-views can render without refetching.
     cachedAlerts: null,
     cachedMatches: null,
+    // Whatever had focus when the panel opened, so closing it puts focus back.
+    returnFocusTo: null,
+    // Which of the rail's views is on screen. Starts on the advertisements,
+    // since that is what the panel is for; managing searches is the other one.
+    view: 'matches',
     // Which alert's match view is on screen, so a slow /api/matches response
     // can tell whether it still has a view to render into.
     openAlertMatchesId: null
 };
 
+/**
+ * One word per thing, everywhere:
+ *   zoekmelding  - what you switch on here (never "melding", never "zoekopdracht")
+ *   zoekopdracht - the Marktplaats search it watches
+ *   gevonden     - what it turned up
+ */
 var ALERTS_TEXT = {
     modalTitle: 'Zoekmeldingen',
     tagline: 'Krijg nieuwe advertenties direct in je Telegram, ook als je browser dicht is.',
     intro: 'Krijg een melding zodra er een nieuwe advertentie verschijnt die aan je zoekopdracht voldoet, ook als je browser dicht is. Je Cleanplaats-filters worden automatisch toegepast.',
-    loginTitle: 'Inloggen of account maken',
-    loginIntro: 'Je e-mailadres is je account: je krijgt er een inlogcode op, en je zoekmeldingen werken daarmee op al je apparaten.',
+
+    // Login: what it does first, the e-mail field second. Asking for an address
+    // before showing anything is how you lose people who were only curious.
+    loginTitle: 'Zoek verder terwijl je iets anders doet',
+    loginIntro: 'Cleanplaats blijft op Marktplaats zoeken zodra jij weg bent, en stuurt je een bericht als er iets nieuws verschijnt.',
+    loginBullets: [
+        { icon: 'zap', text: 'Bericht binnen enkele minuten nadat een advertentie geplaatst is' },
+        { icon: 'send', text: 'Via Telegram, dus ook als je browser dicht is' },
+        { icon: 'filter', text: 'Je Cleanplaats-filters en blokkades tellen gewoon mee' }
+    ],
+    loginFormTitle: 'Maak een account of log in',
+    loginFormHint: 'Gratis, en zonder wachtwoord: je krijgt een inlogcode per e-mail.',
+    loginPrivacy: 'We gebruiken je e-mailadres om je in te laten loggen en je zoekmeldingen aan te koppelen, verder niets.',
+    loginPrivacyLink: 'Privacybeleid',
+    loginTermsLink: 'Voorwaarden',
     emailPlaceholder: 'jouw@email.nl',
     emailButton: 'Stuur inlogcode',
     emailSending: 'Versturen…',
@@ -65,13 +89,14 @@ var ALERTS_TEXT = {
     codeButton: 'Inloggen',
     codeChecking: 'Controleren…',
     codeResend: 'Stuur nieuwe code',
+    codeResending: 'Versturen…',
+    codeResent: 'Nieuwe code verstuurd.',
     codeOtherEmail: 'Ander e-mailadres',
-    loggedInAs: 'Ingelogd als',
     logout: 'Uitloggen',
     logoutHint: 'Je logt alleen op dit apparaat uit. Je zoekmeldingen blijven gewoon doorlopen.',
     tierFree: 'Gratis',
     tierPremium: 'Premium',
-    usageLabel: 'meldingen',
+    usageLabel: n => (n === 1 ? 'zoekmelding' : 'zoekmeldingen'),
     checkFrequency: m => `Controleert elke ${m} minuten`,
     createTitle: 'Maak een zoekmelding',
     createButton: 'Zoekmelding maken',
@@ -81,9 +106,14 @@ var ALERTS_TEXT = {
     createBroadWarning: count => `Deze zoekopdracht is breed: ${count.toLocaleString('nl-NL')} advertenties. ` +
         'Je krijgt er waarschijnlijk veel meldingen van. Verfijn eerst je zoekopdracht met een prijs, categorie of afstand.',
     listTitle: 'Jouw zoekmeldingen',
-    empty: 'Je hebt nog geen zoekmeldingen. Zoek iets op Marktplaats en maak je eerste melding aan.',
+    empty: 'Je hebt nog geen zoekmeldingen. Zoek iets op Marktplaats en zet je eerste zoekmelding aan.',
     deleteButton: 'Verwijder',
-    deleteConfirm: 'Weet je zeker dat je deze melding wilt verwijderen?',
+    deleteConfirmTitle: 'Zoekmelding verwijderen?',
+    deleteConfirmBody: label => `"${label}" stopt met zoeken en de gevonden advertenties verdwijnen uit je overzicht.`,
+    deleteConfirmOk: 'Verwijderen',
+    confirmCancel: 'Annuleren',
+    detailsShow: 'Instellingen',
+    detailsHide: 'Instellingen',
     pausedLabel: 'Gepauzeerd',
     activeLabel: 'Actief',
     matchCount: count => `${count} gevonden`,
@@ -91,6 +121,11 @@ var ALERTS_TEXT = {
     neverChecked: 'Nog niet gecontroleerd',
     nextCheckIn: m => `Volgende controle over ${m} ${m === 1 ? 'minuut' : 'minuten'}`,
     nextCheckSoon: 'Volgende controle: zo',
+    // Shown instead of a next-check time once a search keeps failing: the check
+    // does keep running, it just isn't reaching Marktplaats.
+    checkFailing: 'Controle lukt nu niet, we blijven het proberen',
+    checkFailingSince: at => `Laatst gelukt: ${at}`,
+    checkFailingNever: 'Nog niet gelukt om deze zoekopdracht op te halen',
     refreshButton: 'Vernieuwen',
     validityLeft: n => `Verloopt over ${n} ${n === 1 ? 'dag' : 'dagen'}`,
     validityExpired: 'Verlopen',
@@ -99,7 +134,6 @@ var ALERTS_TEXT = {
     extendedToast: 'Zoekmelding verlengd.',
     reactivatedToast: 'Zoekmelding gereactiveerd.',
     channelTelegram: 'Telegram',
-    statusLabel: 'Actief',
     matchesTitle: 'Nieuw gevonden',
     matchesEmpty: 'Nog niets binnengekomen. Zodra er een nieuwe advertentie verschijnt die aan een van je zoekmeldingen voldoet, zie je die hier.',
     newBadge: 'NIEUW',
@@ -116,6 +150,10 @@ var ALERTS_TEXT = {
     telegramRequiredTitle: 'Je ontvangt nog geen meldingen',
     telegramRequiredBody: 'Meldingen worden via Telegram verstuurd. Koppel Telegram om nieuwe advertenties binnen te krijgen. Gevonden advertenties zie je hieronder ook zonder koppeling.',
     telegramRequiredButton: 'Telegram koppelen',
+    telegramTestButton: 'Stuur testmelding',
+    telegramTestSending: 'Versturen…',
+    telegramTestToast: 'Testmelding verstuurd. Kijk in je Telegram.',
+    telegramTestHint: 'Even zeker weten dat het werkt? Stuur jezelf een testmelding.',
     telegramRelink: 'Ander account koppelen',
     telegramUnlink: 'Ontkoppelen',
     telegramUnlinkConfirm: 'Telegram ontkoppelen? Je ontvangt dan geen meldingen meer via Telegram.',
@@ -126,6 +164,10 @@ var ALERTS_TEXT = {
     telegramStep1Title: 'Open onze bot in Telegram',
     telegramStep1Body: 'Open Telegram en zoek deze bot:',
     telegramStep1Open: 'Open in Telegram',
+    // Most people sit behind a laptop with Telegram on their phone, so the
+    // scan is the short path and typing the handle over is the fallback.
+    telegramQrTitle: 'Telegram op je telefoon?',
+    telegramQrBody: 'Scan deze code met de camera van je telefoon, dan opent de bot direct.',
     telegramStep2Title: 'Stuur het bericht',
     telegramStep2Body: 'Tik op Start of stuur dit bericht naar de bot:',
     telegramStep3Title: 'Vul de code in',
@@ -186,16 +228,62 @@ var ALERTS_TEXT = {
     contactAddress: 'info@cleanplaats.com',
     contactButton: 'Mail ons',
 
+    // The rail, and the two surfaces it switches between.
+    navMatches: 'Gevonden',
+    navAlerts: 'Zoekmeldingen',
+    navTelegram: 'Meldingen',
+    matchesSub: 'Alles wat je zoekmeldingen sinds hun start hebben gevonden.',
+    alertsSub: max => (max === 1
+        ? 'Eén zoekmelding tegelijk op een gratis account. Zet hem aan, uit of verleng hem hier.'
+        : `Tot ${max} zoekmeldingen tegelijk. Zet ze aan, uit of verleng ze hier.`),
+    quotaUpgrade: 'Meer tegelijk laten lopen',
+    contactShort: 'Vragen of feedback',
+
+    // The one status line above the advertisements. Anything that would not
+    // change what you do next does not belong here.
+    stripRunning: n => `${n} ${n === 1 ? 'zoekmelding loopt' : 'zoekmeldingen lopen'}`,
+    stripIdle: 'Er loopt nu geen zoekmelding, dus er komt niets binnen.',
+    stripFailing: 'We kunnen Marktplaats even niet bereiken. Zodra dat weer lukt, gaat het zoeken door.',
+
+    // Table headers on the Zoekmeldingen view.
+    tableName: 'Zoekmelding',
+    tableFound: 'Gevonden',
+    tableCheck: 'Volgende controle',
+    tableValidity: 'Geldig',
+    tableStatus: 'Status',
+    detailsChannel: 'Meldingen',
+    detailsRemove: 'Verwijderen',
+    createAtLimitHint: max => (max === 1
+        ? 'Je hebt al een zoekmelding lopen. Verwijder hem eerst, dan kun je een nieuwe aanzetten.'
+        : 'Je zit op je maximum. Verwijder er een om ruimte te maken.'),
+
+    // Activation checklist. Three things stand between a fresh account and a
+    // notification landing on someone's phone, and they are the same three for
+    // everyone, so they are a list to work through rather than a warning to
+    // read. The first is already done by the time it is on screen, which is
+    // what makes the other two feel like finishing something.
+    setupTitle: left => (left === 1 ? 'Nog één stap en je bent klaar' : `Nog ${left === 2 ? 'twee' : left} stappen en je bent klaar`),
+    setupProgress: (done, total) => `${done} van ${total} klaar`,
+    setupAccountTitle: 'Account gemaakt',
+    setupAccountBody: 'Je zoekmeldingen volgen je e-mailadres, ook op een ander apparaat.',
+    setupAlertTitle: 'Zet je eerste zoekmelding aan',
+    setupAlertBody: 'Zoek iets op Marktplaats en vul de zoekterm hieronder in. Je categorie, locatie en afstand gaan mee.',
+    setupAlertBodyDone: n => `Je hebt ${n} ${n === 1 ? 'zoekmelding' : 'zoekmeldingen'} lopen.`,
+    setupTelegramTitle: 'Koppel Telegram',
+    setupTelegramBody: 'Zonder koppeling blijft het stil: Telegram is de manier waarop we je bereiken.',
+    setupTelegramBodyDone: 'Gekoppeld. Meldingen komen binnen in je Telegram-chat.',
+    setupTelegramAction: 'Koppelen',
+
     // Account view
     accountTitle: 'Mijn account',
     accountOpen: 'Mijn account',
     accountEmailLabel: 'E-mailadres',
     accountPlanLabel: 'Abonnement',
-    accountUsageLabel: 'Zoekopdrachten',
+    accountUsageLabel: 'Zoekmeldingen',
     accountIntervalLabel: 'Controlefrequentie',
     accountIntervalValue: m => `Elke ${m} minuten`,
     accountValidityLabel: 'Geldigheid',
-    accountValidityValue: d => `${d} dagen per zoekopdracht`,
+    accountValidityValue: d => `${d} dagen per zoekmelding`,
     accountTelegramLabel: 'Telegram',
     accountSinceLabel: 'Lid sinds',
     accountPricingLink: 'Bekijk wat er in elk abonnement zit',
@@ -211,15 +299,17 @@ var ALERTS_TEXT = {
 
     // Limit view — shown when someone tries to add one too many.
     limitTitle: 'Je zit op je maximum',
-    limitUsage: (used, max) => `${used} van ${max} zoekopdrachten in gebruik`,
-    limitBody: max => `Met een gratis account kun je ${max} zoekopdrachten tegelijk laten lopen. ` +
-        'Verwijder er hieronder een om ruimte te maken voor je nieuwe.',
-    limitListTitle: 'Jouw lopende zoekopdrachten',
+    limitUsage: (used, max) => `${used} van ${max} ${max === 1 ? 'zoekmelding' : 'zoekmeldingen'} in gebruik`,
+    limitBody: max => (max === 1
+        ? 'Met een gratis account loopt er één zoekmelding tegelijk. Verwijder hieronder de huidige om ruimte te maken voor je nieuwe.'
+        : `Met een gratis account kun je ${max} zoekmeldingen tegelijk laten lopen. ` +
+          'Verwijder er hieronder een om ruimte te maken voor je nieuwe.'),
+    limitListTitle: 'Jouw lopende zoekmeldingen',
     limitPremiumTitle: 'Meer tegelijk laten lopen?',
-    limitPremiumBody: (plan, freePlan) => `Premium geeft je ${plan.maxAlerts} zoekopdrachten in plaats van ` +
+    limitPremiumBody: (plan, freePlan) => `Premium geeft je ${plan.maxAlerts} zoekmeldingen in plaats van ` +
         `${freePlan.maxAlerts}, en controleert elke ${plan.intervalMinutes} minuten in plaats van ` +
         `${freePlan.intervalMinutes}. Het is er nog niet, maar we laten het weten zodra het zover is.`,
-    limitFreedToast: 'Er is weer ruimte. Maak je nieuwe zoekopdracht aan.',
+    limitFreedToast: 'Er is weer ruimte. Zet je nieuwe zoekmelding aan.',
 
     // Pricing view
     pricingTitle: 'Wat je krijgt',
@@ -227,14 +317,26 @@ var ALERTS_TEXT = {
     pricingCurrentPlan: 'Je huidige abonnement',
     pricingFree: 'Gratis',
     pricingPremium: 'Premium',
-    pricingFeatureAlerts: n => `${n} zoekopdrachten tegelijk`,
+    // The paid column repeats nothing: eight lines of which five are identical
+    // makes the expensive column look longer, not better. This says what is
+    // different and lets the free column carry the rest.
+    pricingPremiumIncludes: 'Alles uit Gratis, plus:',
+    pricingFeatureAlerts: n => `${n} ${n === 1 ? 'zoekmelding' : 'zoekmeldingen'} tegelijk`,
     pricingFeatureInterval: m => `Controle elke ${m} minuten`,
-    pricingFeatureValidity: d => `${d} dagen geldig per zoekopdracht`,
+    pricingFeatureIntervalFaster: (m, freeM) => `Drie keer sneller: elke ${m} minuten in plaats van ${freeM}`,
+    pricingFeatureAlertsMore: (n, freeN) => `${n} zoekmeldingen tegelijk in plaats van ${freeN}`,
+    pricingFeatureValidity: d => `${d} dagen geldig per zoekmelding`,
+    pricingFeatureValidityLonger: (d, freeD) => `${d} dagen geldig in plaats van ${freeD}`,
     pricingFeatureTelegram: 'Meldingen via Telegram',
     pricingFeatureFilters: 'Je Cleanplaats-filters werken door in je meldingen',
     pricingFeatureBlocklist: 'Geblokkeerde verkopers en woorden tellen mee',
-    pricingFeatureOneClick: 'Zoekopdracht aanmaken vanaf je Marktplaats-zoekresultaten',
-    pricingFeatureFeed: 'Overzicht van alle gevonden advertenties'
+    pricingFeatureOneClick: 'Zoekmelding aanzetten vanaf je Marktplaats-zoekresultaten',
+    pricingFeatureFeed: 'Overzicht van alle gevonden advertenties',
+
+    // Filters are pushed to the server on every dashboard load. When that is
+    // refused the alerts keep running with the last set that did fit, which is
+    // exactly the kind of thing that must not fail quietly.
+    filtersTooLargeToast: 'Je blokkeerlijsten zijn te groot om mee te sturen. Je zoekmeldingen gebruiken nu een oudere versie.'
 };
 
 /**
@@ -298,6 +400,7 @@ var ALERTS_ICONS = {
     copy: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
     user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
     zap: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
     archive: '<rect x="2" y="4" width="20" height="5" rx="1"/><path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"/><path d="M10 13h4"/>',
     logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>'
 };
@@ -473,17 +576,23 @@ function renderAlertMatchItems(matches, options = {}) {
         const thumb = match.image_url
             ? `<img class="cleanplaats-alerts-match-thumb" src="${escapeAlertText(match.image_url)}" alt="" loading="lazy">`
             : `<span class="cleanplaats-alerts-match-thumb cleanplaats-alerts-match-thumb-empty">${alertIcon('image', 20)}</span>`;
+        // The badge sits at the end of the row rather than in front of the
+        // title: inline, it pushed the first line over and left every badged
+        // title breaking a word early.
         return `
-            <a class="cleanplaats-alerts-match" href="${escapeAlertText(match.url)}">
+            <a class="cleanplaats-alerts-match${isNew ? ' is-new' : ''}" href="${escapeAlertText(match.url)}">
                 ${thumb}
                 <span class="cleanplaats-alerts-match-info">
-                    <span class="cleanplaats-alerts-match-title">${isNew ? `<span class="cleanplaats-alerts-new">${ALERTS_TEXT.newBadge}</span> ` : ''}${escapeAlertText(match.title)}</span>
+                    <span class="cleanplaats-alerts-match-title">${escapeAlertText(match.title)}</span>
                     <span class="cleanplaats-alerts-match-sub">
                         <span class="cleanplaats-alerts-match-price">${formatAlertMatchPrice(match)}</span>
                         ${match.city ? `<span>· ${escapeAlertText(match.city)}</span>` : ''}
-                        <span>· ${formatAlertRelativeTime(match.found_at)}</span>
+                        ${options.hideAlertLabel ? '' : `<span class="cleanplaats-alerts-match-alert-label">· ${escapeAlertText(match.alert_label || '')}</span>`}
                     </span>
-                    ${options.hideAlertLabel ? '' : `<span class="cleanplaats-alerts-match-alert-label">${escapeAlertText(match.alert_label || '')}</span>`}
+                </span>
+                <span class="cleanplaats-alerts-match-meta">
+                    ${isNew ? `<span class="cleanplaats-alerts-new">${ALERTS_TEXT.newBadge}</span>` : ''}
+                    <span class="cleanplaats-alerts-match-time">${formatAlertRelativeTime(match.found_at)}</span>
                 </span>
             </a>
         `;
@@ -701,7 +810,12 @@ function getAlertSearchContext() {
 
     if (Object.keys(searchParams).length === 0) return null;
 
-    searchParams.searchInTitleAndDescription = 'true';
+    // No searchInTitleAndDescription here on purpose. Marktplaats searches
+    // descriptions by default and ignores the parameter entirely (checked
+    // against /lrp/api/search: absent, 'true' and 'false' return identical
+    // totals, and results include ads with the term only in the description).
+    // Sending nothing means an alert keeps matching whatever the search page
+    // itself matches, even if that default ever changes.
 
     const suggestedLabel = query || decodeURIComponent(
         (window.location.pathname.match(/\/[ql]\/([^/]+)/) || [, ''])[1] || ''
@@ -733,6 +847,13 @@ function syncAlertFilters() {
         body: JSON.stringify({ filters: buildAlertFiltersPayload() })
     }).catch(error => {
         console.error('Cleanplaats: Failed to sync filters to alerts server', error);
+        // 413 is the one failure the user has to know about: their alerts keep
+        // running on an older copy of the blocklists, so ads they have blocked
+        // can still come through. Everything else is a transient network
+        // problem the next dashboard load fixes by itself.
+        if (error && error.status === 413) {
+            showBubbleNotification(ALERTS_TEXT.filtersTooLargeToast);
+        }
     });
 }
 
@@ -758,9 +879,61 @@ function getAlertsOverlay() {
     return overlay;
 }
 
+/**
+ * Keyboard behaviour for a dialog that sits on top of somebody else's page:
+ * Escape closes it, and Tab stays inside it. Without the trap you tab straight
+ * out of the panel into the Marktplaats page behind it, which is still there
+ * and still focusable, with no way to tell where you are.
+ */
+var CLEANPLAATS_FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function handleAlertsModalKeydown(event) {
+    if (event.key === 'Escape') {
+        event.preventDefault();
+        // A confirmation on screen is the thing Escape should dismiss first.
+        if (closeAlertsConfirm()) return;
+        hideAlertsModal();
+        return;
+    }
+
+    if (event.key !== 'Tab') return;
+
+    const card = document.querySelector('#cleanplaats-alerts-modal .cleanplaats-alerts-card');
+    if (!card) return;
+    const focusable = [...card.querySelectorAll(CLEANPLAATS_FOCUSABLE)]
+        .filter(element => element.offsetParent !== null || element === document.activeElement);
+    if (focusable.length === 0) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+    }
+}
+
 function hideAlertsModal() {
     const overlay = document.getElementById('cleanplaats-alerts-modal');
     if (overlay) overlay.style.display = 'none';
+
+    document.removeEventListener('keydown', handleAlertsModalKeydown, true);
+    document.documentElement.classList.remove('cleanplaats-alerts-modal-open');
+    closeAlertsConfirm();
+
+    // Back to whatever opened the panel, so keyboard users don't restart at the
+    // top of the Marktplaats page.
+    const returnTo = cleanplaatsAlertsRuntime.returnFocusTo;
+    cleanplaatsAlertsRuntime.returnFocusTo = null;
+    if (returnTo && returnTo.isConnected) {
+        try {
+            returnTo.focus();
+        } catch (error) {
+            /* the element went away with a re-render; nothing to restore to */
+        }
+    }
     // Next time the panel opens it should use the visit the server stamped
     // during this one, so what we just looked at is no longer "NIEUW".
     cleanplaatsAlertsRuntime.matchesSeenAt = null;
@@ -797,9 +970,16 @@ function showAlertsModal(options = {}) {
     // Set before the first render: the walkthrough attaches to elements the
     // dashboard (or login view) creates, so it has to be armed up front.
     cleanplaatsAlertsRuntime.walkthroughRequested = Boolean(options.walkthrough);
+    cleanplaatsAlertsRuntime.returnFocusTo =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
     renderAlertsShell(overlay);
     overlay.style.display = 'flex';
+    // Capture phase: Marktplaats' own key handlers sit on the page behind us.
+    document.addEventListener('keydown', handleAlertsModalKeydown, true);
+    // The page behind a full-screen dialog should stay put while you scroll it.
+    document.documentElement.classList.add('cleanplaats-alerts-modal-open');
+    document.getElementById('cleanplaats-alerts-close')?.focus();
 
     // Get the control panel out of the way (remembering its state so close can
     // restore it). Don't persist — this is a temporary, modal-driven collapse.
@@ -821,13 +1001,13 @@ function showAlertsModal(options = {}) {
 
 function renderAlertsShell(overlay) {
     overlay.innerHTML = DOMPurify.sanitize(`
-        <div class="cleanplaats-alerts-card" role="dialog" aria-label="${ALERTS_TEXT.modalTitle}">
+        <div class="cleanplaats-alerts-card" role="dialog" aria-modal="true" aria-label="${ALERTS_TEXT.modalTitle}">
             <div class="cleanplaats-alerts-header">
                 <div class="cleanplaats-alerts-header-title">
                     <span class="cleanplaats-alerts-bell"><img id="cleanplaats-alerts-bell-img" alt="" width="42" height="42"></span>
                     <div>
                         <h3>${ALERTS_TEXT.modalTitle}</h3>
-                        <span class="cleanplaats-alerts-tagline">${ALERTS_TEXT.tagline}</span>
+                        <span class="cleanplaats-alerts-tagline" id="cleanplaats-alerts-tagline">${ALERTS_TEXT.tagline}</span>
                     </div>
                 </div>
                 <div class="cleanplaats-alerts-header-actions">
@@ -864,9 +1044,13 @@ function setAlertsBody(html) {
     const body = document.getElementById('cleanplaats-alerts-body');
     if (!body) return null;
     body.innerHTML = DOMPurify.sanitize(html);
-    // Only the dashboard runs two columns; every other view is a single
-    // readable column and puts this back itself if it needs it.
-    body.classList.remove('cleanplaats-alerts-body-split');
+    // Only the dashboard runs the rail-and-surface grid; every other view is a
+    // single readable column, and the dashboard adds the class back itself.
+    // Leaving it on squeezed each sub-view into the rail's column.
+    body.classList.remove('cleanplaats-alerts-body-app');
+    // The tagline is the pitch, so it belongs on the first screen and on the
+    // dashboard, not repeated above every sub-view that has its own heading.
+    setAlertsTaglineVisible(false);
     // Default the header buttons off on every view change; only the dashboard
     // turns them back on. Refreshing a half-typed login code or pairing code
     // would throw the input away, and the sub-views have their own way back.
@@ -878,6 +1062,11 @@ function setAlertsBody(html) {
 function setAlertsRefreshVisible(visible) {
     const button = document.getElementById('cleanplaats-alerts-refresh');
     if (button) button.hidden = !visible;
+}
+
+function setAlertsTaglineVisible(visible) {
+    const tagline = document.getElementById('cleanplaats-alerts-tagline');
+    if (tagline) tagline.hidden = !visible;
 }
 
 /**
@@ -897,22 +1086,102 @@ function showAlertsInlineError(message) {
     }
 }
 
+/* ===== Bevestigen =====
+   Deleting used to go through window.confirm(), which puts a browser dialog
+   labelled "marktplaats.nl" on top of our own panel: it reads as the site
+   asking, not us, and it cannot say which search is about to disappear. This
+   is the same question inside the panel, in our own words. */
+
+function closeAlertsConfirm() {
+    const existing = document.getElementById('cleanplaats-alerts-confirm');
+    if (!existing) return false;
+    const returnTo = existing.cleanplaatsReturnFocus;
+    existing.remove();
+    if (returnTo && returnTo.isConnected) returnTo.focus();
+    return true;
+}
+
+/**
+ * `onConfirm` runs when the user goes through with it. Nothing happens on
+ * cancel, Escape or a click on the backdrop.
+ */
+function openAlertsConfirm({ title, body, confirmLabel, danger = true, onConfirm }) {
+    closeAlertsConfirm();
+
+    const overlay = document.getElementById('cleanplaats-alerts-modal');
+    if (!overlay) return;
+
+    const wrap = document.createElement('div');
+    wrap.id = 'cleanplaats-alerts-confirm';
+    wrap.className = 'cleanplaats-alerts-confirm';
+    wrap.cleanplaatsReturnFocus =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    wrap.innerHTML = DOMPurify.sanitize(`
+        <div class="cleanplaats-alerts-confirm-box" role="alertdialog" aria-modal="true" aria-label="${escapeAlertText(title)}">
+            <div class="cleanplaats-alerts-confirm-title">${escapeAlertText(title)}</div>
+            <div class="cleanplaats-alerts-confirm-body">${escapeAlertText(body)}</div>
+            <div class="cleanplaats-alerts-confirm-actions">
+                <button type="button" class="cleanplaats-alerts-secondary-btn" id="cleanplaats-alerts-confirm-cancel">${ALERTS_TEXT.confirmCancel}</button>
+                <button type="button" class="${danger ? 'cleanplaats-alerts-danger-btn' : 'cleanplaats-alerts-primary-btn'}" id="cleanplaats-alerts-confirm-ok">${escapeAlertText(confirmLabel)}</button>
+            </div>
+        </div>
+    `);
+
+    overlay.appendChild(wrap);
+    wrap.addEventListener('click', event => {
+        if (event.target === wrap) closeAlertsConfirm();
+    });
+    document.getElementById('cleanplaats-alerts-confirm-cancel').onclick = () => closeAlertsConfirm();
+    document.getElementById('cleanplaats-alerts-confirm-ok').onclick = () => {
+        closeAlertsConfirm();
+        onConfirm();
+    };
+    document.getElementById('cleanplaats-alerts-confirm-ok').focus();
+}
+
 /* ===== Login views ===== */
 
+/**
+ * The first screen anybody ever sees of this feature. It leads with what the
+ * thing does and only then asks for an address, with one line about what
+ * happens to it: an e-mail field on an otherwise blank card asks for a
+ * commitment before it has offered anything.
+ */
 function renderAlertsLoginView() {
+    const bullets = ALERTS_TEXT.loginBullets.map(bullet => `
+        <li class="cleanplaats-alerts-sell-item">
+            <span class="cleanplaats-alerts-sell-icon">${alertIcon(bullet.icon, 16)}</span>
+            <span>${bullet.text}</span>
+        </li>
+    `).join('');
+
     const body = setAlertsBody(`
-        <div class="cleanplaats-alerts-login">
-            <div class="cleanplaats-alerts-login-icon">${alertIcon('mail', 24)}</div>
-            <h4>${ALERTS_TEXT.loginTitle}</h4>
-            <p>${ALERTS_TEXT.loginIntro}</p>
-            <div class="cleanplaats-alerts-form-row">
-                <input type="email" id="cleanplaats-alerts-email-input" placeholder="${ALERTS_TEXT.emailPlaceholder}" autocomplete="email">
-                <button id="cleanplaats-alerts-email-submit" class="cleanplaats-alerts-primary-btn">${ALERTS_TEXT.emailButton}</button>
+        <div class="cleanplaats-alerts-sell">
+            <h4 class="cleanplaats-alerts-sell-title">${ALERTS_TEXT.loginTitle}</h4>
+            <p class="cleanplaats-alerts-sell-intro">${ALERTS_TEXT.loginIntro}</p>
+            <ul class="cleanplaats-alerts-sell-list">${bullets}</ul>
+
+            <div class="cleanplaats-alerts-sell-form">
+                <div class="cleanplaats-alerts-sell-form-head">
+                    <span class="cleanplaats-alerts-sell-form-title">${ALERTS_TEXT.loginFormTitle}</span>
+                    <span class="cleanplaats-alerts-sell-form-hint">${ALERTS_TEXT.loginFormHint}</span>
+                </div>
+                <div class="cleanplaats-alerts-form-row">
+                    <input type="email" id="cleanplaats-alerts-email-input" placeholder="${ALERTS_TEXT.emailPlaceholder}" autocomplete="email" aria-label="${ALERTS_TEXT.loginFormTitle}">
+                    <button id="cleanplaats-alerts-email-submit" class="cleanplaats-alerts-primary-btn">${ALERTS_TEXT.emailButton}</button>
+                </div>
+                <div class="cleanplaats-alerts-form-error" id="cleanplaats-alerts-form-error" style="display:none;"></div>
+                <p class="cleanplaats-alerts-sell-privacy">
+                    ${ALERTS_TEXT.loginPrivacy}
+                    <a href="https://www.cleanplaats.com/privacy" target="_blank" rel="noopener noreferrer">${ALERTS_TEXT.loginPrivacyLink}</a>
+                    ·
+                    <a href="https://www.cleanplaats.com/voorwaarden" target="_blank" rel="noopener noreferrer">${ALERTS_TEXT.loginTermsLink}</a>
+                </p>
             </div>
-            <div class="cleanplaats-alerts-form-error" id="cleanplaats-alerts-form-error" style="display:none;"></div>
         </div>
     `);
     if (!body) return;
+    setAlertsTaglineVisible(true);
 
     const input = document.getElementById('cleanplaats-alerts-email-input');
     const submit = document.getElementById('cleanplaats-alerts-email-submit');
@@ -997,12 +1266,29 @@ function renderAlertsCodeView() {
     input.focus();
 
     document.getElementById('cleanplaats-alerts-other-email').onclick = () => renderAlertsLoginView();
-    document.getElementById('cleanplaats-alerts-resend').onclick = event => {
-        event.target.disabled = true;
+
+    // Disabled while the request is in flight and for a short cooldown after a
+    // successful send, but re-enabled on failure: a resend that fails used to
+    // leave the only way forward greyed out permanently.
+    const resend = document.getElementById('cleanplaats-alerts-resend');
+    resend.onclick = () => {
+        resend.disabled = true;
+        resend.textContent = ALERTS_TEXT.codeResending;
         alertsApiFetch('/api/auth/request-code', {
             method: 'POST',
             body: JSON.stringify({ email })
-        }).catch(error => showAlertsInlineError(error.message || ALERTS_TEXT.errorToast));
+        }).then(() => {
+            resend.textContent = ALERTS_TEXT.codeResent;
+            setTimeout(() => {
+                if (!resend.isConnected) return;
+                resend.disabled = false;
+                resend.textContent = ALERTS_TEXT.codeResend;
+            }, 30000);
+        }).catch(error => {
+            resend.disabled = false;
+            resend.textContent = ALERTS_TEXT.codeResend;
+            showAlertsInlineError(error.message || ALERTS_TEXT.errorToast);
+        });
     };
 }
 
@@ -1021,6 +1307,21 @@ function renderTelegramConnect(me) {
     const startCmd = '/start';
 
     const copyBtn = target => `<button class="cleanplaats-alerts-copy" type="button" data-copy-target="${target}" aria-label="${ALERTS_TEXT.telegramCopied}">${alertIcon('copy', 14)}</button>`;
+
+    // The QR is a shipped asset rather than something generated here: the bot
+    // handle is a constant, so there is nothing to generate per user, and a
+    // static file beats carrying a QR encoder in a content script. It is only
+    // shown for the bot it actually encodes, so a renamed bot loses the QR
+    // instead of quietly pointing people at the wrong chat.
+    const qrBot = 'CleanplaatsBot';
+    const qrBlock = bot === qrBot ? `
+                        <div class="cleanplaats-alerts-qr">
+                            <img class="cleanplaats-alerts-qr-img" id="cleanplaats-tg-qr" alt="QR-code naar de Cleanplaats-bot in Telegram" width="132" height="132">
+                            <span class="cleanplaats-alerts-qr-copy">
+                                <span class="cleanplaats-alerts-qr-title">${ALERTS_TEXT.telegramQrTitle}</span>
+                                <span class="cleanplaats-alerts-qr-body">${ALERTS_TEXT.telegramQrBody}</span>
+                            </span>
+                        </div>` : '';
 
     const body = setAlertsBody(`
         <div class="cleanplaats-alerts-connect">
@@ -1045,6 +1346,7 @@ function renderTelegramConnect(me) {
                             ${bot ? copyBtn('cleanplaats-tg-bot') : ''}
                             ${tmeUrl ? `<a class="cleanplaats-alerts-secondary-btn cleanplaats-alerts-connect-open" id="cleanplaats-tg-open" href="${tmeUrl}" target="_blank" rel="noopener noreferrer">${ALERTS_TEXT.telegramStep1Open}</a>` : ''}
                         </div>
+                        ${qrBlock}
                     </div>
                 </li>
                 <li class="cleanplaats-alerts-connect-step">
@@ -1074,6 +1376,11 @@ function renderTelegramConnect(me) {
         </div>
     `);
     if (!body) return;
+
+    // Same reason as the header bell: DOMPurify drops the extension scheme, so
+    // the source is assigned after sanitizing.
+    const qrImage = document.getElementById('cleanplaats-tg-qr');
+    if (qrImage) qrImage.src = browserAPI.runtime.getURL('icons/telegram-bot-qr.svg');
 
     document.getElementById('cleanplaats-tg-back').onclick = () => loadAlertsDashboard();
 
@@ -1200,7 +1507,7 @@ function renderAlertsAccountView() {
     document.getElementById('cleanplaats-alerts-open-pricing').onclick = renderAlertsPricingView;
 }
 
-function buildPricingPlanHtml({ name, priceLabel, current, soon, features }) {
+function buildPricingPlanHtml({ name, priceLabel, current, soon, features, includesLine }) {
     return `
         <div class="cleanplaats-alerts-plan ${current ? 'cleanplaats-alerts-plan-current' : ''}">
             <div class="cleanplaats-alerts-plan-head">
@@ -1209,6 +1516,7 @@ function buildPricingPlanHtml({ name, priceLabel, current, soon, features }) {
                 ${soon ? `<span class="cleanplaats-alerts-plan-badge cleanplaats-alerts-plan-badge-soon">${ALERTS_TEXT.upgradeSoon}</span>` : ''}
             </div>
             <div class="cleanplaats-alerts-plan-price">${priceLabel}</div>
+            ${includesLine ? `<div class="cleanplaats-alerts-plan-includes">${includesLine}</div>` : ''}
             <ul class="cleanplaats-alerts-plan-features">
                 ${features.map(feature => `<li>${alertIcon('check', 14)}<span>${feature}</span></li>`).join('')}
             </ul>
@@ -1225,8 +1533,9 @@ function renderAlertsPricingView() {
 
     const free = me.plans.free;
     const premium = me.plans.premium;
-    // Everything that is free stays free in premium too, so the paid column
-    // repeats it rather than looking thinner than the free one.
+    // The free column carries the full list; the paid one says what changes.
+    // Repeating five identical lines under a price only made the paid column
+    // longer, and buried the three lines that are the actual offer.
     const sharedFeatures = [
         ALERTS_TEXT.pricingFeatureTelegram,
         ALERTS_TEXT.pricingFeatureOneClick,
@@ -1255,11 +1564,12 @@ function renderAlertsPricingView() {
                 priceLabel: `${ALERTS_TEXT.upgradePrice(premium.priceEur)} <span class="cleanplaats-alerts-plan-period">${ALERTS_TEXT.upgradePerMonth}</span>`,
                 current: me.tier === 'premium',
                 soon: !premium.available && me.tier !== 'premium',
+                includesLine: ALERTS_TEXT.pricingPremiumIncludes,
+                // Speed first: it is the difference people would pay for.
                 features: [
-                    ALERTS_TEXT.pricingFeatureAlerts(premium.maxAlerts),
-                    ALERTS_TEXT.pricingFeatureInterval(premium.intervalMinutes),
-                    ALERTS_TEXT.pricingFeatureValidity(premium.validDays),
-                    ...sharedFeatures
+                    ALERTS_TEXT.pricingFeatureIntervalFaster(premium.intervalMinutes, free.intervalMinutes),
+                    ALERTS_TEXT.pricingFeatureAlertsMore(premium.maxAlerts, free.maxAlerts),
+                    ALERTS_TEXT.pricingFeatureValidityLonger(premium.validDays, free.validDays)
                 ]
             })}
         </div>
@@ -1303,7 +1613,7 @@ function renderAlertsLimitView(alerts) {
         <div class="cleanplaats-alerts-limit-item" data-alert-id="${alert.id}">
             <span class="cleanplaats-alerts-limit-item-label">${escapeAlertText(alert.label)}</span>
             <span class="cleanplaats-alerts-limit-item-meta">${ALERTS_TEXT.matchCount(alert.match_count || 0)}</span>
-            <button class="cleanplaats-alerts-delete" data-alert-id="${alert.id}" title="${ALERTS_TEXT.deleteButton}" aria-label="${ALERTS_TEXT.deleteButton}">${alertIcon('trash', 15)}</button>
+            <button class="cleanplaats-alerts-delete" data-alert-id="${alert.id}" data-alert-label="${escapeAlertText(alert.label)}" title="${ALERTS_TEXT.deleteButton}" aria-label="${ALERTS_TEXT.deleteButton}">${alertIcon('trash', 15)}</button>
         </div>
     `).join('');
 
@@ -1326,17 +1636,24 @@ function renderAlertsLimitView(alerts) {
     // rather than leaving someone on a limit screen that no longer applies.
     document.querySelectorAll('.cleanplaats-alerts-limit-list .cleanplaats-alerts-delete').forEach(button => {
         button.onclick = () => {
-            if (!window.confirm(ALERTS_TEXT.deleteConfirm)) return;
-            button.disabled = true;
-            alertsApiFetch(`/api/alerts/${button.dataset.alertId}`, { method: 'DELETE' })
-                .then(() => {
-                    showBubbleNotification(ALERTS_TEXT.limitFreedToast);
-                    loadAlertsDashboard();
-                })
-                .catch(error => {
-                    button.disabled = false;
-                    showBubbleNotification((error && error.message) || ALERTS_TEXT.errorToast);
-                });
+            openAlertsConfirm({
+                title: ALERTS_TEXT.deleteConfirmTitle,
+                body: ALERTS_TEXT.deleteConfirmBody(button.dataset.alertLabel || ''),
+                confirmLabel: ALERTS_TEXT.deleteConfirmOk,
+                onConfirm: () => {
+                    button.disabled = true;
+                    alertsApiFetch(`/api/alerts/${button.dataset.alertId}`, { method: 'DELETE' })
+                        .then(() => {
+                            showBubbleNotification(ALERTS_TEXT.limitFreedToast);
+                            cleanplaatsAlertsRuntime.view = 'alerts';
+                            loadAlertsDashboard();
+                        })
+                        .catch(error => {
+                            button.disabled = false;
+                            showBubbleNotification((error && error.message) || ALERTS_TEXT.errorToast);
+                        });
+                }
+            });
         };
     });
 }
@@ -1575,204 +1892,436 @@ function loadAlertsDashboard() {
     });
 }
 
-function renderAlertsDashboard(me, alerts, matches) {
-    const context = getAlertSearchContext();
-    const tierLabel = me.tier === 'premium' ? ALERTS_TEXT.tierPremium : ALERTS_TEXT.tierFree;
+/**
+ * The dashboard is an app in a window rather than a stack of boxes: a rail on
+ * the left says where you are, one surface on the right holds one thing at a
+ * time. It replaces a single scrolling column where an account block, a
+ * warning, a create box, a list of cards and the feed all fought for the top.
+ *
+ * What people come here for is the advertisements, so that is the view the
+ * panel opens on. Managing searches is the second tab, and there are no
+ * dashboard statistics: a number that nobody acts on is furniture.
+ *
+ * Views inside the shell (rail stays put): matches, alerts.
+ * Views that take over the whole body (own back button): account, pricing,
+ * telegram, one alert's finds, the limit screen.
+ */
+var ALERTS_NAV_ITEMS = [
+    { id: 'matches', icon: 'search', label: () => ALERTS_TEXT.navMatches },
+    { id: 'alerts', icon: 'bell', label: () => ALERTS_TEXT.navAlerts }
+];
 
-    // Clickable: it already shows account facts, so it is the natural way into
-    // the rest of them. The header button does the same for anyone who has
-    // scrolled past it.
-    const accountBar = `
-        <button type="button" class="cleanplaats-alerts-account cleanplaats-alerts-account-link" id="cleanplaats-alerts-account-bar" aria-label="${ALERTS_TEXT.accountOpen}">
-            <div class="cleanplaats-alerts-account-meta">
-                <span class="cleanplaats-alerts-account-mail">${alertIcon('mail', 13)}<span class="cleanplaats-alerts-account-email" title="${escapeAlertText(me.email)}">${escapeAlertText(me.email)}</span></span>
-                <span class="cleanplaats-alerts-tier cleanplaats-alerts-tier-${me.tier === 'premium' ? 'premium' : 'free'}">${tierLabel}</span>
-            </div>
-            <div class="cleanplaats-alerts-account-main">
-                <span class="cleanplaats-alerts-usage">
-                    <span class="cleanplaats-alerts-usage-value">${me.alertCount || 0}<span class="cleanplaats-alerts-usage-max"> / ${me.maxAlerts}</span></span>
-                    <span class="cleanplaats-alerts-usage-label">${ALERTS_TEXT.usageLabel}</span>
+function alertsCurrentView() {
+    const view = cleanplaatsAlertsRuntime.view;
+    return ALERTS_NAV_ITEMS.some(item => item.id === view) ? view : 'matches';
+}
+
+/**
+ * How much of an alert's validity window is left, as a fraction. The bar is
+ * the one place the window is a quantity rather than a sentence, which is what
+ * makes "still fine" and "about to lapse" readable without doing the sum.
+ */
+function alertValidityFraction(alert, me) {
+    const validity = getAlertValidity(alert);
+    if (!validity) return null;
+    const plan = me.plans && me.plans[me.tier === 'premium' ? 'premium' : 'free'];
+    const total = (plan && plan.validDays) || 0;
+    if (!total) return null;
+    if (validity.expired) return 0;
+    return Math.max(0.02, Math.min(1, validity.daysLeft / total));
+}
+
+// A search that keeps failing is not "checked 3 minutes ago": last_checked_at
+// moves on whether or not Marktplaats answered. Two strikes in a row is the
+// point where this stops being a blip.
+function isAlertFailing(alert) {
+    return (alert.fail_count || 0) >= 2;
+}
+
+/**
+ * One line above the listings: how many searches are running, how often they
+ * run, and when the next one lands. It is the only status the panel keeps on
+ * screen, because it is the only status that changes what you would do next.
+ */
+function buildAlertsStatusStripHtml(me, alerts) {
+    const running = alerts.filter(alert => {
+        const validity = getAlertValidity(alert);
+        return alert.enabled && !(validity && validity.expired);
+    });
+
+    if (running.length === 0) {
+        return `<div class="cleanplaats-alerts-strip cleanplaats-alerts-strip-idle">
+            ${alertIcon('clock', 14)}<span>${ALERTS_TEXT.stripIdle}</span>
+        </div>`;
+    }
+
+    if (running.some(isAlertFailing)) {
+        return `<div class="cleanplaats-alerts-strip cleanplaats-alerts-strip-warn">
+            ${alertIcon('clock', 14)}<span>${ALERTS_TEXT.stripFailing}</span>
+        </div>`;
+    }
+
+    const checked = running.filter(alert => alert.last_checked_at);
+    const next = checked.length > 0
+        ? formatAlertNextCheck(Math.min(...checked.map(alert => alert.last_checked_at)), me.intervalMinutes)
+        : '';
+
+    return `<div class="cleanplaats-alerts-strip">
+        <span class="cleanplaats-alerts-strip-dot"></span>
+        <span>${ALERTS_TEXT.stripRunning(running.length)}</span>
+        <span class="cleanplaats-alerts-strip-sep">·</span>
+        <span>${ALERTS_TEXT.checkFrequency(me.intervalMinutes)}</span>
+        ${next ? `<span class="cleanplaats-alerts-strip-sep">·</span><span>${next}</span>` : ''}
+    </div>`;
+}
+
+/**
+ * Three steps stand between a fresh account and a message arriving, and they
+ * are the same three for everyone. As a checklist they are something to finish;
+ * as the old orange banner they were something to feel bad about. Gone once all
+ * three are done, so a set-up account never sees setup again.
+ */
+function buildAlertsChecklistHtml(me, alerts) {
+    const hasAlert = alerts.length > 0;
+    const steps = [
+        {
+            done: true,
+            title: ALERTS_TEXT.setupAccountTitle,
+            body: ALERTS_TEXT.setupAccountBody,
+            action: ''
+        },
+        {
+            done: hasAlert,
+            title: ALERTS_TEXT.setupAlertTitle,
+            body: hasAlert ? ALERTS_TEXT.setupAlertBodyDone(alerts.length) : ALERTS_TEXT.setupAlertBody,
+            action: hasAlert ? '' : `<button type="button" class="cleanplaats-alerts-secondary-btn" data-nav-jump="alerts">${ALERTS_TEXT.createButton}</button>`
+        },
+        {
+            done: Boolean(me.telegramLinked),
+            title: ALERTS_TEXT.setupTelegramTitle,
+            body: me.telegramLinked ? ALERTS_TEXT.setupTelegramBodyDone : ALERTS_TEXT.setupTelegramBody,
+            action: me.telegramLinked ? '' : `<button type="button" class="cleanplaats-alerts-primary-btn" id="cleanplaats-alert-telegram-link-notice">${ALERTS_TEXT.setupTelegramAction}</button>`
+        }
+    ];
+
+    const doneCount = steps.filter(step => step.done).length;
+    if (doneCount === steps.length) return '';
+
+    return `
+        <section class="cleanplaats-alerts-setup">
+            <div class="cleanplaats-alerts-setup-head">
+                <span class="cleanplaats-alerts-setup-title">${ALERTS_TEXT.setupTitle(steps.length - doneCount)}</span>
+                <span class="cleanplaats-alerts-setup-progress">
+                    <span class="cleanplaats-alerts-setup-bar"><span style="width:${Math.round((doneCount / steps.length) * 100)}%"></span></span>
+                    <span class="cleanplaats-alerts-setup-count">${ALERTS_TEXT.setupProgress(doneCount, steps.length)}</span>
                 </span>
-                <span class="cleanplaats-alerts-freq">${alertIcon('clock', 15)}<span>${ALERTS_TEXT.checkFrequency(me.intervalMinutes)}</span></span>
             </div>
-            <span class="cleanplaats-alerts-account-chevron" aria-hidden="true">${alertIcon('chevron', 16)}</span>
-        </button>
+            <ol class="cleanplaats-alerts-setup-steps">
+                ${steps.map((step, index) => `
+                    <li class="cleanplaats-alerts-setup-step${step.done ? ' cleanplaats-alerts-setup-step-done' : ''}">
+                        <span class="cleanplaats-alerts-setup-marker">${step.done ? alertIcon('check', 13) : String(index + 1)}</span>
+                        <span class="cleanplaats-alerts-setup-copy">
+                            <span class="cleanplaats-alerts-setup-step-title">${step.title}</span>
+                            <span class="cleanplaats-alerts-setup-step-body">${step.body}</span>
+                        </span>
+                        ${step.action ? `<span class="cleanplaats-alerts-setup-action">${step.action}</span>` : ''}
+                    </li>
+                `).join('')}
+            </ol>
+        </section>
     `;
+}
 
-    // The create box stays even at the limit. Replacing it with a notice hides
-    // the feature behind a rule nobody has hit yet; letting someone type a term
-    // and press the button puts the limit in front of them at the moment they
-    // actually want something, which is where it can be explained properly.
-    const createSection = `
-        <div class="cleanplaats-alerts-create">
+function buildAlertsCreateHtml(context, me) {
+    const atLimit = (me.alertCount || 0) >= me.maxAlerts;
+    return `
+        <section class="cleanplaats-alerts-create">
             <div class="cleanplaats-alerts-create-title">${ALERTS_TEXT.createTitle}</div>
             <div class="cleanplaats-alerts-form-row">
-                <input type="text" id="cleanplaats-alert-label-input" value="${context ? escapeAlertText(context.suggestedLabel) : ''}" placeholder="${ALERTS_TEXT.labelPlaceholder}" maxlength="120">
-                <button id="cleanplaats-alert-create" class="cleanplaats-alerts-primary-btn">＋ ${ALERTS_TEXT.createButton}</button>
+                <input type="text" id="cleanplaats-alert-label-input" value="${context ? escapeAlertText(context.suggestedLabel) : ''}" placeholder="${ALERTS_TEXT.labelPlaceholder}" maxlength="120" aria-label="${ALERTS_TEXT.createTitle}">
+                <button id="cleanplaats-alert-create" class="cleanplaats-alerts-primary-btn">${ALERTS_TEXT.createButton}</button>
             </div>
             ${context ? `<div class="cleanplaats-alerts-create-note" id="cleanplaats-alert-create-note">${ALERTS_TEXT.createContextHint}</div>` : ''}
+            ${atLimit ? `<div class="cleanplaats-alerts-create-note cleanplaats-alerts-create-note-limit">${ALERTS_TEXT.createAtLimitHint(me.maxAlerts)}</div>` : ''}
             <div class="cleanplaats-alerts-create-warning" id="cleanplaats-alert-broad-warning" hidden></div>
+        </section>
+    `;
+}
+
+/**
+ * One alert per row, with everything you only need while changing something
+ * (channel, filters, delete) folded into a second row underneath. The row
+ * itself answers the two questions the panel gets opened for: is it running,
+ * and did it find anything.
+ */
+function buildAlertsTableHtml(alerts, me) {
+    if (alerts.length === 0) {
+        return `<div class="cleanplaats-alerts-empty">${ALERTS_TEXT.empty}</div>`;
+    }
+
+    const rows = alerts.map(alert => {
+        const validity = getAlertValidity(alert);
+        const expired = Boolean(validity && validity.expired);
+        const statusClass = expired ? 'expired' : (alert.enabled ? 'active' : 'paused');
+        const running = alert.enabled && !expired;
+        const failing = running && isAlertFailing(alert);
+
+        let checkText;
+        if (failing) {
+            checkText = `<span class="cleanplaats-alerts-cell-warn">${ALERTS_TEXT.checkFailing}</span>`;
+        } else if (running && alert.last_checked_at) {
+            checkText = formatAlertNextCheck(alert.last_checked_at, me.intervalMinutes) || ALERTS_TEXT.nextCheckSoon;
+        } else if (alert.last_checked_at) {
+            checkText = `${ALERTS_TEXT.lastChecked}: ${formatAlertRelativeTime(alert.last_checked_at)}`;
+        } else {
+            checkText = ALERTS_TEXT.neverChecked;
+        }
+
+        const label = alert.search_url
+            ? `<a href="${escapeAlertText(alert.search_url)}" class="cleanplaats-alerts-card-label">${escapeAlertText(alert.label)}</a>`
+            : `<span class="cleanplaats-alerts-card-label">${escapeAlertText(alert.label)}</span>`;
+
+        const matchCount = alert.match_count || 0;
+        const openable = matchCount > 0 || (alert.baseline_count || 0) > 0;
+        const matchCell = openable
+            ? `<button type="button" class="cleanplaats-alerts-match-badge cleanplaats-alerts-match-badge-link" data-open-matches="${alert.id}" aria-label="${escapeAlertText(ALERTS_TEXT.alertMatchesOpen(alert.label))}">${ALERTS_TEXT.matchCount(matchCount)}${alertIcon('chevron', 13)}</button>`
+            : `<span class="cleanplaats-alerts-match-badge cleanplaats-alerts-match-badge-zero">${ALERTS_TEXT.matchCount(matchCount)}</span>`;
+
+        const fraction = alertValidityFraction(alert, me);
+        const validityCell = validity
+            ? `<span class="cleanplaats-alerts-validity-meter${validity.expired ? ' is-expired' : (validity.soon ? ' is-soon' : '')}">
+                   <span class="cleanplaats-alerts-validity-bar"><span style="width:${Math.round((fraction || 0) * 100)}%"></span></span>
+                   <span class="cleanplaats-alerts-validity-text">${validity.expired ? ALERTS_TEXT.validityExpired : ALERTS_TEXT.validityLeft(validity.daysLeft)}</span>
+               </span>`
+            : '<span class="cleanplaats-alerts-validity-text">∞</span>';
+
+        const statusCell = expired
+            ? `<button class="cleanplaats-alerts-extend-btn cleanplaats-alerts-extend-btn-primary" data-alert-id="${alert.id}" data-extend="1">${ALERTS_TEXT.reactivateButton}</button>`
+            : `<button class="cleanplaats-alerts-switch cleanplaats-alerts-switch-status ${alert.enabled ? 'on' : ''}" data-alert-id="${alert.id}" data-enabled="${alert.enabled ? '1' : '0'}" role="switch" aria-checked="${alert.enabled ? 'true' : 'false'}">
+                   <span class="cleanplaats-alerts-switch-label">${alert.enabled ? ALERTS_TEXT.activeLabel : ALERTS_TEXT.pausedLabel}</span><span class="cleanplaats-alerts-switch-track"></span>
+               </button>`;
+
+        const telegramSwitch = me.telegramLinked
+            ? `<button class="cleanplaats-alerts-switch ${alert.notify_telegram ? 'on' : ''}" data-channel="telegram" data-alert-id="${alert.id}" data-value="${alert.notify_telegram ? '1' : '0'}" role="switch" aria-checked="${alert.notify_telegram ? 'true' : 'false'}">
+                   ${alertIcon('send', 14)}<span class="cleanplaats-alerts-switch-label">${ALERTS_TEXT.channelTelegram}</span><span class="cleanplaats-alerts-switch-track"></span>
+               </button>`
+            : `<button class="cleanplaats-alerts-switch cleanplaats-alerts-switch-locked" data-channel="telegram" data-alert-id="${alert.id}" data-locked="1" type="button" aria-label="${ALERTS_TEXT.telegramLockedHint}" data-tip="${ALERTS_TEXT.telegramLockedHint}">
+                   ${alertIcon('send', 14)}<span class="cleanplaats-alerts-switch-label">${ALERTS_TEXT.channelTelegram}</span><span class="cleanplaats-alerts-switch-track"></span>
+               </button>`;
+
+        const extendBtn = (validity && validity.soon && !expired)
+            ? `<button class="cleanplaats-alerts-extend-btn" data-alert-id="${alert.id}" data-extend="1">${ALERTS_TEXT.extendButton}</button>`
+            : '';
+
+        return `
+            <div class="cleanplaats-alerts-row-group cleanplaats-alerts-alert-${statusClass}" data-alert-id="${alert.id}">
+                <div class="cleanplaats-alerts-row" role="row">
+                    <span class="cleanplaats-alerts-cell cleanplaats-alerts-cell-name" role="cell">
+                        <span class="cleanplaats-alerts-status-dot" title="${expired ? ALERTS_TEXT.validityExpired : (alert.enabled ? ALERTS_TEXT.activeLabel : ALERTS_TEXT.pausedLabel)}"></span>
+                        ${label}
+                    </span>
+                    <span class="cleanplaats-alerts-cell cleanplaats-alerts-cell-count" role="cell" data-label="${ALERTS_TEXT.tableFound}">${matchCell}</span>
+                    <span class="cleanplaats-alerts-cell cleanplaats-alerts-cell-check" role="cell" data-label="${ALERTS_TEXT.tableCheck}"><span class="cleanplaats-alerts-cell-value">${checkText}</span></span>
+                    <span class="cleanplaats-alerts-cell cleanplaats-alerts-cell-validity" role="cell" data-label="${ALERTS_TEXT.tableValidity}">${validityCell}</span>
+                    <span class="cleanplaats-alerts-cell cleanplaats-alerts-cell-status" role="cell">${statusCell}</span>
+                    <span class="cleanplaats-alerts-cell cleanplaats-alerts-cell-toggle" role="cell">
+                        <button type="button" class="cleanplaats-alerts-row-toggle" data-row-toggle="${alert.id}" aria-expanded="false" aria-label="${ALERTS_TEXT.detailsShow}">${alertIcon('chevron', 16)}</button>
+                    </span>
+                </div>
+                <div class="cleanplaats-alerts-row-details" hidden>
+                    <div class="cleanplaats-alerts-details">
+                        <div class="cleanplaats-alerts-details-row">
+                            <span class="cleanplaats-alerts-details-label">${ALERTS_TEXT.detailsChannel}</span>
+                            <span class="cleanplaats-alerts-details-controls">${telegramSwitch}${extendBtn}</span>
+                        </div>
+                        ${buildAlertFilterBlockHtml(alert)}
+                        <div class="cleanplaats-alerts-details-row cleanplaats-alerts-details-row-danger">
+                            <span class="cleanplaats-alerts-details-label">${ALERTS_TEXT.detailsRemove}</span>
+                            <span class="cleanplaats-alerts-details-controls">
+                                <button class="cleanplaats-alerts-text-btn cleanplaats-alerts-text-btn-danger cleanplaats-alerts-delete" data-alert-id="${alert.id}" data-alert-label="${escapeAlertText(alert.label)}">${alertIcon('trash', 14)}<span>${ALERTS_TEXT.deleteButton}</span></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // A grid rather than a <table>: the expandable detail row needs a full-width
+    // block under each row, and inside a real table that meant a colspan cell
+    // whose intrinsic width fought the fixed column widths.
+    return `
+        <div class="cleanplaats-alerts-tablelist" role="table" aria-label="${ALERTS_TEXT.navAlerts}">
+            <div class="cleanplaats-alerts-row cleanplaats-alerts-row-head" role="row">
+                <span role="columnheader">${ALERTS_TEXT.tableName}</span>
+                <span role="columnheader">${ALERTS_TEXT.tableFound}</span>
+                <span role="columnheader">${ALERTS_TEXT.tableCheck}</span>
+                <span role="columnheader">${ALERTS_TEXT.tableValidity}</span>
+                <span role="columnheader">${ALERTS_TEXT.tableStatus}</span>
+                <span role="columnheader"><span class="cleanplaats-alerts-sr">${ALERTS_TEXT.detailsShow}</span></span>
+            </div>
+            ${rows}
         </div>
     `;
+}
 
-    const alertItems = alerts.length === 0
-        ? `<div class="cleanplaats-alerts-empty">${ALERTS_TEXT.empty}</div>`
-        : alerts.map(alert => {
-            const validity = getAlertValidity(alert);
-            const statusClass = validity && validity.expired
-                ? 'expired'
-                : (alert.enabled ? 'active' : 'paused');
-            // For a running alert, when the next check lands is the useful
-            // fact; how long ago the last one was only matters when nothing
-            // is scheduled (paused, or lapsed).
-            const isRunning = alert.enabled && !(validity && validity.expired);
-            const nextCheck = isRunning && alert.last_checked_at
-                ? formatAlertNextCheck(alert.last_checked_at, me.intervalMinutes)
-                : '';
-            const lastChecked = nextCheck || (alert.last_checked_at
-                ? `${ALERTS_TEXT.lastChecked}: ${formatAlertRelativeTime(alert.last_checked_at)}`
-                : ALERTS_TEXT.neverChecked);
-            const labelHtml = alert.search_url
-                ? `<a href="${escapeAlertText(alert.search_url)}" class="cleanplaats-alerts-card-label">${escapeAlertText(alert.label)}</a>`
-                : `<span class="cleanplaats-alerts-card-label">${escapeAlertText(alert.label)}</span>`;
-
-            // The count is the natural way in: it is already the thing that
-            // says how much there is to look at. With nothing found it stays a
-            // plain label — a button that opens an empty list is a small lie.
-            // It counts finds only, but an alert whose snapshot is the only
-            // thing it has still opens: that view has something to show.
-            const matchCount = alert.match_count || 0;
-            const matchBadge = (matchCount > 0 || (alert.baseline_count || 0) > 0)
-                ? `<button type="button" class="cleanplaats-alerts-match-badge cleanplaats-alerts-match-badge-link" data-open-matches="${alert.id}" aria-label="${escapeAlertText(ALERTS_TEXT.alertMatchesOpen(alert.label))}">${ALERTS_TEXT.matchCount(matchCount)}${alertIcon('chevron', 13)}</button>`
-                : `<span class="cleanplaats-alerts-match-badge">${ALERTS_TEXT.matchCount(matchCount)}</span>`;
-
-            let validityHtml = '';
-            if (validity) {
-                if (validity.expired) {
-                    validityHtml = ` · <span class="cleanplaats-alerts-validity cleanplaats-alerts-validity-expired">${ALERTS_TEXT.validityExpired}</span>`;
-                } else {
-                    const soonClass = validity.soon ? ' cleanplaats-alerts-validity-soon' : '';
-                    validityHtml = ` · <span class="cleanplaats-alerts-validity${soonClass}">${ALERTS_TEXT.validityLeft(validity.daysLeft)}</span>`;
-                }
-            }
-
-            // Expired alerts can only come back via Reactiveren (which resets the
-            // window); re-enabling with the plain switch would just re-lapse next
-            // poll, so the status switch is replaced. Active alerts get a subtle
-            // Verleng nudge only in their final days.
-            const extendBtn = validity && validity.expired
-                ? `<button class="cleanplaats-alerts-extend-btn cleanplaats-alerts-extend-btn-primary" data-alert-id="${alert.id}" data-extend="1">${ALERTS_TEXT.reactivateButton}</button>`
-                : (validity && validity.soon
-                    ? `<button class="cleanplaats-alerts-extend-btn" data-alert-id="${alert.id}" data-extend="1">${ALERTS_TEXT.extendButton}</button>`
-                    : '');
-            const statusSwitch = validity && validity.expired
-                ? ''
-                : `<button class="cleanplaats-alerts-switch cleanplaats-alerts-switch-status ${alert.enabled ? 'on' : ''}" data-alert-id="${alert.id}" data-enabled="${alert.enabled ? '1' : '0'}" role="switch" aria-checked="${alert.enabled ? 'true' : 'false'}">
-                                <span class="cleanplaats-alerts-switch-label">${alert.enabled ? ALERTS_TEXT.activeLabel : ALERTS_TEXT.pausedLabel}</span><span class="cleanplaats-alerts-switch-track"></span>
-                            </button>`;
-
-            // Telegram has no value until an account is linked. Until then the
-            // toggle is "locked": it can't be switched on (that would set a flag
-            // nothing reads), and clicking it starts the connect-Telegram flow.
-            const telegramSwitch = me.telegramLinked
-                ? `<button class="cleanplaats-alerts-switch ${alert.notify_telegram ? 'on' : ''}" data-channel="telegram" data-alert-id="${alert.id}" data-value="${alert.notify_telegram ? '1' : '0'}" role="switch" aria-checked="${alert.notify_telegram ? 'true' : 'false'}">
-                                ${alertIcon('send', 14)}<span class="cleanplaats-alerts-switch-label">${ALERTS_TEXT.channelTelegram}</span><span class="cleanplaats-alerts-switch-track"></span>
-                            </button>`
-                : `<button class="cleanplaats-alerts-switch cleanplaats-alerts-switch-locked" data-channel="telegram" data-alert-id="${alert.id}" data-locked="1" type="button" aria-label="${ALERTS_TEXT.telegramLockedHint}" data-tip="${ALERTS_TEXT.telegramLockedHint}">
-                                ${alertIcon('send', 14)}<span class="cleanplaats-alerts-switch-label">${ALERTS_TEXT.channelTelegram}</span><span class="cleanplaats-alerts-switch-track"></span>
-                            </button>`;
-
-            return `
-                <div class="cleanplaats-alerts-alert cleanplaats-alerts-alert-${statusClass}" data-alert-id="${alert.id}">
-                    <div class="cleanplaats-alerts-alert-top">
-                        <span class="cleanplaats-alerts-status-dot"></span>
-                        ${labelHtml}
-                        ${matchBadge}
-                    </div>
-                    <div class="cleanplaats-alerts-alert-bottom">
-                        <span class="cleanplaats-alerts-meta">${lastChecked}${validityHtml}</span>
-                        <span class="cleanplaats-alerts-alert-actions">
-                            ${telegramSwitch}
-                            ${statusSwitch}
-                            ${extendBtn}
-                            <button class="cleanplaats-alerts-delete" data-alert-id="${alert.id}" title="${ALERTS_TEXT.deleteButton}" aria-label="${ALERTS_TEXT.deleteButton}">${alertIcon('trash', 15)}</button>
-                        </span>
-                    </div>
-                    ${buildAlertFilterBlockHtml(alert)}
-                </div>
-            `;
-        }).join('');
-
-    // Kept so the limit view can list the running searches without refetching.
+function renderAlertsDashboard(me, alerts, matches) {
+    // Kept so the sub-views can render without refetching.
     cleanplaatsAlertsRuntime.cachedAlerts = alerts;
     cleanplaatsAlertsRuntime.cachedMatches = matches;
 
-    // Only rendered inside channelsSection, which requires a linked account.
-    const telegramActions = `
-        <button class="cleanplaats-alerts-text-btn" id="cleanplaats-alert-telegram-relink">${ALERTS_TEXT.telegramRelink}</button>
-        <button class="cleanplaats-alerts-text-btn cleanplaats-alerts-text-btn-danger" id="cleanplaats-alert-telegram-unlink">${ALERTS_TEXT.telegramUnlink}</button>`;
+    const tierLabel = me.tier === 'premium' ? ALERTS_TEXT.tierPremium : ALERTS_TEXT.tierFree;
+    const used = me.alertCount || 0;
+    const usedFraction = me.maxAlerts > 0 ? Math.min(1, used / me.maxAlerts) : 0;
 
-    // Only worth showing once Telegram is linked: before that the notice at the
-    // top already carries the same "Koppelen" button, and this row would just
-    // repeat it.
-    const channelsSection = !me.telegramLinked ? '' : `
-        <div class="cleanplaats-alerts-section-title">${ALERTS_TEXT.channelsTitle}</div>
-        <div class="cleanplaats-alerts-channel-list">
-            <div class="cleanplaats-alerts-channel-row">
-                <span class="cleanplaats-alerts-channel-icon ${me.telegramLinked ? 'on' : ''}">${alertIcon('send', 18)}</span>
-                <span class="cleanplaats-alerts-channel-info">
-                    <span class="cleanplaats-alerts-channel-name">${ALERTS_TEXT.channelTelegram}</span>
-                    <span class="cleanplaats-alerts-channel-sub ${me.telegramLinked ? 'cleanplaats-alerts-channel-sub-on' : ''}">${me.telegramLinked ? ALERTS_TEXT.telegramLinked : ALERTS_TEXT.telegramNotLinked}</span>
-                </span>
-                <span class="cleanplaats-alerts-channel-actions">${telegramActions}</span>
-            </div>
-        </div>
-    `;
-
-    // Telegram is the only channel that pushes anything out, so an unlinked
-    // account silently receives nothing. Lead with that rather than letting
-    // someone create alerts and wonder why it stays quiet.
-    const telegramRequiredNotice = me.telegramLinked ? '' : `
-        <div class="cleanplaats-alerts-notice">
-            <span class="cleanplaats-alerts-notice-icon">${alertIcon('send', 18)}</span>
-            <span class="cleanplaats-alerts-notice-info">
-                <span class="cleanplaats-alerts-notice-title">${ALERTS_TEXT.telegramRequiredTitle}</span>
-                <span class="cleanplaats-alerts-notice-body">${ALERTS_TEXT.telegramRequiredBody}</span>
-            </span>
-            <button id="cleanplaats-alert-telegram-link-notice" class="cleanplaats-alerts-secondary-btn">${ALERTS_TEXT.telegramRequiredButton}</button>
-        </div>
-    `;
-
-    // Two columns on a wide screen: managing your searches on the left, what
-    // they turned up on the right. Stacked, the same content is one long
-    // narrow ribbon down the middle of a wide card, which is what made the
-    // panel feel cramped even though there was room to spare. Each column
-    // scrolls on its own, so reading the feed never scrolls your searches away.
     const body = setAlertsBody(`
-        <div class="cleanplaats-alerts-col cleanplaats-alerts-col-manage">
-            ${accountBar}
-            ${telegramRequiredNotice}
-            ${createSection}
-            <div class="cleanplaats-alerts-section-title">${ALERTS_TEXT.listTitle}</div>
-            <div class="cleanplaats-alerts-list">${alertItems}</div>
-            ${channelsSection}
-            <div class="cleanplaats-alerts-footer">
-                <button class="cleanplaats-alerts-text-btn" id="cleanplaats-alerts-open-pricing">${ALERTS_TEXT.accountPricingLink}</button>
-                <button class="cleanplaats-alerts-text-btn" id="cleanplaats-alerts-contact-btn">${ALERTS_TEXT.contactTitle} ${ALERTS_TEXT.contactAddress}</button>
-            </div>
-        </div>
-        <div class="cleanplaats-alerts-col cleanplaats-alerts-col-feed">
-            ${buildAlertMatchesSectionHtml(matches, ALERTS_TEXT.matchesTitle)}
+        <div class="cleanplaats-alerts-app">
+            <aside class="cleanplaats-alerts-rail">
+                <button type="button" class="cleanplaats-alerts-identity" id="cleanplaats-alerts-account-bar" aria-label="${ALERTS_TEXT.accountOpen}">
+                    <span class="cleanplaats-alerts-identity-avatar">${alertIcon('user', 16)}</span>
+                    <span class="cleanplaats-alerts-identity-copy">
+                        <span class="cleanplaats-alerts-identity-email" title="${escapeAlertText(me.email)}">${escapeAlertText(me.email)}</span>
+                        <span class="cleanplaats-alerts-identity-tier${me.tier === 'premium' ? ' is-premium' : ''}">${tierLabel}</span>
+                    </span>
+                    <span class="cleanplaats-alerts-identity-chevron" aria-hidden="true">${alertIcon('chevron', 15)}</span>
+                </button>
+
+                <nav class="cleanplaats-alerts-nav" aria-label="${ALERTS_TEXT.modalTitle}">
+                    ${ALERTS_NAV_ITEMS.map(item => `
+                        <button type="button" class="cleanplaats-alerts-nav-item" data-nav="${item.id}">
+                            ${alertIcon(item.icon, 16)}<span>${item.label()}</span>
+                        </button>
+                    `).join('')}
+                    <button type="button" class="cleanplaats-alerts-nav-item" data-nav-view="telegram">
+                        ${alertIcon('send', 16)}<span>${ALERTS_TEXT.navTelegram}</span>
+                        <span class="cleanplaats-alerts-nav-state ${me.telegramLinked ? 'on' : 'off'}" title="${me.telegramLinked ? ALERTS_TEXT.telegramLinked : ALERTS_TEXT.telegramNotLinked}">${me.telegramLinked ? ALERTS_TEXT.telegramLinked : ALERTS_TEXT.telegramNotLinked}</span>
+                    </button>
+                </nav>
+
+                <div class="cleanplaats-alerts-rail-foot">
+                    <div class="cleanplaats-alerts-quota">
+                        <span class="cleanplaats-alerts-quota-top">
+                            <span>${ALERTS_TEXT.navAlerts}</span>
+                            <span class="cleanplaats-alerts-quota-count">${used} / ${me.maxAlerts}</span>
+                        </span>
+                        <span class="cleanplaats-alerts-quota-bar${usedFraction >= 1 ? ' is-full' : ''}"><span style="width:${Math.round(usedFraction * 100)}%"></span></span>
+                        ${me.tier === 'premium' ? '' : `<button type="button" class="cleanplaats-alerts-quota-link" id="cleanplaats-alerts-open-pricing">${ALERTS_TEXT.quotaUpgrade}</button>`}
+                    </div>
+                    <button type="button" class="cleanplaats-alerts-text-btn cleanplaats-alerts-rail-contact" id="cleanplaats-alerts-contact-btn">${alertIcon('mail', 14)}<span>${ALERTS_TEXT.contactShort}</span></button>
+                </div>
+            </aside>
+
+            <main class="cleanplaats-alerts-main" id="cleanplaats-alerts-main"></main>
         </div>
     `);
-    if (body) body.classList.add('cleanplaats-alerts-body-split');
+    if (!body) return;
+    body.classList.add('cleanplaats-alerts-body-app');
 
-    wireAlertsDashboardEvents();
-    warnWhenSearchIsBroad(context);
+    body.querySelectorAll('[data-nav]').forEach(button => {
+        button.addEventListener('click', () => {
+            cleanplaatsAlertsRuntime.view = button.dataset.nav;
+            renderAlertsMainView();
+        });
+    });
+    body.querySelector('[data-nav-view="telegram"]')?.addEventListener('click', openAlertsTelegramView);
+    document.getElementById('cleanplaats-alerts-account-bar')?.addEventListener('click', renderAlertsAccountView);
+    document.getElementById('cleanplaats-alerts-open-pricing')?.addEventListener('click', renderAlertsPricingView);
+    wireAlertsContact();
+
+    renderAlertsMainView();
+
     setAlertsRefreshVisible(true);
     setAlertsAccountVisible(true);
     storeAlertsSummary(alerts, matches);
     maybeRunAlertsWalkthrough(me, alerts);
+}
+
+/**
+ * Telegram from the rail: the connect flow when there is nothing linked yet,
+ * the channel's own screen (test message, relink, unlink) when there is.
+ */
+function openAlertsTelegramView() {
+    const me = cleanplaatsAlertsRuntime.me;
+    if (!me) return;
+    if (!me.telegramLinked) {
+        renderTelegramConnect(me);
+        return;
+    }
+    renderAlertsChannelView();
+}
+
+function renderAlertsChannelView() {
+    setAlertsBody(`
+        ${alertsViewHeader(ALERTS_TEXT.channelsTitle)}
+        <div class="cleanplaats-alerts-channel-list">
+            <div class="cleanplaats-alerts-channel-row">
+                <span class="cleanplaats-alerts-channel-icon on">${alertIcon('send', 18)}</span>
+                <span class="cleanplaats-alerts-channel-info">
+                    <span class="cleanplaats-alerts-channel-name">${ALERTS_TEXT.channelTelegram}</span>
+                    <span class="cleanplaats-alerts-channel-sub cleanplaats-alerts-channel-sub-on">${ALERTS_TEXT.telegramLinked}</span>
+                </span>
+                <span class="cleanplaats-alerts-channel-actions">
+                    <button class="cleanplaats-alerts-text-btn" id="cleanplaats-alert-telegram-relink">${ALERTS_TEXT.telegramRelink}</button>
+                    <button class="cleanplaats-alerts-text-btn cleanplaats-alerts-text-btn-danger" id="cleanplaats-alert-telegram-unlink">${ALERTS_TEXT.telegramUnlink}</button>
+                </span>
+            </div>
+        </div>
+        <div class="cleanplaats-alerts-test">
+            <span class="cleanplaats-alerts-test-copy">${ALERTS_TEXT.telegramTestHint}</span>
+            <button type="button" class="cleanplaats-alerts-secondary-btn" id="cleanplaats-alerts-test-btn">${ALERTS_TEXT.telegramTestButton}</button>
+        </div>
+    `);
+
+    wireAlertsBackButton();
+    wireAlertsTelegramButtons();
+}
+
+function renderAlertsMainView() {
+    const main = document.getElementById('cleanplaats-alerts-main');
+    const me = cleanplaatsAlertsRuntime.me;
+    if (!main || !me) return;
+
+    const alerts = cleanplaatsAlertsRuntime.cachedAlerts || [];
+    const matches = cleanplaatsAlertsRuntime.cachedMatches || [];
+    const view = alertsCurrentView();
+    const context = getAlertSearchContext();
+
+    document.querySelectorAll('.cleanplaats-alerts-nav-item[data-nav]').forEach(button => {
+        const active = button.dataset.nav === view;
+        button.classList.toggle('is-active', active);
+        button.setAttribute('aria-current', active ? 'page' : 'false');
+    });
+
+    let html;
+    if (view === 'alerts') {
+        html = `
+            ${buildAlertsViewHead(ALERTS_TEXT.navAlerts, ALERTS_TEXT.alertsSub(me.maxAlerts))}
+            ${buildAlertsCreateHtml(context, me)}
+            ${buildAlertsTableHtml(alerts, me)}
+        `;
+    } else {
+        const truncated = matches.length >= ALERT_MATCHES_PAGE_SIZE;
+        html = `
+            ${buildAlertsViewHead(ALERTS_TEXT.navMatches, ALERTS_TEXT.matchesSub)}
+            ${buildAlertsStatusStripHtml(me, alerts)}
+            ${buildAlertsChecklistHtml(me, alerts)}
+            ${buildAlertMatchesSectionHtml(matches, ALERTS_TEXT.matchesTitle)}
+            ${truncated ? `<div class="cleanplaats-alerts-matches-note">${ALERTS_TEXT.alertMatchesTruncated(ALERT_MATCHES_PAGE_SIZE)}</div>` : ''}
+        `;
+    }
+
+    main.innerHTML = DOMPurify.sanitize(html);
+    main.scrollTop = 0;
+    wireAlertsMainEvents(main, view);
+}
+
+function buildAlertsViewHead(title, subtitle) {
+    return `
+        <div class="cleanplaats-alerts-view-head">
+            <h4>${title}</h4>
+            ${subtitle ? `<p>${subtitle}</p>` : ''}
+        </div>
+    `;
 }
 
 // Roughly where a search stops making a useful alert. A well-aimed query sits
@@ -1782,16 +2331,31 @@ function renderAlertsDashboard(me, alerts, matches) {
 var CLEANPLAATS_ALERTS_BROAD_RESULT_COUNT = 5000;
 
 /**
- * Warns before the fact when the current search is so broad that the alert
- * would fire constantly. Runs after render and stays silent on any failure:
- * a missing count is no reason to hold up the dashboard.
+ * Warns before the fact when the search behind the box is so broad that the
+ * alert would fire constantly. Stays silent on any failure: a missing count is
+ * no reason to hold up the dashboard.
+ *
+ * `term` is what is actually in the input. While it matches the page we came
+ * from, the page's filters (category, distance) count towards the total; once
+ * it is edited, the alert would be a plain search for that word, so that is
+ * what gets counted.
  */
-function warnWhenSearchIsBroad(context) {
+function warnWhenSearchIsBroad(context, term) {
     const element = document.getElementById('cleanplaats-alert-broad-warning');
-    if (!element || !context || !context.searchParams) return;
+    if (!element) return;
+    element.hidden = true;
+
+    const typed = String(term == null ? '' : term).trim();
+    const usesContext = Boolean(context && context.searchParams) &&
+        (!typed || typed.toLowerCase() === context.suggestedLabel.trim().toLowerCase());
+
+    const searchParams = usesContext
+        ? context.searchParams
+        : (typed ? { query: typed } : null);
+    if (!searchParams) return;
 
     const params = new URLSearchParams({ limit: '1', offset: '0' });
-    Object.entries(context.searchParams).forEach(([key, value]) => {
+    Object.entries(searchParams).forEach(([key, value]) => {
         if (Array.isArray(value)) value.forEach(item => params.append(`${key}[]`, item));
         else params.set(key, value);
     });
@@ -1809,89 +2373,148 @@ function warnWhenSearchIsBroad(context) {
         .catch(() => {});
 }
 
-function wireAlertsDashboardEvents() {
-    const body = document.getElementById('cleanplaats-alerts-body');
-    if (!body) return;
+/**
+ * Everything inside the main surface. Called after every render of it, so it
+ * never assumes an element from another view is present.
+ */
+function wireAlertsMainEvents(main, view) {
+    main.querySelectorAll('[data-nav-jump]').forEach(button => {
+        button.addEventListener('click', () => {
+            cleanplaatsAlertsRuntime.view = button.dataset.navJump;
+            renderAlertsMainView();
+        });
+    });
 
-    document.getElementById('cleanplaats-alerts-account-bar')?.addEventListener('click', renderAlertsAccountView);
-    const pricingLink = document.getElementById('cleanplaats-alerts-open-pricing');
-    if (pricingLink) pricingLink.onclick = renderAlertsPricingView;
-    wireAlertsContact();
+    document.getElementById('cleanplaats-alert-telegram-link-notice')
+        ?.addEventListener('click', () => renderTelegramConnect(cleanplaatsAlertsRuntime.me));
 
-    const createButton = document.getElementById('cleanplaats-alert-create');
-    if (createButton) {
-        const labelInput = document.getElementById('cleanplaats-alert-label-input');
-        const createNote = document.getElementById('cleanplaats-alert-create-note');
-        const suggestedTerm = (labelInput?.value || '').trim().toLowerCase();
-        if (labelInput && createNote) {
-            labelInput.addEventListener('input', () => {
-                createNote.style.display =
-                    labelInput.value.trim().toLowerCase() === suggestedTerm ? '' : 'none';
-            });
+    wireAlertsCreateBox(main);
+    wireAlertsRowToggles(main);
+    wireAlertsRowControls(main);
+    wireAlertFilterControls(main);
+    wireAlertMatchLinks(main);
+
+    if (view === 'matches') {
+        wireAlertMatchesSort(() => cleanplaatsAlertsRuntime.cachedMatches);
+    }
+
+    main.querySelectorAll('[data-open-matches]').forEach(button => {
+        button.addEventListener('click', () => renderAlertMatchesView(button.dataset.openMatches));
+    });
+}
+
+function wireAlertsCreateBox(main) {
+    const createButton = main.querySelector('#cleanplaats-alert-create');
+    if (!createButton) return;
+
+    const labelInput = main.querySelector('#cleanplaats-alert-label-input');
+    const createNote = main.querySelector('#cleanplaats-alert-create-note');
+    const suggestedTerm = (labelInput?.value || '').trim().toLowerCase();
+
+    if (labelInput && createNote) {
+        labelInput.addEventListener('input', () => {
+            createNote.style.display =
+                labelInput.value.trim().toLowerCase() === suggestedTerm ? '' : 'none';
+        });
+    }
+
+    // The warning belongs to whatever is in the box, not to the page it was
+    // opened from: someone who types a term of their own deserves the same
+    // heads-up as someone who arrived from a broad search page.
+    if (labelInput) {
+        let debounce = null;
+        labelInput.addEventListener('input', () => {
+            clearTimeout(debounce);
+            debounce = setTimeout(() => warnWhenSearchIsBroad(getAlertSearchContext(), labelInput.value), 500);
+        });
+    }
+    warnWhenSearchIsBroad(getAlertSearchContext(), labelInput?.value);
+
+    createButton.onclick = () => {
+        const term = (labelInput?.value || '').trim();
+        if (!term) {
+            showBubbleNotification(ALERTS_TEXT.createTermMissing);
+            if (labelInput) labelInput.focus();
+            return;
         }
 
-        createButton.onclick = () => {
-            const term = (labelInput?.value || '').trim();
-            if (!term) {
-                showBubbleNotification(ALERTS_TEXT.createTermMissing);
-                if (labelInput) labelInput.focus();
-                return;
-            }
+        // Out of room: explain the ceiling here rather than firing a request we
+        // know the server will refuse.
+        const me = cleanplaatsAlertsRuntime.me;
+        if (me && (me.alertCount || 0) >= me.maxAlerts) {
+            renderAlertsLimitView(cleanplaatsAlertsRuntime.cachedAlerts || []);
+            return;
+        }
 
-            // Out of room: explain the ceiling here rather than firing a
-            // request we know the server will refuse.
-            const me = cleanplaatsAlertsRuntime.me;
-            if (me && (me.alertCount || 0) >= me.maxAlerts) {
+        // Reuse the page's search context (category/location filters) only
+        // while the term still matches it; an edited term is a new, plain
+        // search.
+        const context = getAlertSearchContext();
+        const usesContext = Boolean(context) &&
+            term.toLowerCase() === context.suggestedLabel.trim().toLowerCase();
+        const searchParams = usesContext
+            ? context.searchParams
+            : { query: term };
+        const searchUrl = usesContext
+            ? context.searchUrl
+            : `https://www.marktplaats.nl/q/${encodeURIComponent(term).replace(/%20/g, '+')}/`;
+
+        createButton.disabled = true;
+        alertsApiFetch('/api/alerts', {
+            method: 'POST',
+            body: JSON.stringify({ label: term, searchParams, searchUrl, filters: getDefaultAlertFilters() })
+        }).then(() => {
+            showBubbleNotification(ALERTS_TEXT.createdToast);
+            cleanplaatsAlertsRuntime.view = 'alerts';
+            loadAlertsDashboard();
+        }).catch(error => {
+            createButton.disabled = false;
+            // 403 is the server's own limit check — reachable when this device's
+            // count is stale (another browser added one).
+            if (error.status === 403) {
                 renderAlertsLimitView(cleanplaatsAlertsRuntime.cachedAlerts || []);
                 return;
             }
+            showBubbleNotification(error.message || ALERTS_TEXT.errorToast);
+        });
+    };
+}
 
-            // Reuse the page's search context (category/location filters)
-            // only while the term still matches it; an edited term is a new,
-            // plain search.
-            const context = getAlertSearchContext();
-            const usesContext = Boolean(context) &&
-                term.toLowerCase() === context.suggestedLabel.trim().toLowerCase();
-            const searchParams = usesContext
-                ? context.searchParams
-                : { query: term, searchInTitleAndDescription: 'true' };
-            const searchUrl = usesContext
-                ? context.searchUrl
-                : `https://www.marktplaats.nl/q/${encodeURIComponent(term).replace(/%20/g, '+')}/`;
+function wireAlertsRowToggles(main) {
+    main.querySelectorAll('[data-row-toggle]').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            const group = toggle.closest('.cleanplaats-alerts-row-group');
+            const details = group?.querySelector('.cleanplaats-alerts-row-details');
+            if (!details) return;
+            const isOpen = !details.hasAttribute('hidden');
+            if (isOpen) details.setAttribute('hidden', '');
+            else details.removeAttribute('hidden');
+            toggle.setAttribute('aria-expanded', String(!isOpen));
+            group.classList.toggle('is-open', !isOpen);
+        });
+    });
+}
 
-            createButton.disabled = true;
-            alertsApiFetch('/api/alerts', {
-                method: 'POST',
-                body: JSON.stringify({ label: term, searchParams, searchUrl, filters: getDefaultAlertFilters() })
-            }).then(() => {
-                showBubbleNotification(ALERTS_TEXT.createdToast);
-                loadAlertsDashboard();
-            }).catch(error => {
-                createButton.disabled = false;
-                // 403 is the server's own limit check — reachable when this
-                // device's count is stale (another browser added one).
-                if (error.status === 403) {
-                    renderAlertsLimitView(cleanplaatsAlertsRuntime.cachedAlerts || []);
-                    return;
-                }
-                showBubbleNotification(error.message || ALERTS_TEXT.errorToast);
-            });
-        };
-    }
-
-    body.querySelectorAll('.cleanplaats-alerts-delete').forEach(button => {
+function wireAlertsRowControls(main) {
+    main.querySelectorAll('.cleanplaats-alerts-delete').forEach(button => {
         button.onclick = () => {
-            if (!window.confirm(ALERTS_TEXT.deleteConfirm)) return;
-            alertsApiFetch(`/api/alerts/${button.dataset.alertId}`, { method: 'DELETE' })
-                .then(() => {
-                    showBubbleNotification(ALERTS_TEXT.deletedToast);
-                    loadAlertsDashboard();
-                })
-                .catch(() => showBubbleNotification(ALERTS_TEXT.errorToast));
+            openAlertsConfirm({
+                title: ALERTS_TEXT.deleteConfirmTitle,
+                body: ALERTS_TEXT.deleteConfirmBody(button.dataset.alertLabel || ''),
+                confirmLabel: ALERTS_TEXT.deleteConfirmOk,
+                onConfirm: () => {
+                    alertsApiFetch(`/api/alerts/${button.dataset.alertId}`, { method: 'DELETE' })
+                        .then(() => {
+                            showBubbleNotification(ALERTS_TEXT.deletedToast);
+                            loadAlertsDashboard();
+                        })
+                        .catch(error => showBubbleNotification((error && error.message) || ALERTS_TEXT.errorToast));
+                }
+            });
         };
     });
 
-    body.querySelectorAll('.cleanplaats-alerts-switch-status').forEach(button => {
+    main.querySelectorAll('.cleanplaats-alerts-switch-status').forEach(button => {
         button.onclick = () => {
             const nextEnabled = button.dataset.enabled !== '1';
             alertsApiFetch(`/api/alerts/${button.dataset.alertId}`, {
@@ -1903,16 +2526,20 @@ function wireAlertsDashboardEvents() {
                 button.classList.toggle('on', nextEnabled);
                 const label = button.querySelector('.cleanplaats-alerts-switch-label');
                 if (label) label.textContent = nextEnabled ? ALERTS_TEXT.activeLabel : ALERTS_TEXT.pausedLabel;
-                const card = button.closest('.cleanplaats-alerts-alert');
-                if (card) {
-                    card.classList.toggle('cleanplaats-alerts-alert-active', nextEnabled);
-                    card.classList.toggle('cleanplaats-alerts-alert-paused', !nextEnabled);
+                const group = button.closest('.cleanplaats-alerts-row-group');
+                if (group) {
+                    group.classList.toggle('cleanplaats-alerts-alert-active', nextEnabled);
+                    group.classList.toggle('cleanplaats-alerts-alert-paused', !nextEnabled);
                 }
+                // The strip counts running searches, so it is now out of date.
+                const cached = (cleanplaatsAlertsRuntime.cachedAlerts || [])
+                    .find(alert => String(alert.id) === String(button.dataset.alertId));
+                if (cached) cached.enabled = nextEnabled ? 1 : 0;
             }).catch(() => showBubbleNotification(ALERTS_TEXT.errorToast));
         };
     });
 
-    body.querySelectorAll('.cleanplaats-alerts-extend-btn').forEach(button => {
+    main.querySelectorAll('.cleanplaats-alerts-extend-btn').forEach(button => {
         button.onclick = () => {
             const wasExpired = button.classList.contains('cleanplaats-alerts-extend-btn-primary');
             button.disabled = true;
@@ -1929,21 +2556,20 @@ function wireAlertsDashboardEvents() {
         };
     });
 
-    body.querySelectorAll('.cleanplaats-alerts-switch[data-channel]').forEach(button => {
+    main.querySelectorAll('.cleanplaats-alerts-switch[data-channel]').forEach(button => {
         button.onclick = () => {
-            // A locked Telegram toggle (no account linked yet) can't carry a
+            // A locked Telegram toggle (nothing linked yet) can't carry a
             // setting, so clicking it kicks off the connect flow instead.
             if (button.dataset.locked === '1') {
-                startTelegramLink();
+                renderTelegramConnect(cleanplaatsAlertsRuntime.me);
                 return;
             }
             const next = button.dataset.value !== '1';
             // Telegram is the only channel with a switch; the e-mail one is gone
             // while server-side e-mail notifications are off.
-            const field = 'notifyTelegram';
             alertsApiFetch(`/api/alerts/${button.dataset.alertId}`, {
                 method: 'PATCH',
-                body: JSON.stringify({ [field]: next })
+                body: JSON.stringify({ notifyTelegram: next })
             }).then(() => {
                 button.dataset.value = next ? '1' : '0';
                 button.setAttribute('aria-checked', String(next));
@@ -1951,43 +2577,47 @@ function wireAlertsDashboardEvents() {
             }).catch(() => showBubbleNotification(ALERTS_TEXT.errorToast));
         };
     });
+}
 
-    // Both "Koppelen" and "Ander account koppelen" open the same step-by-step
-    // connect screen; the bot hands out a code and the user types it back here.
-    // (This runs in wireAlertsDashboardEvents, which has no `me` in scope — read
-    // it from the runtime, which loadAlertsDashboard populated.)
-    const startTelegramLink = () => renderTelegramConnect(cleanplaatsAlertsRuntime.me);
+/** Relink, unlink and the test message: only present on the channel view. */
+function wireAlertsTelegramButtons() {
+    document.getElementById('cleanplaats-alert-telegram-relink')
+        ?.addEventListener('click', () => renderTelegramConnect(cleanplaatsAlertsRuntime.me));
 
-    // "Koppelen" and "Ander account koppelen" are the same flow: the user
-    // messages the bot, gets a code, and types it back to claim the chat.
-    ['cleanplaats-alert-telegram-link-notice', 'cleanplaats-alert-telegram-relink'].forEach(id => {
-        const button = document.getElementById(id);
-        if (button) button.onclick = startTelegramLink;
-    });
-
-    const telegramUnlinkButton = document.getElementById('cleanplaats-alert-telegram-unlink');
-    if (telegramUnlinkButton) {
-        telegramUnlinkButton.onclick = () => {
-            if (!window.confirm(ALERTS_TEXT.telegramUnlinkConfirm)) return;
-            alertsApiFetch('/api/telegram/unlink', { method: 'POST' })
-                .then(() => {
-                    showBubbleNotification(ALERTS_TEXT.telegramUnlinkedToast);
-                    loadAlertsDashboard();
-                })
-                .catch(() => showBubbleNotification(ALERTS_TEXT.errorToast));
+    const unlink = document.getElementById('cleanplaats-alert-telegram-unlink');
+    if (unlink) {
+        unlink.onclick = () => {
+            openAlertsConfirm({
+                title: ALERTS_TEXT.telegramUnlink,
+                body: ALERTS_TEXT.telegramUnlinkConfirm,
+                confirmLabel: ALERTS_TEXT.telegramUnlink,
+                onConfirm: () => {
+                    alertsApiFetch('/api/telegram/unlink', { method: 'POST' })
+                        .then(() => {
+                            showBubbleNotification(ALERTS_TEXT.telegramUnlinkedToast);
+                            loadAlertsDashboard();
+                        })
+                        .catch(() => showBubbleNotification(ALERTS_TEXT.errorToast));
+                }
+            });
         };
     }
 
-    wireAlertMatchLinks(body);
-    wireAlertMatchesSort(() => cleanplaatsAlertsRuntime.cachedMatches);
-
-    body.querySelectorAll('[data-open-matches]').forEach(button => {
-        button.addEventListener('click', () => {
-            renderAlertMatchesView(button.dataset.openMatches);
-        });
-    });
-
-    wireAlertFilterControls(body);
+    const test = document.getElementById('cleanplaats-alerts-test-btn');
+    if (test) {
+        test.onclick = () => {
+            test.disabled = true;
+            test.textContent = ALERTS_TEXT.telegramTestSending;
+            alertsApiFetch('/api/telegram/test', { method: 'POST' })
+                .then(() => showBubbleNotification(ALERTS_TEXT.telegramTestToast))
+                .catch(error => showBubbleNotification((error && error.message) || ALERTS_TEXT.errorToast))
+                .then(() => {
+                    if (!test.isConnected) return;
+                    test.disabled = false;
+                    test.textContent = ALERTS_TEXT.telegramTestButton;
+                });
+        };
+    }
 }
 
 function wireAlertFilterControls(body) {
@@ -2118,10 +2748,16 @@ function maybeRunAlertsWalkthrough(me, alerts) {
 
     const steps = [];
 
-    if (document.getElementById('cleanplaats-alert-label-input')) {
+    // The create box lives on the Zoekmeldingen view; from the advertisements
+    // view the checklist is what points at it, so the tour follows whichever of
+    // the two is actually on screen.
+    const createSelector = document.getElementById('cleanplaats-alert-label-input')
+        ? '.cleanplaats-alerts-create'
+        : (document.querySelector('.cleanplaats-alerts-setup') ? '.cleanplaats-alerts-setup' : '');
+    if (createSelector) {
         const hasContext = Boolean(getAlertSearchContext());
         steps.push({
-            selector: '.cleanplaats-alerts-create',
+            selector: createSelector,
             title: ALERTS_WALKTHROUGH_TEXT.createTitle,
             body: hasContext ? ALERTS_WALKTHROUGH_TEXT.createBody : ALERTS_WALKTHROUGH_TEXT.createBodyPlain
         });
@@ -2129,13 +2765,13 @@ function maybeRunAlertsWalkthrough(me, alerts) {
 
     if (me.telegramLinked) {
         steps.push({
-            selector: '.cleanplaats-alerts-channel-list',
+            selector: '.cleanplaats-alerts-nav-item[data-nav-view="telegram"]',
             title: ALERTS_WALKTHROUGH_TEXT.telegramLinkedTitle,
             body: ALERTS_WALKTHROUGH_TEXT.telegramLinkedBody
         });
     } else {
         steps.push({
-            selector: '.cleanplaats-alerts-notice',
+            selector: '.cleanplaats-alerts-setup',
             title: ALERTS_WALKTHROUGH_TEXT.telegramTitle,
             body: ALERTS_WALKTHROUGH_TEXT.telegramBody
         });
