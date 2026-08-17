@@ -11,7 +11,9 @@
  * login view, then a dashboard with stats, alert cards and a match feed.
  */
 
-var CLEANPLAATS_ALERTS_API_BASE = 'https://cleanplaats-alerts.aron-vanderwal-46a.workers.dev';
+// Our own zone, not the workers.dev host: only a zone we own can carry WAF and
+// rate limiting rules, and those are what keep the API from being a bill.
+var CLEANPLAATS_ALERTS_API_BASE = 'https://api.cleanplaats.com';
 var CLEANPLAATS_ALERTS_TOKEN_KEY = 'cleanplaatsAlertsToken';
 var CLEANPLAATS_ALERTS_API_BASE_KEY = 'cleanplaatsAlertsApiBase';
 
@@ -270,7 +272,10 @@ var ALERTS_TEXT = {
     setupAlertBody: 'Zoek iets op Marktplaats en vul de zoekterm hieronder in. Je categorie, locatie en afstand gaan mee.',
     setupAlertBodyDone: n => `Je hebt ${n} ${n === 1 ? 'zoekmelding' : 'zoekmeldingen'} lopen.`,
     setupTelegramTitle: 'Koppel Telegram',
-    setupTelegramBody: 'Zonder koppeling blijft het stil: Telegram is de manier waarop we je bereiken.',
+    // Says what actually happens: without a linked chat the server stops
+    // checking the search after a day. Promising a next check we do not make
+    // would be the one thing worse than the warning itself.
+    setupTelegramBody: 'Telegram is de manier waarop we je bereiken. Zonder koppeling stopt de controle na een dag.',
     setupTelegramBodyDone: 'Gekoppeld. Meldingen komen binnen in je Telegram-chat.',
     setupTelegramAction: 'Koppelen',
 
