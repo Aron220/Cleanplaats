@@ -2547,14 +2547,15 @@
      want their own scroll, which needs a height to scroll against. The other
      views (login, pairing code) keep shrink-wrapping, since a login form
      stranded in a 900px card looks like something failed to load. */
-  .cleanplaats-alerts-card:has(.cleanplaats-alerts-body-app) {
+  .cleanplaats-alerts-card:has(.cleanplaats-alerts-body-app),
+  .cleanplaats-alerts-card.is-loading-app {
     height: min(92vh, 940px);
   }
 
   /* Sub-views (login, account, prices, one search's finds) are a single column
      of text and controls. Left at the dashboard's width they were a narrow
      ribbon down the middle of a very wide sheet. */
-  .cleanplaats-alerts-card:not(:has(.cleanplaats-alerts-body-app)) {
+  .cleanplaats-alerts-card:not(:has(.cleanplaats-alerts-body-app)):not(.is-loading-app) {
     width: min(900px, 96vw);
   }
 
@@ -2653,6 +2654,7 @@
   }
 
   .cleanplaats-alerts-body {
+    position: relative;
     overflow-y: auto;
     padding: 22px 30px 26px;
     display: flex;
@@ -3544,6 +3546,66 @@
     text-align: center;
     color: #6b7688;
     font-size: 14px;
+  }
+
+  /* The card already holds the dashboard's height while this is on screen, so
+     the line centres in that space rather than clinging to the header. Only
+     the loading state does this: the failure message reuses the class above
+     and belongs where the eye already is. */
+  .cleanplaats-alerts-loading:has(.cleanplaats-alerts-loading-spin) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    flex: 1;
+  }
+
+  .cleanplaats-alerts-loading-spin {
+    width: 30px;
+    height: 30px;
+    border: 2.5px solid rgba(43, 52, 66, 0.16);
+    border-top-color: #e8710a;
+    border-radius: 50%;
+    animation: cleanplaats-alerts-spin 0.7s linear infinite;
+  }
+
+  /* Refreshing keeps the view it is refreshing. The veil sits over the body
+     rather than replacing it, which is what stops the card from resizing, and
+     it swallows clicks so nothing lands on rows that are about to be redrawn.
+     Fading it in keeps a fast refresh from registering as a flash. */
+  .cleanplaats-alerts-card.is-busy .cleanplaats-alerts-body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.58);
+    animation: cleanplaats-alerts-fade-in 0.12s ease;
+  }
+
+  .cleanplaats-alerts-card.is-busy .cleanplaats-alerts-body::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 3;
+    width: 28px;
+    height: 28px;
+    margin: -14px 0 0 -14px;
+    border: 2.5px solid rgba(43, 52, 66, 0.16);
+    border-top-color: #e8710a;
+    border-radius: 50%;
+    animation: cleanplaats-alerts-spin 0.7s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cleanplaats-alerts-card.is-busy .cleanplaats-alerts-body::before {
+      animation: none;
+    }
+    .cleanplaats-alerts-card.is-busy .cleanplaats-alerts-body::after,
+    .cleanplaats-alerts-loading-spin {
+      animation-duration: 2s;
+    }
   }
 
   /* --- Login --- */
@@ -5142,6 +5204,16 @@
   html.cleanplaats-dark-mode .cleanplaats-alerts-card {
     background: #10161f;
     color: #dde4ee;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-card.is-busy .cleanplaats-alerts-body::before {
+    background: rgba(16, 22, 31, 0.58);
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-card.is-busy .cleanplaats-alerts-body::after,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-loading-spin {
+    border-color: rgba(221, 228, 238, 0.18);
+    border-top-color: #e8710a;
   }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-header {

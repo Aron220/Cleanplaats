@@ -1010,7 +1010,7 @@ function showAlertsModal(options = {}) {
 
 function renderAlertsShell(overlay) {
     overlay.innerHTML = DOMPurify.sanitize(`
-        <div class="cleanplaats-alerts-card" role="dialog" aria-modal="true" aria-label="${ALERTS_TEXT.modalTitle}">
+        <div class="cleanplaats-alerts-card is-loading-app" role="dialog" aria-modal="true" aria-label="${ALERTS_TEXT.modalTitle}">
             <div class="cleanplaats-alerts-header">
                 <div class="cleanplaats-alerts-header-title">
                     <span class="cleanplaats-alerts-bell"><img id="cleanplaats-alerts-bell-img" alt="" width="42" height="42"></span>
@@ -1057,6 +1057,11 @@ function setAlertsBody(html) {
     // single readable column, and the dashboard adds the class back itself.
     // Leaving it on squeezed each sub-view into the rail's column.
     body.classList.remove('cleanplaats-alerts-body-app');
+    // The card holds the dashboard's size while the first load is in flight,
+    // so opening the panel doesn't show a small card that then grows. Any body
+    // we render ends that hold: either the dashboard puts its own class back a
+    // few lines further on, or this is a sub-view that should shrink-wrap.
+    alertsCard()?.classList.remove('is-loading-app');
     // The tagline is the pitch, so it belongs on the first screen and on the
     // dashboard, not repeated above every sub-view that has its own heading.
     setAlertsTaglineVisible(false);
@@ -1066,6 +1071,35 @@ function setAlertsBody(html) {
     setAlertsRefreshVisible(false);
     setAlertsAccountVisible(false);
     return body;
+}
+
+/**
+ * The first load, where there is nothing on screen yet to keep. Its own markup
+ * rather than the bare .cleanplaats-alerts-loading line, because that class is
+ * also what the failure message renders in, and a spinner next to "something
+ * went wrong" says the opposite of what happened.
+ */
+function alertsLoadingHtml() {
+    return `<div class="cleanplaats-alerts-loading">
+        <span class="cleanplaats-alerts-loading-spin" aria-hidden="true"></span>
+        <span>${ALERTS_TEXT.loading}</span>
+    </div>`;
+}
+
+function alertsCard() {
+    return document.querySelector('.cleanplaats-alerts-card');
+}
+
+/**
+ * Refreshing a view that is already on screen: veil it and spin, rather than
+ * replacing it with a loading line. Swapping the body drops the app grid, and
+ * the card's width and height hang off that grid, so the panel shrank to a
+ * sub-view's size and snapped back the moment the data landed.
+ */
+function setAlertsBusy(busy) {
+    alertsCard()?.classList.toggle('is-busy', busy);
+    const body = document.getElementById('cleanplaats-alerts-body');
+    if (body) body.setAttribute('aria-busy', busy ? 'true' : 'false');
 }
 
 function setAlertsRefreshVisible(visible) {
@@ -1873,8 +1907,22 @@ function loadAlertsDashboard() {
     // Leaving a per-alert view: anything still in flight for it is now stale.
     cleanplaatsAlertsRuntime.openAlertMatchesId = null;
 
-    const body = setAlertsBody(`<div class="cleanplaats-alerts-loading">${ALERTS_TEXT.loading}</div>`);
+    const body = document.getElementById('cleanplaats-alerts-body');
     if (!body) return;
+
+    // Every action in the panel ends up here. When the dashboard is already on
+    // screen, refresh underneath it: the rail, the surface and the card's size
+    // all stay put, and the only thing that says "working" is the veil. The
+    // full loading body is for the first load, when there is nothing to keep.
+    const inPlace = body.classList.contains('cleanplaats-alerts-body-app');
+    const mainScroll = inPlace
+        ? (document.getElementById('cleanplaats-alerts-main')?.scrollTop || 0)
+        : 0;
+    if (inPlace) {
+        setAlertsBusy(true);
+    } else {
+        setAlertsBody(alertsLoadingHtml());
+    }
 
     syncAlertFilters();
 
@@ -1895,7 +1943,15 @@ function loadAlertsDashboard() {
         // server did from showing the flood anyway.
         const feed = (matchesData.matches || []).filter(match => !match.is_baseline);
         renderAlertsDashboard(me, alertsData.alerts || [], feed);
+        // renderAlertsMainView() starts every view at the top, which is right
+        // for a view change and wrong for a refresh of the one you are reading.
+        if (inPlace && mainScroll) {
+            const main = document.getElementById('cleanplaats-alerts-main');
+            if (main) main.scrollTop = mainScroll;
+        }
+        setAlertsBusy(false);
     }).catch(error => {
+        setAlertsBusy(false);
         if (error.status === 401) {
             storeAlertsToken('').then(() => renderAlertsLoginView());
             return;
