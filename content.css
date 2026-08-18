@@ -2988,6 +2988,50 @@
     color: #6b7688;
   }
 
+  /* --- Unlinked-Telegram notice, above the list of searches --- */
+
+  .cleanplaats-alerts-notice {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 15px;
+    border: 1px solid #f2d9b0;
+    border-radius: 12px;
+    background: #fdf6ea;
+  }
+
+  .cleanplaats-alerts-notice-icon {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #f7e6c8;
+    color: #8a5a06;
+  }
+
+  .cleanplaats-alerts-notice-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .cleanplaats-alerts-notice-title {
+    font-size: 13.5px;
+    font-weight: 650;
+    color: #6f4a06;
+  }
+
+  .cleanplaats-alerts-notice-body {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #8a5a06;
+  }
+
   /* --- Activation checklist --- */
 
   .cleanplaats-alerts-setup {
@@ -5827,6 +5871,19 @@
     color: #e0ae53;
   }
 
+  html.cleanplaats-dark-mode .cleanplaats-alerts-notice {
+    background: #2a2114;
+    border-color: #4a3a1c;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-notice-icon {
+    background: #3b2d16;
+    color: #e0ae53;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-notice-title { color: #f0c477; }
+  html.cleanplaats-dark-mode .cleanplaats-alerts-notice-body { color: #d3a862; }
+
   html.cleanplaats-dark-mode .cleanplaats-alerts-row-head {
     background: #131b26;
     border-color: #243044;
@@ -5995,6 +6052,9 @@
     .cleanplaats-alerts-setup-action { width: 100%; padding-left: 33px; }
     .cleanplaats-alerts-setup-action .cleanplaats-alerts-primary-btn,
     .cleanplaats-alerts-setup-action .cleanplaats-alerts-secondary-btn { width: 100%; }
+
+    .cleanplaats-alerts-notice { align-items: flex-start; flex-wrap: wrap; }
+    .cleanplaats-alerts-notice .cleanplaats-alerts-primary-btn { width: 100%; }
 
     .cleanplaats-alerts-qr { flex-direction: column; align-items: flex-start; }
 

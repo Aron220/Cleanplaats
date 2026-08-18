@@ -149,9 +149,25 @@ var ALERTS_TEXT = {
     telegramLockedHint: 'Koppel eerst Telegram om hier meldingen via Telegram te krijgen. Klik om te koppelen.',
     // Telegram is the only delivery channel, so an unlinked account gets
     // nothing pushed to it — say that plainly instead of letting people wait.
+    // It is not a soft limitation either: after the grace window the poller
+    // stops checking the search altogether, so the copy names that too.
     telegramRequiredTitle: 'Je ontvangt nog geen meldingen',
-    telegramRequiredBody: 'Meldingen worden via Telegram verstuurd. Koppel Telegram om nieuwe advertenties binnen te krijgen. Gevonden advertenties zie je hieronder ook zonder koppeling.',
+    telegramRequiredBody: hours => 'Meldingen gaan via Telegram. Zonder koppeling controleren we een nieuwe zoekmelding nog ' +
+        `${hours} uur en daarna stopt hij. Wat we in die tijd vinden, zie je gewoon in dit paneel.`,
     telegramRequiredButton: 'Telegram koppelen',
+    // Shown in a row's check column while nothing is linked: an alert that is
+    // switched on but no longer polled must not promise a next check.
+    checkUnlinkedStops: h => (h <= 1
+        ? 'Controle stopt binnen een uur zonder Telegram'
+        : `Controle stopt over ${h} uur zonder Telegram`),
+    checkUnlinkedStopped: 'Controle gestopt tot je Telegram koppelt',
+    // Turning the channel off is the same thing as pausing while Telegram is
+    // the only way we reach anyone, so say so before doing both.
+    telegramOffPauseTitle: 'Zoekmelding gaat op pauze',
+    telegramOffPauseBody: 'Telegram is de enige manier waarop we je bereiken. Zet je hem uit, dan pauzeren we deze zoekmelding ook, zodat we niet blijven zoeken naar iets waar je niets van hoort.',
+    telegramOffPauseConfirm: 'Uitzetten en pauzeren',
+    telegramOffPausedToast: 'Telegram uit. Deze zoekmelding staat nu op pauze.',
+    telegramOnResumedToast: 'Telegram aan. Deze zoekmelding loopt weer.',
     telegramTestButton: 'Stuur testmelding',
     telegramTestSending: 'Versturen…',
     telegramTestToast: 'Testmelding verstuurd. Kijk in je Telegram.',
@@ -245,6 +261,7 @@ var ALERTS_TEXT = {
     // change what you do next does not belong here.
     stripRunning: n => `${n} ${n === 1 ? 'zoekmelding loopt' : 'zoekmeldingen lopen'}`,
     stripIdle: 'Er loopt nu geen zoekmelding, dus er komt niets binnen.',
+    stripUnlinked: 'Telegram is niet gekoppeld, dus er wordt niets naar je verstuurd.',
     stripFailing: 'We kunnen Marktplaats even niet bereiken. Zodra dat weer lukt, gaat het zoeken door.',
 
     // Table headers on the Zoekmeldingen view.
@@ -275,7 +292,7 @@ var ALERTS_TEXT = {
     // Says what actually happens: without a linked chat the server stops
     // checking the search after a day. Promising a next check we do not make
     // would be the one thing worse than the warning itself.
-    setupTelegramBody: 'Telegram is de manier waarop we je bereiken. Zonder koppeling stopt de controle na een dag.',
+    setupTelegramBody: hours => `Telegram is de manier waarop we je bereiken. Zonder koppeling stopt de controle na ${hours} uur.`,
     setupTelegramBodyDone: 'Gekoppeld. Meldingen komen binnen in je Telegram-chat.',
     setupTelegramAction: 'Koppelen',
 
@@ -701,10 +718,12 @@ function storeAlertsSummary(alerts, matches) {
     if (typeof CLEANPLAATS === 'undefined' || !CLEANPLAATS.settings) return;
 
     const seenAt = cleanplaatsAlertsRuntime.matchesSeenAt || 0;
-    const activeCount = alerts.filter(alert => {
-        const validity = getAlertValidity(alert);
-        return alert.enabled && !(validity && validity.expired);
-    }).length;
+    // Same definition of "active" the modal paints its rows with, so the panel
+    // does not report searches as running while the server has stopped checking
+    // them for want of a linked Telegram.
+    const activeCount = alerts.filter(
+        alert => alertStatusClass(alert, cleanplaatsAlertsRuntime.me) === 'active'
+    ).length;
 
     CLEANPLAATS.settings.alertsSummary = {
         totalCount: alerts.length,
@@ -2007,6 +2026,90 @@ function isAlertFailing(alert) {
     return (alert.fail_count || 0) >= 2;
 }
 
+// The server polls an alert on an unlinked account for a while after it was
+// created, so the first check still fills the panel. The length of that window
+// is the server's to decide, so it comes over the wire; the fallback only keeps
+// the copy sensible against a server that predates the field.
+function alertsUnlinkedGraceHours(me) {
+    const hours = me && Number(me.unlinkedGraceHours);
+    return Number.isFinite(hours) && hours > 0 ? Math.round(hours) : 24;
+}
+
+/**
+ * What the checks are actually doing while no Telegram is linked. Without this
+ * the panel keeps counting down to a next check that the server will never
+ * run: the alert says "Actief" and nothing behind it moves. Returns null once
+ * Telegram is linked, since then nothing is being held back.
+ */
+function alertUnlinkedCheckState(alert, me) {
+    if (!me || me.telegramLinked) return null;
+    const graceMs = alertsUnlinkedGraceHours(me) * 60 * 60 * 1000;
+    const endsAt = (alert.created_at || 0) + graceMs;
+    const msLeft = endsAt - Date.now();
+    if (msLeft <= 0) return { stopped: true, hoursLeft: 0 };
+    return { stopped: false, hoursLeft: Math.ceil(msLeft / (60 * 60 * 1000)) };
+}
+
+/**
+ * Which of the three looks a row wears. An alert that is switched on but whose
+ * account has no Telegram is not "active" in the sense the pulsing green dot
+ * promises, so it takes the paused look until the channel is there.
+ */
+function alertStatusClass(alert, me) {
+    const validity = getAlertValidity(alert);
+    if (validity && validity.expired) return 'expired';
+    if (!alert.enabled) return 'paused';
+    return alertUnlinkedCheckState(alert, me) ? 'paused' : 'active';
+}
+
+/**
+ * The check column of one row. Split out because the switches repaint it in
+ * place: pausing an alert turns "volgende controle" into "laatst gecontroleerd"
+ * and the row would otherwise keep the old sentence until the next reload.
+ */
+function alertCheckCellHtml(alert, me) {
+    const validity = getAlertValidity(alert);
+    const expired = Boolean(validity && validity.expired);
+    const running = alert.enabled && !expired;
+    const unlinked = running ? alertUnlinkedCheckState(alert, me) : null;
+
+    if (unlinked) {
+        return `<span class="cleanplaats-alerts-cell-warn">${unlinked.stopped
+            ? ALERTS_TEXT.checkUnlinkedStopped
+            : ALERTS_TEXT.checkUnlinkedStops(unlinked.hoursLeft)}</span>`;
+    }
+    if (running && isAlertFailing(alert)) {
+        return `<span class="cleanplaats-alerts-cell-warn">${ALERTS_TEXT.checkFailing}</span>`;
+    }
+    if (running && alert.last_checked_at) {
+        return formatAlertNextCheck(alert.last_checked_at, me.intervalMinutes) || ALERTS_TEXT.nextCheckSoon;
+    }
+    if (alert.last_checked_at) {
+        return `${ALERTS_TEXT.lastChecked}: ${formatAlertRelativeTime(alert.last_checked_at)}`;
+    }
+    return ALERTS_TEXT.neverChecked;
+}
+
+/**
+ * The banner above the list while nothing is linked. The checklist on the
+ * finds view already nags about linking, but the searches view is where
+ * someone sits looking at a row that claims to be running, so the reason it
+ * isn't belongs there too.
+ */
+function buildAlertsUnlinkedNoticeHtml(me, alerts) {
+    if (!me || me.telegramLinked || alerts.length === 0) return '';
+    return `
+        <div class="cleanplaats-alerts-notice">
+            <span class="cleanplaats-alerts-notice-icon">${alertIcon('send', 16)}</span>
+            <span class="cleanplaats-alerts-notice-copy">
+                <span class="cleanplaats-alerts-notice-title">${ALERTS_TEXT.telegramRequiredTitle}</span>
+                <span class="cleanplaats-alerts-notice-body">${ALERTS_TEXT.telegramRequiredBody(alertsUnlinkedGraceHours(me))}</span>
+            </span>
+            <button type="button" class="cleanplaats-alerts-primary-btn" id="cleanplaats-alerts-notice-link">${ALERTS_TEXT.telegramRequiredButton}</button>
+        </div>
+    `;
+}
+
 /**
  * One line above the listings: how many searches are running, how often they
  * run, and when the next one lands. It is the only status the panel keeps on
@@ -2021,6 +2124,14 @@ function buildAlertsStatusStripHtml(me, alerts) {
     if (running.length === 0) {
         return `<div class="cleanplaats-alerts-strip cleanplaats-alerts-strip-idle">
             ${alertIcon('clock', 14)}<span>${ALERTS_TEXT.stripIdle}</span>
+        </div>`;
+    }
+
+    // Nothing linked outranks every other status: the searches may well be
+    // running, but not one of their finds is going anywhere.
+    if (!me.telegramLinked) {
+        return `<div class="cleanplaats-alerts-strip cleanplaats-alerts-strip-warn">
+            ${alertIcon('send', 14)}<span>${ALERTS_TEXT.stripUnlinked}</span>
         </div>`;
     }
 
@@ -2068,7 +2179,9 @@ function buildAlertsChecklistHtml(me, alerts) {
         {
             done: Boolean(me.telegramLinked),
             title: ALERTS_TEXT.setupTelegramTitle,
-            body: me.telegramLinked ? ALERTS_TEXT.setupTelegramBodyDone : ALERTS_TEXT.setupTelegramBody,
+            body: me.telegramLinked
+                ? ALERTS_TEXT.setupTelegramBodyDone
+                : ALERTS_TEXT.setupTelegramBody(alertsUnlinkedGraceHours(me)),
             action: me.telegramLinked ? '' : `<button type="button" class="cleanplaats-alerts-primary-btn" id="cleanplaats-alert-telegram-link-notice">${ALERTS_TEXT.setupTelegramAction}</button>`
         }
     ];
@@ -2131,20 +2244,8 @@ function buildAlertsTableHtml(alerts, me) {
     const rows = alerts.map(alert => {
         const validity = getAlertValidity(alert);
         const expired = Boolean(validity && validity.expired);
-        const statusClass = expired ? 'expired' : (alert.enabled ? 'active' : 'paused');
-        const running = alert.enabled && !expired;
-        const failing = running && isAlertFailing(alert);
-
-        let checkText;
-        if (failing) {
-            checkText = `<span class="cleanplaats-alerts-cell-warn">${ALERTS_TEXT.checkFailing}</span>`;
-        } else if (running && alert.last_checked_at) {
-            checkText = formatAlertNextCheck(alert.last_checked_at, me.intervalMinutes) || ALERTS_TEXT.nextCheckSoon;
-        } else if (alert.last_checked_at) {
-            checkText = `${ALERTS_TEXT.lastChecked}: ${formatAlertRelativeTime(alert.last_checked_at)}`;
-        } else {
-            checkText = ALERTS_TEXT.neverChecked;
-        }
+        const statusClass = alertStatusClass(alert, me);
+        const checkText = alertCheckCellHtml(alert, me);
 
         const label = alert.search_url
             ? `<a href="${escapeAlertText(alert.search_url)}" class="cleanplaats-alerts-card-label">${escapeAlertText(alert.label)}</a>`
@@ -2366,6 +2467,7 @@ function renderAlertsMainView() {
         html = `
             ${buildAlertsViewHead(ALERTS_TEXT.navAlerts, ALERTS_TEXT.alertsSub(me.maxAlerts))}
             ${buildAlertsCreateHtml(context, me)}
+            ${buildAlertsUnlinkedNoticeHtml(me, alerts)}
             ${buildAlertsTableHtml(alerts, me)}
         `;
     } else {
@@ -2455,6 +2557,8 @@ function wireAlertsMainEvents(main, view) {
     });
 
     document.getElementById('cleanplaats-alert-telegram-link-notice')
+        ?.addEventListener('click', () => renderTelegramConnect(cleanplaatsAlertsRuntime.me));
+    main.querySelector('#cleanplaats-alerts-notice-link')
         ?.addEventListener('click', () => renderTelegramConnect(cleanplaatsAlertsRuntime.me));
 
     wireAlertsCreateBox(main);
@@ -2585,25 +2689,16 @@ function wireAlertsRowControls(main) {
 
     main.querySelectorAll('.cleanplaats-alerts-switch-status').forEach(button => {
         button.onclick = () => {
+            const alertId = button.dataset.alertId;
             const nextEnabled = button.dataset.enabled !== '1';
-            alertsApiFetch(`/api/alerts/${button.dataset.alertId}`, {
+            alertsApiFetch(`/api/alerts/${alertId}`, {
                 method: 'PATCH',
                 body: JSON.stringify({ enabled: nextEnabled })
-            }).then(() => {
-                button.dataset.enabled = nextEnabled ? '1' : '0';
-                button.setAttribute('aria-checked', String(nextEnabled));
-                button.classList.toggle('on', nextEnabled);
-                const label = button.querySelector('.cleanplaats-alerts-switch-label');
-                if (label) label.textContent = nextEnabled ? ALERTS_TEXT.activeLabel : ALERTS_TEXT.pausedLabel;
-                const group = button.closest('.cleanplaats-alerts-row-group');
-                if (group) {
-                    group.classList.toggle('cleanplaats-alerts-alert-active', nextEnabled);
-                    group.classList.toggle('cleanplaats-alerts-alert-paused', !nextEnabled);
-                }
-                // The strip counts running searches, so it is now out of date.
-                const cached = (cleanplaatsAlertsRuntime.cachedAlerts || [])
-                    .find(alert => String(alert.id) === String(button.dataset.alertId));
-                if (cached) cached.enabled = nextEnabled ? 1 : 0;
+            }).then(response => {
+                // Resuming an alert also switches its channel back on, so the
+                // row is repainted from the server's answer rather than from
+                // the one value this button knows about.
+                applyAlertRowState(main, alertId, response, { enabled: nextEnabled });
             }).catch(() => showBubbleNotification(ALERTS_TEXT.errorToast));
         };
     });
@@ -2633,19 +2728,112 @@ function wireAlertsRowControls(main) {
                 renderTelegramConnect(cleanplaatsAlertsRuntime.me);
                 return;
             }
+            const alertId = button.dataset.alertId;
             const next = button.dataset.value !== '1';
+            const me = cleanplaatsAlertsRuntime.me;
+
             // Telegram is the only channel with a switch; the e-mail one is gone
-            // while server-side e-mail notifications are off.
-            alertsApiFetch(`/api/alerts/${button.dataset.alertId}`, {
+            // while server-side e-mail notifications are off. That makes
+            // switching it off the same thing as pausing: the alert would keep
+            // costing checks against Marktplaats with nowhere to send the
+            // result. The server pauses it along with the channel, so the panel
+            // says that first instead of letting a second switch move by itself.
+            const alsoPauses = !next && me && me.telegramOnlyChannel !== false;
+            const send = () => alertsApiFetch(`/api/alerts/${alertId}`, {
                 method: 'PATCH',
                 body: JSON.stringify({ notifyTelegram: next })
-            }).then(() => {
-                button.dataset.value = next ? '1' : '0';
-                button.setAttribute('aria-checked', String(next));
-                button.classList.toggle('on', next);
+            }).then(response => {
+                applyAlertRowState(main, alertId, response, { notifyTelegram: next });
             }).catch(() => showBubbleNotification(ALERTS_TEXT.errorToast));
+
+            if (!alsoPauses) {
+                send();
+                return;
+            }
+            openAlertsConfirm({
+                title: ALERTS_TEXT.telegramOffPauseTitle,
+                body: ALERTS_TEXT.telegramOffPauseBody,
+                confirmLabel: ALERTS_TEXT.telegramOffPauseConfirm,
+                danger: false,
+                onConfirm: send
+            });
         };
     });
+}
+
+/**
+ * Repaint one row from the state the server reports back. A single click can
+ * move both switches (the channel and the pause state are one thing while
+ * Telegram is the only way out), and reloading the whole dashboard would fold
+ * shut the detail row the user is working in, so the row is patched in place.
+ * `fallback` covers a server that predates the state in the response.
+ */
+function applyAlertRowState(main, alertId, response, fallback) {
+    const me = cleanplaatsAlertsRuntime.me;
+    const enabled = typeof response?.enabled === 'boolean'
+        ? response.enabled
+        : Boolean(fallback.enabled ?? fallback.notifyTelegram);
+    const notifyTelegram = typeof response?.notifyTelegram === 'boolean'
+        ? response.notifyTelegram
+        : Boolean(fallback.notifyTelegram ?? fallback.enabled);
+
+    // The cache feeds the status strip and every re-render of this view, so it
+    // moves first: leaving it stale is how a paused search keeps being counted
+    // among the running ones.
+    const cached = (cleanplaatsAlertsRuntime.cachedAlerts || [])
+        .find(alert => String(alert.id) === String(alertId));
+    const wasEnabled = cached ? Boolean(cached.enabled) : enabled;
+    if (cached) {
+        cached.enabled = enabled ? 1 : 0;
+        cached.notify_telegram = notifyTelegram ? 1 : 0;
+    }
+
+    const group = main.querySelector(`.cleanplaats-alerts-row-group[data-alert-id="${alertId}"]`);
+    if (group) {
+        const statusSwitch = group.querySelector('.cleanplaats-alerts-switch-status');
+        if (statusSwitch) {
+            statusSwitch.dataset.enabled = enabled ? '1' : '0';
+            statusSwitch.setAttribute('aria-checked', String(enabled));
+            statusSwitch.classList.toggle('on', enabled);
+            const label = statusSwitch.querySelector('.cleanplaats-alerts-switch-label');
+            if (label) label.textContent = enabled ? ALERTS_TEXT.activeLabel : ALERTS_TEXT.pausedLabel;
+        }
+
+        const channelSwitch = group.querySelector('.cleanplaats-alerts-switch[data-channel="telegram"]:not(.cleanplaats-alerts-switch-locked)');
+        if (channelSwitch) {
+            channelSwitch.dataset.value = notifyTelegram ? '1' : '0';
+            channelSwitch.setAttribute('aria-checked', String(notifyTelegram));
+            channelSwitch.classList.toggle('on', notifyTelegram);
+        }
+
+        if (cached && me) {
+            const statusClass = alertStatusClass(cached, me);
+            group.classList.remove(
+                'cleanplaats-alerts-alert-active',
+                'cleanplaats-alerts-alert-paused',
+                'cleanplaats-alerts-alert-expired'
+            );
+            group.classList.add(`cleanplaats-alerts-alert-${statusClass}`);
+
+            const dot = group.querySelector('.cleanplaats-alerts-status-dot');
+            if (dot) {
+                dot.title = statusClass === 'expired'
+                    ? ALERTS_TEXT.validityExpired
+                    : (enabled ? ALERTS_TEXT.activeLabel : ALERTS_TEXT.pausedLabel);
+            }
+
+            // "Volgende controle over 4 minuten" is no longer true once the
+            // alert is paused, so the check column is rewritten with it.
+            const checkValue = group.querySelector('.cleanplaats-alerts-cell-check .cleanplaats-alerts-cell-value');
+            if (checkValue) checkValue.innerHTML = DOMPurify.sanitize(alertCheckCellHtml(cached, me));
+        }
+    }
+
+    // Only when the channel switch was what moved the pause state: saying "staat
+    // nu op pauze" after someone pressed the pause button is noise.
+    if (fallback.notifyTelegram !== undefined && enabled !== wasEnabled) {
+        showBubbleNotification(enabled ? ALERTS_TEXT.telegramOnResumedToast : ALERTS_TEXT.telegramOffPausedToast);
+    }
 }
 
 /** Relink, unlink and the test message: only present on the channel view. */
@@ -2782,7 +2970,7 @@ var ALERTS_WALKTHROUGH_TEXT = {
     telegramTitle: 'Koppel Telegram',
     telegramBody: 'Je meldingen komen binnen via Telegram, ook als je browser dicht is. Zonder koppeling blijft het stil.',
     telegramLinkedTitle: 'Zo ontvang je ze',
-    telegramLinkedBody: 'Telegram is gekoppeld. Per melding kun je hier aan- en uitzetten of je er bericht van krijgt.',
+    telegramLinkedBody: 'Telegram is gekoppeld. Zet je hem bij een zoekmelding uit, dan pauzeert die zoekmelding ook: er is dan niemand meer om iets naartoe te sturen.',
     matchesTitle: 'Alles komt hier binnen',
     matchesBody: 'Elke gevonden advertentie verschijnt in deze lijst, met NIEUW ernaast zolang je hem nog niet bekeken hebt.'
 };
