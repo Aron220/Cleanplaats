@@ -1,5 +1,8 @@
 /* Base Panel Styling */
 .cleanplaats-panel {
+    /* One source for the header ceiling: the header animates against it when
+       the panel folds, and the content subtracts it to stay inside 82vh. */
+    --cleanplaats-header-max: 160px;
     position: fixed;
     bottom: calc(20px + var(--cleanplaats-floating-offset, 0px));
     right: 20px;
@@ -72,6 +75,10 @@
   /* Header Styling */
   .cleanplaats-header {
     display: flex;
+    /* The panel is a flex column capped at 82vh, so a long filter list used to
+       squeeze the header instead of scrolling itself — and with overflow
+       hidden, the row holding GitHub and the review link was what got eaten. */
+    flex: none;
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
@@ -81,13 +88,26 @@
     user-select: none;
     opacity: 1;
     visibility: visible;
-    max-height: 120px;
+    /* Tall enough for the title row plus both contact rows. It was 120px, which
+       silently cut off the GitHub and review links once the mail address moved
+       onto a row of its own. The collapse animation still needs a number here,
+       so it stays a ceiling rather than becoming `none`. */
+    max-height: var(--cleanplaats-header-max);
     overflow: hidden;
     transition: opacity 0.25s ease-out,
                 max-height 0.35s ease-in-out,
                 padding-top 0.35s ease-in-out, padding-bottom 0.35s ease-in-out,
                 margin-top 0.35s ease-in-out, margin-bottom 0.35s ease-in-out,
                 border-width 0.35s ease-in-out;
+  }
+
+  /* The ceiling above exists for the fold animation, not for everyday layout.
+     Once the panel is open and still, drop it: a header that is a few pixels
+     taller than expected — a larger font, a longer translation — must push the
+     content down rather than silently swallow its own bottom row. */
+  .cleanplaats-panel:not(.collapsed):not(.animating) .cleanplaats-header {
+    max-height: none;
+    overflow: visible;
   }
 
   .cleanplaats-header-main {
@@ -311,6 +331,16 @@
     font-size: 12px;
   }
 
+  /* GitHub and the store review sit side by side under the mail address, one
+     line each: their icons carry what the second line used to spell out, and
+     the full sentence is still on the link itself. */
+  .cleanplaats-contact-compact .cleanplaats-contact-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .cleanplaats-contact-copy {
     display: flex;
     flex-direction: column;
@@ -336,7 +366,7 @@
     padding: 12px 15px;
     flex: 1 1 auto;
     min-height: 0;
-    max-height: calc(82vh - 120px);
+    max-height: calc(82vh - var(--cleanplaats-header-max));
     opacity: 1;
     visibility: visible;
     overflow-y: auto;
@@ -2181,7 +2211,7 @@
     color: #8fa8c4;
   }
 
-  /* ===== Zoekmeldingen (search alerts) — full-screen overlay =====
+  /* ===== Zoekopdrachten (search alerts) — full-screen overlay =====
      Calm, neutral design: ink buttons and quiet surfaces; the brand orange
      only appears as a small accent (bell tile, NEW badge, premium). */
 
@@ -2517,14 +2547,15 @@
      want their own scroll, which needs a height to scroll against. The other
      views (login, pairing code) keep shrink-wrapping, since a login form
      stranded in a 900px card looks like something failed to load. */
-  .cleanplaats-alerts-card:has(.cleanplaats-alerts-body-app) {
+  .cleanplaats-alerts-card:has(.cleanplaats-alerts-body-app),
+  .cleanplaats-alerts-card.is-loading-app {
     height: min(92vh, 940px);
   }
 
   /* Sub-views (login, account, prices, one search's finds) are a single column
      of text and controls. Left at the dashboard's width they were a narrow
      ribbon down the middle of a very wide sheet. */
-  .cleanplaats-alerts-card:not(:has(.cleanplaats-alerts-body-app)) {
+  .cleanplaats-alerts-card:not(:has(.cleanplaats-alerts-body-app)):not(.is-loading-app) {
     width: min(900px, 96vw);
   }
 
@@ -2623,6 +2654,7 @@
   }
 
   .cleanplaats-alerts-body {
+    position: relative;
     overflow-y: auto;
     padding: 22px 30px 26px;
     display: flex;
@@ -2956,6 +2988,50 @@
     color: #6b7688;
   }
 
+  /* --- Unlinked-Telegram notice, above the list of searches --- */
+
+  .cleanplaats-alerts-notice {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 15px;
+    border: 1px solid #f2d9b0;
+    border-radius: 12px;
+    background: #fdf6ea;
+  }
+
+  .cleanplaats-alerts-notice-icon {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #f7e6c8;
+    color: #8a5a06;
+  }
+
+  .cleanplaats-alerts-notice-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .cleanplaats-alerts-notice-title {
+    font-size: 13.5px;
+    font-weight: 650;
+    color: #6f4a06;
+  }
+
+  .cleanplaats-alerts-notice-body {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #8a5a06;
+  }
+
   /* --- Activation checklist --- */
 
   .cleanplaats-alerts-setup {
@@ -3177,6 +3253,16 @@
 
   .cleanplaats-alerts-validity-meter.is-soon .cleanplaats-alerts-validity-text { color: #9a5c07; }
   .cleanplaats-alerts-validity-meter.is-expired .cleanplaats-alerts-validity-text { color: #b3261e; font-weight: 600; }
+
+  /* The Telegram deadline under the meter. Wraps where the days-left line does
+     not: it is a sentence, and the column is narrow. */
+  .cleanplaats-alerts-validity-note {
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #9a5c07;
+    white-space: normal;
+  }
 
   .cleanplaats-alerts-row-details {
     padding: 0 14px 12px;
@@ -3514,6 +3600,66 @@
     text-align: center;
     color: #6b7688;
     font-size: 14px;
+  }
+
+  /* The card already holds the dashboard's height while this is on screen, so
+     the line centres in that space rather than clinging to the header. Only
+     the loading state does this: the failure message reuses the class above
+     and belongs where the eye already is. */
+  .cleanplaats-alerts-loading:has(.cleanplaats-alerts-loading-spin) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    flex: 1;
+  }
+
+  .cleanplaats-alerts-loading-spin {
+    width: 30px;
+    height: 30px;
+    border: 2.5px solid rgba(43, 52, 66, 0.16);
+    border-top-color: #e8710a;
+    border-radius: 50%;
+    animation: cleanplaats-alerts-spin 0.7s linear infinite;
+  }
+
+  /* Refreshing keeps the view it is refreshing. The veil sits over the body
+     rather than replacing it, which is what stops the card from resizing, and
+     it swallows clicks so nothing lands on rows that are about to be redrawn.
+     Fading it in keeps a fast refresh from registering as a flash. */
+  .cleanplaats-alerts-card.is-busy .cleanplaats-alerts-body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.58);
+    animation: cleanplaats-alerts-fade-in 0.12s ease;
+  }
+
+  .cleanplaats-alerts-card.is-busy .cleanplaats-alerts-body::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 3;
+    width: 28px;
+    height: 28px;
+    margin: -14px 0 0 -14px;
+    border: 2.5px solid rgba(43, 52, 66, 0.16);
+    border-top-color: #e8710a;
+    border-radius: 50%;
+    animation: cleanplaats-alerts-spin 0.7s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cleanplaats-alerts-card.is-busy .cleanplaats-alerts-body::before {
+      animation: none;
+    }
+    .cleanplaats-alerts-card.is-busy .cleanplaats-alerts-body::after,
+    .cleanplaats-alerts-loading-spin {
+      animation-duration: 2s;
+    }
   }
 
   /* --- Login --- */
@@ -3900,6 +4046,17 @@
     flex: none;
     margin-top: 2px;
     color: #2f7d4f;
+  }
+
+  /* The caveat under a plan that cannot be bought yet: readable, but plainly
+     not one of the checkmarks above it. */
+  .cleanplaats-alerts-plan-note {
+    margin: 14px 0 0;
+    padding-top: 12px;
+    border-top: 1px solid #eef0f4;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: #78828f;
   }
 
   /* Limit */
@@ -5103,6 +5260,16 @@
     color: #dde4ee;
   }
 
+  html.cleanplaats-dark-mode .cleanplaats-alerts-card.is-busy .cleanplaats-alerts-body::before {
+    background: rgba(16, 22, 31, 0.58);
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-card.is-busy .cleanplaats-alerts-body::after,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-loading-spin {
+    border-color: rgba(221, 228, 238, 0.18);
+    border-top-color: #e8710a;
+  }
+
   html.cleanplaats-dark-mode .cleanplaats-alerts-header {
     background: #10161f;
     border-color: #243044;
@@ -5261,6 +5428,11 @@
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-plan-features svg {
     color: #6cc48d;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-plan-note {
+    border-top-color: #243044;
+    color: #7d8da3;
   }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-upgrade-done {
@@ -5685,6 +5857,13 @@
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-quota-link { color: #f0932f; }
 
+  /* #9a5c07 is a light-mode amber: on the dark sheet it reads as mud. */
+  html.cleanplaats-dark-mode .cleanplaats-alerts-cell-warn,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-validity-note,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-validity-meter.is-soon .cleanplaats-alerts-validity-text {
+    color: #e0ae53;
+  }
+
   /* Native scrollbars render bright white on a dark sheet, which made them the
      loudest thing on screen. */
   html.cleanplaats-dark-mode .cleanplaats-alerts-main,
@@ -5708,6 +5887,19 @@
     border-color: #4a3a1c;
     color: #e0ae53;
   }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-notice {
+    background: #2a2114;
+    border-color: #4a3a1c;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-notice-icon {
+    background: #3b2d16;
+    color: #e0ae53;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-notice-title { color: #f0c477; }
+  html.cleanplaats-dark-mode .cleanplaats-alerts-notice-body { color: #d3a862; }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-row-head {
     background: #131b26;
@@ -5877,6 +6069,9 @@
     .cleanplaats-alerts-setup-action { width: 100%; padding-left: 33px; }
     .cleanplaats-alerts-setup-action .cleanplaats-alerts-primary-btn,
     .cleanplaats-alerts-setup-action .cleanplaats-alerts-secondary-btn { width: 100%; }
+
+    .cleanplaats-alerts-notice { align-items: flex-start; flex-wrap: wrap; }
+    .cleanplaats-alerts-notice .cleanplaats-alerts-primary-btn { width: 100%; }
 
     .cleanplaats-alerts-qr { flex-direction: column; align-items: flex-start; }
 

@@ -368,12 +368,12 @@ function getSellerAgeWarningThresholdDays() {
 function getPanelLocaleText() {
     if (is2ememainLocale()) {
         return {
-            feedbackLabel: 'Retour',
             feedbackText: 'Issues GitHub',
             feedbackAriaLabel: 'Ouvrir GitHub issues pour les demandes de fonctionnalité, modifications et bugs',
             contactLabel: 'Contact',
             contactText: 'info@cleanplaats.com',
             contactAriaLabel: 'Envoyer un e-mail à info@cleanplaats.com',
+            reviewLabel: 'Avis',
             reviewAriaLabel: linkLabel => `Laisser un avis sur Cleanplaats sur ${linkLabel}`,
             supportTitle: 'Soutenir Cleanplaats',
             supportButton: 'Soutenir Cleanplaats',
@@ -491,12 +491,12 @@ function getPanelLocaleText() {
     }
 
     return {
-        feedbackLabel: 'Feedback',
         feedbackText: 'GitHub issues',
         feedbackAriaLabel: 'Open GitHub issues voor functieverzoeken, wijzigingen en bugs',
         contactLabel: 'Vragen of feedback? Mail ons',
         contactText: 'info@cleanplaats.com',
         contactAriaLabel: 'Stuur een e-mail naar info@cleanplaats.com',
+        reviewLabel: 'Review',
         reviewAriaLabel: linkLabel => `Laat een review achter voor Cleanplaats op ${linkLabel}`,
         supportTitle: 'Steun Cleanplaats met een kleine bijdrage',
         supportButton: 'Steun Cleanplaats',
@@ -614,21 +614,21 @@ function getPanelLocaleText() {
         emptyPageSearchUnavailable: 'Zoeken lukt niet voor deze zoekopdracht.',
         // Other alert strings live in content/alerts.js (ALERTS_TEXT): the
         // feature is Marktplaats-only, so it isn't translated per locale.
-        alertsManageButton: 'Zoekmeldingen',
+        alertsManageButton: 'Zoekopdrachten',
         alertsPromoNewBadge: 'NIEUW',
         alertsPromoIntroText: 'Laat Cleanplaats voor je zoeken. Je krijgt een bericht zodra er een nieuwe advertentie verschijnt, ook als je browser dicht is.',
         alertsPromoIntroStart: 'Laat me zien hoe',
         alertsPromoIntroLater: 'Later',
         alertsPromoTagline: 'Als eerste bij een nieuwe advertentie',
-        // One word throughout the feature: a "zoekmelding" is what you switch
-        // on, a "zoekopdracht" is the Marktplaats search it watches.
-        alertsPromoNoAlerts: 'Nog geen zoekmelding ingesteld',
-        alertsPromoActiveCount: n => `${n} actieve zoekmelding${n === 1 ? '' : 'en'}`,
+        // One word throughout the feature: a "zoekopdracht" is the saved search
+        // you switch on, a "melding" is only the message it sends.
+        alertsPromoNoAlerts: 'Nog geen zoekopdracht ingesteld',
+        alertsPromoActiveCount: n => `${n} actieve zoekopdracht${n === 1 ? '' : 'en'}`,
         // Bare number: at 280px the panel has no room for a worded pill without
         // truncating the title. The aria-label carries the meaning.
         alertsPromoNewMatches: n => String(n),
-        alertsPromoAriaLabel: 'Zoekmeldingen openen',
-        alertsPromoAriaLabelWithNew: n => `Zoekmeldingen openen, ${n} nieuwe advertentie${n === 1 ? '' : 's'} gevonden`
+        alertsPromoAriaLabel: 'Zoekopdrachten openen',
+        alertsPromoAriaLabelWithNew: n => `Zoekopdrachten openen, ${n} nieuwe advertentie${n === 1 ? '' : 's'} gevonden`
     };
 }
 
@@ -656,7 +656,7 @@ var CLEANPLAATS = {
         totalActionsCount: 0,
         donationNudgeDismissedAt: 0,
         donationNudgeClickedBmc: false,
-        // Zoekmeldingen entry point. The intro pitch shows until the user acts
+        // Zoekopdrachten entry point. The intro pitch shows until the user acts
         // on it (either button), after which the card falls back to its compact
         // form. `alertsSummary` is the last state the modal saw, so the compact
         // card can say something useful without an API call on every page load.
@@ -711,14 +711,14 @@ var CLEANPLAATS = {
 
 var CLEANPLAATS_UPDATE_NOTES = {
     '2.1.6': {
-        intro: 'Cleanplaats 2.1.6 introduceert Zoekmeldingen: krijg een bericht in Telegram zodra er een nieuwe advertentie verschijnt voor je zoekopdracht, ook als je browser dicht is.',
+        intro: 'Cleanplaats 2.1.6 introduceert Zoekopdrachten: sla een zoekopdracht op en krijg een bericht in Telegram zodra er een nieuwe advertentie voor verschijnt, ook als je browser dicht is.',
         highlights: [
-            'Nieuwe knop "Zoekmeldingen" onderin het paneel. Zoek iets op Marktplaats en klik erop: je zoekterm staat al ingevuld, en de categorie, locatie en afstand van je huidige zoekopdracht gaan automatisch mee.',
+            'Nieuwe knop "Zoekopdrachten" onderin het paneel. Zoek iets op Marktplaats en klik erop: je zoekterm staat al ingevuld, en de categorie, locatie en afstand van je huidige zoekresultaten gaan automatisch mee.',
             'Meldingen komen binnen via Telegram, dus ook als je browser dicht is of je computer uit staat. Je koppelt Telegram eenmalig met een code van 6 cijfers die je van de bot krijgt, of door de QR-code te scannen met je telefoon.',
             'Je Cleanplaats-filters gelden ook voor je meldingen: dagtoppers, gereserveerde advertenties, opvalstickers en je geblokkeerde verkopers en woorden worden er automatisch uitgehouden. Top- en bedrijfsadvertenties krijg je nooit als melding.',
-            'Gratis laat je één zoekmelding lopen, die elke 15 minuten wordt gecontroleerd. Gevonden advertenties zie je altijd terug in het overzicht, ook zonder Telegram.'
+            'Gratis laat je één zoekopdracht lopen, die elke 15 minuten wordt gecontroleerd. Gevonden advertenties zie je altijd terug in het overzicht, ook zonder Telegram.'
         ],
-        note: 'Zoekmeldingen is splinternieuw. Werkt er iets niet zoals je verwacht? Mail dan naar info@cleanplaats.com, elk bericht komt bij de maker terecht.'
+        note: 'Zoekopdrachten is splinternieuw. Werkt er iets niet zoals je verwacht? Mail dan naar info@cleanplaats.com, elk bericht komt bij de maker terecht.'
     },
     '2.1.5': {
         intro: 'Cleanplaats 2.1.5 lost een sorteerbug op en maakt de statistieken en de "zoek volgende pagina"-knop betrouwbaarder.',
