@@ -2211,7 +2211,7 @@
     color: #8fa8c4;
   }
 
-  /* ===== Zoekmeldingen (search alerts) — full-screen overlay =====
+  /* ===== Zoekopdrachten (search alerts) — full-screen overlay =====
      Calm, neutral design: ink buttons and quiet surfaces; the brand orange
      only appears as a small accent (bell tile, NEW badge, premium). */
 
@@ -3253,6 +3253,16 @@
 
   .cleanplaats-alerts-validity-meter.is-soon .cleanplaats-alerts-validity-text { color: #9a5c07; }
   .cleanplaats-alerts-validity-meter.is-expired .cleanplaats-alerts-validity-text { color: #b3261e; font-weight: 600; }
+
+  /* The Telegram deadline under the meter. Wraps where the days-left line does
+     not: it is a sentence, and the column is narrow. */
+  .cleanplaats-alerts-validity-note {
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #9a5c07;
+    white-space: normal;
+  }
 
   .cleanplaats-alerts-row-details {
     padding: 0 14px 12px;
@@ -5846,6 +5856,13 @@
   }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-quota-link { color: #f0932f; }
+
+  /* #9a5c07 is a light-mode amber: on the dark sheet it reads as mud. */
+  html.cleanplaats-dark-mode .cleanplaats-alerts-cell-warn,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-validity-note,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-validity-meter.is-soon .cleanplaats-alerts-validity-text {
+    color: #e0ae53;
+  }
 
   /* Native scrollbars render bright white on a dark sheet, which made them the
      loudest thing on screen. */

@@ -2,7 +2,7 @@
  * Content-script control panel rendering and UI event handling.
  */
 
-// Zoekmeldingen (search alerts). Kill switch for the whole feature: flipping
+// Zoekopdrachten (search alerts). Kill switch for the whole feature: flipping
 // this to false hides the entry point, though content/alerts.js also has to be
 // listed in manifest.json for the modal to exist at all.
 const CLEANPLAATS_ALERTS_FEATURE_ENABLED = true;
@@ -38,7 +38,7 @@ function getAlertsPromoStatus(panelText) {
 function getAlertsPromoHtml(panelText) {
     if (!isAlertsEntryPointVisible()) return '';
 
-    const title = panelText.alertsManageButton || 'Zoekmeldingen';
+    const title = panelText.alertsManageButton || 'Zoekopdrachten';
     const icon = `<span class="cleanplaats-alerts-promo-icon" aria-hidden="true"><img class="cleanplaats-alerts-promo-img" alt="" width="34" height="34"></span>`;
 
     // First encounter: pitch the feature and offer the walkthrough. Everything
@@ -891,7 +891,7 @@ function handleSellerAgeThresholdInput() {
 /**
  * Collapse or expand the control panel programmatically, driving the same
  * animation the header click uses. Used both by the header toggle and by the
- * Zoekmeldingen modal (which tucks the panel away while it's open).
+ * Zoekopdrachten modal (which tucks the panel away while it's open).
  *
  * @param {boolean} targetCollapsed - desired collapsed state
  * @param {{persist?: boolean}} [options] - persist:false for temporary,

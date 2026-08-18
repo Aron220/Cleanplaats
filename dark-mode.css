@@ -427,7 +427,7 @@ html.cleanplaats-dark-mode .cleanplaats-detail-blacklist-btn[aria-disabled="true
   border-color: var(--cleanplaats-dark-border);
 }
 
-/* Zoekmeldingen entry point. In light mode the ink card stands out by being
+/* Zoekopdrachten entry point. In light mode the ink card stands out by being
    darker than the panel; against the dark panel it has to do the opposite and
    sit above the surface, so the same card gets a lighter fill plus a hairline
    to keep its edge readable. */

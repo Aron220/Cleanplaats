@@ -1,5 +1,5 @@
 /**
- * Cleanplaats zoekmeldingen (search alerts) — Marktplaats only.
+ * Cleanplaats zoekopdrachten (search alerts) — Marktplaats only.
  *
  * The extension is only the UI: alerts live on the Cleanplaats Alerts server
  * (see server/README.md), which polls Marktplaats around the clock and
@@ -60,12 +60,13 @@ var cleanplaatsAlertsRuntime = {
 
 /**
  * One word per thing, everywhere:
- *   zoekmelding  - what you switch on here (never "melding", never "zoekopdracht")
- *   zoekopdracht - the Marktplaats search it watches
+ *   zoekopdracht - the saved Marktplaats search we watch, which is also what
+ *                  you switch on here (never "zoekmelding", never "alert")
+ *   melding      - the Telegram message it sends, never the search itself
  *   gevonden     - what it turned up
  */
 var ALERTS_TEXT = {
-    modalTitle: 'Zoekmeldingen',
+    modalTitle: 'Zoekopdrachten',
     tagline: 'Krijg nieuwe advertenties direct in je Telegram, ook als je browser dicht is.',
     intro: 'Krijg een melding zodra er een nieuwe advertentie verschijnt die aan je zoekopdracht voldoet, ook als je browser dicht is. Je Cleanplaats-filters worden automatisch toegepast.',
 
@@ -80,7 +81,7 @@ var ALERTS_TEXT = {
     ],
     loginFormTitle: 'Maak een account of log in',
     loginFormHint: 'Gratis, en zonder wachtwoord: je krijgt een inlogcode per e-mail.',
-    loginPrivacy: 'We gebruiken je e-mailadres om je in te laten loggen en je zoekmeldingen aan te koppelen, verder niets.',
+    loginPrivacy: 'We gebruiken je e-mailadres om je in te laten loggen en je zoekopdrachten aan te koppelen, verder niets.',
     loginPrivacyLink: 'Privacybeleid',
     loginTermsLink: 'Voorwaarden',
     emailPlaceholder: 'jouw@email.nl',
@@ -95,22 +96,22 @@ var ALERTS_TEXT = {
     codeResent: 'Nieuwe code verstuurd.',
     codeOtherEmail: 'Ander e-mailadres',
     logout: 'Uitloggen',
-    logoutHint: 'Je logt alleen op dit apparaat uit. Je zoekmeldingen blijven gewoon doorlopen.',
+    logoutHint: 'Je logt alleen op dit apparaat uit. Je zoekopdrachten blijven gewoon doorlopen.',
     tierFree: 'Gratis',
     tierPremium: 'Premium',
-    usageLabel: n => (n === 1 ? 'zoekmelding' : 'zoekmeldingen'),
+    usageLabel: n => (n === 1 ? 'zoekopdracht' : 'zoekopdrachten'),
     checkFrequency: m => `Controleert elke ${m} minuten`,
-    createTitle: 'Maak een zoekmelding',
-    createButton: 'Zoekmelding maken',
+    createTitle: 'Maak een zoekopdracht',
+    createButton: 'Zoekopdracht maken',
     labelPlaceholder: 'Zoekterm, bijv. iphone 15 pro',
     createTermMissing: 'Vul een zoekterm in.',
-    createContextHint: 'Filters van je huidige zoekopdracht (categorie, locatie) gaan mee zolang je de zoekterm niet wijzigt.',
+    createContextHint: 'De filters van je huidige zoekresultaten (categorie, locatie) gaan mee zolang je de zoekterm niet wijzigt.',
     createBroadWarning: count => `Deze zoekopdracht is breed: ${count.toLocaleString('nl-NL')} advertenties. ` +
-        'Je krijgt er waarschijnlijk veel meldingen van. Verfijn eerst je zoekopdracht met een prijs, categorie of afstand.',
-    listTitle: 'Jouw zoekmeldingen',
-    empty: 'Je hebt nog geen zoekmeldingen. Zoek iets op Marktplaats en zet je eerste zoekmelding aan.',
+        'Je krijgt er waarschijnlijk veel meldingen van. Verfijn hem eerst met een prijs, categorie of afstand.',
+    listTitle: 'Jouw zoekopdrachten',
+    empty: 'Je hebt nog geen zoekopdrachten. Zoek iets op Marktplaats en zet je eerste zoekopdracht aan.',
     deleteButton: 'Verwijder',
-    deleteConfirmTitle: 'Zoekmelding verwijderen?',
+    deleteConfirmTitle: 'Zoekopdracht verwijderen?',
     deleteConfirmBody: label => `"${label}" stopt met zoeken en de gevonden advertenties verdwijnen uit je overzicht.`,
     deleteConfirmOk: 'Verwijderen',
     confirmCancel: 'Annuleren',
@@ -133,16 +134,16 @@ var ALERTS_TEXT = {
     validityExpired: 'Verlopen',
     extendButton: 'Verleng',
     reactivateButton: 'Reactiveren',
-    extendedToast: 'Zoekmelding verlengd.',
-    reactivatedToast: 'Zoekmelding gereactiveerd.',
+    extendedToast: 'Zoekopdracht verlengd.',
+    reactivatedToast: 'Zoekopdracht gereactiveerd.',
     channelTelegram: 'Telegram',
     matchesTitle: 'Nieuw gevonden',
-    matchesEmpty: 'Nog niets binnengekomen. Zodra er een nieuwe advertentie verschijnt die aan een van je zoekmeldingen voldoet, zie je die hier.',
+    matchesEmpty: 'Nog niets binnengekomen. Zodra er een nieuwe advertentie verschijnt die aan een van je zoekopdrachten voldoet, zie je die hier.',
     newBadge: 'NIEUW',
     // The snapshot an alert takes on its first poll. It is not a find, so it
     // sits apart from the feed and out of the counts.
     baselineTitle: n => `Stond er al (${n})`,
-    baselineHint: 'Deze advertenties stonden er al toen je deze zoekmelding aanmaakte. Je krijgt er geen melding van.',
+    baselineHint: 'Deze advertenties stonden er al toen je deze zoekopdracht aanmaakte. Je krijgt er geen melding van.',
     channelsTitle: 'Hoe je meldingen ontvangt',
     telegramLinked: 'Gekoppeld',
     telegramNotLinked: 'Nog niet gekoppeld',
@@ -152,22 +153,23 @@ var ALERTS_TEXT = {
     // It is not a soft limitation either: after the grace window the poller
     // stops checking the search altogether, so the copy names that too.
     telegramRequiredTitle: 'Je ontvangt nog geen meldingen',
-    telegramRequiredBody: hours => 'Meldingen gaan via Telegram. Zonder koppeling controleren we een nieuwe zoekmelding nog ' +
+    telegramRequiredBody: hours => 'Meldingen gaan via Telegram. Zonder koppeling controleren we een nieuwe zoekopdracht nog ' +
         `${hours} uur en daarna stopt hij. Wat we in die tijd vinden, zie je gewoon in dit paneel.`,
     telegramRequiredButton: 'Telegram koppelen',
-    // Shown in a row's check column while nothing is linked: an alert that is
-    // switched on but no longer polled must not promise a next check.
-    checkUnlinkedStops: h => (h <= 1
-        ? 'Controle stopt binnen een uur zonder Telegram'
-        : `Controle stopt over ${h} uur zonder Telegram`),
-    checkUnlinkedStopped: 'Controle gestopt tot je Telegram koppelt',
+    // The second line of a row's validity column while nothing is linked. It is
+    // the deadline that bites first: the search may be valid for another two
+    // weeks, but without a channel the checks stop long before that.
+    unlinkedStops: h => (h <= 1
+        ? 'Stopt binnen een uur zonder Telegram'
+        : `Stopt over ${h} uur zonder Telegram`),
+    unlinkedStopped: 'Gestopt tot je Telegram koppelt',
     // Turning the channel off is the same thing as pausing while Telegram is
     // the only way we reach anyone, so say so before doing both.
-    telegramOffPauseTitle: 'Zoekmelding gaat op pauze',
-    telegramOffPauseBody: 'Telegram is de enige manier waarop we je bereiken. Zet je hem uit, dan pauzeren we deze zoekmelding ook, zodat we niet blijven zoeken naar iets waar je niets van hoort.',
+    telegramOffPauseTitle: 'Zoekopdracht gaat op pauze',
+    telegramOffPauseBody: 'Telegram is de enige manier waarop we je bereiken. Zet je hem uit, dan pauzeren we deze zoekopdracht ook, zodat we niet blijven zoeken naar iets waar je niets van hoort.',
     telegramOffPauseConfirm: 'Uitzetten en pauzeren',
-    telegramOffPausedToast: 'Telegram uit. Deze zoekmelding staat nu op pauze.',
-    telegramOnResumedToast: 'Telegram aan. Deze zoekmelding loopt weer.',
+    telegramOffPausedToast: 'Telegram uit. Deze zoekopdracht staat nu op pauze.',
+    telegramOnResumedToast: 'Telegram aan. Deze zoekopdracht loopt weer.',
     telegramTestButton: 'Stuur testmelding',
     telegramTestSending: 'Versturen…',
     telegramTestToast: 'Testmelding verstuurd. Kijk in je Telegram.',
@@ -197,8 +199,8 @@ var ALERTS_TEXT = {
     telegramLinkedToast: 'Telegram gekoppeld! Je ontvangt nu ook meldingen via Telegram.',
     telegramBack: 'Terug',
     telegramCopied: 'Gekopieerd',
-    createdToast: 'Zoekmelding aangemaakt! We kijken eerst wat er nu al staat, daarna krijg je een melding zodra er iets nieuws bij komt.',
-    deletedToast: 'Zoekmelding verwijderd.',
+    createdToast: 'Zoekopdracht aangemaakt! We kijken eerst wat er nu al staat, daarna krijg je een melding zodra er iets nieuws bij komt.',
+    deletedToast: 'Zoekopdracht verwijderd.',
     errorToast: 'Er ging iets mis bij het verbinden met de meldingenserver.',
     loading: 'Laden…',
     justNow: 'Zojuist',
@@ -211,7 +213,7 @@ var ALERTS_TEXT = {
     // Per-alert filters
     filterButton: 'Filters',
     filterEditorTitle: 'Wat wil je overslaan?',
-    filterEditorIntro: 'Vink aan welke soorten advertenties je voor deze zoekmelding níét wilt zien.',
+    filterEditorIntro: 'Vink aan welke soorten advertenties je voor deze zoekopdracht níét wilt zien.',
     filterDagtoppers: 'Dagtoppers',
     filterReserved: 'Gereserveerd',
     filterOpval: 'Opvalstickers',
@@ -219,7 +221,7 @@ var ALERTS_TEXT = {
     filterNoneActive: 'Alles tonen',
     filterAlwaysExcluded: 'Top- en bedrijfsadvertenties krijg je nooit als melding.',
     filterGlobalListsTitle: 'Geblokkeerde verkopers & woorden',
-    filterGlobalListsHint: 'Deze gelden voor al je zoekmeldingen. Beheren doe je in het Cleanplaats-paneel.',
+    filterGlobalListsHint: 'Deze gelden voor al je zoekopdrachten. Beheren doe je in het Cleanplaats-paneel.',
     filterListSellers: n => `${n} verkoper${n !== 1 ? 's' : ''}`,
     filterListTerms: n => `${n} woord${n !== 1 ? 'en' : ''}`,
     filterListListings: n => `${n} advertentie${n !== 1 ? 's' : ''}`,
@@ -248,24 +250,24 @@ var ALERTS_TEXT = {
 
     // The rail, and the two surfaces it switches between.
     navMatches: 'Gevonden',
-    navAlerts: 'Zoekmeldingen',
+    navAlerts: 'Zoekopdrachten',
     navTelegram: 'Meldingen',
-    matchesSub: 'Alles wat je zoekmeldingen sinds hun start hebben gevonden.',
+    matchesSub: 'Alles wat je zoekopdrachten sinds hun start hebben gevonden.',
     alertsSub: max => (max === 1
-        ? 'Eén zoekmelding tegelijk op een gratis account. Zet hem aan, uit of verleng hem hier.'
-        : `Tot ${max} zoekmeldingen tegelijk. Zet ze aan, uit of verleng ze hier.`),
+        ? 'Eén zoekopdracht tegelijk op een gratis account. Zet hem aan, uit of verleng hem hier.'
+        : `Tot ${max} zoekopdrachten tegelijk. Zet ze aan, uit of verleng ze hier.`),
     quotaUpgrade: 'Meer tegelijk laten lopen',
     contactShort: 'Vragen of feedback',
 
     // The one status line above the advertisements. Anything that would not
     // change what you do next does not belong here.
-    stripRunning: n => `${n} ${n === 1 ? 'zoekmelding loopt' : 'zoekmeldingen lopen'}`,
-    stripIdle: 'Er loopt nu geen zoekmelding, dus er komt niets binnen.',
+    stripRunning: n => `${n} ${n === 1 ? 'zoekopdracht loopt' : 'zoekopdrachten lopen'}`,
+    stripIdle: 'Er loopt nu geen zoekopdracht, dus er komt niets binnen.',
     stripUnlinked: 'Telegram is niet gekoppeld, dus er wordt niets naar je verstuurd.',
     stripFailing: 'We kunnen Marktplaats even niet bereiken. Zodra dat weer lukt, gaat het zoeken door.',
 
-    // Table headers on the Zoekmeldingen view.
-    tableName: 'Zoekmelding',
+    // Table headers on the Zoekopdrachten view.
+    tableName: 'Zoekopdracht',
     tableFound: 'Gevonden',
     tableCheck: 'Volgende controle',
     tableValidity: 'Geldig',
@@ -273,7 +275,7 @@ var ALERTS_TEXT = {
     detailsChannel: 'Meldingen',
     detailsRemove: 'Verwijderen',
     createAtLimitHint: max => (max === 1
-        ? 'Je hebt al een zoekmelding lopen. Verwijder hem eerst, dan kun je een nieuwe aanzetten.'
+        ? 'Je hebt al een zoekopdracht lopen. Verwijder hem eerst, dan kun je een nieuwe aanzetten.'
         : 'Je zit op je maximum. Verwijder er een om ruimte te maken.'),
 
     // Activation checklist. Three things stand between a fresh account and a
@@ -284,10 +286,10 @@ var ALERTS_TEXT = {
     setupTitle: left => (left === 1 ? 'Nog één stap en je bent klaar' : `Nog ${left === 2 ? 'twee' : left} stappen en je bent klaar`),
     setupProgress: (done, total) => `${done} van ${total} klaar`,
     setupAccountTitle: 'Account gemaakt',
-    setupAccountBody: 'Je zoekmeldingen volgen je e-mailadres, ook op een ander apparaat.',
-    setupAlertTitle: 'Zet je eerste zoekmelding aan',
+    setupAccountBody: 'Je zoekopdrachten volgen je e-mailadres, ook op een ander apparaat.',
+    setupAlertTitle: 'Zet je eerste zoekopdracht aan',
     setupAlertBody: 'Zoek iets op Marktplaats en vul de zoekterm hieronder in. Je categorie, locatie en afstand gaan mee.',
-    setupAlertBodyDone: n => `Je hebt ${n} ${n === 1 ? 'zoekmelding' : 'zoekmeldingen'} lopen.`,
+    setupAlertBodyDone: n => `Je hebt ${n} ${n === 1 ? 'zoekopdracht' : 'zoekopdrachten'} lopen.`,
     setupTelegramTitle: 'Koppel Telegram',
     // Says what actually happens: without a linked chat the server stops
     // checking the search after a day. Promising a next check we do not make
@@ -301,11 +303,11 @@ var ALERTS_TEXT = {
     accountOpen: 'Mijn account',
     accountEmailLabel: 'E-mailadres',
     accountPlanLabel: 'Abonnement',
-    accountUsageLabel: 'Zoekmeldingen',
+    accountUsageLabel: 'Zoekopdrachten',
     accountIntervalLabel: 'Controlefrequentie',
     accountIntervalValue: m => `Elke ${m} minuten`,
     accountValidityLabel: 'Geldigheid',
-    accountValidityValue: d => `${d} dagen per zoekmelding`,
+    accountValidityValue: d => `${d} dagen per zoekopdracht`,
     accountTelegramLabel: 'Telegram',
     accountSinceLabel: 'Lid sinds',
     accountPricingLink: 'Bekijk wat er in elk abonnement zit',
@@ -315,24 +317,24 @@ var ALERTS_TEXT = {
     alertMatchesOpen: label => `Bekijk de gevonden advertenties van ${label}`,
     alertMatchesTitle: 'Gevonden advertenties',
     alertMatchesSearchLink: 'Open deze zoekopdracht op Marktplaats',
-    alertMatchesEmpty: 'Deze zoekmelding heeft nog niets nieuws gevonden. Zodra er een advertentie bij komt die eraan voldoet, zie je die hier.',
-    alertMatchesError: 'We konden de advertenties van deze zoekmelding niet laden. Probeer het zo nog eens.',
-    alertMatchesTruncated: n => `Je ziet de ${n} recentste advertenties van deze zoekmelding.`,
+    alertMatchesEmpty: 'Deze zoekopdracht heeft nog niets nieuws gevonden. Zodra er een advertentie bij komt die eraan voldoet, zie je die hier.',
+    alertMatchesError: 'We konden de advertenties van deze zoekopdracht niet laden. Probeer het zo nog eens.',
+    alertMatchesTruncated: n => `Je ziet de ${n} recentste advertenties van deze zoekopdracht.`,
 
     // Limit view — shown when someone tries to add one too many.
     limitTitle: 'Je zit op je maximum',
-    limitUsage: (used, max) => `${used} van ${max} ${max === 1 ? 'zoekmelding' : 'zoekmeldingen'} in gebruik`,
+    limitUsage: (used, max) => `${used} van ${max} ${max === 1 ? 'zoekopdracht' : 'zoekopdrachten'} in gebruik`,
     limitBody: max => (max === 1
-        ? 'Met een gratis account loopt er één zoekmelding tegelijk. Verwijder hieronder de huidige om ruimte te maken voor je nieuwe.'
-        : `Met een gratis account kun je ${max} zoekmeldingen tegelijk laten lopen. ` +
+        ? 'Met een gratis account loopt er één zoekopdracht tegelijk. Verwijder hieronder de huidige om ruimte te maken voor je nieuwe.'
+        : `Met een gratis account kun je ${max} zoekopdrachten tegelijk laten lopen. ` +
           'Verwijder er hieronder een om ruimte te maken voor je nieuwe.'),
-    limitListTitle: 'Jouw lopende zoekmeldingen',
+    limitListTitle: 'Jouw lopende zoekopdrachten',
     limitPremiumTitle: 'Meer tegelijk laten lopen?',
-    limitPremiumBody: (plan, freePlan) => `Premium geeft je ${plan.maxAlerts} zoekmeldingen in plaats van ` +
+    limitPremiumBody: (plan, freePlan) => `Premium geeft je ${plan.maxAlerts} zoekopdrachten in plaats van ` +
         `${freePlan.maxAlerts}, en controleert elke ${plan.intervalMinutes} minuten in plaats van ` +
         `${freePlan.intervalMinutes}. Het is er nog niet en wat er precies in komt kan nog veranderen, ` +
         'maar we laten het weten zodra het zover is.',
-    limitFreedToast: 'Er is weer ruimte. Zet je nieuwe zoekmelding aan.',
+    limitFreedToast: 'Er is weer ruimte. Zet je nieuwe zoekopdracht aan.',
 
     // Pricing view
     pricingTitle: 'Wat je krijgt',
@@ -347,22 +349,22 @@ var ALERTS_TEXT = {
     // Nothing here is sold yet, so the list is a plan and not a promise. Saying
     // that on the card itself is cheaper than disappointing someone later.
     pricingPremiumProvisional: 'Premium is nog in de maak. Wat er precies in komt, staat nog niet vast en kan nog veranderen.',
-    pricingFeatureAlerts: n => `${n} ${n === 1 ? 'zoekmelding' : 'zoekmeldingen'} tegelijk`,
+    pricingFeatureAlerts: n => `${n} ${n === 1 ? 'zoekopdracht' : 'zoekopdrachten'} tegelijk`,
     pricingFeatureInterval: m => `Controle elke ${m} minuten`,
     pricingFeatureIntervalFaster: (m, freeM) => `Drie keer sneller: elke ${m} minuten in plaats van ${freeM}`,
-    pricingFeatureAlertsMore: (n, freeN) => `${n} zoekmeldingen tegelijk in plaats van ${freeN}`,
-    pricingFeatureValidity: d => `${d} dagen geldig per zoekmelding`,
+    pricingFeatureAlertsMore: (n, freeN) => `${n} zoekopdrachten tegelijk in plaats van ${freeN}`,
+    pricingFeatureValidity: d => `${d} dagen geldig per zoekopdracht`,
     pricingFeatureValidityLonger: (d, freeD) => `${d} dagen geldig in plaats van ${freeD}`,
     pricingFeatureTelegram: 'Meldingen via Telegram',
     pricingFeatureFilters: 'Je Cleanplaats-filters werken door in je meldingen',
     pricingFeatureBlocklist: 'Geblokkeerde verkopers en woorden tellen mee',
-    pricingFeatureOneClick: 'Zoekmelding aanzetten vanaf je Marktplaats-zoekresultaten',
+    pricingFeatureOneClick: 'Zoekopdracht aanzetten vanaf je Marktplaats-zoekresultaten',
     pricingFeatureFeed: 'Overzicht van alle gevonden advertenties',
 
     // Filters are pushed to the server on every dashboard load. When that is
     // refused the alerts keep running with the last set that did fit, which is
     // exactly the kind of thing that must not fail quietly.
-    filtersTooLargeToast: 'Je blokkeerlijsten zijn te groot om mee te sturen. Je zoekmeldingen gebruiken nu een oudere versie.'
+    filtersTooLargeToast: 'Je blokkeerlijsten zijn te groot om mee te sturen. Je zoekopdrachten gebruiken nu een oudere versie.'
 };
 
 /**
@@ -2051,33 +2053,38 @@ function alertUnlinkedCheckState(alert, me) {
 }
 
 /**
- * Which of the three looks a row wears. An alert that is switched on but whose
- * account has no Telegram is not "active" in the sense the pulsing green dot
- * promises, so it takes the paused look until the channel is there.
+ * Which of the three looks a row wears. An alert whose account has no Telegram
+ * keeps the active look while the server is still checking it; once that window
+ * has run out nothing moves behind it any more, so it takes the paused look
+ * until the channel is there.
  */
 function alertStatusClass(alert, me) {
     const validity = getAlertValidity(alert);
     if (validity && validity.expired) return 'expired';
     if (!alert.enabled) return 'paused';
-    return alertUnlinkedCheckState(alert, me) ? 'paused' : 'active';
+    // Inside the grace window the search is still being polled, so it counts as
+    // running; only once the server has dropped it does the row take the paused
+    // look. Anything else has the panel reporting nothing active while a search
+    // is quietly filling up with finds.
+    const unlinked = alertUnlinkedCheckState(alert, me);
+    return unlinked && unlinked.stopped ? 'paused' : 'active';
 }
 
 /**
- * The check column of one row. Split out because the switches repaint it in
- * place: pausing an alert turns "volgende controle" into "laatst gecontroleerd"
- * and the row would otherwise keep the old sentence until the next reload.
+ * The check column of one row: when the next check lands, nothing else. Split
+ * out because the switches repaint it in place: pausing an alert turns
+ * "volgende controle" into "laatst gecontroleerd" and the row would otherwise
+ * keep the old sentence until the next reload.
  */
 function alertCheckCellHtml(alert, me) {
     const validity = getAlertValidity(alert);
     const expired = Boolean(validity && validity.expired);
-    const running = alert.enabled && !expired;
-    const unlinked = running ? alertUnlinkedCheckState(alert, me) : null;
+    const unlinked = (alert.enabled && !expired) ? alertUnlinkedCheckState(alert, me) : null;
+    // Still inside the grace window the poller does run, so this column says
+    // when. Once it has stopped there is no next check to name, and why it
+    // stopped is the validity column's line to carry.
+    const running = alert.enabled && !expired && !(unlinked && unlinked.stopped);
 
-    if (unlinked) {
-        return `<span class="cleanplaats-alerts-cell-warn">${unlinked.stopped
-            ? ALERTS_TEXT.checkUnlinkedStopped
-            : ALERTS_TEXT.checkUnlinkedStops(unlinked.hoursLeft)}</span>`;
-    }
     if (running && isAlertFailing(alert)) {
         return `<span class="cleanplaats-alerts-cell-warn">${ALERTS_TEXT.checkFailing}</span>`;
     }
@@ -2088,6 +2095,38 @@ function alertCheckCellHtml(alert, me) {
         return `${ALERTS_TEXT.lastChecked}: ${formatAlertRelativeTime(alert.last_checked_at)}`;
     }
     return ALERTS_TEXT.neverChecked;
+}
+
+/**
+ * The validity column of one row. Both lines answer the same question — how
+ * much longer does this keep running — so the Telegram deadline sits here
+ * rather than in the check column, where it was pushing out the one thing that
+ * column exists to say. Repainted in place for the same reason as the check
+ * cell: pausing a search retires the deadline with it.
+ */
+function alertValidityCellHtml(alert, me) {
+    const validity = getAlertValidity(alert);
+    const expired = Boolean(validity && validity.expired);
+    const unlinked = (alert.enabled && !expired) ? alertUnlinkedCheckState(alert, me) : null;
+    const note = unlinked
+        ? `<span class="cleanplaats-alerts-validity-note">${unlinked.stopped
+            ? ALERTS_TEXT.unlinkedStopped
+            : ALERTS_TEXT.unlinkedStops(unlinked.hoursLeft)}</span>`
+        : '';
+
+    if (!validity) {
+        return `<span class="cleanplaats-alerts-validity-meter">
+                   <span class="cleanplaats-alerts-validity-text">∞</span>
+                   ${note}
+               </span>`;
+    }
+
+    const fraction = alertValidityFraction(alert, me);
+    return `<span class="cleanplaats-alerts-validity-meter${expired ? ' is-expired' : (validity.soon ? ' is-soon' : '')}">
+               <span class="cleanplaats-alerts-validity-bar"><span style="width:${Math.round((fraction || 0) * 100)}%"></span></span>
+               <span class="cleanplaats-alerts-validity-text">${expired ? ALERTS_TEXT.validityExpired : ALERTS_TEXT.validityLeft(validity.daysLeft)}</span>
+               ${note}
+           </span>`;
 }
 
 /**
@@ -2257,13 +2296,7 @@ function buildAlertsTableHtml(alerts, me) {
             ? `<button type="button" class="cleanplaats-alerts-match-badge cleanplaats-alerts-match-badge-link" data-open-matches="${alert.id}" aria-label="${escapeAlertText(ALERTS_TEXT.alertMatchesOpen(alert.label))}">${ALERTS_TEXT.matchCount(matchCount)}${alertIcon('chevron', 13)}</button>`
             : `<span class="cleanplaats-alerts-match-badge cleanplaats-alerts-match-badge-zero">${ALERTS_TEXT.matchCount(matchCount)}</span>`;
 
-        const fraction = alertValidityFraction(alert, me);
-        const validityCell = validity
-            ? `<span class="cleanplaats-alerts-validity-meter${validity.expired ? ' is-expired' : (validity.soon ? ' is-soon' : '')}">
-                   <span class="cleanplaats-alerts-validity-bar"><span style="width:${Math.round((fraction || 0) * 100)}%"></span></span>
-                   <span class="cleanplaats-alerts-validity-text">${validity.expired ? ALERTS_TEXT.validityExpired : ALERTS_TEXT.validityLeft(validity.daysLeft)}</span>
-               </span>`
-            : '<span class="cleanplaats-alerts-validity-text">∞</span>';
+        const validityCell = alertValidityCellHtml(alert, me);
 
         const statusCell = expired
             ? `<button class="cleanplaats-alerts-extend-btn cleanplaats-alerts-extend-btn-primary" data-alert-id="${alert.id}" data-extend="1">${ALERTS_TEXT.reactivateButton}</button>`
@@ -2287,7 +2320,7 @@ function buildAlertsTableHtml(alerts, me) {
             <div class="cleanplaats-alerts-row-group cleanplaats-alerts-alert-${statusClass}" data-alert-id="${alert.id}">
                 <div class="cleanplaats-alerts-row" role="row">
                     <span class="cleanplaats-alerts-cell cleanplaats-alerts-cell-name" role="cell">
-                        <span class="cleanplaats-alerts-status-dot" title="${expired ? ALERTS_TEXT.validityExpired : (alert.enabled ? ALERTS_TEXT.activeLabel : ALERTS_TEXT.pausedLabel)}"></span>
+                        <span class="cleanplaats-alerts-status-dot" title="${statusClass === 'expired' ? ALERTS_TEXT.validityExpired : (statusClass === 'active' ? ALERTS_TEXT.activeLabel : ALERTS_TEXT.pausedLabel)}"></span>
                         ${label}
                     </span>
                     <span class="cleanplaats-alerts-cell cleanplaats-alerts-cell-count" role="cell" data-label="${ALERTS_TEXT.tableFound}">${matchCell}</span>
@@ -2819,13 +2852,18 @@ function applyAlertRowState(main, alertId, response, fallback) {
             if (dot) {
                 dot.title = statusClass === 'expired'
                     ? ALERTS_TEXT.validityExpired
-                    : (enabled ? ALERTS_TEXT.activeLabel : ALERTS_TEXT.pausedLabel);
+                    : (statusClass === 'active' ? ALERTS_TEXT.activeLabel : ALERTS_TEXT.pausedLabel);
             }
 
             // "Volgende controle over 4 minuten" is no longer true once the
-            // alert is paused, so the check column is rewritten with it.
+            // alert is paused, so the check column is rewritten with it. The
+            // validity column goes along: a paused search is not counting down
+            // to the Telegram deadline either.
             const checkValue = group.querySelector('.cleanplaats-alerts-cell-check .cleanplaats-alerts-cell-value');
             if (checkValue) checkValue.innerHTML = DOMPurify.sanitize(alertCheckCellHtml(cached, me));
+
+            const validityCell = group.querySelector('.cleanplaats-alerts-cell-validity');
+            if (validityCell) validityCell.innerHTML = DOMPurify.sanitize(alertValidityCellHtml(cached, me));
         }
     }
 
@@ -2970,7 +3008,7 @@ var ALERTS_WALKTHROUGH_TEXT = {
     telegramTitle: 'Koppel Telegram',
     telegramBody: 'Je meldingen komen binnen via Telegram, ook als je browser dicht is. Zonder koppeling blijft het stil.',
     telegramLinkedTitle: 'Zo ontvang je ze',
-    telegramLinkedBody: 'Telegram is gekoppeld. Zet je hem bij een zoekmelding uit, dan pauzeert die zoekmelding ook: er is dan niemand meer om iets naartoe te sturen.',
+    telegramLinkedBody: 'Telegram is gekoppeld. Zet je hem bij een zoekopdracht uit, dan pauzeert die zoekopdracht ook: er is dan niemand meer om iets naartoe te sturen.',
     matchesTitle: 'Alles komt hier binnen',
     matchesBody: 'Elke gevonden advertentie verschijnt in deze lijst, met NIEUW ernaast zolang je hem nog niet bekeken hebt.'
 };
@@ -3005,7 +3043,7 @@ function maybeRunAlertsWalkthrough(me, alerts) {
 
     const steps = [];
 
-    // The create box lives on the Zoekmeldingen view; from the advertisements
+    // The create box lives on the Zoekopdrachten view; from the advertisements
     // view the checklist is what points at it, so the tour follows whichever of
     // the two is actually on screen.
     const createSelector = document.getElementById('cleanplaats-alert-label-input')
