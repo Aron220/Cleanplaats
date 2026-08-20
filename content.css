@@ -4632,12 +4632,16 @@
     z-index: 40;
   }
 
+  /* Anchored to the button's right edge, not centred on it: the toggle sits at
+     the right of the details row, and a centred bubble reached past the edge of
+     .cleanplaats-alerts-tablelist, whose overflow: hidden (there for the rounded
+     corners) cut it off. */
   .cleanplaats-alerts-switch-locked[data-tip]::after {
     content: attr(data-tip);
     position: absolute;
     bottom: calc(100% + 9px);
-    left: 50%;
-    transform: translateX(-50%) translateY(4px);
+    right: 0;
+    transform: translateY(4px);
     width: max-content;
     max-width: 230px;
     padding: 9px 11px;
@@ -4664,7 +4668,7 @@
 
   .cleanplaats-alerts-switch-locked[data-tip]:hover::after {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
   }
 
   .cleanplaats-alerts-switch-locked[data-tip]:hover::before {
