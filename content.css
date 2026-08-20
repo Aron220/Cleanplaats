@@ -3540,6 +3540,50 @@
     color: #c25f06;
   }
 
+  /* Said once, on the screen where someone decides to hand over an address,
+     and nowhere during use: a running warning above a notification list makes
+     people doubt every check that comes back quiet. Deliberately quieter than
+     the form below it, since this is context and the form is the action. */
+  .cleanplaats-alerts-sell-new {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #f4f6f9;
+  }
+
+  .cleanplaats-alerts-sell-new-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #e7ebf1;
+    color: #66707f;
+  }
+
+  .cleanplaats-alerts-sell-new-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .cleanplaats-alerts-sell-new-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2b3442;
+  }
+
+  .cleanplaats-alerts-sell-new-body {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #66707f;
+  }
+
   .cleanplaats-alerts-sell-form {
     display: flex;
     flex-direction: column;
@@ -5596,6 +5640,23 @@
   html.cleanplaats-dark-mode .cleanplaats-alerts-baseline {
     background: #18202c;
     border-color: #243044;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-sell-new {
+    background: #18202c;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-sell-new-icon {
+    background: #202b3a;
+    color: #8fa0b8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-sell-new-title {
+    color: #dbe3ee;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-sell-new-body {
+    color: #8fa0b8;
   }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-contact-title {

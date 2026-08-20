@@ -718,7 +718,7 @@ var CLEANPLAATS_UPDATE_NOTES = {
             'Je Cleanplaats-filters gelden ook voor je meldingen: dagtoppers, gereserveerde advertenties, opvalstickers en je geblokkeerde verkopers en woorden worden er automatisch uitgehouden. Top- en bedrijfsadvertenties krijg je nooit als melding.',
             'Gratis laat je één zoekopdracht lopen, die elke 15 minuten wordt gecontroleerd. Gevonden advertenties zie je altijd terug in het overzicht, ook zonder Telegram.'
         ],
-        note: 'Zoekopdrachten is splinternieuw. Werkt er iets niet zoals je verwacht? Mail dan naar info@cleanplaats.com, elk bericht komt bij de maker terecht.'
+        note: 'Zoekopdrachten is splinternieuw en jij bent een van de eersten die het gebruikt. Werkt er iets niet zoals je verwacht, of mis je iets? Mail naar info@cleanplaats.com, elk bericht komt bij de maker terecht.'
     },
     '2.1.5': {
         intro: 'Cleanplaats 2.1.5 lost een sorteerbug op en maakt de statistieken en de "zoek volgende pagina"-knop betrouwbaarder.',

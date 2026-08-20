@@ -79,6 +79,14 @@ var ALERTS_TEXT = {
         { icon: 'send', text: 'Via Telegram, dus ook als je browser dicht is' },
         { icon: 'filter', text: 'Je Cleanplaats-filters en blokkades tellen gewoon mee' }
     ],
+    // Zoekopdrachten went live with this release, so the screen that asks for
+    // an address says so before anyone commits to it. It asks for the report
+    // rather than disclaiming the bug: a warning invites people to distrust
+    // the notifications, an invitation gets them to tell us when one misses.
+    loginNewTitle: 'Net gelanceerd',
+    loginNewBody: 'Zoekopdrachten is splinternieuw en je bent een van de eersten die het gebruikt. ' +
+        'Werkt er iets niet zoals je verwacht? Laat het weten via info@cleanplaats.com, dan lossen we het op.',
+
     loginFormTitle: 'Maak een account of log in',
     loginFormHint: 'Gratis, en zonder wachtwoord: je krijgt een inlogcode per e-mail.',
     loginPrivacy: 'We gebruiken je e-mailadres om je in te laten loggen en je zoekopdrachten aan te koppelen, verder niets.',
@@ -1224,6 +1232,14 @@ function renderAlertsLoginView() {
             <h4 class="cleanplaats-alerts-sell-title">${ALERTS_TEXT.loginTitle}</h4>
             <p class="cleanplaats-alerts-sell-intro">${ALERTS_TEXT.loginIntro}</p>
             <ul class="cleanplaats-alerts-sell-list">${bullets}</ul>
+
+            <div class="cleanplaats-alerts-sell-new">
+                <span class="cleanplaats-alerts-sell-new-icon">${alertIcon('mail', 16)}</span>
+                <span class="cleanplaats-alerts-sell-new-copy">
+                    <span class="cleanplaats-alerts-sell-new-title">${ALERTS_TEXT.loginNewTitle}</span>
+                    <span class="cleanplaats-alerts-sell-new-body">${ALERTS_TEXT.loginNewBody}</span>
+                </span>
+            </div>
 
             <div class="cleanplaats-alerts-sell-form">
                 <div class="cleanplaats-alerts-sell-form-head">
