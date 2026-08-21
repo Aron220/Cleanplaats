@@ -84,7 +84,7 @@ var ALERTS_TEXT = {
     // rather than disclaiming the bug: a warning invites people to distrust
     // the notifications, an invitation gets them to tell us when one misses.
     loginNewTitle: 'Net gelanceerd',
-    loginNewBody: 'Zoekopdrachten is splinternieuw en je bent een van de eersten die het gebruikt. ' +
+    loginNewBody: 'Zoekopdrachten is net gelanceerd. ' +
         'Werkt er iets niet zoals je verwacht? Laat het weten via info@cleanplaats.com, dan lossen we het op.',
 
     loginFormTitle: 'Maak een account of log in',
