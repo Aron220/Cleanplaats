@@ -716,22 +716,33 @@ function getNextDataQuery() {
         const nextData = JSON.parse(nextDataEl.textContent);
         const query = nextData.query || {};
 
-        // Marktplaats navigates client-side between searches, so __NEXT_DATA__ can
-        // still describe a *previous* search. The path is the one part it can never
-        // get wrong, so use the rendered categories to check it is still current.
+        // Marktplaats navigates client-side between searches and never rewrites
+        // __NEXT_DATA__ when it does, so it can still describe a *previous*
+        // search. The path is the one part it can never get wrong, and it is also
+        // where the category lives, so the path decides.
         const categories = nextData.props?.pageProps?.searchRequestAndResponse?.searchRequest?.categories;
         const path = window.location.pathname;
-        if (path.startsWith('/l/') && categories) {
-            const keys = [categories.l1Category?.key, categories.l2Category?.key].filter(Boolean);
-            if (keys.some(key => !path.includes(`/${key}/`))) return null;
-        }
+        const categoryKeys = [categories?.l1Category?.key, categories?.l2Category?.key].filter(Boolean);
+
+        if (path.startsWith('/l/') && categoryKeys.some(key => !path.includes(`/${key}/`))) return null;
 
         const urlQuery = getSearchQueryFromUrl();
         const dataQuery = String(query.searchQuery || '').trim();
         if (!urlQuery && dataQuery) return null;
 
         // The URL wins: on category pages the term only exists in the hash.
-        return { ...query, searchQuery: urlQuery };
+        const result = { ...query, searchQuery: urlQuery };
+
+        // A /q/ search has no category in its URL, so a category still sitting in
+        // __NEXT_DATA__ is one the user has left behind: clicking "Wis de
+        // categorie" is enough to get here. Keeping it would quietly search
+        // inside the category they just removed.
+        if (!path.startsWith('/l/') && categoryKeys.length > 0) {
+            delete result.l1CategoryId;
+            delete result.l2CategoryId;
+        }
+
+        return result;
     } catch (error) {
         return null;
     }
