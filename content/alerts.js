@@ -789,8 +789,10 @@ function alertsApiFetch(path, options = {}) {
 
 /**
  * Extracts the current search as server-ready /lrp/api/search params.
- * Mirrors buildSearchApiUrl() in cleanup.js, but returns the params instead
- * of a URL so the server can re-run the search on its own schedule.
+ * Mirrors buildSearchApiUrl() in cleanup.js — it leans on the same two readers,
+ * so the panel and the page filter can never disagree about what is on screen —
+ * but returns the params instead of a URL, so the server can re-run the search
+ * on its own schedule.
  */
 function getAlertSearchContext() {
     if (!isMarktplaatsSite()) return null;
@@ -798,53 +800,37 @@ function getAlertSearchContext() {
     const href = window.location.href;
     if (!href.includes('/q/') && !href.includes('/l/')) return null;
 
-    // Query straight from the URL. Marktplaats navigates client-side between
-    // searches, so the server-rendered __NEXT_DATA__ blob can still describe
-    // a *previous* search; the URL always matches what the user sees.
-    const urlQuery = decodeURIComponent(
-        (window.location.pathname.match(/\/q\/([^/]+)/) || [, ''])[1] || ''
-    ).replace(/[-+]/g, ' ').trim();
+    // The term is not always where you would expect it: /q/<term>/ pages carry
+    // it in the path, category pages in the hash (/l/<cat>/#q:<term>), and a
+    // hash never reaches the server, so __NEXT_DATA__ reports an empty
+    // searchQuery there. getSearchQueryFromUrl() knows both spots;
+    // getNextDataQuery() pairs the term with the filters of the search on
+    // screen, and returns null when __NEXT_DATA__ still describes an older one.
+    const urlQuery = getSearchQueryFromUrl();
+    const pageQuery = getNextDataQuery();
 
     let searchParams = {};
-    let query = '';
 
-    try {
-        const nextDataEl = document.getElementById('__NEXT_DATA__');
-        if (nextDataEl) {
-            const q = JSON.parse(nextDataEl.textContent).query || {};
-            if (q.searchQuery) {
-                query = String(q.searchQuery);
-                searchParams.query = query;
+    if (pageQuery) {
+        if (pageQuery.searchQuery) searchParams.query = String(pageQuery.searchQuery);
+        ['l1CategoryId', 'l2CategoryId', 'postcode', 'distanceMeters',
+            'attributesValuesIds', 'attributesValuesKeys', 'attributesById',
+            'attributesByKey', 'attributeRanges'].forEach(key => {
+            const value = pageQuery[key];
+            if (value !== undefined && value !== null && value !== '') {
+                searchParams[key] = value;
             }
-            ['l1CategoryId', 'l2CategoryId', 'postcode', 'distanceMeters',
-                'attributesValuesIds', 'attributesValuesKeys', 'attributesById',
-                'attributesByKey', 'attributeRanges'].forEach(key => {
-                if (q[key] !== undefined && q[key] !== null && q[key] !== '') {
-                    searchParams[key] = q[key];
-                }
-            });
-        }
-    } catch (error) {
-        console.error('Cleanplaats: Failed to read search context for alert', error);
-    }
-
-    if (urlQuery && query.toLowerCase() !== urlQuery.toLowerCase()) {
-        // __NEXT_DATA__ is stale (or absent): trust the URL and drop the
-        // filters that belonged to the old search.
-        query = urlQuery;
+        });
+    } else if (urlQuery) {
+        // No filters we can still trust: the term on its own makes a correct
+        // alert, just a broader one than the page the user is looking at.
         searchParams = { query: urlQuery };
     }
 
     // Hash params override (same precedence as buildSearchApiUrl).
-    const hash = window.location.hash.replace('#', '');
-    hash.split('|').forEach(part => {
-        const colonIdx = part.indexOf(':');
-        if (colonIdx <= 0) return;
-        const key = part.slice(0, colonIdx);
-        const value = part.slice(colonIdx + 1);
-        if (key === 'postcode' && value) searchParams.postcode = value;
-        if (key === 'distanceMeters' && value) searchParams.distanceMeters = value;
-    });
+    const hashParams = parseLocationHashParams();
+    if (hashParams.postcode) searchParams.postcode = hashParams.postcode;
+    if (hashParams.distanceMeters) searchParams.distanceMeters = hashParams.distanceMeters;
 
     if (Object.keys(searchParams).length === 0) return null;
 
@@ -855,7 +841,7 @@ function getAlertSearchContext() {
     // Sending nothing means an alert keeps matching whatever the search page
     // itself matches, even if that default ever changes.
 
-    const suggestedLabel = query || decodeURIComponent(
+    const suggestedLabel = searchParams.query || decodeURIComponent(
         (window.location.pathname.match(/\/[ql]\/([^/]+)/) || [, ''])[1] || ''
     ).replace(/[-+]/g, ' ').trim() || 'Marktplaats zoekopdracht';
 
