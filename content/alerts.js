@@ -448,14 +448,6 @@ function alertIcon(name, size) {
     return `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ALERTS_ICONS[name] || ''}</svg>`;
 }
 
-function escapeAlertText(text) {
-    return String(text == null ? '' : text)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-}
-
 function formatAlertRelativeTime(timestamp) {
     if (!timestamp) return '';
     const diff = Date.now() - timestamp;
@@ -513,9 +505,13 @@ var ALERT_PRICE_TYPE_LABELS = {
 function formatAlertMatchPrice(match) {
     if (Number.isFinite(match.price_cents) && match.price_cents > 0) {
         const euros = match.price_cents / 100;
-        const amount = Number.isInteger(euros)
-            ? `€ ${euros.toLocaleString('nl-NL')}`
-            : `€ ${euros.toFixed(2).replace('.', ',')}`;
+        // Whole euros drop the ",00" the way Marktplaats itself writes them, but
+        // both paths go through toLocaleString or a thousands separator would
+        // appear on € 1.500 and vanish again on € 1500,50.
+        const amount = `€ ${euros.toLocaleString('nl-NL', {
+            minimumFractionDigits: Number.isInteger(euros) ? 0 : 2,
+            maximumFractionDigits: 2
+        })}`;
         return match.price_type === 'MIN_BID' ? `Bieden vanaf ${amount}` : amount;
     }
     return ALERT_PRICE_TYPE_LABELS[match.price_type] || '';
@@ -552,7 +548,7 @@ function buildGlobalListsSummaryHtml() {
     if (listingCount > 0) chips.push(ALERTS_TEXT.filterListListings(listingCount));
     const body = chips.length === 0
         ? `<span class="cleanplaats-alerts-filter-none">${ALERTS_TEXT.filterListsNone}</span>`
-        : chips.map(c => `<span class="cleanplaats-alerts-filter-chip">${escapeAlertText(c)}</span>`).join('');
+        : chips.map(c => `<span class="cleanplaats-alerts-filter-chip">${escapeHtmlText(c)}</span>`).join('');
     return `
         <div class="cleanplaats-alerts-filter-global">
             <div class="cleanplaats-alerts-filter-global-head">${ALERTS_TEXT.filterGlobalListsTitle}</div>
@@ -612,20 +608,20 @@ function renderAlertMatchItems(matches, options = {}) {
         const seenAt = cleanplaatsAlertsRuntime.matchesSeenAt || 0;
         const isNew = !match.is_baseline && match.found_at > seenAt;
         const thumb = match.image_url
-            ? `<img class="cleanplaats-alerts-match-thumb" src="${escapeAlertText(match.image_url)}" alt="" loading="lazy">`
+            ? `<img class="cleanplaats-alerts-match-thumb" src="${escapeHtmlText(match.image_url)}" alt="" loading="lazy">`
             : `<span class="cleanplaats-alerts-match-thumb cleanplaats-alerts-match-thumb-empty">${alertIcon('image', 20)}</span>`;
         // The badge sits at the end of the row rather than in front of the
         // title: inline, it pushed the first line over and left every badged
         // title breaking a word early.
         return `
-            <a class="cleanplaats-alerts-match${isNew ? ' is-new' : ''}" href="${escapeAlertText(match.url)}">
+            <a class="cleanplaats-alerts-match${isNew ? ' is-new' : ''}" href="${escapeHtmlText(match.url)}">
                 ${thumb}
                 <span class="cleanplaats-alerts-match-info">
-                    <span class="cleanplaats-alerts-match-title">${escapeAlertText(match.title)}</span>
+                    <span class="cleanplaats-alerts-match-title">${escapeHtmlText(match.title)}</span>
                     <span class="cleanplaats-alerts-match-sub">
                         <span class="cleanplaats-alerts-match-price">${formatAlertMatchPrice(match)}</span>
-                        ${match.city ? `<span>· ${escapeAlertText(match.city)}</span>` : ''}
-                        ${options.hideAlertLabel ? '' : `<span class="cleanplaats-alerts-match-alert-label">· ${escapeAlertText(match.alert_label || '')}</span>`}
+                        ${match.city ? `<span>· ${escapeHtmlText(match.city)}</span>` : ''}
+                        ${options.hideAlertLabel ? '' : `<span class="cleanplaats-alerts-match-alert-label">· ${escapeHtmlText(match.alert_label || '')}</span>`}
                     </span>
                 </span>
                 <span class="cleanplaats-alerts-match-meta">
@@ -1253,12 +1249,12 @@ function openAlertsConfirm({ title, body, confirmLabel, danger = true, onConfirm
     wrap.cleanplaatsReturnFocus =
         document.activeElement instanceof HTMLElement ? document.activeElement : null;
     wrap.innerHTML = DOMPurify.sanitize(`
-        <div class="cleanplaats-alerts-confirm-box" role="alertdialog" aria-modal="true" aria-label="${escapeAlertText(title)}">
-            <div class="cleanplaats-alerts-confirm-title">${escapeAlertText(title)}</div>
-            <div class="cleanplaats-alerts-confirm-body">${escapeAlertText(body)}</div>
+        <div class="cleanplaats-alerts-confirm-box" role="alertdialog" aria-modal="true" aria-label="${escapeHtmlText(title)}">
+            <div class="cleanplaats-alerts-confirm-title">${escapeHtmlText(title)}</div>
+            <div class="cleanplaats-alerts-confirm-body">${escapeHtmlText(body)}</div>
             <div class="cleanplaats-alerts-confirm-actions">
                 <button type="button" class="cleanplaats-alerts-secondary-btn" id="cleanplaats-alerts-confirm-cancel">${ALERTS_TEXT.confirmCancel}</button>
-                <button type="button" class="${danger ? 'cleanplaats-alerts-danger-btn' : 'cleanplaats-alerts-primary-btn'}" id="cleanplaats-alerts-confirm-ok">${escapeAlertText(confirmLabel)}</button>
+                <button type="button" class="${danger ? 'cleanplaats-alerts-danger-btn' : 'cleanplaats-alerts-primary-btn'}" id="cleanplaats-alerts-confirm-ok">${escapeHtmlText(confirmLabel)}</button>
             </div>
         </div>
     `);
@@ -1364,7 +1360,7 @@ function renderAlertsCodeView() {
         <div class="cleanplaats-alerts-login">
             <div class="cleanplaats-alerts-login-icon">${alertIcon('key', 24)}</div>
             <h4>${ALERTS_TEXT.loginTitle}</h4>
-            <p>${escapeAlertText(ALERTS_TEXT.codeSentTo(email))}</p>
+            <p>${escapeHtmlText(ALERTS_TEXT.codeSentTo(email))}</p>
             <div class="cleanplaats-alerts-form-row">
                 <input type="text" id="cleanplaats-alerts-code-input" class="cleanplaats-alerts-code-input" inputmode="numeric" maxlength="6" placeholder="${ALERTS_TEXT.codePlaceholder}" autocomplete="one-time-code">
                 <button id="cleanplaats-alerts-code-submit" class="cleanplaats-alerts-primary-btn">${ALERTS_TEXT.codeButton}</button>
@@ -1486,7 +1482,7 @@ function renderTelegramConnect(me) {
                         <span class="cleanplaats-alerts-connect-title">${ALERTS_TEXT.telegramStep1Title}</span>
                         <span class="cleanplaats-alerts-connect-sub">${ALERTS_TEXT.telegramStep1Body}</span>
                         <div class="cleanplaats-alerts-connect-actions">
-                            <code class="cleanplaats-alerts-connect-code" id="cleanplaats-tg-bot">${escapeAlertText(botHandle)}</code>
+                            <code class="cleanplaats-alerts-connect-code" id="cleanplaats-tg-bot">${escapeHtmlText(botHandle)}</code>
                             ${bot ? copyBtn('cleanplaats-tg-bot') : ''}
                             ${tmeUrl ? `<a class="cleanplaats-alerts-secondary-btn cleanplaats-alerts-connect-open" id="cleanplaats-tg-open" href="${tmeUrl}" target="_blank" rel="noopener noreferrer">${ALERTS_TEXT.telegramStep1Open}</a>` : ''}
                         </div>
@@ -1614,7 +1610,7 @@ function renderAlertsAccountView() {
 
     const isPremium = me.tier === 'premium';
     const rows = [
-        [ALERTS_TEXT.accountEmailLabel, escapeAlertText(me.email)],
+        [ALERTS_TEXT.accountEmailLabel, escapeHtmlText(me.email)],
         [ALERTS_TEXT.accountPlanLabel, isPremium ? ALERTS_TEXT.tierPremium : ALERTS_TEXT.tierFree],
         [ALERTS_TEXT.accountUsageLabel, `${me.alertCount || 0} / ${me.maxAlerts}`],
         [ALERTS_TEXT.accountIntervalLabel, ALERTS_TEXT.accountIntervalValue(me.intervalMinutes)],
@@ -1759,9 +1755,9 @@ function renderAlertsLimitView(alerts) {
 
     const items = alerts.map(alert => `
         <div class="cleanplaats-alerts-limit-item" data-alert-id="${alert.id}">
-            <span class="cleanplaats-alerts-limit-item-label">${escapeAlertText(alert.label)}</span>
+            <span class="cleanplaats-alerts-limit-item-label">${escapeHtmlText(alert.label)}</span>
             <span class="cleanplaats-alerts-limit-item-meta">${ALERTS_TEXT.matchCount(alert.match_count || 0)}</span>
-            <button class="cleanplaats-alerts-delete" data-alert-id="${alert.id}" data-alert-label="${escapeAlertText(alert.label)}" title="${ALERTS_TEXT.deleteButton}" aria-label="${ALERTS_TEXT.deleteButton}">${alertIcon('trash', 15)}</button>
+            <button class="cleanplaats-alerts-delete" data-alert-id="${alert.id}" data-alert-label="${escapeHtmlText(alert.label)}" title="${ALERTS_TEXT.deleteButton}" aria-label="${ALERTS_TEXT.deleteButton}">${alertIcon('trash', 15)}</button>
         </div>
     `).join('');
 
@@ -1826,9 +1822,9 @@ function renderAlertMatchesView(alertId) {
     cleanplaatsAlertsRuntime.openAlertMatchesId = String(alert.id);
 
     const subtitle = alert.search_url
-        ? `<a class="cleanplaats-alerts-subview-link" href="${escapeAlertText(alert.search_url)}">${ALERTS_TEXT.alertMatchesSearchLink}</a>`
+        ? `<a class="cleanplaats-alerts-subview-link" href="${escapeHtmlText(alert.search_url)}">${ALERTS_TEXT.alertMatchesSearchLink}</a>`
         : '';
-    const header = alertsViewHeader(escapeAlertText(alert.label), subtitle);
+    const header = alertsViewHeader(escapeHtmlText(alert.label), subtitle);
 
     const body = setAlertsBody(`
         ${header}
@@ -2333,7 +2329,7 @@ function buildAlertsCreateHtml(context, me) {
         <section class="cleanplaats-alerts-create">
             <div class="cleanplaats-alerts-create-title">${ALERTS_TEXT.createTitle}</div>
             <div class="cleanplaats-alerts-form-row">
-                <input type="text" id="cleanplaats-alert-label-input" value="${context ? escapeAlertText(context.suggestedLabel) : ''}" placeholder="${ALERTS_TEXT.labelPlaceholder}" maxlength="120" aria-label="${ALERTS_TEXT.createTitle}">
+                <input type="text" id="cleanplaats-alert-label-input" value="${context ? escapeHtmlText(context.suggestedLabel) : ''}" placeholder="${ALERTS_TEXT.labelPlaceholder}" maxlength="120" aria-label="${ALERTS_TEXT.createTitle}">
                 <button id="cleanplaats-alert-create" class="cleanplaats-alerts-primary-btn">${ALERTS_TEXT.createButton}</button>
             </div>
             ${context ? `<div class="cleanplaats-alerts-create-note" id="cleanplaats-alert-create-note">${ALERTS_TEXT.createContextHint}</div>` : ''}
@@ -2361,13 +2357,13 @@ function buildAlertsTableHtml(alerts, me) {
         const checkText = alertCheckCellHtml(alert, me);
 
         const label = alert.search_url
-            ? `<a href="${escapeAlertText(alert.search_url)}" class="cleanplaats-alerts-card-label">${escapeAlertText(alert.label)}</a>`
-            : `<span class="cleanplaats-alerts-card-label">${escapeAlertText(alert.label)}</span>`;
+            ? `<a href="${escapeHtmlText(alert.search_url)}" class="cleanplaats-alerts-card-label">${escapeHtmlText(alert.label)}</a>`
+            : `<span class="cleanplaats-alerts-card-label">${escapeHtmlText(alert.label)}</span>`;
 
         const matchCount = alert.match_count || 0;
         const openable = matchCount > 0 || (alert.baseline_count || 0) > 0;
         const matchCell = openable
-            ? `<button type="button" class="cleanplaats-alerts-match-badge cleanplaats-alerts-match-badge-link" data-open-matches="${alert.id}" aria-label="${escapeAlertText(ALERTS_TEXT.alertMatchesOpen(alert.label))}">${ALERTS_TEXT.matchCount(matchCount)}${alertIcon('chevron', 13)}</button>`
+            ? `<button type="button" class="cleanplaats-alerts-match-badge cleanplaats-alerts-match-badge-link" data-open-matches="${alert.id}" aria-label="${escapeHtmlText(ALERTS_TEXT.alertMatchesOpen(alert.label))}">${ALERTS_TEXT.matchCount(matchCount)}${alertIcon('chevron', 13)}</button>`
             : `<span class="cleanplaats-alerts-match-badge cleanplaats-alerts-match-badge-zero">${ALERTS_TEXT.matchCount(matchCount)}</span>`;
 
         const validityCell = alertValidityCellHtml(alert, me);
@@ -2415,7 +2411,7 @@ function buildAlertsTableHtml(alerts, me) {
                         <div class="cleanplaats-alerts-details-row cleanplaats-alerts-details-row-danger">
                             <span class="cleanplaats-alerts-details-label">${ALERTS_TEXT.detailsRemove}</span>
                             <span class="cleanplaats-alerts-details-controls">
-                                <button class="cleanplaats-alerts-text-btn cleanplaats-alerts-text-btn-danger cleanplaats-alerts-delete" data-alert-id="${alert.id}" data-alert-label="${escapeAlertText(alert.label)}">${alertIcon('trash', 14)}<span>${ALERTS_TEXT.deleteButton}</span></button>
+                                <button class="cleanplaats-alerts-text-btn cleanplaats-alerts-text-btn-danger cleanplaats-alerts-delete" data-alert-id="${alert.id}" data-alert-label="${escapeHtmlText(alert.label)}">${alertIcon('trash', 14)}<span>${ALERTS_TEXT.deleteButton}</span></button>
                             </span>
                         </div>
                     </div>
@@ -2457,7 +2453,7 @@ function renderAlertsDashboard(me, alerts, matches) {
                 <button type="button" class="cleanplaats-alerts-identity" id="cleanplaats-alerts-account-bar" aria-label="${ALERTS_TEXT.accountOpen}">
                     <span class="cleanplaats-alerts-identity-avatar">${alertIcon('user', 16)}</span>
                     <span class="cleanplaats-alerts-identity-copy">
-                        <span class="cleanplaats-alerts-identity-email" title="${escapeAlertText(me.email)}">${escapeAlertText(me.email)}</span>
+                        <span class="cleanplaats-alerts-identity-email" title="${escapeHtmlText(me.email)}">${escapeHtmlText(me.email)}</span>
                         <span class="cleanplaats-alerts-identity-tier${me.tier === 'premium' ? ' is-premium' : ''}">${tierLabel}</span>
                     </span>
                     <span class="cleanplaats-alerts-identity-chevron" aria-hidden="true">${alertIcon('chevron', 15)}</span>
@@ -3214,8 +3210,8 @@ function showAlertsWalkthroughStep(index) {
     bubble.className = 'cleanplaats-alerts-walk-bubble';
     bubble.id = 'cleanplaats-alerts-walk-bubble';
     bubble.innerHTML = DOMPurify.sanitize(`
-        <div class="cleanplaats-alerts-walk-title">${escapeAlertText(step.title)}</div>
-        <div class="cleanplaats-alerts-walk-body">${escapeAlertText(step.body)}</div>
+        <div class="cleanplaats-alerts-walk-title">${escapeHtmlText(step.title)}</div>
+        <div class="cleanplaats-alerts-walk-body">${escapeHtmlText(step.body)}</div>
         <div class="cleanplaats-alerts-walk-actions">
             <span class="cleanplaats-alerts-walk-counter">${ALERTS_WALKTHROUGH_TEXT.counter(index + 1, steps.length)}</span>
             <button type="button" class="cleanplaats-alerts-walk-skip" id="cleanplaats-alerts-walk-skip">${ALERTS_WALKTHROUGH_TEXT.skip}</button>

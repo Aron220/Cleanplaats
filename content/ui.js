@@ -1056,8 +1056,8 @@ function setupEventListeners() {
         });
     }
 
-    setupResultsDropdownListener();
-    setupSortDropdownListener();
+    setupReloadingDropdownListener('cleanplaats-results-dropdown', 'resultsPerPage', value => parseInt(value, 10));
+    setupReloadingDropdownListener('cleanplaats-sort-dropdown', 'defaultSortMode');
     setupMarketplaceSortSync();
 }
 
@@ -1139,36 +1139,22 @@ function applySettings() {
         });
 }
 
-function setupResultsDropdownListener() {
-    const dropdown = document.getElementById('cleanplaats-results-dropdown');
+/**
+ * Both search dropdowns change what the *server* returns, so unlike the
+ * checkboxes they cannot be applied to the page already in front of the user:
+ * the setting is saved and the page reloaded. The second of delay leaves the
+ * "Opgeslagen" feedback visible long enough to be read before it goes.
+ *
+ * @param {string} elementId - id of the <select> in the panel
+ * @param {string} settingKey - CLEANPLAATS.settings key it writes
+ * @param {(value: string) => *} [parseValue] - defaults to the raw string
+ */
+function setupReloadingDropdownListener(elementId, settingKey, parseValue) {
+    const dropdown = document.getElementById(elementId);
     if (!dropdown) return;
 
     dropdown.addEventListener('change', (e) => {
-        const value = parseInt(e.target.value, 10);
-
-        CLEANPLAATS.settings.resultsPerPage = value;
-        wakeUpBackground();
-
-        saveSettings().then(() => {
-            showSettingFeedback();
-
-            if (isSearchResultsPage()) {
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            }
-        });
-    });
-}
-
-function setupSortDropdownListener() {
-    const dropdown = document.getElementById('cleanplaats-sort-dropdown');
-    if (!dropdown) return;
-
-    dropdown.addEventListener('change', (e) => {
-        const value = e.target.value;
-
-        CLEANPLAATS.settings.defaultSortMode = value;
+        CLEANPLAATS.settings[settingKey] = parseValue ? parseValue(e.target.value) : e.target.value;
         wakeUpBackground();
 
         saveSettings().then(() => {
