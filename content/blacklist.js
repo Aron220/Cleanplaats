@@ -34,8 +34,8 @@ function showTermsModal(triggerButton) {
             <ul id="cleanplaats-terms-list">
                 ${titleTerms.length === 0 ? `<li><em>${panelText.termsEmpty}</em></li>` : titleTerms.map(term => `
                     <li>
-                        <span>${term}</span>
-                        <button class="cleanplaats-unblacklist-term-btn" data-term="${term}">${panelText.hiddenButton}</button>
+                        <span>${escapeHtmlText(term)}</span>
+                        <button class="cleanplaats-unblacklist-term-btn" data-term="${escapeHtmlText(term)}">${panelText.hiddenButton}</button>
                     </li>
                 `).join('')}
             </ul>
@@ -50,8 +50,8 @@ function showTermsModal(triggerButton) {
                 <ul id="cleanplaats-description-terms-list">
                     ${descTerms.length === 0 ? `<li><em>${panelText.descriptionTermsEmpty}</em></li>` : descTerms.map(term => `
                         <li>
-                            <span>${term}</span>
-                            <button class="cleanplaats-unblacklist-description-term-btn" data-term="${term}">${panelText.hiddenButton}</button>
+                            <span>${escapeHtmlText(term)}</span>
+                            <button class="cleanplaats-unblacklist-description-term-btn" data-term="${escapeHtmlText(term)}">${panelText.hiddenButton}</button>
                         </li>
                     `).join('')}
                 </ul>
@@ -134,8 +134,8 @@ function updateTermsModal() {
                 ? `<li><em>${panelText.termsEmpty}</em></li>`
                 : CLEANPLAATS.settings.blacklistedTerms.map(term => `
                     <li>
-                        <span>${term}</span>
-                        <button class="cleanplaats-unblacklist-term-btn" data-term="${term}">${panelText.hiddenButton}</button>
+                        <span>${escapeHtmlText(term)}</span>
+                        <button class="cleanplaats-unblacklist-term-btn" data-term="${escapeHtmlText(term)}">${panelText.hiddenButton}</button>
                     </li>
                 `).join('')
         );
@@ -149,8 +149,8 @@ function updateTermsModal() {
                 ? `<li><em>${panelText.descriptionTermsEmpty}</em></li>`
                 : CLEANPLAATS.settings.blacklistedDescriptionTerms.map(term => `
                     <li>
-                        <span>${term}</span>
-                        <button class="cleanplaats-unblacklist-description-term-btn" data-term="${term}">${panelText.hiddenButton}</button>
+                        <span>${escapeHtmlText(term)}</span>
+                        <button class="cleanplaats-unblacklist-description-term-btn" data-term="${escapeHtmlText(term)}">${panelText.hiddenButton}</button>
                     </li>
                 `).join('')
         );
@@ -762,8 +762,8 @@ function showBlockedListingsModal(triggerButton) {
             <ul id="cleanplaats-blocked-listings-list">
                 ${listings.length === 0 ? `<li><em>${panelText.blockedListingsEmpty}</em></li>` : listings.map(item => `
                     <li>
-                        <span>${item.title || item.id}</span>
-                        <button class="cleanplaats-unblock-listing-btn" data-listing-id="${item.id}">${panelText.hiddenButton}</button>
+                        <span>${escapeHtmlText(item.title || item.id)}</span>
+                        <button class="cleanplaats-unblock-listing-btn" data-listing-id="${escapeHtmlText(item.id)}">${panelText.hiddenButton}</button>
                     </li>
                 `).join('')}
             </ul>
@@ -799,8 +799,8 @@ function updateBlockedListingsModal() {
                 ? `<li><em>${panelText.blockedListingsEmpty}</em></li>`
                 : listings.map(item => `
                     <li>
-                        <span>${item.title || item.id}</span>
-                        <button class="cleanplaats-unblock-listing-btn" data-listing-id="${item.id}">${panelText.hiddenButton}</button>
+                        <span>${escapeHtmlText(item.title || item.id)}</span>
+                        <button class="cleanplaats-unblock-listing-btn" data-listing-id="${escapeHtmlText(item.id)}">${panelText.hiddenButton}</button>
                     </li>
                 `).join('')
         );
