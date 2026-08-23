@@ -369,10 +369,12 @@ var ALERTS_TEXT = {
     pricingFeatureOneClick: 'Zoekopdracht aanzetten vanaf je Marktplaats-zoekresultaten',
     pricingFeatureFeed: 'Overzicht van alle gevonden advertenties',
 
-    // Filters are pushed to the server on every dashboard load. When that is
-    // refused the alerts keep running with the last set that did fit, which is
-    // exactly the kind of thing that must not fail quietly.
-    filtersTooLargeToast: 'Je blokkeerlijsten zijn te groot om mee te sturen. Je zoekopdrachten gebruiken nu een oudere versie.'
+    // Filters are pushed to the server on every dashboard load. Both ways that
+    // can go wrong leave the alerts filtering on something other than what the
+    // panel shows, which is exactly the kind of thing that must not fail
+    // quietly.
+    filtersTooLargeToast: 'Je blokkeerlijsten zijn te groot om mee te sturen. Je zoekopdrachten gebruiken nu een oudere versie.',
+    filtersTrimmedToast: count => `Je blokkeerlijsten zijn erg lang. Je zoekopdrachten gebruiken de eerste ${count} per lijst.`
 };
 
 /**
@@ -749,6 +751,26 @@ function storeAlertsSummary(alerts, matches) {
     }
 }
 
+/**
+ * Closing the panel means the matches it just showed have been read, and the
+ * visit the server stamped on open says so too. Zeroing the stored count keeps
+ * the card in step with that, instead of repeating the same number until the
+ * next dashboard load.
+ */
+function clearStoredNewMatchCount() {
+    if (typeof CLEANPLAATS === 'undefined' || !CLEANPLAATS.settings) return;
+
+    const summary = CLEANPLAATS.settings.alertsSummary;
+    if (!summary || !summary.newMatchCount) return;
+
+    summary.newMatchCount = 0;
+    if (typeof saveSettings === 'function') {
+        saveSettings().catch(error => {
+            console.error('Cleanplaats: Failed to clear alerts summary badge', error);
+        });
+    }
+}
+
 function initAlertsRuntime() {
     return new Promise(resolve => {
         browserAPI.storage.local.get([CLEANPLAATS_ALERTS_TOKEN_KEY, CLEANPLAATS_ALERTS_API_BASE_KEY], items => {
@@ -781,10 +803,42 @@ function alertsApiFetch(path, options = {}) {
             if (!response.ok) {
                 const error = new Error(data.error || `Alerts API error ${response.status}`);
                 error.status = response.status;
+                if (response.status === 401) {
+                    error.sessionExpired = true;
+                    handleExpiredAlertsSession();
+                }
                 throw error;
             }
             return data;
         }));
+}
+
+/**
+ * The server answers 401 from one place only: the session gate that every
+ * logged-in route sits behind. It can therefore never mean "wrong login code"
+ * (the auth routes run before the gate and answer 400), only "this token is no
+ * longer a session". That makes it something the panel can answer once, here,
+ * instead of at each of the twenty call sites: drop the token and put the login
+ * view back. Callers get the rejection either way, marked so they can tell an
+ * answered session expiry from a failure they still have to explain.
+ */
+function handleExpiredAlertsSession() {
+    if (!cleanplaatsAlertsRuntime.token) return;
+    storeAlertsToken('').then(() => {
+        // Filters sync in the background, so a 401 can arrive with no panel on
+        // screen. Nothing to re-render then; the next open starts logged out.
+        if (document.getElementById('cleanplaats-alerts-body')) renderAlertsLoginView();
+    });
+}
+
+/**
+ * Reports a failed call, unless it was the session expiring: that already
+ * replaced the panel with the login view, and a toast about it would land on
+ * top of its own answer.
+ */
+function notifyAlertsError(error, message) {
+    if (error && error.sessionExpired) return;
+    showBubbleNotification(message || ALERTS_TEXT.errorToast);
 }
 
 /**
@@ -865,19 +919,42 @@ function buildAlertFiltersPayload() {
     };
 }
 
+// Said once per page: this runs on every dashboard load, and a list that is
+// too long stays too long until the user shortens it.
+let alertFiltersSizeWarned = false;
+
 function syncAlertFilters() {
+    const filters = buildAlertFiltersPayload();
+    const longestList = Math.max(
+        filters.blacklistedSellers.length,
+        filters.blacklistedTerms.length,
+        filters.blacklistedDescriptionTerms.length,
+        filters.blockedListings.length
+    );
+
     return alertsApiFetch('/api/filters', {
         method: 'PUT',
-        body: JSON.stringify({ filters: buildAlertFiltersPayload() })
+        body: JSON.stringify({ filters })
+    }).then(response => {
+        // Lists that would cost the poller too much are shortened rather than
+        // refused, so a save can succeed and still leave part of a blocklist
+        // behind. The server says how much of each list it kept, and that has
+        // to be passed on: the entries it dropped stop blocking anything, so
+        // ads the panel hides can still arrive as matches.
+        const kept = Number(response && response.maxEntriesPerList);
+        if (!Number.isFinite(kept) || kept <= 0 || longestList <= kept) return;
+        if (alertFiltersSizeWarned) return;
+        alertFiltersSizeWarned = true;
+        showBubbleNotification(ALERTS_TEXT.filtersTrimmedToast(kept));
     }).catch(error => {
         console.error('Cleanplaats: Failed to sync filters to alerts server', error);
-        // 413 is the one failure the user has to know about: their alerts keep
-        // running on an older copy of the blocklists, so ads they have blocked
-        // can still come through. Everything else is a transient network
-        // problem the next dashboard load fixes by itself.
-        if (error && error.status === 413) {
-            showBubbleNotification(ALERTS_TEXT.filtersTooLargeToast);
-        }
+        // A body too big to be read at all comes back as 400, and it is the one
+        // failure the user has to know about: nothing was stored, so the alerts
+        // keep running on an older copy of the blocklists. Everything else is a
+        // transient network problem the next dashboard load fixes by itself.
+        if (!error || error.status !== 400 || alertFiltersSizeWarned) return;
+        alertFiltersSizeWarned = true;
+        showBubbleNotification(ALERTS_TEXT.filtersTooLargeToast);
     });
 }
 
@@ -966,6 +1043,7 @@ function hideAlertsModal() {
     restorePanelAfterAlerts();
     // The card summarises what this session just loaded, so bring it up to date
     // before the panel comes back into view.
+    clearStoredNewMatchCount();
     if (typeof refreshAlertsPromo === 'function') refreshAlertsPromo();
 }
 
@@ -1720,7 +1798,7 @@ function renderAlertsLimitView(alerts) {
                         })
                         .catch(error => {
                             button.disabled = false;
-                            showBubbleNotification((error && error.message) || ALERTS_TEXT.errorToast);
+                            notifyAlertsError(error, error && error.message);
                         });
                 }
             });
@@ -1790,12 +1868,9 @@ function renderAlertMatchesView(alertId) {
         })
         .catch(error => {
             if (cleanplaatsAlertsRuntime.openAlertMatchesId !== String(alert.id)) return;
-            // Same as the dashboard: a session that expired while the panel was
-            // open should land on the login view, not on an error about matches.
-            if (error.status === 401) {
-                storeAlertsToken('').then(() => renderAlertsLoginView());
-                return;
-            }
+            // A session that expired while the panel was open already put the
+            // login view back, so there is nothing to say about matches.
+            if (error.sessionExpired) return;
             console.error('Cleanplaats: Failed to load matches for alert', error);
             const errorBody = setAlertsBody(`
                 ${header}
@@ -1867,7 +1942,7 @@ function wireAlertsUpgradeButton() {
             }).catch(error => {
                 button.disabled = false;
                 button.textContent = ALERTS_TEXT.upgradeButton;
-                showBubbleNotification((error && error.message) || ALERTS_TEXT.errorToast);
+                notifyAlertsError(error, error && error.message);
             });
         };
     }
@@ -1888,7 +1963,7 @@ function wireAlertsUpgradeButton() {
                 .catch(error => {
                     withdraw.disabled = false;
                     withdraw.textContent = ALERTS_TEXT.upgradeWithdraw;
-                    showBubbleNotification((error && error.message) || ALERTS_TEXT.errorToast);
+                    notifyAlertsError(error, error && error.message);
                 });
         };
     }
@@ -1975,10 +2050,7 @@ function loadAlertsDashboard() {
         setAlertsBusy(false);
     }).catch(error => {
         setAlertsBusy(false);
-        if (error.status === 401) {
-            storeAlertsToken('').then(() => renderAlertsLoginView());
-            return;
-        }
+        if (error.sessionExpired) return;
         console.error('Cleanplaats: Failed to load alerts', error);
         setAlertsBody(`<div class="cleanplaats-alerts-loading">${ALERTS_TEXT.errorToast}</div>`);
     });
@@ -2716,7 +2788,7 @@ function wireAlertsRowControls(main) {
                             showBubbleNotification(ALERTS_TEXT.deletedToast);
                             loadAlertsDashboard();
                         })
-                        .catch(error => showBubbleNotification((error && error.message) || ALERTS_TEXT.errorToast));
+                        .catch(error => notifyAlertsError(error, error && error.message));
                 }
             });
         };
@@ -2734,7 +2806,7 @@ function wireAlertsRowControls(main) {
                 // row is repainted from the server's answer rather than from
                 // the one value this button knows about.
                 applyAlertRowState(main, alertId, response, { enabled: nextEnabled });
-            }).catch(() => showBubbleNotification(ALERTS_TEXT.errorToast));
+            }).catch(error => notifyAlertsError(error));
         };
     });
 
@@ -2748,9 +2820,9 @@ function wireAlertsRowControls(main) {
             }).then(() => {
                 showBubbleNotification(wasExpired ? ALERTS_TEXT.reactivatedToast : ALERTS_TEXT.extendedToast);
                 loadAlertsDashboard();
-            }).catch(() => {
+            }).catch(error => {
                 button.disabled = false;
-                showBubbleNotification(ALERTS_TEXT.errorToast);
+                notifyAlertsError(error);
             });
         };
     });
@@ -2779,7 +2851,7 @@ function wireAlertsRowControls(main) {
                 body: JSON.stringify({ notifyTelegram: next })
             }).then(response => {
                 applyAlertRowState(main, alertId, response, { notifyTelegram: next });
-            }).catch(() => showBubbleNotification(ALERTS_TEXT.errorToast));
+            }).catch(error => notifyAlertsError(error));
 
             if (!alsoPauses) {
                 send();
@@ -2894,7 +2966,7 @@ function wireAlertsTelegramButtons() {
                             showBubbleNotification(ALERTS_TEXT.telegramUnlinkedToast);
                             loadAlertsDashboard();
                         })
-                        .catch(() => showBubbleNotification(ALERTS_TEXT.errorToast));
+                        .catch(error => notifyAlertsError(error));
                 }
             });
         };
@@ -2907,13 +2979,34 @@ function wireAlertsTelegramButtons() {
             test.textContent = ALERTS_TEXT.telegramTestSending;
             alertsApiFetch('/api/telegram/test', { method: 'POST' })
                 .then(() => showBubbleNotification(ALERTS_TEXT.telegramTestToast))
-                .catch(error => showBubbleNotification((error && error.message) || ALERTS_TEXT.errorToast))
+                .catch(error => notifyAlertsError(error, error && error.message))
                 .then(() => {
                     if (!test.isConnected) return;
                     test.disabled = false;
                     test.textContent = ALERTS_TEXT.telegramTestButton;
                 });
         };
+    }
+}
+
+/**
+ * Collapsed, a filter block shows nothing but a count, so that count has to be
+ * painted from the boxes themselves: once when a change is made, and again when
+ * a failed save puts a tick back.
+ */
+function paintAlertFilterCount(block) {
+    const countEl = block.querySelector('.cleanplaats-alerts-filter-count');
+    if (!countEl) return;
+
+    const activeCount = [...block.querySelectorAll('.cleanplaats-alerts-filter-opt input[type="checkbox"]')]
+        .filter(cb => cb.checked).length;
+
+    if (activeCount > 0) {
+        countEl.textContent = ALERTS_TEXT.filterCountActive(activeCount);
+        countEl.classList.remove('cleanplaats-alerts-filter-count-zero');
+    } else {
+        countEl.textContent = ALERTS_TEXT.filterNoneActive;
+        countEl.classList.add('cleanplaats-alerts-filter-count-zero');
     }
 }
 
@@ -2948,17 +3041,7 @@ function wireAlertFilterControls(body) {
             });
 
             // Update the collapsed summary count immediately.
-            const activeCount = Object.values(filters).filter(Boolean).length;
-            const countEl = block.querySelector('.cleanplaats-alerts-filter-count');
-            if (countEl) {
-                if (activeCount > 0) {
-                    countEl.textContent = ALERTS_TEXT.filterCountActive(activeCount);
-                    countEl.classList.remove('cleanplaats-alerts-filter-count-zero');
-                } else {
-                    countEl.textContent = ALERTS_TEXT.filterNoneActive;
-                    countEl.classList.add('cleanplaats-alerts-filter-count-zero');
-                }
-            }
+            paintAlertFilterCount(block);
 
             checkbox.disabled = true;
             alertsApiFetch(`/api/alerts/${alertId}`, {
@@ -2966,10 +3049,14 @@ function wireAlertFilterControls(body) {
                 body: JSON.stringify({ filters })
             }).then(() => {
                 checkbox.disabled = false;
-            }).catch(() => {
+            }).catch(error => {
                 checkbox.disabled = false;
                 checkbox.checked = !checkbox.checked;
-                showBubbleNotification(ALERTS_TEXT.errorToast);
+                // The tick went back, so the count has to go back with it, or the
+                // collapsed block keeps reporting the filter set the save failed
+                // to make.
+                paintAlertFilterCount(block);
+                notifyAlertsError(error);
             });
         });
     });
