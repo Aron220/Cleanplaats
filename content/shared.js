@@ -51,6 +51,17 @@ function isMarktplaatsSite() {
     return location.hostname.includes('marktplaats.nl');
 }
 
+/**
+ * Which of the supported sites this page is, as the key the alerts server
+ * stores on a zoekopdracht. Empty on anything else.
+ */
+function getCleanplaatsSiteKey() {
+    if (location.hostname.includes('marktplaats.nl')) return 'marktplaats';
+    if (location.hostname.includes('2dehands.be')) return '2dehands';
+    if (location.hostname.includes('2ememain.be')) return '2ememain';
+    return '';
+}
+
 function isProductDetailPage() {
     return /\/v\//.test(window.location.pathname);
 }
@@ -612,8 +623,10 @@ function getPanelLocaleText() {
         emptyPageSearching: 'Zoeken…',
         emptyPageNotFound: 'Geen pagina met zichtbare advertenties gevonden.',
         emptyPageSearchUnavailable: 'Zoeken lukt niet voor deze zoekopdracht.',
-        // Other alert strings live in content/alerts.js (ALERTS_TEXT): the
-        // feature is Marktplaats-only, so it isn't translated per locale.
+        // Other alert strings live in content/alerts.js (ALERTS_TEXT). Both
+        // sites that offer the feature are Dutch-language, so there is no
+        // French copy yet; that is also what keeps it off 2ememain, see
+        // CLEANPLAATS_ALERT_SITES.
         alertsManageButton: 'Zoekopdrachten',
         alertsPromoNewBadge: 'NIEUW',
         alertsPromoIntroText: 'Laat Cleanplaats voor je zoeken. Je krijgt een bericht zodra er een nieuwe advertentie verschijnt, ook als je browser dicht is.',

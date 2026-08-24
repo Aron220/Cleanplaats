@@ -4533,6 +4533,21 @@
     color: #e8710a;
   }
 
+  /* Only on rows from a site other than the one you are looking at, so it
+     stays a rare marker rather than a label on every row. */
+  .cleanplaats-alerts-site-badge {
+    flex: none;
+    padding: 1px 7px;
+    border-radius: 999px;
+    border: 1px solid #d5dbe4;
+    background: #f6f8fa;
+    color: #5b6675;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+
   .cleanplaats-alerts-match-badge {
     flex: none;
     padding: 2px 9px;
@@ -5513,6 +5528,12 @@
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-match-price {
     color: #dde4ee;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-site-badge {
+    background: #1b2536;
+    border-color: #2c3a51;
+    color: #9daabd;
   }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-match-badge {

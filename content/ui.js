@@ -8,7 +8,13 @@
 const CLEANPLAATS_ALERTS_FEATURE_ENABLED = true;
 
 function isAlertsEntryPointVisible() {
-    return CLEANPLAATS_ALERTS_FEATURE_ENABLED && isMarktplaatsSite();
+    // Which sites the feature runs on is decided in content/alerts.js, next to
+    // the copy that has to exist for each of them. Guarded because that file
+    // being absent from the manifest is the other half of the kill switch
+    // above, and a missing helper should hide the entry point, not throw.
+    return CLEANPLAATS_ALERTS_FEATURE_ENABLED
+        && typeof isAlertsSiteSupported === 'function'
+        && isAlertsSiteSupported();
 }
 
 /**

@@ -1,11 +1,11 @@
 /**
- * Cleanplaats zoekopdrachten (search alerts) — Marktplaats only.
+ * Cleanplaats zoekopdrachten (search alerts).
  *
  * The extension is only the UI: alerts live on the Cleanplaats Alerts server
- * (see server/README.md), which polls Marktplaats around the clock and
- * notifies via e-mail/Telegram. Auth is an e-mail account with passwordless
- * login codes; this device stores a session token, so alerts and premium
- * follow the account across devices.
+ * (see server/README.md), which polls the site around the clock and notifies
+ * via e-mail/Telegram. Auth is an e-mail account with passwordless login
+ * codes; this device stores a session token, so alerts and premium follow the
+ * account across devices.
  *
  * The UI is a full-screen overlay (not the small panel popup): it renders a
  * login view, then a dashboard with stats, alert cards and a match feed.
@@ -21,6 +21,44 @@ var CLEANPLAATS_ALERTS_API_BASE_KEY = 'cleanplaatsAlertsApiBase';
 // when a list is showing everything versus only the most recent slice; if the
 // two ever drift the note is slightly off, nothing breaks.
 var ALERT_MATCHES_PAGE_SIZE = 60;
+
+/**
+ * The sites you can make a zoekopdracht on, and how each one is named and
+ * linked. The server understands 2ememain as well, but it stays out of here
+ * until the panel has French copy to show: a Dutch alerts modal inside a
+ * French site is worse than not offering it yet.
+ *
+ * An account is not tied to a site, so a zoekopdracht made on one site shows
+ * up in the panel on the other. buildAlertsTableHtml() badges those rows
+ * rather than hiding them: filtering them out makes an alert someone is still
+ * paying attention to look deleted.
+ */
+var CLEANPLAATS_ALERT_SITES = {
+    marktplaats: { origin: 'https://www.marktplaats.nl', name: 'Marktplaats' },
+    '2dehands': { origin: 'https://www.2dehands.be', name: '2dehands' },
+    '2ememain': { origin: 'https://www.2ememain.be', name: '2ememain', comingSoon: true }
+};
+
+function isAlertsSiteSupported() {
+    const site = CLEANPLAATS_ALERT_SITES[getCleanplaatsSiteKey()];
+    return Boolean(site) && !site.comingSoon;
+}
+
+// The site this page is on, falling back to Marktplaats so the copy still reads
+// as a sentence if this ever runs somewhere unexpected.
+function getAlertsSiteName(siteKey) {
+    const site = CLEANPLAATS_ALERT_SITES[siteKey || getCleanplaatsSiteKey()];
+    return site ? site.name : CLEANPLAATS_ALERT_SITES.marktplaats.name;
+}
+
+function getAlertsSiteOrigin(siteKey) {
+    const site = CLEANPLAATS_ALERT_SITES[siteKey || getCleanplaatsSiteKey()];
+    return site ? site.origin : CLEANPLAATS_ALERT_SITES.marktplaats.origin;
+}
+
+// Fixed for the lifetime of the page, and read from ALERTS_TEXT below, so it is
+// resolved once here rather than at every use.
+var CLEANPLAATS_ALERTS_SITE_NAME = getAlertsSiteName();
 
 var cleanplaatsAlertsRuntime = {
     token: '',
@@ -73,7 +111,7 @@ var ALERTS_TEXT = {
     // Login: what it does first, the e-mail field second. Asking for an address
     // before showing anything is how you lose people who were only curious.
     loginTitle: 'Zoek verder terwijl je iets anders doet',
-    loginIntro: 'Cleanplaats blijft op Marktplaats zoeken zodra jij weg bent, en stuurt je een bericht als er iets nieuws verschijnt.',
+    loginIntro: `Cleanplaats blijft op ${CLEANPLAATS_ALERTS_SITE_NAME} zoeken zodra jij weg bent, en stuurt je een bericht als er iets nieuws verschijnt.`,
     loginBullets: [
         { icon: 'zap', text: 'Bericht binnen enkele minuten nadat een advertentie geplaatst is' },
         { icon: 'send', text: 'Via Telegram, dus ook als je browser dicht is' },
@@ -117,7 +155,7 @@ var ALERTS_TEXT = {
     createBroadWarning: count => `Deze zoekopdracht is breed: ${count.toLocaleString('nl-NL')} advertenties. ` +
         'Je krijgt er waarschijnlijk veel meldingen van. Verfijn hem eerst met een prijs, categorie of afstand.',
     listTitle: 'Jouw zoekopdrachten',
-    empty: 'Je hebt nog geen zoekopdrachten. Zoek iets op Marktplaats en zet je eerste zoekopdracht aan.',
+    empty: `Je hebt nog geen zoekopdrachten. Zoek iets op ${CLEANPLAATS_ALERTS_SITE_NAME} en zet je eerste zoekopdracht aan.`,
     deleteButton: 'Verwijder',
     deleteConfirmTitle: 'Zoekopdracht verwijderen?',
     deleteConfirmBody: label => `"${label}" stopt met zoeken en de gevonden advertenties verdwijnen uit je overzicht.`,
@@ -272,7 +310,7 @@ var ALERTS_TEXT = {
     stripRunning: n => `${n} ${n === 1 ? 'zoekopdracht loopt' : 'zoekopdrachten lopen'}`,
     stripIdle: 'Er loopt nu geen zoekopdracht, dus er komt niets binnen.',
     stripUnlinked: 'Telegram is niet gekoppeld, dus er wordt niets naar je verstuurd.',
-    stripFailing: 'We kunnen Marktplaats even niet bereiken. Zodra dat weer lukt, gaat het zoeken door.',
+    stripFailing: `We kunnen ${CLEANPLAATS_ALERTS_SITE_NAME} even niet bereiken. Zodra dat weer lukt, gaat het zoeken door.`,
 
     // Table headers on the Zoekopdrachten view.
     tableName: 'Zoekopdracht',
@@ -296,7 +334,7 @@ var ALERTS_TEXT = {
     setupAccountTitle: 'Account gemaakt',
     setupAccountBody: 'Je zoekopdrachten volgen je e-mailadres, ook op een ander apparaat.',
     setupAlertTitle: 'Zet je eerste zoekopdracht aan',
-    setupAlertBody: 'Zoek iets op Marktplaats en vul de zoekterm hieronder in. Je categorie, locatie en afstand gaan mee.',
+    setupAlertBody: `Zoek iets op ${CLEANPLAATS_ALERTS_SITE_NAME} en vul de zoekterm hieronder in. Je categorie, locatie en afstand gaan mee.`,
     setupAlertBodyDone: n => `Je hebt ${n} ${n === 1 ? 'zoekopdracht' : 'zoekopdrachten'} lopen.`,
     setupTelegramTitle: 'Koppel Telegram',
     // Says what actually happens: without a linked chat the server stops
@@ -324,7 +362,10 @@ var ALERTS_TEXT = {
     // Per-alert match view — the shared feed, narrowed to one search.
     alertMatchesOpen: label => `Bekijk de gevonden advertenties van ${label}`,
     alertMatchesTitle: 'Gevonden advertenties',
-    alertMatchesSearchLink: 'Open deze zoekopdracht op Marktplaats',
+    alertMatchesSearchLink: siteName => `Open deze zoekopdracht op ${siteName}`,
+    // Shown on a row belonging to another site, so a zoekopdracht made on
+    // 2dehands is recognisable as such from the Marktplaats panel.
+    alertOtherSiteTitle: siteName => `Deze zoekopdracht loopt op ${siteName}`,
     alertMatchesEmpty: 'Deze zoekopdracht heeft nog niets nieuws gevonden. Zodra er een advertentie bij komt die eraan voldoet, zie je die hier.',
     alertMatchesError: 'We konden de advertenties van deze zoekopdracht niet laden. Probeer het zo nog eens.',
     alertMatchesTruncated: n => `Je ziet de ${n} recentste advertenties van deze zoekopdracht.`,
@@ -366,7 +407,7 @@ var ALERTS_TEXT = {
     pricingFeatureTelegram: 'Meldingen via Telegram',
     pricingFeatureFilters: 'Je Cleanplaats-filters werken door in je meldingen',
     pricingFeatureBlocklist: 'Geblokkeerde verkopers en woorden tellen mee',
-    pricingFeatureOneClick: 'Zoekopdracht aanzetten vanaf je Marktplaats-zoekresultaten',
+    pricingFeatureOneClick: `Zoekopdracht aanzetten vanaf je zoekresultaten op ${CLEANPLAATS_ALERTS_SITE_NAME}`,
     pricingFeatureFeed: 'Overzicht van alle gevonden advertenties',
 
     // Filters are pushed to the server on every dashboard load. Both ways that
@@ -845,7 +886,7 @@ function notifyAlertsError(error, message) {
  * on its own schedule.
  */
 function getAlertSearchContext() {
-    if (!isMarktplaatsSite()) return null;
+    if (!isAlertsSiteSupported()) return null;
 
     const href = window.location.href;
     if (!href.includes('/q/') && !href.includes('/l/')) return null;
@@ -893,7 +934,7 @@ function getAlertSearchContext() {
 
     const suggestedLabel = searchParams.query || decodeURIComponent(
         (window.location.pathname.match(/\/[ql]\/([^/]+)/) || [, ''])[1] || ''
-    ).replace(/[-+]/g, ' ').trim() || 'Marktplaats zoekopdracht';
+    ).replace(/[-+]/g, ' ').trim() || `${CLEANPLAATS_ALERTS_SITE_NAME} zoekopdracht`;
 
     return {
         suggestedLabel: suggestedLabel.slice(0, 120),
@@ -1822,7 +1863,7 @@ function renderAlertMatchesView(alertId) {
     cleanplaatsAlertsRuntime.openAlertMatchesId = String(alert.id);
 
     const subtitle = alert.search_url
-        ? `<a class="cleanplaats-alerts-subview-link" href="${escapeHtmlText(alert.search_url)}">${ALERTS_TEXT.alertMatchesSearchLink}</a>`
+        ? `<a class="cleanplaats-alerts-subview-link" href="${escapeHtmlText(alert.search_url)}">${escapeHtmlText(ALERTS_TEXT.alertMatchesSearchLink(getAlertsSiteName(alert.site)))}</a>`
         : '';
     const header = alertsViewHeader(escapeHtmlText(alert.label), subtitle);
 
@@ -2350,6 +2391,8 @@ function buildAlertsTableHtml(alerts, me) {
         return `<div class="cleanplaats-alerts-empty">${ALERTS_TEXT.empty}</div>`;
     }
 
+    const currentSite = getCleanplaatsSiteKey() || 'marktplaats';
+
     const rows = alerts.map(alert => {
         const validity = getAlertValidity(alert);
         const expired = Boolean(validity && validity.expired);
@@ -2359,6 +2402,13 @@ function buildAlertsTableHtml(alerts, me) {
         const label = alert.search_url
             ? `<a href="${escapeHtmlText(alert.search_url)}" class="cleanplaats-alerts-card-label">${escapeHtmlText(alert.label)}</a>`
             : `<span class="cleanplaats-alerts-card-label">${escapeHtmlText(alert.label)}</span>`;
+
+        // Only rows from somewhere else get a badge: naming the site you are
+        // already on would put a label on every row and say nothing.
+        const alertSite = alert.site || 'marktplaats';
+        const siteBadge = alertSite === currentSite
+            ? ''
+            : `<span class="cleanplaats-alerts-site-badge" title="${escapeHtmlText(ALERTS_TEXT.alertOtherSiteTitle(getAlertsSiteName(alertSite)))}">${escapeHtmlText(getAlertsSiteName(alertSite))}</span>`;
 
         const matchCount = alert.match_count || 0;
         const openable = matchCount > 0 || (alert.baseline_count || 0) > 0;
@@ -2391,7 +2441,7 @@ function buildAlertsTableHtml(alerts, me) {
                 <div class="cleanplaats-alerts-row" role="row">
                     <span class="cleanplaats-alerts-cell cleanplaats-alerts-cell-name" role="cell">
                         <span class="cleanplaats-alerts-status-dot" title="${statusClass === 'expired' ? ALERTS_TEXT.validityExpired : (statusClass === 'active' ? ALERTS_TEXT.activeLabel : ALERTS_TEXT.pausedLabel)}"></span>
-                        ${label}
+                        ${label}${siteBadge}
                     </span>
                     <span class="cleanplaats-alerts-cell cleanplaats-alerts-cell-count" role="cell" data-label="${ALERTS_TEXT.tableFound}">${matchCell}</span>
                     <span class="cleanplaats-alerts-cell cleanplaats-alerts-cell-check" role="cell" data-label="${ALERTS_TEXT.tableCheck}"><span class="cleanplaats-alerts-cell-value">${checkText}</span></span>
@@ -2733,12 +2783,21 @@ function wireAlertsCreateBox(main) {
             : { query: term };
         const searchUrl = usesContext
             ? context.searchUrl
-            : `https://www.marktplaats.nl/q/${encodeURIComponent(term).replace(/%20/g, '+')}/`;
+            : `${getAlertsSiteOrigin()}/q/${encodeURIComponent(term).replace(/%20/g, '+')}/`;
 
         createButton.disabled = true;
         alertsApiFetch('/api/alerts', {
             method: 'POST',
-            body: JSON.stringify({ label: term, searchParams, searchUrl, filters: getDefaultAlertFilters() })
+            body: JSON.stringify({
+                label: term,
+                // The site the alert is made on decides where it is polled and
+                // which origin its links carry, so it travels with the search
+                // itself rather than being inferred later.
+                site: getCleanplaatsSiteKey(),
+                searchParams,
+                searchUrl,
+                filters: getDefaultAlertFilters()
+            })
         }).then(() => {
             showBubbleNotification(ALERTS_TEXT.createdToast);
             cleanplaatsAlertsRuntime.view = 'alerts';
