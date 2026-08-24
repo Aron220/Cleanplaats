@@ -1917,7 +1917,7 @@ function renderTelegramConnect(me) {
     const verify = () => {
         const code = input.value.trim();
         if (!/^\d{6}$/.test(code)) {
-            showError('Vul de 6-cijferige code in.');
+            showError(ALERTS_TEXT.codeSixDigits);
             return;
         }
         verifyBtn.disabled = true;
@@ -3462,7 +3462,7 @@ function wireAlertMatchLinks(container) {
    have to sit inside the overlay card, and lifting a target out of it means
    fighting the stacking contexts the dashboard already creates. */
 
-var ALERTS_WALKTHROUGH_TEXT = {
+var ALERTS_WALKTHROUGH_TEXT_NL = {
     skip: 'Overslaan',
     next: 'Volgende',
     done: 'Aan de slag',
@@ -3479,6 +3479,26 @@ var ALERTS_WALKTHROUGH_TEXT = {
     matchesTitle: 'Alles komt hier binnen',
     matchesBody: 'Elke gevonden advertentie verschijnt in deze lijst, met NIEUW ernaast zolang je hem nog niet bekeken hebt.'
 };
+
+var ALERTS_WALKTHROUGH_TEXT_FR = {
+    skip: 'Passer',
+    next: 'Suivant',
+    done: 'C’est parti',
+    counter: (index, total) => `${index} sur ${total}`,
+    loginTitle: 'D’abord un compte',
+    loginBody: 'Votre adresse e-mail est votre compte. Vous y recevez un code de connexion, il n’y a donc pas de mot de passe à retenir.',
+    createTitle: 'Créez votre première recherche',
+    createBody: 'Votre recherche actuelle est déjà remplie, avec les filtres que vous utilisez en ce moment. Un clic et Cleanplaats continue à chercher pour vous.',
+    createBodyPlain: 'Saisissez un terme ici. Si vous le faites depuis une page de résultats, votre recherche et vos filtres sont déjà prêts.',
+    telegramTitle: 'Liez Telegram',
+    telegramBody: 'Vos notifications arrivent via Telegram, même navigateur fermé. Sans liaison, rien ne part.',
+    telegramLinkedTitle: 'Voilà comment vous les recevez',
+    telegramLinkedBody: 'Telegram est lié. Si vous le coupez pour une recherche, celle-ci passe aussi en pause : il n’y a alors plus personne à qui envoyer quoi que ce soit.',
+    matchesTitle: 'Tout arrive ici',
+    matchesBody: 'Chaque annonce trouvée apparaît dans cette liste, avec NOUVEAU à côté tant que vous ne l’avez pas ouverte.'
+};
+
+var ALERTS_WALKTHROUGH_TEXT = is2ememainLocale() ? ALERTS_WALKTHROUGH_TEXT_FR : ALERTS_WALKTHROUGH_TEXT_NL;
 
 function isAlertsWalkthroughArmed() {
     return Boolean(cleanplaatsAlertsRuntime.walkthroughRequested);
