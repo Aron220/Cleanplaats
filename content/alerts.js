@@ -24,9 +24,9 @@ var ALERT_MATCHES_PAGE_SIZE = 60;
 
 /**
  * The sites you can make a zoekopdracht on, and how each one is named and
- * linked. The server understands 2ememain as well, but it stays out of here
- * until the panel has French copy to show: a Dutch alerts modal inside a
- * French site is worse than not offering it yet.
+ * linked. `comingSoon` holds a site back from the entry point while the rest
+ * of it already works, which is what 2ememain sat behind until the panel had
+ * French copy to show.
  *
  * An account is not tied to a site, so a zoekopdracht made on one site shows
  * up in the panel on the other. buildAlertsTableHtml() badges those rows
@@ -36,7 +36,7 @@ var ALERT_MATCHES_PAGE_SIZE = 60;
 var CLEANPLAATS_ALERT_SITES = {
     marktplaats: { origin: 'https://www.marktplaats.nl', name: 'Marktplaats' },
     '2dehands': { origin: 'https://www.2dehands.be', name: '2dehands' },
-    '2ememain': { origin: 'https://www.2ememain.be', name: '2ememain', comingSoon: true }
+    '2ememain': { origin: 'https://www.2ememain.be', name: '2ememain' }
 };
 
 function isAlertsSiteSupported() {
@@ -59,6 +59,20 @@ function getAlertsSiteOrigin(siteKey) {
 // Fixed for the lifetime of the page, and read from ALERTS_TEXT below, so it is
 // resolved once here rather than at every use.
 var CLEANPLAATS_ALERTS_SITE_NAME = getAlertsSiteName();
+
+// The language the panel is written in, which the server is told on every call
+// so its answers come back in the same one.
+var CLEANPLAATS_ALERTS_LANG = is2ememainLocale() ? 'fr' : 'nl';
+
+// Month names have to follow the panel's language, so dates take the site's
+// locale. "14 sept." is what 2ememain itself prints.
+var CLEANPLAATS_ALERTS_DATE_LOCALE = is2ememainLocale() ? 'fr-BE' : 'nl-NL';
+
+// Amounts do not. All three sites render prices as "€ 1.850,00" — dot for
+// thousands, comma for decimals — while fr-BE groups with a space ("1 850,50"),
+// which would read as a foreign number right next to the site's own prices.
+// Checked against a live 2ememain result page, not assumed from the language.
+var CLEANPLAATS_ALERTS_NUMBER_LOCALE = 'nl-NL';
 
 var cleanplaatsAlertsRuntime = {
     token: '',
@@ -103,7 +117,7 @@ var cleanplaatsAlertsRuntime = {
  *   melding      - the Telegram message it sends, never the search itself
  *   gevonden     - what it turned up
  */
-var ALERTS_TEXT = {
+var ALERTS_TEXT_NL = {
     modalTitle: 'Zoekopdrachten',
     tagline: 'Krijg nieuwe advertenties direct in je Telegram, ook als je browser dicht is.',
     intro: 'Krijg een melding zodra er een nieuwe advertentie verschijnt die aan je zoekopdracht voldoet, ook als je browser dicht is. Je Cleanplaats-filters worden automatisch toegepast.',
@@ -141,6 +155,8 @@ var ALERTS_TEXT = {
     codeResending: 'Versturen…',
     codeResent: 'Nieuwe code verstuurd.',
     codeOtherEmail: 'Ander e-mailadres',
+    emailInvalid: 'Vul een geldig e-mailadres in.',
+    codeSixDigits: 'Vul de 6-cijferige code in.',
     logout: 'Uitloggen',
     logoutHint: 'Je logt alleen op dit apparaat uit. Je zoekopdrachten blijven gewoon doorlopen.',
     tierFree: 'Gratis',
@@ -152,7 +168,7 @@ var ALERTS_TEXT = {
     labelPlaceholder: 'Zoekterm, bijv. iphone 15 pro',
     createTermMissing: 'Vul een zoekterm in.',
     createContextHint: 'De filters van je huidige zoekresultaten (categorie, locatie) gaan mee zolang je de zoekterm niet wijzigt.',
-    createBroadWarning: count => `Deze zoekopdracht is breed: ${count.toLocaleString('nl-NL')} advertenties. ` +
+    createBroadWarning: count => `Deze zoekopdracht is breed: ${count.toLocaleString(CLEANPLAATS_ALERTS_NUMBER_LOCALE)} advertenties. ` +
         'Je krijgt er waarschijnlijk veel meldingen van. Verfijn hem eerst met een prijs, categorie of afstand.',
     listTitle: 'Jouw zoekopdrachten',
     empty: `Je hebt nog geen zoekopdrachten. Zoek iets op ${CLEANPLAATS_ALERTS_SITE_NAME} en zet je eerste zoekopdracht aan.`,
@@ -419,6 +435,284 @@ var ALERTS_TEXT = {
 };
 
 /**
+ * The same panel in French, for 2ememain.
+ *
+ * One word per thing here too, mirroring the Dutch:
+ *   recherche    - the saved search we watch, which is also what you switch on
+ *                  here (never "alerte" for the search itself)
+ *   notification - the Telegram message it sends, never the search
+ *   trouvee      - what it turned up
+ */
+var ALERTS_TEXT_FR = {
+    modalTitle: 'Recherches',
+    tagline: 'Recevez les nouvelles annonces directement dans Telegram, même navigateur fermé.',
+    intro: 'Recevez une notification dès qu’une nouvelle annonce correspond à votre recherche, même navigateur fermé. Vos filtres Cleanplaats sont appliqués automatiquement.',
+
+    loginTitle: 'Continuez à chercher pendant que vous faites autre chose',
+    loginIntro: `Cleanplaats continue à chercher sur ${CLEANPLAATS_ALERTS_SITE_NAME} une fois que vous êtes parti, et vous prévient dès que quelque chose de nouveau apparaît.`,
+    loginBullets: [
+        { icon: 'zap', text: 'Un message quelques minutes après la mise en ligne d’une annonce' },
+        { icon: 'send', text: 'Via Telegram, donc même navigateur fermé' },
+        { icon: 'filter', text: 'Vos filtres et blocages Cleanplaats comptent aussi' }
+    ],
+    loginNewTitle: 'Tout juste lancé',
+    loginNewBody: 'Les recherches viennent d’être lancées. ' +
+        'Quelque chose ne fonctionne pas comme prévu ? Écrivez à info@cleanplaats.com et nous le corrigerons.',
+
+    loginFormTitle: 'Créez un compte ou connectez-vous',
+    loginFormHint: 'Gratuit, et sans mot de passe : vous recevez un code de connexion par e-mail.',
+    loginPrivacy: 'Nous utilisons votre adresse e-mail pour vous connecter et y rattacher vos recherches, rien de plus.',
+    loginPrivacyLink: 'Politique de confidentialité',
+    loginTermsLink: 'Conditions',
+    emailPlaceholder: 'votre@email.be',
+    emailButton: 'Envoyer le code',
+    emailSending: 'Envoi…',
+    codeSentTo: email => `Nous avons envoyé un code à 6 chiffres à ${email}.`,
+    codePlaceholder: '000000',
+    codeButton: 'Se connecter',
+    codeChecking: 'Vérification…',
+    codeResend: 'Envoyer un nouveau code',
+    codeResending: 'Envoi…',
+    codeResent: 'Nouveau code envoyé.',
+    codeOtherEmail: 'Autre adresse e-mail',
+    emailInvalid: 'Saisissez une adresse e-mail valide.',
+    codeSixDigits: 'Saisissez le code à 6 chiffres.',
+    logout: 'Se déconnecter',
+    logoutHint: 'Vous vous déconnectez uniquement sur cet appareil. Vos recherches continuent de tourner.',
+    tierFree: 'Gratuit',
+    tierPremium: 'Premium',
+    usageLabel: n => (n === 1 ? 'recherche' : 'recherches'),
+    checkFrequency: m => `Vérifie toutes les ${m} minutes`,
+    createTitle: 'Créer une recherche',
+    createButton: 'Créer la recherche',
+    labelPlaceholder: 'Terme, par ex. iphone 15 pro',
+    createTermMissing: 'Saisissez un terme de recherche.',
+    createContextHint: 'Les filtres de vos résultats actuels (catégorie, lieu) sont repris tant que vous ne modifiez pas le terme.',
+    createBroadWarning: count => `Cette recherche est large : ${count.toLocaleString(CLEANPLAATS_ALERTS_NUMBER_LOCALE)} annonces. ` +
+        'Vous en recevrez probablement beaucoup de notifications. Affinez-la d’abord avec un prix, une catégorie ou une distance.',
+    listTitle: 'Vos recherches',
+    empty: `Vous n’avez pas encore de recherche. Cherchez quelque chose sur ${CLEANPLAATS_ALERTS_SITE_NAME} et activez votre première recherche.`,
+    deleteButton: 'Supprimer',
+    deleteConfirmTitle: 'Supprimer la recherche ?',
+    deleteConfirmBody: label => `"${label}" cesse de chercher et les annonces trouvées disparaissent de votre aperçu.`,
+    deleteConfirmOk: 'Supprimer',
+    confirmCancel: 'Annuler',
+    detailsShow: 'Réglages',
+    detailsHide: 'Réglages',
+    pausedLabel: 'En pause',
+    activeLabel: 'Active',
+    matchCount: count => `${count} trouvée${count === 1 ? '' : 's'}`,
+    lastChecked: 'Dernière vérification',
+    neverChecked: 'Pas encore vérifiée',
+    nextCheckIn: m => `Prochaine vérification dans ${m} minute${m === 1 ? '' : 's'}`,
+    nextCheckSoon: 'Prochaine vérification : bientôt',
+    checkFailing: 'La vérification échoue pour l’instant, nous continuons d’essayer',
+    checkFailingSince: at => `Dernière réussite : ${at}`,
+    checkFailingNever: 'Nous n’avons pas encore réussi à charger cette recherche',
+    refreshButton: 'Actualiser',
+    validityLeft: n => `Expire dans ${n} jour${n === 1 ? '' : 's'}`,
+    validityExpired: 'Expirée',
+    extendButton: 'Prolonger',
+    reactivateButton: 'Réactiver',
+    extendedToast: 'Recherche prolongée.',
+    reactivatedToast: 'Recherche réactivée.',
+    channelTelegram: 'Telegram',
+    matchesTitle: 'Nouveautés trouvées',
+    matchesEmpty: 'Rien n’est encore arrivé. Dès qu’une nouvelle annonce correspond à une de vos recherches, elle apparaît ici.',
+    newBadge: 'NOUVEAU',
+    baselineTitle: n => `Déjà en ligne (${n})`,
+    baselineHint: 'Ces annonces étaient déjà en ligne quand vous avez créé cette recherche. Vous n’en recevez pas de notification.',
+    channelsTitle: 'Comment vous recevez vos notifications',
+    telegramLinked: 'Lié',
+    telegramNotLinked: 'Pas encore lié',
+    telegramLockedHint: 'Liez d’abord Telegram pour recevoir les notifications par ce canal. Cliquez pour lier.',
+    telegramRequiredTitle: 'Vous ne recevez pas encore de notifications',
+    telegramRequiredBody: hours => 'Les notifications passent par Telegram. Sans liaison, nous vérifions une nouvelle recherche ' +
+        `encore ${hours} heures, puis elle s’arrête. Ce que nous trouvons entre-temps reste visible dans ce panneau.`,
+    telegramRequiredButton: 'Lier Telegram',
+    unlinkedStops: h => (h <= 1
+        ? 'S’arrête dans une heure sans Telegram'
+        : `S’arrête dans ${h} heures sans Telegram`),
+    unlinkedStopped: 'Arrêtée jusqu’à ce que vous liiez Telegram',
+    telegramOffPauseTitle: 'La recherche passe en pause',
+    telegramOffPauseBody: 'Telegram est le seul moyen que nous ayons de vous joindre. Si vous le coupez, nous mettons aussi cette recherche en pause, pour ne pas continuer à chercher quelque chose dont vous n’entendrez jamais parler.',
+    telegramOffPauseConfirm: 'Couper et mettre en pause',
+    telegramOffPausedToast: 'Telegram coupé. Cette recherche est maintenant en pause.',
+    telegramOnResumedToast: 'Telegram activé. Cette recherche tourne à nouveau.',
+    telegramTestButton: 'Envoyer une notification de test',
+    telegramTestSending: 'Envoi…',
+    telegramTestToast: 'Notification de test envoyée. Regardez dans Telegram.',
+    telegramTestHint: 'Envie de vérifier que tout marche ? Envoyez-vous une notification de test.',
+    telegramRelink: 'Lier un autre compte',
+    telegramUnlink: 'Délier',
+    telegramUnlinkConfirm: 'Délier Telegram ? Vous ne recevrez plus de notifications par ce canal.',
+    telegramUnlinkedToast: 'Telegram délié.',
+    telegramConnectTitle: 'Lier Telegram',
+    telegramConnectIntro: 'Recevez les nouvelles annonces directement dans votre chat Telegram. Fonctionne aussi si vous n’avez Telegram que sur votre téléphone.',
+    telegramStep1Title: 'Ouvrez notre bot dans Telegram',
+    telegramStep1Body: 'Ouvrez Telegram et cherchez ce bot :',
+    telegramStep1Open: 'Ouvrir dans Telegram',
+    telegramQrTitle: 'Telegram sur votre téléphone ?',
+    telegramQrBody: 'Scannez ce code avec l’appareil photo de votre téléphone, le bot s’ouvre directement.',
+    telegramStep2Title: 'Envoyez le message',
+    telegramStep2Body: 'Appuyez sur Start ou envoyez ce message au bot :',
+    telegramStep3Title: 'Saisissez le code',
+    telegramStep3Body: 'Le bot vous renvoie un code à 6 chiffres. Tapez-le ici :',
+    telegramCodePlaceholder: '123456',
+    telegramVerifyButton: 'Lier',
+    telegramVerifying: 'Liaison…',
+    telegramVerifyError: 'Ce code est incorrect ou expiré. Renvoyez un message au bot pour en obtenir un nouveau.',
+    telegramLinkedToast: 'Telegram lié ! Vous recevez désormais aussi les notifications par ce canal.',
+    telegramBack: 'Retour',
+    telegramCopied: 'Copié',
+    createdToast: 'Recherche créée ! Nous regardons d’abord ce qui est déjà en ligne, ensuite vous recevez une notification dès qu’il y a du nouveau.',
+    deletedToast: 'Recherche supprimée.',
+    errorToast: 'Un problème est survenu lors de la connexion au serveur de notifications.',
+    loading: 'Chargement…',
+    justNow: 'À l’instant',
+    minutesAgo: m => `il y a ${m} min`,
+    hoursAgo: h => `il y a ${h} h`,
+    closeButton: 'Fermer',
+    sortNewest: 'Plus récentes',
+    sortPriceAsc: 'Prix : croissant',
+    sortPriceDesc: 'Prix : décroissant',
+
+    filterButton: 'Filtres',
+    filterEditorTitle: 'Que voulez-vous ignorer ?',
+    filterEditorIntro: 'Cochez les types d’annonces que vous ne voulez pas voir pour cette recherche.',
+    // Matches the wording the Cleanplaats panel already uses on 2ememain, so
+    // the same filter is not called two different things in one product.
+    filterDagtoppers: 'Tops du jour',
+    filterReserved: 'Réservées',
+    filterOpval: 'Autocollants promotionnels',
+    filterCountActive: n => `${n} actif${n === 1 ? '' : 's'}`,
+    filterNoneActive: 'Tout afficher',
+    filterAlwaysExcluded: 'Les pubs au top et les annonces professionnelles ne font jamais l’objet d’une notification.',
+    filterGlobalListsTitle: 'Vendeurs et termes bloqués',
+    filterGlobalListsHint: 'Ils valent pour toutes vos recherches. Vous les gérez dans le panneau Cleanplaats.',
+    filterListSellers: n => `${n} vendeur${n !== 1 ? 's' : ''}`,
+    filterListTerms: n => `${n} terme${n !== 1 ? 's' : ''}`,
+    filterListListings: n => `${n} annonce${n !== 1 ? 's' : ''}`,
+    filterListsNone: 'Aucun blocage défini',
+    filterSavedToast: 'Filtre enregistré.',
+
+    upgradePrice: price => `€ ${price.toFixed(2).replace('.', ',')}`,
+    upgradePerMonth: 'par mois',
+    upgradeSoon: 'Bientôt',
+    upgradeButton: 'Tenez-moi au courant',
+    upgradeSending: 'En cours…',
+    upgradeRegistered: 'Vous êtes sur la liste. Nous vous écrirons dès que Premium existe.',
+    upgradeToast: 'Merci ! Vous aurez de nos nouvelles dès que Premium est disponible.',
+    upgradeWithdraw: 'Finalement, non merci',
+    upgradeWithdrawing: 'En cours…',
+    upgradeWithdrawnToast: 'Vous n’êtes plus sur la liste. Vous ne recevrez rien au sujet de Premium.',
+
+    contactTitle: 'Une question ou un retour ?',
+    contactBody: 'Écrivez à info@cleanplaats.com. Chaque message arrive chez le créateur.',
+    contactAddress: 'info@cleanplaats.com',
+    contactButton: 'Nous écrire',
+
+    navMatches: 'Trouvées',
+    navAlerts: 'Recherches',
+    navTelegram: 'Notifications',
+    matchesSub: 'Tout ce que vos recherches ont trouvé depuis leur démarrage.',
+    alertsSub: max => (max === 1
+        ? 'Une recherche à la fois avec un compte gratuit. Activez-la, coupez-la ou prolongez-la ici.'
+        : `Jusqu’à ${max} recherches à la fois. Activez-les, coupez-les ou prolongez-les ici.`),
+    quotaUpgrade: 'En faire tourner plus à la fois',
+    contactShort: 'Question ou retour',
+
+    stripRunning: n => `${n} recherche${n === 1 ? '' : 's'} en cours`,
+    stripIdle: 'Aucune recherche ne tourne, donc rien n’arrivera.',
+    stripUnlinked: 'Telegram n’est pas lié, donc rien ne vous est envoyé.',
+    stripFailing: `Nous n’arrivons pas à joindre ${CLEANPLAATS_ALERTS_SITE_NAME} pour le moment. Dès que ça remarche, la recherche reprend.`,
+
+    tableName: 'Recherche',
+    tableFound: 'Trouvées',
+    tableCheck: 'Prochaine vérification',
+    tableValidity: 'Valable',
+    tableStatus: 'Statut',
+    detailsChannel: 'Notifications',
+    detailsRemove: 'Supprimer',
+    createAtLimitHint: max => (max === 1
+        ? 'Vous avez déjà une recherche en cours. Supprimez-la d’abord pour en activer une nouvelle.'
+        : 'Vous êtes à votre maximum. Supprimez-en une pour faire de la place.'),
+
+    setupTitle: left => (left === 1 ? 'Encore une étape et c’est prêt' : `Encore ${left === 2 ? 'deux' : left} étapes et c’est prêt`),
+    setupProgress: (done, total) => `${done} sur ${total} terminé${done === 1 ? '' : 's'}`,
+    setupAccountTitle: 'Compte créé',
+    setupAccountBody: 'Vos recherches suivent votre adresse e-mail, même sur un autre appareil.',
+    setupAlertTitle: 'Activez votre première recherche',
+    setupAlertBody: `Cherchez quelque chose sur ${CLEANPLAATS_ALERTS_SITE_NAME} et saisissez le terme ci-dessous. Votre catégorie, votre lieu et votre distance sont repris.`,
+    setupAlertBodyDone: n => `Vous avez ${n} recherche${n === 1 ? '' : 's'} en cours.`,
+    setupTelegramTitle: 'Liez Telegram',
+    setupTelegramBody: hours => `Telegram est la façon dont nous vous joignons. Sans liaison, la vérification s’arrête après ${hours} heures.`,
+    setupTelegramBodyDone: 'Lié. Les notifications arrivent dans votre chat Telegram.',
+    setupTelegramAction: 'Lier',
+
+    accountTitle: 'Mon compte',
+    accountOpen: 'Mon compte',
+    accountEmailLabel: 'Adresse e-mail',
+    accountPlanLabel: 'Formule',
+    accountUsageLabel: 'Recherches',
+    accountIntervalLabel: 'Fréquence de vérification',
+    accountIntervalValue: m => `Toutes les ${m} minutes`,
+    accountValidityLabel: 'Validité',
+    accountValidityValue: d => `${d} jours par recherche`,
+    accountTelegramLabel: 'Telegram',
+    accountSinceLabel: 'Membre depuis',
+    accountPricingLink: 'Voir ce que contient chaque formule',
+    backToAlerts: 'Retour',
+
+    alertMatchesOpen: label => `Voir les annonces trouvées par ${label}`,
+    alertMatchesTitle: 'Annonces trouvées',
+    alertMatchesSearchLink: siteName => `Ouvrir cette recherche sur ${siteName}`,
+    alertOtherSiteTitle: siteName => `Cette recherche tourne sur ${siteName}`,
+    alertMatchesEmpty: 'Cette recherche n’a encore rien trouvé de neuf. Dès qu’une annonce y correspond, elle apparaît ici.',
+    alertMatchesError: 'Nous n’avons pas pu charger les annonces de cette recherche. Réessayez dans un instant.',
+    alertMatchesTruncated: n => `Vous voyez les ${n} annonces les plus récentes de cette recherche.`,
+
+    limitTitle: 'Vous êtes à votre maximum',
+    limitUsage: (used, max) => `${used} recherche${max === 1 ? '' : 's'} sur ${max} utilisée${used === 1 ? '' : 's'}`,
+    limitBody: max => (max === 1
+        ? 'Avec un compte gratuit, une seule recherche tourne à la fois. Supprimez l’actuelle ci-dessous pour faire de la place à la nouvelle.'
+        : `Avec un compte gratuit, vous pouvez faire tourner ${max} recherches à la fois. ` +
+          'Supprimez-en une ci-dessous pour faire de la place à la nouvelle.'),
+    limitListTitle: 'Vos recherches en cours',
+    limitPremiumTitle: 'En faire tourner plus à la fois ?',
+    limitPremiumBody: (plan, freePlan) => `Premium vous donne ${plan.maxAlerts} recherches au lieu de ` +
+        `${freePlan.maxAlerts}, et vérifie toutes les ${plan.intervalMinutes} minutes au lieu de ` +
+        `${freePlan.intervalMinutes}. Ce n’est pas encore disponible et son contenu exact peut encore changer, ` +
+        'mais nous vous préviendrons le moment venu.',
+    limitFreedToast: 'Il y a de la place à nouveau. Activez votre nouvelle recherche.',
+
+    pricingTitle: 'Ce que vous obtenez',
+    pricingIntro: 'Cleanplaats reste gratuit. Premium s’adresse à celles et ceux qui veulent arriver les premiers.',
+    pricingCurrentPlan: 'Votre formule actuelle',
+    pricingFree: 'Gratuit',
+    pricingPremium: 'Premium',
+    pricingPremiumIncludes: 'Tout ce que contient Gratuit, plus :',
+    pricingPremiumProvisional: 'Premium est encore en préparation. Son contenu exact n’est pas fixé et peut encore changer.',
+    pricingFeatureAlerts: n => `${n} recherche${n === 1 ? '' : 's'} à la fois`,
+    pricingFeatureInterval: m => `Vérification toutes les ${m} minutes`,
+    pricingFeatureIntervalFaster: (m, freeM) => `Trois fois plus rapide : toutes les ${m} minutes au lieu de ${freeM}`,
+    pricingFeatureAlertsMore: (n, freeN) => `${n} recherches à la fois au lieu de ${freeN}`,
+    pricingFeatureValidity: d => `${d} jours de validité par recherche`,
+    pricingFeatureValidityLonger: (d, freeD) => `${d} jours de validité au lieu de ${freeD}`,
+    pricingFeatureTelegram: 'Notifications via Telegram',
+    pricingFeatureFilters: 'Vos filtres Cleanplaats s’appliquent à vos notifications',
+    pricingFeatureBlocklist: 'Les vendeurs et termes bloqués comptent aussi',
+    pricingFeatureOneClick: `Activer une recherche depuis vos résultats sur ${CLEANPLAATS_ALERTS_SITE_NAME}`,
+    pricingFeatureFeed: 'Aperçu de toutes les annonces trouvées',
+
+    filtersTooLargeToast: 'Vos listes de blocage sont trop volumineuses pour être envoyées. Vos recherches utilisent pour l’instant une version plus ancienne.',
+    filtersTrimmedToast: count => `Vos listes de blocage sont très longues. Vos recherches utilisent les ${count} premiers éléments de chaque liste.`
+};
+
+// One panel, one language: French on 2ememain, Dutch on the other two.
+var ALERTS_TEXT = is2ememainLocale() ? ALERTS_TEXT_FR : ALERTS_TEXT_NL;
+
+/**
  * The per-alert ad-type toggles. The blacklist *lists* (sellers/terms/blocked
  * listings) are global and managed in the main panel, so they are not here.
  * `setting` maps to the global Cleanplaats setting used as the default when a
@@ -496,7 +790,7 @@ function formatAlertRelativeTime(timestamp) {
     if (diff < 60 * 60 * 1000) return ALERTS_TEXT.minutesAgo(Math.round(diff / 60000));
     if (diff < 24 * 60 * 60 * 1000) return ALERTS_TEXT.hoursAgo(Math.round(diff / 3600000));
     try {
-        return new Date(timestamp).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
+        return new Date(timestamp).toLocaleDateString(CLEANPLAATS_ALERTS_DATE_LOCALE, { day: 'numeric', month: 'short' });
     } catch (error) {
         return '';
     }
@@ -532,7 +826,7 @@ function getAlertValidity(alert) {
 // SEE_DESCRIPTION) — about a third of a result page — so only an amount above
 // zero is a real price. MIN_BID is the exception: its amount is the starting bid.
 // Keep in sync with formatPrice() in the alerts server's src/notify.js.
-var ALERT_PRICE_TYPE_LABELS = {
+var ALERT_PRICE_TYPE_LABELS_NL = {
     FAST_BID: 'Bieden',
     MIN_BID: 'Bieden',
     SEE_DESCRIPTION: 'Zie omschrijving',
@@ -543,17 +837,39 @@ var ALERT_PRICE_TYPE_LABELS = {
     ON_REQUEST: 'Op aanvraag'
 };
 
+// The site's own words, lifted from 2ememain's translation table rather than
+// translated by hand: this label sits where the site prints a price, so a
+// synonym of ours would read as a different thing than the listing says.
+var ALERT_PRICE_TYPE_LABELS_FR = {
+    FAST_BID: 'Faire une offre',
+    MIN_BID: 'Faire une offre',
+    SEE_DESCRIPTION: 'Voir description',
+    NOTK: 'À débattre',
+    FREE: 'Gratuit',
+    RESERVED: 'Réservé',
+    EXCHANGE: 'Échanger',
+    ON_REQUEST: 'Sur demande'
+};
+
+var ALERT_PRICE_TYPE_LABELS = is2ememainLocale() ? ALERT_PRICE_TYPE_LABELS_FR : ALERT_PRICE_TYPE_LABELS_NL;
+
+// "Bieden vanaf € 250" — our own sentence around the site's word for a minimum
+// bid, so it needs its own translation.
+var ALERT_MIN_BID_PREFIX = is2ememainLocale()
+    ? amount => `Offre à partir de ${amount}`
+    : amount => `Bieden vanaf ${amount}`;
+
 function formatAlertMatchPrice(match) {
     if (Number.isFinite(match.price_cents) && match.price_cents > 0) {
         const euros = match.price_cents / 100;
         // Whole euros drop the ",00" the way Marktplaats itself writes them, but
         // both paths go through toLocaleString or a thousands separator would
         // appear on € 1.500 and vanish again on € 1500,50.
-        const amount = `€ ${euros.toLocaleString('nl-NL', {
+        const amount = `€ ${euros.toLocaleString(CLEANPLAATS_ALERTS_NUMBER_LOCALE, {
             minimumFractionDigits: Number.isInteger(euros) ? 0 : 2,
             maximumFractionDigits: 2
         })}`;
-        return match.price_type === 'MIN_BID' ? `Bieden vanaf ${amount}` : amount;
+        return match.price_type === 'MIN_BID' ? ALERT_MIN_BID_PREFIX(amount) : amount;
     }
     return ALERT_PRICE_TYPE_LABELS[match.price_type] || '';
 }
@@ -830,7 +1146,14 @@ function storeAlertsToken(token) {
 }
 
 function alertsApiFetch(path, options = {}) {
-    const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+    const headers = {
+        'Content-Type': 'application/json',
+        // The server answers in the language the panel is drawn in. The account
+        // cannot say which that is: the same user can hold a Dutch and a French
+        // zoekopdracht at once, so it travels with the request.
+        'X-Cleanplaats-Lang': CLEANPLAATS_ALERTS_LANG,
+        ...(options.headers || {})
+    };
     if (cleanplaatsAlertsRuntime.token) {
         headers['Authorization'] = `Bearer ${cleanplaatsAlertsRuntime.token}`;
     }
@@ -1371,7 +1694,7 @@ function renderAlertsLoginView() {
     const send = () => {
         const email = input.value.trim();
         if (!email || !email.includes('@')) {
-            showAlertsInlineError('Vul een geldig e-mailadres in.');
+            showAlertsInlineError(ALERTS_TEXT.emailInvalid);
             return;
         }
         submit.disabled = true;
@@ -1421,7 +1744,7 @@ function renderAlertsCodeView() {
     const verify = () => {
         const code = input.value.trim();
         if (!/^\d{6}$/.test(code)) {
-            showAlertsInlineError('Vul de 6-cijferige code in.');
+            showAlertsInlineError(ALERTS_TEXT.codeSixDigits);
             return;
         }
         submit.disabled = true;
@@ -1639,7 +1962,7 @@ function wireAlertsBackButton() {
 
 function formatAlertsMemberSince(timestamp) {
     if (!timestamp) return 'Onbekend';
-    return new Date(timestamp).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+    return new Date(timestamp).toLocaleDateString(CLEANPLAATS_ALERTS_DATE_LOCALE, { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 function renderAlertsAccountView() {

@@ -497,7 +497,21 @@ function getPanelLocaleText() {
             emptyPageNotFound: 'Aucune page avec des annonces visibles trouvée.',
             emptyPageSearchUnavailable: 'Recherche impossible pour cette recherche.',
             donationNudgeText: count => `Vous avez déjà filtré ${count} fois avec Cleanplaats 🎉 Si cela vous fait gagner du temps, pensez à faire un petit don.`,
-            donationNudgeDismiss: 'Peut-être plus tard'
+            donationNudgeDismiss: 'Peut-être plus tard',
+            // The rest of the alerts copy lives in content/alerts.js
+            // (ALERTS_TEXT_FR). These are the strings the panel itself shows,
+            // so they have to be here alongside the other panel text.
+            alertsManageButton: 'Recherches',
+            alertsPromoNewBadge: 'NOUVEAU',
+            alertsPromoIntroText: 'Laissez Cleanplaats chercher pour vous. Vous recevez un message dès qu’une nouvelle annonce apparaît, même navigateur fermé.',
+            alertsPromoIntroStart: 'Montrez-moi comment',
+            alertsPromoIntroLater: 'Plus tard',
+            alertsPromoTagline: 'Le premier sur une nouvelle annonce',
+            alertsPromoNoAlerts: 'Aucune recherche configurée',
+            alertsPromoActiveCount: n => `${n} recherche${n === 1 ? '' : 's'} active${n === 1 ? '' : 's'}`,
+            alertsPromoNewMatches: n => String(n),
+            alertsPromoAriaLabel: 'Ouvrir les recherches',
+            alertsPromoAriaLabelWithNew: n => `Ouvrir les recherches, ${n} nouvelle${n === 1 ? '' : 's'} annonce${n === 1 ? '' : 's'} trouvée${n === 1 ? '' : 's'}`
         };
     }
 
@@ -623,10 +637,9 @@ function getPanelLocaleText() {
         emptyPageSearching: 'Zoeken…',
         emptyPageNotFound: 'Geen pagina met zichtbare advertenties gevonden.',
         emptyPageSearchUnavailable: 'Zoeken lukt niet voor deze zoekopdracht.',
-        // Other alert strings live in content/alerts.js (ALERTS_TEXT). Both
-        // sites that offer the feature are Dutch-language, so there is no
-        // French copy yet; that is also what keeps it off 2ememain, see
-        // CLEANPLAATS_ALERT_SITES.
+        // Other alert strings live in content/alerts.js, which carries a Dutch
+        // and a French table (ALERTS_TEXT_NL / ALERTS_TEXT_FR) and picks by the
+        // same locale check this function uses.
         alertsManageButton: 'Zoekopdrachten',
         alertsPromoNewBadge: 'NIEUW',
         alertsPromoIntroText: 'Laat Cleanplaats voor je zoeken. Je krijgt een bericht zodra er een nieuwe advertentie verschijnt, ook als je browser dicht is.',
