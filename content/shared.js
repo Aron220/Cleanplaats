@@ -431,6 +431,19 @@ function getPanelLocaleText() {
             showUpdatePopupsLabel: 'Afficher les notifications de mise à jour',
             showUpdatePopupsTooltip: "Affiche une fenêtre 'Quoi de neuf ?' après une mise à jour de Cleanplaats.",
             updatePopupDontShowAgainLabel: 'Ne plus afficher ceci lors des prochaines mises à jour',
+            updatePopupEyebrow: 'Nouvelle mise à jour',
+            updatePopupTitle: version => `Quoi de neuf ? (${version})`,
+            updatePopupCloseButton: 'Super, merci',
+            updatePopupThanksToast: version => `Bonne utilisation de ${version}`,
+            updatePopupFallback: {
+                intro: 'Cleanplaats a reçu une nouvelle mise à jour, avec des améliorations et de l’entretien.',
+                highlights: [
+                    'Diverses améliorations et corrections pour les pages de résultats actuelles.',
+                    'Petits ajustements du panneau et du filtrage.',
+                    'Travail d’entretien pour garder Cleanplaats stable face aux changements du site.'
+                ],
+                note: 'Vous voyez un problème ou avez une idée ? Utilisez le lien GitHub dans le panneau.'
+            },
             darkModeLabel: 'Mode sombre',
             darkModeTooltip: 'Active un thème sombre pour 2ememain et le panneau Cleanplaats. Expérimental: si la visibilité pose problème, désactivez-le.',
             resultsPerPageLabel: 'Résultats par page :',
@@ -572,6 +585,19 @@ function getPanelLocaleText() {
         showUpdatePopupsLabel: 'Toon updatemeldingen',
         showUpdatePopupsTooltip: "Toon na een update van Cleanplaats een 'Wat is er nieuw?'-pop-up.",
         updatePopupDontShowAgainLabel: 'Laat dit niet meer zien bij volgende updates',
+        updatePopupEyebrow: 'Nieuwe update',
+        updatePopupTitle: version => `Wat is er nieuw? (${version})`,
+        updatePopupCloseButton: 'Top, bedankt',
+        updatePopupThanksToast: version => `Veel plezier met ${version}`,
+        updatePopupFallback: {
+            intro: 'Cleanplaats heeft een nieuwe update gekregen met verbeteringen en onderhoud aan de extensie.',
+            highlights: [
+                'Diverse verbeteringen en fixes voor de huidige resultaatpagina’s.',
+                'Kleine verfijningen aan het paneel en de filtering.',
+                'Onderhoudswerk om Cleanplaats stabiel te houden op nieuwe sitewijzigingen.'
+            ],
+            note: 'Zie je een probleem of heb je een idee? Gebruik de GitHub-link in het paneel.'
+        },
         darkModeLabel: 'Donkere modus',
         darkModeTooltip: 'Schakelt een donker thema in voor Marktplaats en het Cleanplaats-paneel. Experimenteel: werkt meestal goed, maar zet het uit als iets slecht leesbaar is.',
         resultsPerPageLabel: 'Resultaten per pagina:',
@@ -735,7 +761,7 @@ var CLEANPLAATS = {
     }
 };
 
-var CLEANPLAATS_UPDATE_NOTES = {
+var CLEANPLAATS_UPDATE_NOTES_NL = {
     '2.1.7': {
         intro: 'Cleanplaats 2.1.7 brengt Zoekopdrachten naar 2dehands en 2ememain. Wat je op Marktplaats al kon, kan nu op alle drie de sites: een zoekopdracht opslaan en een bericht in Telegram krijgen zodra er een nieuwe advertentie voor verschijnt, ook als je browser dicht is.',
         highlights: [
@@ -810,6 +836,87 @@ var CLEANPLAATS_UPDATE_NOTES = {
         note: 'Wil je advertenties met bepaalde woorden in de beschrijving verbergen? Voeg ze toe via "Beheer blacklist-termen".'
     }
 };
+
+var CLEANPLAATS_UPDATE_NOTES_FR = {
+    '2.1.7': {
+        intro: 'Cleanplaats 2.1.7 apporte les Recherches à 2dehands et 2ememain. Ce que vous pouviez déjà faire sur Marktplaats fonctionne maintenant sur les trois sites : enregistrer une recherche et recevoir un message dans Telegram dès qu’une nouvelle annonce y apparaît, même si votre navigateur est fermé.',
+        highlights: [
+            'Nouveau : le bouton "Recherches" se trouve maintenant aussi en haut du panneau sur 2dehands et 2ememain. Lancez une recherche, cliquez dessus, et votre terme de recherche, la catégorie, le lieu et la distance sont repris automatiquement, comme vous en avez l’habitude sur Marktplaats.',
+            'Sur 2ememain, tout est en français : la fenêtre elle-même et les messages que vous recevez dans Telegram. Vous n’avez rien à régler, Cleanplaats suit la langue du site où vous êtes.',
+            'Une recherche retient sur quel site elle tourne. Votre aperçu les montre toutes ensemble, avec une petite étiquette sur les recherches d’un autre site, pour que vous ne deviez pas changer de site afin de voir ce qui tourne.',
+            'Votre compte reste un seul compte : la même connexion, le même lien Telegram et le même nombre de recherches, quel que soit le site parmi les trois.'
+        ],
+        note: 'Les Recherches sur 2dehands et 2ememain sont toutes neuves. Quelque chose ne fonctionne pas comme prévu, ou il vous manque quelque chose ? Écrivez à info@cleanplaats.com, chaque message arrive chez le créateur.'
+    },
+    '2.1.6': {
+        intro: 'Cleanplaats 2.1.6 introduit les Recherches : enregistrez une recherche et recevez un message dans Telegram dès qu’une nouvelle annonce y apparaît, même si votre navigateur est fermé.',
+        highlights: [
+            'Nouveau bouton "Recherches" en haut du panneau. Lancez une recherche sur Marktplaats et cliquez dessus : votre terme de recherche est déjà rempli, et la catégorie, le lieu et la distance de vos résultats actuels sont repris automatiquement.',
+            'Les notifications arrivent via Telegram, donc aussi quand votre navigateur est fermé ou votre ordinateur éteint. Vous liez Telegram une seule fois avec un code à 6 chiffres que le bot vous donne, ou en scannant le QR-code avec votre téléphone.',
+            'Vos filtres Cleanplaats valent aussi pour vos notifications : les tops du jour, les annonces réservées, les autocollants promotionnels ainsi que vos vendeurs et termes masqués en sont automatiquement écartés. Vous ne recevrez jamais de notification pour une pub au top ou une annonce professionnelle.',
+            'Gratuitement, vous faites tourner une recherche, vérifiée toutes les 15 minutes. Si vous ne liez pas Telegram, elle continue de tourner le premier jour et vous voyez les annonces trouvées dans l’aperçu ; ensuite elle s’arrête jusqu’à ce que vous fassiez le lien.'
+        ],
+        note: 'Les Recherches viennent d’être lancées. Quelque chose ne fonctionne pas comme prévu, ou il vous manque quelque chose ? Écrivez à info@cleanplaats.com, chaque message arrive chez le créateur.'
+    },
+    '2.1.5': {
+        intro: 'Cleanplaats 2.1.5 corrige un bug de tri et rend les statistiques et le bouton "Trouver la prochaine page" plus fiables.',
+        highlights: [
+            'Correctif : le tri par défaut pouvait revenir sur "Standard" ou rester bloqué sur un ordre incorrect. Trier via le panneau ou via le site lui-même fonctionne à nouveau de façon cohérente.',
+            'Correctif : "Trouver la prochaine page avec des annonces visibles" vous envoyait vers une mauvaise page pour certaines recherches (un terme de recherche dans une catégorie, ou un tri non standard). Cela fonctionne maintenant de façon fiable, et vous recevez un message clair si la recherche est impossible.',
+            'Les statistiques affichent maintenant des compteurs distincts pour "Réservées" et "Masquées par vous", au lieu de les additionner sous "Autres". Le total est donc à nouveau correct.',
+            'Avec le filtre "Annonces professionnelles" activé, les annonces avec un lien "Visiter le site web" étaient déjà masquées, mais celles de vendeurs professionnels sans ce lien passaient au travers. Elles sont désormais masquées aussi.'
+        ],
+        note: null
+    },
+    '2.1.4': {
+        intro: 'Cleanplaats 2.1.4 est une petite mise à jour d’entretien.',
+        highlights: [
+            'Correctif : la page de résultats pouvait se bloquer sur les formats d’écran mobiles. C’est corrigé.',
+            'Correctif : le bouton "Masquer le vendeur" ne fonctionnait plus parce que la mise en page des annonces avait changé. Il fonctionne à nouveau.',
+            'Correctif : les annonces réservées n’étaient pas toujours masquées dans certains résultats, même avec le filtre "Réservées" activé. C’est corrigé.',
+            'Correctif : un nouveau type d’annonce laissait un carré blanc vide dans la vue en grille. Il est désormais masqué.'
+        ],
+        note: null
+    },
+    '2.1.3': {
+        intro: 'Cleanplaats 2.1.3 corrige un problème important sur Firefox.',
+        highlights: [
+            'Correctif Firefox : le nombre de résultats par page que vous aviez choisi était ignoré dans Firefox (30 résultats étaient toujours affichés). Cela fonctionne maintenant comme dans Chrome.'
+        ],
+        note: null
+    },
+    '2.1.2': {
+        intro: 'Cleanplaats 2.1.2 vous laisse masquer des annonces une par une. Pratique quand vous ne voulez plus voir une offre précise sans bloquer tout le vendeur.',
+        highlights: [
+            'Nouveau bouton "Masquer l’annonce" sur chaque résultat de recherche : masquez une annonce précise en un clic, sans bloquer le vendeur.',
+            'Vous gérez les annonces masquées via "Gérer les annonces masquées" dans le panneau : voyez toutes les annonces masquées et remettez-les facilement.',
+            'Correctif Firefox : le tri par défaut n’était pas toujours appliqué correctement dans Firefox. Cela fonctionne maintenant de façon fiable.',
+            'Mode sombre : la bannière "Trouver la prochaine page" était peu lisible en mode sombre. C’est corrigé.'
+        ],
+        note: null
+    },
+    '2.1.1': {
+        intro: 'Cleanplaats 2.1.0 ajoute un bouton pratique pour trouver rapidement la prochaine page avec des annonces visibles.',
+        highlights: [
+            'Une page entière remplie d’annonces filtrées ? Une bannière apparaît maintenant automatiquement avec le bouton "Trouver la prochaine page avec des annonces visibles". Cleanplaats parcourt les pages suivantes et saute directement à la première page où il y a quelque chose à voir.'
+        ],
+        note: null
+    },
+    '2.0.9': {
+        intro: 'Cleanplaats 2.0.9 étend les termes masqués aux descriptions, ajoute un repère pour les annonces déjà vues et améliore le mode sombre.',
+        highlights: [
+            'Les termes masqués fonctionnent maintenant aussi sur les descriptions d’annonces. Ajoutez-les via "Gérer les termes masqués", sous le titre "Dans la description".',
+            'Les annonces déjà ouvertes reçoivent un repère discret pour que vous les reconnaissiez plus facilement. Vous pouvez l’activer ou le désactiver via les Préférences.',
+            'Le mode sombre couvre maintenant aussi correctement la page d’achat direct.'
+        ],
+        note: 'Vous voulez masquer les annonces contenant certains mots dans la description ? Ajoutez-les via "Gérer les termes masqués".'
+    }
+};
+
+// The pop-up speaks the language of the site it opens on, like the rest of the
+// panel does.
+var CLEANPLAATS_UPDATE_NOTES = is2ememainLocale() ? CLEANPLAATS_UPDATE_NOTES_FR : CLEANPLAATS_UPDATE_NOTES_NL;
+
 
 var MARKTPLAATS_SORT_LABEL_TO_MODE = {
     'standaard': 'standard',

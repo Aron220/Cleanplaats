@@ -66,15 +66,8 @@ function showUpdatePopup(version) {
         existingPopup.remove();
     }
 
-    const updateContent = CLEANPLAATS_UPDATE_NOTES[version] || {
-        intro: 'Cleanplaats heeft een nieuwe update gekregen met verbeteringen en onderhoud aan de extensie.',
-        highlights: [
-            'Diverse verbeteringen en fixes voor de huidige resultaatpagina’s.',
-            'Kleine verfijningen aan het paneel en de filtering.',
-            'Onderhoudswerk om Cleanplaats stabiel te houden op nieuwe sitewijzigingen.'
-        ],
-        note: 'Zie je een probleem of heb je een idee? Gebruik de GitHub-link in het paneel.'
-    };
+    const localeText = getPanelLocaleText();
+    const updateContent = CLEANPLAATS_UPDATE_NOTES[version] || localeText.updatePopupFallback;
 
     const popup = document.createElement('div');
     popup.className = 'cleanplaats-info-overlay cleanplaats-info-overlay--visible';
@@ -91,8 +84,8 @@ function showUpdatePopup(version) {
         <div class="cleanplaats-info-card">
             <div class="cleanplaats-info-header">
                 <img id="cleanplaats-update-popup-logo" class="cleanplaats-info-logo" alt="Cleanplaats">
-                <span class="cleanplaats-info-eyebrow">Nieuwe update</span>
-                <h3 class="cleanplaats-info-title">Wat is er nieuw? (${version})</h3>
+                <span class="cleanplaats-info-eyebrow">${localeText.updatePopupEyebrow}</span>
+                <h3 class="cleanplaats-info-title">${localeText.updatePopupTitle(version)}</h3>
                 <p class="cleanplaats-info-intro">${updateContent.intro}</p>
             </div>
             <ol class="cleanplaats-info-steps">${stepsMarkup}</ol>
@@ -103,11 +96,11 @@ function showUpdatePopup(version) {
                     <span class="cleanplaats-switch-slider"></span>
                 </label>
                 <label for="cleanplaats-update-popup-dont-show-again" class="cleanplaats-option-label">
-                    <span class="cleanplaats-option-label-text">${getPanelLocaleText().updatePopupDontShowAgainLabel}</span>
+                    <span class="cleanplaats-option-label-text">${localeText.updatePopupDontShowAgainLabel}</span>
                 </label>
             </div>
             <div class="cleanplaats-info-footer">
-                <button type="button" id="cleanplaats-update-popup-close" class="cleanplaats-info-button">Top, bedankt</button>
+                <button type="button" id="cleanplaats-update-popup-close" class="cleanplaats-info-button">${localeText.updatePopupCloseButton}</button>
             </div>
         </div>
     `);
@@ -148,7 +141,7 @@ function showUpdatePopup(version) {
             });
         }
 
-        showBubbleNotification(`Veel plezier met ${version}`);
+        showBubbleNotification(localeText.updatePopupThanksToast(version));
     });
 }
 
