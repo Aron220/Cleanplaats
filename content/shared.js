@@ -736,6 +736,16 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES = {
+    '2.1.7': {
+        intro: 'Cleanplaats 2.1.7 brengt Zoekopdrachten naar 2dehands en 2ememain. Wat je op Marktplaats al kon, kan nu op alle drie de sites: een zoekopdracht opslaan en een bericht in Telegram krijgen zodra er een nieuwe advertentie voor verschijnt, ook als je browser dicht is.',
+        highlights: [
+            'Nieuw: de knop "Zoekopdrachten" staat nu ook bovenin het paneel op 2dehands en 2ememain. Zoek daar iets, klik erop, en je zoekterm, categorie, locatie en afstand gaan automatisch mee, net zoals je dat op Marktplaats gewend bent.',
+            'Op 2ememain is alles Frans: het venster zelf en de meldingen die je in Telegram krijgt. Je hoeft niets in te stellen, Cleanplaats volgt de taal van de site waar je bent.',
+            'Een zoekopdracht onthoudt op welke site hij loopt. Je overzicht toont ze alle drie bij elkaar, met een klein label bij de zoekopdrachten van een andere site, zodat je niet hoeft te wisselen om te zien wat er loopt.',
+            'Je account blijft één account: dezelfde login, dezelfde Telegram-koppeling en hetzelfde aantal zoekopdrachten, op welke van de drie sites je ook zit.'
+        ],
+        note: 'Zoekopdrachten op 2dehands en 2ememain zijn splinternieuw. Werkt er iets niet zoals je verwacht, of mis je iets? Mail naar info@cleanplaats.com, elk bericht komt bij de maker terecht.'
+    },
     '2.1.6': {
         intro: 'Cleanplaats 2.1.6 introduceert Zoekopdrachten: sla een zoekopdracht op en krijg een bericht in Telegram zodra er een nieuwe advertentie voor verschijnt, ook als je browser dicht is.',
         highlights: [
