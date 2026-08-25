@@ -69,6 +69,70 @@ function getCollapsedPanelIconUrl() {
     return browserAPI.runtime.getURL(iconPath);
 }
 
+/* hz-web-ui ships its SVG assets as background-image rules on
+   .hz-SvgAsset.hz-SvgAsset<Name> classes, and the filenames carry a build hash we
+   cannot predict. Rendering a throwaway element with the class and reading back the
+   computed background-image lets the page resolve the current hashed URL for us,
+   which keeps working across their rebuilds. getComputedStyle stays readable on a
+   cross-origin stylesheet, unlike cssRules, so this needs no extra permissions. */
+const cleanplaatsNativeAssetUrls = new Map();
+
+function resolveNativeSvgAssetUrl(assetClass) {
+    if (cleanplaatsNativeAssetUrls.has(assetClass)) {
+        return cleanplaatsNativeAssetUrls.get(assetClass);
+    }
+
+    let assetUrl = '';
+
+    try {
+        const probe = document.createElement('span');
+        probe.className = `hz-SvgAsset ${assetClass}`;
+        probe.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:0;height:0;visibility:hidden';
+
+        const host = document.body || document.documentElement;
+        host.appendChild(probe);
+        const backgroundImage = window.getComputedStyle(probe).backgroundImage;
+        probe.remove();
+
+        const match = backgroundImage.match(/url\(["']?(.+?)["']?\)/);
+        if (match) {
+            assetUrl = match[1];
+        }
+    } catch (error) {
+        console.warn('Cleanplaats: Failed to resolve native SVG asset', assetClass, error);
+    }
+
+    // An empty result usually means their stylesheet has not landed yet, so don't
+    // cache it: a later call on the same page should get another chance.
+    if (assetUrl) {
+        cleanplaatsNativeAssetUrls.set(assetClass, assetUrl);
+    }
+
+    return assetUrl;
+}
+
+function getTwhInverseWordmarkUrl() {
+    return resolveNativeSvgAssetUrl(`hz-SvgAssetBrandLogo--inverse--${getTwhBrandLocaleSuffix()}`);
+}
+
+/* Marktplaats never published a dark wordmark, so we ship our own. 2dehands and
+   2ememain do publish one (brand-logo--inverse--nlbe/frbe: the navy lettering turned
+   white, yellow coin untouched); they just never use it on the website. Their own
+   dark theme leaves the light logo in place, so the wordmark ends up navy on a dark
+   header. Only the desktop wordmark needs this: the mobile coin logo is already
+   yellow, and its "inverse" variant is the navy-on-yellow one, which would be worse. */
+function getDarkHeaderLogoUrl(originalSource) {
+    if (MARKTPLAATS_DESKTOP_LOGO_MATCH.test(originalSource)) {
+        return browserAPI.runtime.getURL(CLEANPLAATS_DARK_LOGO_PATH);
+    }
+
+    if (TWH_DESKTOP_LOGO_MATCH.test(originalSource)) {
+        return getTwhInverseWordmarkUrl();
+    }
+
+    return '';
+}
+
 function syncHeaderLogoForDarkMode(enabled) {
     document.querySelectorAll('.hz-Header-logo-desktop').forEach(img => {
         if (!(img instanceof HTMLImageElement)) return;
@@ -80,13 +144,15 @@ function syncHeaderLogoForDarkMode(enabled) {
             img.dataset.cleanplaatsOriginalSrc = currentSource;
         }
 
-        if (!MARKTPLAATS_DESKTOP_LOGO_MATCH.test(originalSource)) {
+        const darkSource = enabled ? getDarkHeaderLogoUrl(originalSource) : '';
+
+        // No dark counterpart (an unknown logo, or their stylesheet has not loaded
+        // yet) means leaving the current one alone rather than blanking it.
+        if (enabled && !darkSource) {
             return;
         }
 
-        const nextSource = enabled
-            ? browserAPI.runtime.getURL(CLEANPLAATS_DARK_LOGO_PATH)
-            : originalSource;
+        const nextSource = enabled ? darkSource : originalSource;
 
         if (currentSource !== nextSource) {
             img.setAttribute('src', nextSource);
@@ -96,8 +162,17 @@ function syncHeaderLogoForDarkMode(enabled) {
     document.querySelectorAll('.mp-Header-logo').forEach(link => {
         if (!(link instanceof HTMLElement)) return;
 
+        // The legacy "Mijn Marktplaats"/"Mijn 2dehands" header paints its logo as a
+        // background image instead of an <img>.
+        let legacyLogoUrl = '';
         if (enabled && isMarktplaatsSite()) {
-            link.style.backgroundImage = `url("${browserAPI.runtime.getURL(CLEANPLAATS_DARK_LOGO_PATH)}")`;
+            legacyLogoUrl = browserAPI.runtime.getURL(CLEANPLAATS_DARK_LOGO_PATH);
+        } else if (enabled && is2dehandsFamilySite()) {
+            legacyLogoUrl = getTwhInverseWordmarkUrl();
+        }
+
+        if (legacyLogoUrl) {
+            link.style.backgroundImage = `url("${legacyLogoUrl}")`;
             link.style.backgroundRepeat = 'no-repeat';
             link.style.backgroundPosition = 'center';
             link.style.backgroundSize = 'contain';
