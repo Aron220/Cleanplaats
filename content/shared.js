@@ -13,6 +13,11 @@ var CLEANPLAATS_FLOATING_OFFSET_VAR = '--cleanplaats-floating-offset';
 // Marktplaats renamed this asset from tenant--nlnl to brand-logo--nlnl; match both.
 var MARKTPLAATS_DESKTOP_LOGO_MATCH = /\/(?:tenant|brand-logo)--nlnl(?:\.[a-z0-9]+)?\.svg$/i;
 var CLEANPLAATS_DARK_LOGO_PATH = 'icons/marktplaats-logo-darkmode.svg';
+// 2dehands/2ememain use the same asset naming, but per locale: --nlbe / --frbe.
+// Unlike Marktplaats they already publish an inverse (white wordmark) variant on
+// their own CDN, so those sites need no bundled logo of ours; see
+// resolveNativeSvgAssetUrl() in content/theme.js.
+var TWH_DESKTOP_LOGO_MATCH = /\/(?:tenant|brand-logo)--(?:nlbe|frbe)(?:\.[a-z0-9]+)?\.svg$/i;
 // Search results render as .hz-Listing, but the homepage feed ("Voor jou" / "In je
 // buurt") renders as .hz-StructuredListing cards and never contains a single
 // .hz-Listing. Anything that waits for "the listings are there" has to accept both,
@@ -45,6 +50,11 @@ function is2ememainLocale() {
 
 function is2dehandsFamilySite() {
     return location.hostname.includes('2dehands.be') || location.hostname.includes('2ememain.be');
+}
+
+// hz-web-ui names its brand assets per locale; 2ememain is the French one.
+function getTwhBrandLocaleSuffix() {
+    return is2ememainLocale() ? 'frbe' : 'nlbe';
 }
 
 function isMarktplaatsSite() {
