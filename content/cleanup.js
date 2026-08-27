@@ -708,6 +708,60 @@ function getSearchQueryFromUrl() {
     return '';
 }
 
+/**
+ * The facet filters on screen, in the three shapes /lrp/api/search takes:
+ * attributesById[], attributesByKey[] ("key:value") and attributeRanges[]
+ * ("key:from:to"). This is the site's own merge, done from the outside.
+ *
+ * Two sources, because the page splits them. What the path carries was resolved
+ * server-side and sits in searchRequest. What the user clicked afterwards — the
+ * checkboxes, the price slider — is applied client-side and only ever reaches
+ * the fragment, which is why __NEXT_DATA__ keeps describing a page without it.
+ * Range ends live under separate "<key>From"/"<key>To" fragment keys and are
+ * joined back up here; "f" and "n" hold comma-separated attribute value ids.
+ */
+function readSearchFilters(nextData) {
+    const searchRequest = nextData?.props?.pageProps?.searchRequestAndResponse?.searchRequest;
+    const hashParams = parseLocationHashParams();
+    const filters = {};
+
+    const ids = [
+        ...(searchRequest?.attributesById || []),
+        ...[hashParams.f, hashParams.n].filter(Boolean).flatMap(value => decodeURIComponent(value).split(','))
+    ].map(String).filter(value => /^\d+$/.test(value));
+    if (ids.length > 0) filters.attributesById = [...new Set(ids)];
+
+    const keyed = (searchRequest?.attributesByKey || [])
+        .filter(entry => entry && entry.attributeKey && entry.attributeValueKey)
+        .map(entry => `${entry.attributeKey}:${entry.attributeValueKey}`);
+    if (keyed.length > 0) filters.attributesByKey = [...new Set(keyed)];
+
+    const ranges = new Map();
+    (searchRequest?.attributeRanges || []).forEach(entry => {
+        if (entry && entry.attributeKey) ranges.set(entry.attributeKey, { from: entry.from, to: entry.to });
+    });
+    Object.entries(hashParams).forEach(([name, value]) => {
+        const match = name.match(/^(.+?)(From|To)$/);
+        if (!match || !value) return;
+        const range = ranges.get(match[1]) || { from: null, to: null };
+        range[match[2].toLowerCase()] = value;
+        ranges.set(match[1], range);
+    });
+    if (ranges.size > 0) {
+        filters.attributeRanges = [...ranges.entries()]
+            .map(([key, range]) => searchRangeParam(key, range.from, range.to));
+    }
+
+    return filters;
+}
+
+// An end left open is still a range, and the endpoint wants the word rather than
+// a gap: "PriceCents::50000" is a 400, "PriceCents:null:50000" is not.
+function searchRangeParam(key, from, to) {
+    const end = value => (value === null || value === undefined || value === '' ? 'null' : value);
+    return `${key}:${end(from)}:${end(to)}`;
+}
+
 function getNextDataQuery() {
     try {
         const nextDataEl = document.getElementById('__NEXT_DATA__');
@@ -733,6 +787,11 @@ function getNextDataQuery() {
         // The URL wins: on category pages the term only exists in the hash.
         const result = { ...query, searchQuery: urlQuery };
 
+        // The facet filters, under the names /lrp/api/search actually answers
+        // to. nextData.query only has the path-shaped ones, and the endpoint
+        // takes those and ignores them.
+        Object.assign(result, readSearchFilters(nextData));
+
         // A /q/ search has no category in its URL, so a category still sitting in
         // __NEXT_DATA__ is one the user has left behind: clicking "Wis de
         // categorie" is enough to get here. Keeping it would quietly search
@@ -740,6 +799,12 @@ function getNextDataQuery() {
         if (!path.startsWith('/l/') && categoryKeys.length > 0) {
             delete result.l1CategoryId;
             delete result.l2CategoryId;
+            // The facets go with it. They were read off the same snapshot, and
+            // that snapshot is the one thing we already know is out of date —
+            // keeping half of it would describe a search that never existed.
+            delete result.attributesById;
+            delete result.attributesByKey;
+            delete result.attributeRanges;
         }
 
         return result;
@@ -766,10 +831,15 @@ function buildSearchApiUrl(offset, limit) {
     if (query.l2CategoryId) params.set('l2CategoryId', query.l2CategoryId);
     if (query.postcode) params.set('postcode', query.postcode);
     if (query.distanceMeters) params.set('distanceMeters', query.distanceMeters);
-    if (query.attributesValuesIds) params.set('attributesValuesIds', query.attributesValuesIds);
-    if (query.attributesValuesKeys) params.set('attributesValuesKeys', query.attributesValuesKeys);
-    if (query.textAttributesValuesKeys) params.set('textAttributesValuesKeys', query.textAttributesValuesKeys);
     if (query.searchInTitleAndDescription) params.set('searchInTitleAndDescription', query.searchInTitleAndDescription);
+
+    // Repeated keys, not comma-joined values, and never the attributesValuesIds
+    // spelling the URL uses: /lrp/api/search accepts that one and then returns
+    // the unfiltered set, which is a whole different list of advertisements
+    // than the page is showing.
+    ['attributesById', 'attributesByKey', 'attributeRanges'].forEach(key => {
+        (query[key] || []).forEach(value => params.append(`${key}[]`, value));
+    });
 
     // Hash params override __NEXT_DATA__ (that is what the page does too).
     if (hashParams.postcode) params.set('postcode', hashParams.postcode);
