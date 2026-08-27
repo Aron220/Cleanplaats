@@ -3,31 +3,29 @@
  */
 
 function showFirstTimeOnboarding() {
+    const localeText = getPanelLocaleText();
+
     const onboarding = document.createElement('div');
     onboarding.className = 'cleanplaats-onboarding';
     onboarding.id = 'cleanplaats-onboarding';
 
+    const stepsMarkup = localeText.onboardingSteps
+        .map((step, index) => `
+                <div class="cleanplaats-onboarding-step">
+                    <span class="step-number">${index + 1}</span>
+                    <p>${step}</p>
+                </div>`)
+        .join('');
+
     onboarding.innerHTML = DOMPurify.sanitize(`
         <div class="cleanplaats-onboarding-content">
             <div class="cleanplaats-onboarding-header">
-                <h3>🎉 Welkom bij Cleanplaats!</h3>
-                <button id="cleanplaats-onboarding-close" class="cleanplaats-onboarding-close">×</button>
+                <h3>${localeText.onboardingTitle}</h3>
+                <button id="cleanplaats-onboarding-close" class="cleanplaats-onboarding-close" aria-label="${localeText.onboardingCloseAriaLabel}">×</button>
             </div>
-            <div class="cleanplaats-onboarding-steps">
-                <div class="cleanplaats-onboarding-step">
-                    <span class="step-number">1</span>
-                    <p>Cleanplaats verwijdert automatisch advertenties en promotionele content</p>
-                </div>
-                <div class="cleanplaats-onboarding-step">
-                    <span class="step-number">2</span>
-                    <p>Gebruik het configuratiescherm rechtsonder om de filtering aan te passen. Je opent en sluit het paneel via het pijltje bovenin.</p>
-                </div>
-                <div class="cleanplaats-onboarding-step">
-                    <span class="step-number">3</span>
-                    <p>Bekijk statistieken over verwijderde items in het configuratiescherm</p>
-                </div>
+            <div class="cleanplaats-onboarding-steps">${stepsMarkup}
             </div>
-            <button id="cleanplaats-onboarding-got-it" class="cleanplaats-onboarding-button">Aan de slag!</button>
+            <button id="cleanplaats-onboarding-got-it" class="cleanplaats-onboarding-button">${localeText.onboardingButton}</button>
         </div>
     `);
 
