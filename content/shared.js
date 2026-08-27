@@ -789,24 +789,14 @@ var CLEANPLAATS = {
 
 var CLEANPLAATS_UPDATE_NOTES_NL = {
     '2.2.0': {
-        intro: 'Cleanplaats 2.2.0 laat je een zoekopdracht meteen verfijnen. Categorie, prijs en afstand stel je nu in het venster zelf in, dus je hoeft er niet eerst op de site een zoekopdracht voor op te bouwen.',
+        intro: 'Cleanplaats 2.2.0 draait om Zoekopdrachten: je stelt er nu meteen categorie, prijs en afstand voor in, en ze werken voortaan ook op 2dehands en 2ememain.',
         highlights: [
-            'Nieuw: onder de zoekterm staat "Categorie, prijs en afstand". Klap het open en kies een categorie en subcategorie, een prijs vanaf en tot, en een postcode met een afstand eromheen.',
-            'Terwijl je kiest zie je eronder hoeveel advertenties je zoekopdracht op dit moment vindt. Zo weet je voordat je hem aanzet of hij scherp genoeg staat.',
-            'De categorieën komen rechtstreeks van de site waar je bent, met het aantal advertenties erbij, en de categorieën die bij je zoekterm passen staan bovenaan.',
-            'Kom je vanaf je zoekresultaten? Dan staan die filters nu ingevuld in beeld in plaats van onzichtbaar mee te gaan, en je kunt ze aanpassen zonder ze kwijt te raken.'
+            'Nieuw: onder de zoekterm staat "Categorie, prijs en afstand". Kies daar een categorie, een prijs vanaf en tot en een postcode met een afstand eromheen. Terwijl je kiest zie je hoeveel advertenties je zoekopdracht op dit moment vindt, dus je weet voordat je hem aanzet of hij scherp genoeg staat.',
+            'Zoekopdrachten werken nu ook op 2dehands en 2ememain, op 2ememain helemaal in het Frans. Je account blijft één account, en je overzicht toont de zoekopdrachten van alle drie de sites bij elkaar.',
+            'Fix: maakte je een zoekopdracht vanaf een categoriepagina, dan kon je zoekterm wegvallen en liep hij over de hele categorie in plaats van over wat je zocht. Cleanplaats leest je zoekterm en categorie nu op één manier, ook nadat je de categorie hebt gewist.',
+            'Verder: het logo en het welkomstvenster blijven leesbaar in donkere modus, en een blacklist-term met aanhalingstekens erin is weer uit de lijst te halen.'
         ],
-        note: 'Verfijnen is splinternieuw. Werkt er iets niet zoals je verwacht, of mis je een filter? Mail naar info@cleanplaats.com, elk bericht komt bij de maker terecht.'
-    },
-    '2.1.7': {
-        intro: 'Cleanplaats 2.1.7 brengt Zoekopdrachten naar 2dehands en 2ememain. Wat je op Marktplaats al kon, kan nu op alle drie de sites: een zoekopdracht opslaan en een bericht in Telegram krijgen zodra er een nieuwe advertentie voor verschijnt, ook als je browser dicht is.',
-        highlights: [
-            'Nieuw: de knop "Zoekopdrachten" staat nu ook bovenin het paneel op 2dehands en 2ememain. Zoek daar iets, klik erop, en je zoekterm, categorie, locatie en afstand gaan automatisch mee, net zoals je dat op Marktplaats gewend bent.',
-            'Op 2ememain is alles Frans: het venster zelf en de meldingen die je in Telegram krijgt. Je hoeft niets in te stellen, Cleanplaats volgt de taal van de site waar je bent.',
-            'Een zoekopdracht onthoudt op welke site hij loopt. Je overzicht toont ze alle drie bij elkaar, met een klein label bij de zoekopdrachten van een andere site, zodat je niet hoeft te wisselen om te zien wat er loopt.',
-            'Je account blijft één account: dezelfde login, dezelfde Telegram-koppeling en hetzelfde aantal zoekopdrachten, op welke van de drie sites je ook zit.'
-        ],
-        note: 'Zoekopdrachten op 2dehands en 2ememain zijn splinternieuw. Werkt er iets niet zoals je verwacht, of mis je iets? Mail naar info@cleanplaats.com, elk bericht komt bij de maker terecht.'
+        note: 'Verfijnen en de zoekopdrachten op 2dehands en 2ememain zijn splinternieuw. Werkt er iets niet zoals je verwacht, of mis je een filter? Mail naar info@cleanplaats.com, elk bericht komt bij de maker terecht.'
     },
     '2.1.6': {
         intro: 'Cleanplaats 2.1.6 introduceert Zoekopdrachten: sla een zoekopdracht op en krijg een bericht in Telegram zodra er een nieuwe advertentie voor verschijnt, ook als je browser dicht is.',
@@ -875,24 +865,14 @@ var CLEANPLAATS_UPDATE_NOTES_NL = {
 
 var CLEANPLAATS_UPDATE_NOTES_FR = {
     '2.2.0': {
-        intro: 'Cleanplaats 2.2.0 vous laisse affiner une recherche tout de suite. La catégorie, le prix et la distance se règlent maintenant dans la fenêtre même, sans devoir d’abord construire la recherche sur le site.',
+        intro: 'Cleanplaats 2.2.0 tourne autour des Recherches : vous y réglez maintenant tout de suite la catégorie, le prix et la distance, et elles fonctionnent désormais aussi sur 2dehands et 2ememain.',
         highlights: [
-            'Nouveau : sous le terme de recherche se trouve "Catégorie, prix et distance". Dépliez-le et choisissez une catégorie et une sous-catégorie, un prix à partir de et jusqu’à, et un code postal avec une distance autour.',
-            'Pendant que vous choisissez, vous voyez en dessous combien d’annonces votre recherche trouve en ce moment. Vous savez donc avant de l’activer si elle est assez précise.',
-            'Les catégories viennent directement du site où vous êtes, avec le nombre d’annonces, et celles qui correspondent à votre terme figurent en haut.',
-            'Vous arrivez depuis vos résultats ? Ces filtres sont désormais remplis à l’écran au lieu d’être repris de façon invisible, et vous pouvez les modifier sans les perdre.'
+            'Nouveau : sous le terme de recherche se trouve "Catégorie, prix et distance". Choisissez-y une catégorie, un prix à partir de et jusqu’à, et un code postal avec une distance autour. Pendant que vous choisissez, vous voyez combien d’annonces votre recherche trouve en ce moment, donc vous savez avant de l’activer si elle est assez précise.',
+            'Les Recherches fonctionnent maintenant aussi sur 2dehands et 2ememain, entièrement en français sur 2ememain. Votre compte reste un seul compte, et votre aperçu montre les recherches des trois sites ensemble.',
+            'Correctif : si vous créiez une recherche depuis une page de catégorie, votre terme de recherche pouvait disparaître et la recherche portait alors sur toute la catégorie au lieu de ce que vous cherchiez. Cleanplaats lit désormais votre terme et votre catégorie d’une seule manière, même après avoir effacé la catégorie.',
+            'Et aussi : le logo et la fenêtre de bienvenue restent lisibles en mode sombre, et un terme de la liste noire contenant des guillemets peut de nouveau être retiré de la liste.'
         ],
-        note: 'Affiner est tout nouveau. Quelque chose ne fonctionne pas comme prévu, ou un filtre vous manque ? Écrivez à info@cleanplaats.com, chaque message arrive chez le créateur.'
-    },
-    '2.1.7': {
-        intro: 'Cleanplaats 2.1.7 apporte les Recherches à 2dehands et 2ememain. Ce que vous pouviez déjà faire sur Marktplaats fonctionne maintenant sur les trois sites : enregistrer une recherche et recevoir un message dans Telegram dès qu’une nouvelle annonce y apparaît, même si votre navigateur est fermé.',
-        highlights: [
-            'Nouveau : le bouton "Recherches" se trouve maintenant aussi en haut du panneau sur 2dehands et 2ememain. Lancez une recherche, cliquez dessus, et votre terme de recherche, la catégorie, le lieu et la distance sont repris automatiquement, comme vous en avez l’habitude sur Marktplaats.',
-            'Sur 2ememain, tout est en français : la fenêtre elle-même et les messages que vous recevez dans Telegram. Vous n’avez rien à régler, Cleanplaats suit la langue du site où vous êtes.',
-            'Une recherche retient sur quel site elle tourne. Votre aperçu les montre toutes ensemble, avec une petite étiquette sur les recherches d’un autre site, pour que vous ne deviez pas changer de site afin de voir ce qui tourne.',
-            'Votre compte reste un seul compte : la même connexion, le même lien Telegram et le même nombre de recherches, quel que soit le site parmi les trois.'
-        ],
-        note: 'Les Recherches sur 2dehands et 2ememain sont toutes neuves. Quelque chose ne fonctionne pas comme prévu, ou il vous manque quelque chose ? Écrivez à info@cleanplaats.com, chaque message arrive chez le créateur.'
+        note: 'Affiner et les Recherches sur 2dehands et 2ememain sont tout nouveaux. Quelque chose ne fonctionne pas comme prévu, ou un filtre vous manque ? Écrivez à info@cleanplaats.com, chaque message arrive chez le créateur.'
     },
     '2.1.6': {
         intro: 'Cleanplaats 2.1.6 introduit les Recherches : enregistrez une recherche et recevez un message dans Telegram dès qu’une nouvelle annonce y apparaît, même si votre navigateur est fermé.',
