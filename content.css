@@ -39,7 +39,12 @@
     min-height: 48px;
     max-height: 48px;
     background-color: transparent;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    /* The bubble is painted entirely by the icon's own alpha, which no longer
+       reaches the edge of the 48px box. A box-shadow would trace that box and
+       leave a ring of shadow floating around the logo, so this follows the
+       rendered pixels instead. */
+    box-shadow: none;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.25));
     border-radius: 50%;
     padding: 0;
     cursor: pointer;
@@ -50,12 +55,12 @@
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    transition: box-shadow 0.25s cubic-bezier(0.4,0,0.2,1), transform 0.22s cubic-bezier(0.4,0,0.2,1);
+    transition: filter 0.25s cubic-bezier(0.4,0,0.2,1), transform 0.22s cubic-bezier(0.4,0,0.2,1);
     will-change: transform;
   }
   
   .cleanplaats-panel.collapsed.collapsed-ready:hover {
-    box-shadow: 0 4px 24px 0 rgba(44, 62, 80, 0.22), 0 1.5px 8px 0 rgba(44,62,80,0.10);
+    filter: drop-shadow(0 4px 24px rgba(44, 62, 80, 0.22)) drop-shadow(0 1.5px 8px rgba(44, 62, 80, 0.10));
     transform: scale(1.18);
     cursor: pointer;
   }
@@ -2015,7 +2020,7 @@
       stroke: #555;
     }
     .cleanplaats-panel.collapsed.collapsed-ready:hover {
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.25));
       transform: none;
     }
   }
