@@ -65,7 +65,7 @@ function applyDarkModeToDocument(enabled) {
 }
 
 function getCollapsedPanelIconUrl() {
-    const iconPath = CLEANPLAATS.settings.darkMode ? 'icons/darkmode_icon_128.png' : 'icons/icon128.png';
+    const iconPath = CLEANPLAATS.settings.darkMode ? 'icons/darkmode_icon.svg' : 'icons/icon.svg';
     return browserAPI.runtime.getURL(iconPath);
 }
 

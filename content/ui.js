@@ -575,7 +575,7 @@ function createControlPanel() {
     document.body.appendChild(panel);
     const logoImg = panel.querySelector('#cleanplaats-header-logo');
     if (logoImg) {
-        logoImg.src = browserAPI.runtime.getURL('icons/icon128.png');
+        logoImg.src = browserAPI.runtime.getURL('icons/icon.svg');
     }
     panel.querySelectorAll('.cleanplaats-external-link').forEach(link => {
         link.addEventListener('click', (event) => {
