@@ -454,6 +454,14 @@ function getPanelLocaleText() {
                 ],
                 note: 'Vous voyez un problème ou avez une idée ? Utilisez le lien GitHub dans le panneau.'
             },
+            onboardingTitle: '🎉 Bienvenue sur Cleanplaats !',
+            onboardingSteps: [
+                'Cleanplaats supprime automatiquement les publicités et le contenu promotionnel',
+                'Utilisez le panneau en bas à droite pour ajuster le filtrage. Vous ouvrez et fermez le panneau via la flèche en haut.',
+                'Consultez les statistiques des éléments supprimés dans le panneau'
+            ],
+            onboardingButton: 'C’est parti !',
+            onboardingCloseAriaLabel: 'Fermer le message de bienvenue',
             darkModeLabel: 'Mode sombre',
             darkModeTooltip: 'Active un thème sombre pour 2ememain et le panneau Cleanplaats. Expérimental: si la visibilité pose problème, désactivez-le.',
             resultsPerPageLabel: 'Résultats par page :',
@@ -608,6 +616,14 @@ function getPanelLocaleText() {
             ],
             note: 'Zie je een probleem of heb je een idee? Gebruik de GitHub-link in het paneel.'
         },
+        onboardingTitle: '🎉 Welkom bij Cleanplaats!',
+        onboardingSteps: [
+            'Cleanplaats verwijdert automatisch advertenties en promotionele content',
+            'Gebruik het configuratiescherm rechtsonder om de filtering aan te passen. Je opent en sluit het paneel via het pijltje bovenin.',
+            'Bekijk statistieken over verwijderde items in het configuratiescherm'
+        ],
+        onboardingButton: 'Aan de slag!',
+        onboardingCloseAriaLabel: 'Welkomstbericht sluiten',
         darkModeLabel: 'Donkere modus',
         darkModeTooltip: 'Schakelt een donker thema in voor Marktplaats en het Cleanplaats-paneel. Experimenteel: werkt meestal goed, maar zet het uit als iets slecht leesbaar is.',
         resultsPerPageLabel: 'Resultaten per pagina:',
