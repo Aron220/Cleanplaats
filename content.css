@@ -39,10 +39,10 @@
     min-height: 48px;
     max-height: 48px;
     background-color: transparent;
-    /* The bubble is painted entirely by the icon's own alpha, which no longer
-       reaches the edge of the 48px box. A box-shadow would trace that box and
-       leave a ring of shadow floating around the logo, so this follows the
-       rendered pixels instead. */
+    /* The bubble has no background of its own; the icon image paints it. Hanging
+       the shadow off the icon's alpha rather than the 48px box keeps the two in
+       step whatever the artwork does. A box-shadow traces the box instead, so it
+       floats free of the logo the moment the icon carries any padding. */
     box-shadow: none;
     filter: drop-shadow(0 2px 8px rgba(0,0,0,0.25));
     border-radius: 50%;
