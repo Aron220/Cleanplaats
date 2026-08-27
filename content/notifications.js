@@ -128,7 +128,7 @@ function showUpdatePopup(version) {
     document.body.appendChild(popup);
     const popupLogo = document.getElementById('cleanplaats-update-popup-logo');
     if (popupLogo) {
-        popupLogo.src = browserAPI.runtime.getURL('icons/icon128.png');
+        popupLogo.src = browserAPI.runtime.getURL('icons/icon.svg');
     }
     document.getElementById('cleanplaats-update-popup-close')?.addEventListener('click', () => {
         const dontShowAgain = document.getElementById('cleanplaats-update-popup-dont-show-again')?.checked;
