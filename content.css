@@ -3909,6 +3909,202 @@
     display: none;
   }
 
+  /* --- Create: the search filters (category, price, distance) --- */
+
+  /* Deliberately a card with its own border rather than the quiet text button
+     the per-alert filters use. Most people never found out these filters
+     existed, so this one has to read as an offer, not as a detail. */
+  .cleanplaats-alerts-create-filters {
+    margin-top: 8px;
+    border: 1.5px solid #d8dde5;
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  .cleanplaats-alerts-create-filters-open {
+    border-color: #c3cad6;
+  }
+
+  .cleanplaats-alerts-create-filters-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 8px;
+    padding: 9px 11px;
+    background: none;
+    border: none;
+    border-radius: 9px;
+    cursor: pointer;
+    color: #2b3442;
+    font-family: inherit;
+    transition: background 0.15s ease;
+  }
+
+  .cleanplaats-alerts-create-filters-trigger:hover {
+    background: #f6f7f9;
+  }
+
+  .cleanplaats-alerts-create-filters-trigger-left {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .cleanplaats-alerts-create-filters-trigger svg {
+    flex: none;
+  }
+
+  .cleanplaats-alerts-create-filters-open .cleanplaats-alerts-filter-chevron {
+    transform: rotate(180deg);
+  }
+
+  .cleanplaats-alerts-create-filters-editor {
+    padding: 2px 11px 11px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    animation: cleanplaats-alerts-fade-in 0.16s ease;
+  }
+
+  .cleanplaats-alerts-create-filters-editor[hidden] {
+    display: none;
+  }
+
+  .cleanplaats-alerts-create-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .cleanplaats-alerts-create-field-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #66707f;
+  }
+
+  .cleanplaats-alerts-create-field-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .cleanplaats-alerts-create-field-controls > * {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cleanplaats-alerts-create-field-controls select,
+  .cleanplaats-alerts-create-field-controls input[type="text"] {
+    width: 100%;
+    /* A text input defaults to content-box, so width:100% plus its own padding
+       and border pushes it past the card. The selects next to it do not, and the
+       two have to end on the same line. */
+    box-sizing: border-box;
+    padding: 8px 10px;
+    border: 1.5px solid #e0e4ea;
+    border-radius: 9px;
+    background: #fff;
+    color: #2b3442;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .cleanplaats-alerts-create-field-controls input[type="text"] {
+    cursor: text;
+  }
+
+  .cleanplaats-alerts-create-field-controls select:focus,
+  .cleanplaats-alerts-create-field-controls input[type="text"]:focus {
+    outline: none;
+    border-color: #222b38;
+    box-shadow: 0 0 0 3px rgba(34, 43, 56, 0.12);
+  }
+
+  .cleanplaats-alerts-create-field-controls select:disabled {
+    background: #f2f4f7;
+    color: #98a2b1;
+    cursor: not-allowed;
+  }
+
+  /* The euro sign sits inside the field, so the number starts where a price
+     starts and the two inputs still line up with the selects above them. */
+  .cleanplaats-alerts-create-money {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .cleanplaats-alerts-create-money-sign {
+    position: absolute;
+    left: 10px;
+    font-size: 13px;
+    color: #98a2b1;
+    pointer-events: none;
+  }
+
+  .cleanplaats-alerts-create-money input[type="text"] {
+    padding-left: 24px;
+  }
+
+  .cleanplaats-alerts-create-facet-opts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 8px;
+  }
+
+  .cleanplaats-alerts-create-facet-opt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px;
+    border-radius: 7px;
+    font-size: 12.5px;
+    color: #2b3442;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .cleanplaats-alerts-create-facet-opt:hover {
+    background: #f6f7f9;
+  }
+
+  .cleanplaats-alerts-create-facet-opt input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .cleanplaats-alerts-create-hint {
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: #b4472f;
+  }
+
+  .cleanplaats-alerts-create-hint[hidden] {
+    display: none;
+  }
+
+  .cleanplaats-alerts-create-count {
+    margin-top: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #66707f;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cleanplaats-alerts-create-count[hidden] {
+    display: none;
+  }
+
+  .cleanplaats-alerts-create-count-none {
+    color: #b4472f;
+  }
+
   /* --- Sub-views: account, pricing, limit --- */
 
   .cleanplaats-alerts-subview-header {
@@ -4415,17 +4611,20 @@
     transition: opacity 0.12s ease, transform 0.12s ease;
   }
 
-  .cleanplaats-alerts-filter-opt input:checked + .cleanplaats-alerts-filter-opt-box {
+  .cleanplaats-alerts-filter-opt input:checked + .cleanplaats-alerts-filter-opt-box,
+  .cleanplaats-alerts-create-facet-opt input:checked + .cleanplaats-alerts-filter-opt-box {
     background: #e8710a;
     border-color: #e8710a;
   }
 
-  .cleanplaats-alerts-filter-opt input:checked + .cleanplaats-alerts-filter-opt-box svg {
+  .cleanplaats-alerts-filter-opt input:checked + .cleanplaats-alerts-filter-opt-box svg,
+  .cleanplaats-alerts-create-facet-opt input:checked + .cleanplaats-alerts-filter-opt-box svg {
     opacity: 1;
     transform: scale(1);
   }
 
-  .cleanplaats-alerts-filter-opt input:focus-visible + .cleanplaats-alerts-filter-opt-box {
+  .cleanplaats-alerts-filter-opt input:focus-visible + .cleanplaats-alerts-filter-opt-box,
+  .cleanplaats-alerts-create-facet-opt input:focus-visible + .cleanplaats-alerts-filter-opt-box {
     box-shadow: 0 0 0 3px rgba(232, 113, 10, 0.25);
   }
 
@@ -5427,6 +5626,68 @@
     color: #e7edf8;
   }
 
+  /* Create: the search filters */
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-filters {
+    background: #131a24;
+    border-color: #2c3a4d;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-filters-open {
+    border-color: #3a4a61;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-filters-trigger {
+    color: #dde4ee;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-filters-trigger:hover {
+    background: #1a2331;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-field-label {
+    color: #8fa0b8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-field-controls select,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-field-controls input[type="text"] {
+    background: #18202c;
+    border-color: #2c3a4d;
+    color: #dde4ee;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-field-controls select:focus,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-field-controls input[type="text"]:focus {
+    border-color: #8fa0b8;
+    box-shadow: 0 0 0 3px rgba(143, 160, 184, 0.18);
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-field-controls select:disabled {
+    background: #151d29;
+    color: #5d6b80;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-money-sign {
+    color: #5d6b80;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-facet-opt {
+    color: #dde4ee;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-facet-opt:hover {
+    background: #1a2331;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-count {
+    color: #8fa0b8;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-count-none,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-create-hint {
+    color: #f28b82;
+  }
+
   /* Sub-views: account, pricing, limit */
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-back {
@@ -6146,6 +6407,16 @@
 
     .cleanplaats-alerts-form-row .cleanplaats-alerts-primary-btn,
     .cleanplaats-alerts-form-row input { width: 100%; }
+
+    /* Two controls side by side leave neither wide enough to read a category
+       name in, so on a phone they stack instead. */
+    .cleanplaats-alerts-create-field-controls {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 6px;
+    }
+
+    .cleanplaats-alerts-create-facet-opts { grid-template-columns: 1fr; }
 
     .cleanplaats-alerts-header { padding: 14px 16px; }
     .cleanplaats-alerts-main { padding: 16px 14px 20px; }

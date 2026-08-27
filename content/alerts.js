@@ -107,7 +107,31 @@ var cleanplaatsAlertsRuntime = {
     view: 'matches',
     // Which alert's match view is on screen, so a slow /api/matches response
     // can tell whether it still has a view to render into.
-    openAlertMatchesId: null
+    openAlertMatchesId: null,
+    // The filters set in the create box, the categories/counts the site last
+    // handed back for them, and whether the block is folded open. Kept on the
+    // runtime rather than read back off the DOM because the dashboard re-renders
+    // whole (after a create, after a row PATCH) and a half-filled form must
+    // survive that. Cleared on close and after a successful create.
+    createDraft: null,
+    createFacets: null,
+    createFacetsSeq: 0,
+    createFilterOpen: false,
+    // The params the last facet request went out with, so a re-render of the
+    // dashboard repaints from what is already here instead of asking the site
+    // the same question again.
+    createFacetsKey: '',
+    // Set when the label input was prefilled with a name rather than a search
+    // term (a category page has no term). While the input still reads exactly
+    // this, it names the alert and nothing more. See alertCreateQueryTerm().
+    createLabelOnly: '',
+    // One render's worth of "start over": set after a create so the box does not
+    // immediately fill itself back up from the page behind the panel.
+    createCleared: false,
+    // The site's main categories. Fetched once and kept: the list never changes
+    // with the search term, and the ordinary request cannot supply it (see
+    // loadAlertMainCategories).
+    createMainCategories: null
 };
 
 /**
@@ -167,9 +191,34 @@ var ALERTS_TEXT_NL = {
     createButton: 'Zoekopdracht maken',
     labelPlaceholder: 'Zoekterm, bijv. iphone 15 pro',
     createTermMissing: 'Vul een zoekterm in.',
-    createContextHint: 'De filters van je huidige zoekresultaten (categorie, locatie) gaan mee zolang je de zoekterm niet wijzigt.',
+    createContextHint: `De filters van je zoekresultaten op ${CLEANPLAATS_ALERTS_SITE_NAME} staan hieronder al ingevuld.`,
     createBroadWarning: count => `Deze zoekopdracht is breed: ${count.toLocaleString(CLEANPLAATS_ALERTS_NUMBER_LOCALE)} advertenties. ` +
         'Je krijgt er waarschijnlijk veel meldingen van. Verfijn hem eerst met een prijs, categorie of afstand.',
+
+    // The filters you can set on the search itself, in the create box. Named
+    // one by one on the trigger: "Verfijnen" alone left people assuming the
+    // panel could only watch a plain search term.
+    createFilterTrigger: 'Categorie, prijs en afstand',
+    createFilterNone: 'Instellen',
+    createFilterCategory: 'Categorie',
+    createFilterCategoryAll: 'Alle categorieën',
+    createFilterSubcategory: 'Subcategorie',
+    createFilterSubcategoryAll: 'Hele categorie',
+    createFilterCategoryRelevant: 'Past bij je zoekterm',
+    createFilterCategoryOther: 'Overige categorieën',
+    createFilterCategoryLoading: 'Categorieën laden…',
+    createFilterPrice: 'Prijs',
+    createFilterPriceFrom: 'Vanaf',
+    createFilterPriceTo: 'Tot',
+    createFilterDistance: 'Afstand',
+    createFilterPostcode: 'Postcode',
+    createFilterDistanceAll: 'Alle afstanden',
+    createFilterDistanceOption: km => `Binnen ${km} km`,
+    createFilterPostcodeInvalid: 'Vul een geldige postcode in, bijvoorbeeld 1011 AB of 2000.',
+    createResultCount: count => (count === 1
+        ? '1 advertentie op dit moment'
+        : `${count.toLocaleString(CLEANPLAATS_ALERTS_NUMBER_LOCALE)} advertenties op dit moment`),
+    createResultCountNone: 'Geen advertenties. Verruim je filters.',
     listTitle: 'Jouw zoekopdrachten',
     empty: `Je hebt nog geen zoekopdrachten. Zoek iets op ${CLEANPLAATS_ALERTS_SITE_NAME} en zet je eerste zoekopdracht aan.`,
     deleteButton: 'Verwijder',
@@ -350,7 +399,7 @@ var ALERTS_TEXT_NL = {
     setupAccountTitle: 'Account gemaakt',
     setupAccountBody: 'Je zoekopdrachten volgen je e-mailadres, ook op een ander apparaat.',
     setupAlertTitle: 'Zet je eerste zoekopdracht aan',
-    setupAlertBody: `Zoek iets op ${CLEANPLAATS_ALERTS_SITE_NAME} en vul de zoekterm hieronder in. Je categorie, locatie en afstand gaan mee.`,
+    setupAlertBody: `Vul hieronder een zoekterm in en kies er een categorie, prijs en afstand bij. Zoek je eerst op ${CLEANPLAATS_ALERTS_SITE_NAME}, dan staan die filters al klaar.`,
     setupAlertBodyDone: n => `Je hebt ${n} ${n === 1 ? 'zoekopdracht' : 'zoekopdrachten'} lopen.`,
     setupTelegramTitle: 'Koppel Telegram',
     // Says what actually happens: without a linked chat the server stops
@@ -487,9 +536,31 @@ var ALERTS_TEXT_FR = {
     createButton: 'Créer la recherche',
     labelPlaceholder: 'Terme, par ex. iphone 15 pro',
     createTermMissing: 'Saisissez un terme de recherche.',
-    createContextHint: 'Les filtres de vos résultats actuels (catégorie, lieu) sont repris tant que vous ne modifiez pas le terme.',
+    createContextHint: `Les filtres de vos résultats sur ${CLEANPLAATS_ALERTS_SITE_NAME} sont déjà repris ci-dessous.`,
     createBroadWarning: count => `Cette recherche est large : ${count.toLocaleString(CLEANPLAATS_ALERTS_NUMBER_LOCALE)} annonces. ` +
         'Vous en recevrez probablement beaucoup de notifications. Affinez-la d’abord avec un prix, une catégorie ou une distance.',
+
+    createFilterTrigger: 'Catégorie, prix et distance',
+    createFilterNone: 'Régler',
+    createFilterCategory: 'Catégorie',
+    createFilterCategoryAll: 'Toutes les catégories',
+    createFilterSubcategory: 'Sous-catégorie',
+    createFilterSubcategoryAll: 'Toute la catégorie',
+    createFilterCategoryRelevant: 'Correspond à votre terme',
+    createFilterCategoryOther: 'Autres catégories',
+    createFilterCategoryLoading: 'Chargement des catégories…',
+    createFilterPrice: 'Prix',
+    createFilterPriceFrom: 'À partir de',
+    createFilterPriceTo: 'Jusqu’à',
+    createFilterDistance: 'Distance',
+    createFilterPostcode: 'Code postal',
+    createFilterDistanceAll: 'Toutes les distances',
+    createFilterDistanceOption: km => `Moins de ${km} km`,
+    createFilterPostcodeInvalid: 'Saisissez un code postal valide, par exemple 2000 ou 1011 AB.',
+    createResultCount: count => (count === 1
+        ? '1 annonce en ce moment'
+        : `${count.toLocaleString(CLEANPLAATS_ALERTS_NUMBER_LOCALE)} annonces en ce moment`),
+    createResultCountNone: 'Aucune annonce. Élargissez vos filtres.',
     listTitle: 'Vos recherches',
     empty: `Vous n’avez pas encore de recherche. Cherchez quelque chose sur ${CLEANPLAATS_ALERTS_SITE_NAME} et activez votre première recherche.`,
     deleteButton: 'Supprimer',
@@ -643,7 +714,7 @@ var ALERTS_TEXT_FR = {
     setupAccountTitle: 'Compte créé',
     setupAccountBody: 'Vos recherches suivent votre adresse e-mail, même sur un autre appareil.',
     setupAlertTitle: 'Activez votre première recherche',
-    setupAlertBody: `Cherchez quelque chose sur ${CLEANPLAATS_ALERTS_SITE_NAME} et saisissez le terme ci-dessous. Votre catégorie, votre lieu et votre distance sont repris.`,
+    setupAlertBody: `Saisissez un terme ci-dessous et choisissez-y une catégorie, un prix et une distance. Si vous cherchez d’abord sur ${CLEANPLAATS_ALERTS_SITE_NAME}, ces filtres sont déjà prêts.`,
     setupAlertBodyDone: n => `Vous avez ${n} recherche${n === 1 ? '' : 's'} en cours.`,
     setupTelegramTitle: 'Liez Telegram',
     setupTelegramBody: hours => `Telegram est la façon dont nous vous joignons. Sans liaison, la vérification s’arrête après ${hours} heures.`,
@@ -1227,11 +1298,16 @@ function getAlertSearchContext() {
 
     if (pageQuery) {
         if (pageQuery.searchQuery) searchParams.query = String(pageQuery.searchQuery);
+        // Only the names /lrp/api/search answers to. The path-shaped ones the
+        // page also carries (attributesValuesIds and friends) are accepted by
+        // the endpoint and then ignored — sending them would look like a filter
+        // and behave like none. readSearchFilters() in cleanup.js has already
+        // put the facets under these keys, fragment included.
         ['l1CategoryId', 'l2CategoryId', 'postcode', 'distanceMeters',
-            'attributesValuesIds', 'attributesValuesKeys', 'attributesById',
-            'attributesByKey', 'attributeRanges'].forEach(key => {
+            'attributesById', 'attributesByKey', 'attributeRanges'].forEach(key => {
             const value = pageQuery[key];
-            if (value !== undefined && value !== null && value !== '') {
+            if (value !== undefined && value !== null && value !== ''
+                && !(Array.isArray(value) && value.length === 0)) {
                 searchParams[key] = value;
             }
         });
@@ -1261,6 +1337,11 @@ function getAlertSearchContext() {
 
     return {
         suggestedLabel: suggestedLabel.slice(0, 120),
+        // Whether that label is a search term or only a name. On a category page
+        // it is read off the URL slug, and searching for the words "fietsen en
+        // brommers" inside the fietsen category is a different, far narrower
+        // search than the one on screen — so the box must not send it as one.
+        labelIsSearchTerm: Boolean(searchParams.query),
         searchParams,
         searchUrl: href.slice(0, 500)
     };
@@ -1399,6 +1480,9 @@ function hideAlertsModal() {
     // during this one, so what we just looked at is no longer "NIEUW".
     cleanplaatsAlertsRuntime.matchesSeenAt = null;
     cleanplaatsAlertsRuntime.openAlertMatchesId = null;
+    // A half-filled create box is about the page it was opened on. Next time
+    // that could be a different search entirely, so it starts over.
+    resetAlertCreateDraft();
     endAlertsWalkthrough({ disarm: true });
     restorePanelAfterAlerts();
     // The card summarises what this session just loaded, so bring it up to date
@@ -2687,6 +2771,739 @@ function buildAlertsChecklistHtml(me, alerts) {
     `;
 }
 
+/* ===== The search filters you can set while making a zoekopdracht ===== */
+
+// The radius steps the sites' own "Afstand" dropdown offers, in meters. Read off
+// the search page's distanceOptions rather than invented, so the choices here
+// are the choices there.
+var ALERT_DISTANCE_STEPS = [3000, 5000, 10000, 15000, 25000, 50000, 75000];
+
+// Which AttributeGroupFacets the create box draws as checkboxes. Empty for now:
+// category, price and distance ship first. Putting a key in here is enough to
+// put that facet on screen, the category-bound ones (brand, frame height)
+// included — they arrive in the same response once a category is picked.
+var ALERT_CREATE_FACET_KEYS = [];
+
+// Dutch "1011 AB" (the space optional) and Belgian "2000". Both accepted on
+// every site: a Dutch user searching 2dehands is unusual, not wrong, and
+// refusing their postcode would be.
+var ALERT_POSTCODE_PATTERNS = [/^\d{4}\s?[a-z]{2}$/i, /^\d{4}$/];
+
+var cleanplaatsAlertCreateRefreshTimer = null;
+var cleanplaatsAlertCreateCategoriesPending = false;
+
+function emptyAlertCreateDraft() {
+    return {
+        // Ids drive the search, keys drive the link back to the site, labels
+        // keep a choice readable in the dropdown while it is the only thing we
+        // know about it.
+        l1CategoryId: '', l1Key: '', l1Label: '',
+        l2CategoryId: '', l2Key: '', l2Label: '',
+        postcode: '',
+        distanceMeters: '',
+        priceMinCents: null,
+        priceMaxCents: null,
+        attributesById: [],
+        // Filters the box has no control for — "aangeboden sinds", bouwjaar,
+        // kilometerstand, the car-shaped ones. They came in with the page and
+        // travel back out untouched: not drawing a filter is not a reason to
+        // drop it.
+        attributesByKey: [],
+        otherRanges: []
+    };
+}
+
+function getAlertCreateDraft() {
+    if (!cleanplaatsAlertsRuntime.createDraft) {
+        cleanplaatsAlertsRuntime.createDraft = emptyAlertCreateDraft();
+    }
+    return cleanplaatsAlertsRuntime.createDraft;
+}
+
+function resetAlertCreateDraft() {
+    cleanplaatsAlertsRuntime.createDraft = null;
+    cleanplaatsAlertsRuntime.createFacets = null;
+    cleanplaatsAlertsRuntime.createFilterOpen = false;
+    cleanplaatsAlertsRuntime.createFacetsKey = '';
+    cleanplaatsAlertsRuntime.createLabelOnly = '';
+    // Requests already out belong to the draft that just went away. Moving the
+    // sequence on retires them: without this a response landing after the panel
+    // closed would repopulate the facets and, through paintAlertCategoryOptions,
+    // leave a fresh empty draft behind — which then blocks the next seed,
+    // because seeding only fills a box that has no draft yet.
+    cleanplaatsAlertsRuntime.createFacetsSeq += 1;
+    clearTimeout(cleanplaatsAlertCreateRefreshTimer);
+}
+
+/**
+ * What the box should actually search for. Normally the label is the term, but a
+ * label the panel filled in on a category page is only a name for the alert —
+ * sending it as a term would swap the category the user is looking at for a
+ * text search inside it. The moment they change a character it is theirs, and
+ * it counts.
+ */
+function alertCreateQueryTerm(term) {
+    const value = String(term || '').trim();
+    const labelOnly = cleanplaatsAlertsRuntime.createLabelOnly;
+    return labelOnly && value === labelOnly ? '' : value;
+}
+
+function normalizeAlertPostcode(value) {
+    return String(value || '').trim().toUpperCase().replace(/\s+/g, '');
+}
+
+function isValidAlertPostcode(value) {
+    const cleaned = String(value || '').trim();
+    return ALERT_POSTCODE_PATTERNS.some(pattern => pattern.test(cleaned));
+}
+
+// An open end of a price range comes across as an empty string, the word
+// "null", or a missing key. Number('') is 0, which would silently turn "no
+// minimum" into "at least free", so the empty cases are caught before that.
+function alertCentsOrNull(value) {
+    if (value === null || value === undefined) return null;
+    const raw = String(value).trim();
+    if (raw === '' || raw === 'null' || raw === 'undefined') return null;
+    const cents = Number(raw);
+    return Number.isFinite(cents) && cents >= 0 ? Math.round(cents) : null;
+}
+
+// Which attribute a range is about, whichever of the two shapes it arrived in.
+function alertRangeKeyOf(entry) {
+    if (!entry) return '';
+    if (typeof entry === 'object') return entry.attributeKey || '';
+    return String(entry).split(':')[0];
+}
+
+/**
+ * The page hands its price filter over in either of two shapes: the query
+ * string form ("PriceCents:1000:5000") or __NEXT_DATA__'s parsed objects
+ * ({ attributeKey, from, to }). Both mean the same thing.
+ */
+function parseAlertPriceRange(attributeRanges) {
+    const entries = Array.isArray(attributeRanges) ? attributeRanges : [attributeRanges];
+    for (const entry of entries) {
+        if (!entry) continue;
+        if (typeof entry === 'object') {
+            if (entry.attributeKey !== 'PriceCents') continue;
+            return { min: alertCentsOrNull(entry.from), max: alertCentsOrNull(entry.to) };
+        }
+        const parts = String(entry).split(':');
+        if (parts[0] !== 'PriceCents') continue;
+        return { min: alertCentsOrNull(parts[1]), max: alertCentsOrNull(parts[2]) };
+    }
+    return null;
+}
+
+/**
+ * The price range in the order the site insists on. A minimum above the maximum
+ * is a 400 from /lrp/api/search, not an empty result, so leaving it as typed
+ * would make an alert the poller can never run. Both ends are on screen, so
+ * reading them in the order that works is the only interpretation there is.
+ */
+function alertPriceRangeFor(draft) {
+    const min = draft.priceMinCents;
+    const max = draft.priceMaxCents;
+    if (min === null && max === null) return null;
+    if (min !== null && max !== null && min > max) return { from: max, to: min };
+    return { from: min, to: max };
+}
+
+function countAlertCreateFilters(draft) {
+    let count = 0;
+    if (draft.l1CategoryId) count += 1;
+    if (draft.priceMinCents !== null || draft.priceMaxCents !== null) count += 1;
+    if (isValidAlertPostcode(draft.postcode)) count += 1;
+    // The ones without a control of their own count too: they narrow the alert
+    // just as much, and a summary that skipped them would read "geen filters"
+    // over a search that has several.
+    return count + draft.attributesById.length + draft.attributesByKey.length + draft.otherRanges.length;
+}
+
+/**
+ * The draft as server-ready /lrp/api/search params, in the same shape
+ * getAlertSearchContext() produces, so the two routes into an alert stay
+ * interchangeable.
+ */
+function buildAlertCreateSearchParams(draft, term) {
+    const params = {};
+    const query = String(term || '').trim();
+    if (query) params.query = query;
+    if (draft.l1CategoryId) params.l1CategoryId = String(draft.l1CategoryId);
+    if (draft.l2CategoryId) params.l2CategoryId = String(draft.l2CategoryId);
+
+    // A radius without a postcode is not a filter, it is a parameter the site
+    // answers by ignoring it, so the two only ever travel together.
+    if (isValidAlertPostcode(draft.postcode)) {
+        params.postcode = normalizeAlertPostcode(draft.postcode);
+        if (draft.distanceMeters) params.distanceMeters = String(draft.distanceMeters);
+    }
+
+    const price = alertPriceRangeFor(draft);
+    const ranges = [
+        ...(price ? [searchRangeParam('PriceCents', price.from, price.to)] : []),
+        ...draft.otherRanges
+    ];
+    if (ranges.length > 0) params.attributeRanges = ranges;
+
+    if (draft.attributesById.length > 0) {
+        params.attributesById = draft.attributesById.map(String);
+    }
+    if (draft.attributesByKey.length > 0) {
+        params.attributesByKey = draft.attributesByKey.map(String);
+    }
+
+    return params;
+}
+
+function alertCategoryKeyFor(categoryId) {
+    const facets = cleanplaatsAlertsRuntime.createFacets;
+    if (!facets || !categoryId) return '';
+    const fromTree = (facets.categories || []).find(item => String(item.id) === String(categoryId));
+    if (fromTree && fromTree.key) return fromTree.key;
+    const fromOptions = [...(facets.categoryOptions || []), ...(cleanplaatsAlertsRuntime.createMainCategories || [])]
+        .find(item => String(item.id) === String(categoryId));
+    return (fromOptions && fromOptions.key) || '';
+}
+
+/**
+ * The link the alert row carries, rebuilt so it opens the search the alert
+ * actually runs. Category lives in the path, everything else in the hash, which
+ * is exactly the split parseLocationHashParams() in cleanup.js reads back.
+ */
+function buildAlertSearchUrl(draft, term) {
+    const query = String(term || '').trim();
+    const encoded = encodeURIComponent(query).replace(/%20/g, '+');
+    const l1Key = draft.l1Key || alertCategoryKeyFor(draft.l1CategoryId);
+    const l2Key = draft.l2Key || alertCategoryKeyFor(draft.l2CategoryId);
+
+    const path = l1Key
+        ? `/l/${l1Key}/${l2Key ? `${l2Key}/` : ''}`
+        : `/q/${encoded}/`;
+
+    const hash = [];
+    // On a category page the term only exists in the hash; on a /q/ page it is
+    // already in the path and repeating it changes nothing.
+    if (l1Key && query) hash.push(`q:${encoded}`);
+
+    // A range is two fragment keys here, not one with two colons: the site
+    // splits every fragment entry on its first colon, so "PriceCents:0:50000"
+    // reaches its parser as the value "0" and is dropped for having no
+    // From/To suffix. Only the *request* joins the ends with colons.
+    const price = alertPriceRangeFor(draft);
+    if (price) {
+        if (price.from !== null) hash.push(`PriceCentsFrom:${price.from}`);
+        if (price.to !== null) hash.push(`PriceCentsTo:${price.to}`);
+    }
+    if (draft.attributesById.length > 0) hash.push(`f:${draft.attributesById.join(',')}`);
+    if (isValidAlertPostcode(draft.postcode)) {
+        hash.push(`postcode:${normalizeAlertPostcode(draft.postcode)}`);
+        if (draft.distanceMeters) hash.push(`distanceMeters:${draft.distanceMeters}`);
+    }
+
+    return `${getAlertsSiteOrigin()}${path}${hash.length > 0 ? `#${hash.join('|')}` : ''}`;
+}
+
+/**
+ * Fills an empty draft with the filters of the search page the panel was opened
+ * from. That used to happen invisibly at create time and only while the term was
+ * untouched; now it lands in controls the user can see and change, so editing
+ * the term no longer throws the filters away without saying so.
+ */
+function seedAlertCreateDraftFromContext(context) {
+    if (cleanplaatsAlertsRuntime.createDraft) return;
+
+    const draft = emptyAlertCreateDraft();
+    cleanplaatsAlertsRuntime.createDraft = draft;
+
+    // A label the panel wrote itself, on a page with nothing typed to search
+    // for. Remembered so the box can tell it apart from a term of the user's.
+    cleanplaatsAlertsRuntime.createLabelOnly =
+        context && !context.labelIsSearchTerm ? context.suggestedLabel : '';
+
+    const pageParams = context && context.searchParams;
+    if (!pageParams) return;
+
+    if (pageParams.l1CategoryId) draft.l1CategoryId = String(pageParams.l1CategoryId);
+    if (pageParams.l2CategoryId) draft.l2CategoryId = String(pageParams.l2CategoryId);
+    if (pageParams.postcode) draft.postcode = String(pageParams.postcode);
+    if (pageParams.distanceMeters) draft.distanceMeters = String(pageParams.distanceMeters);
+
+    const ranges = Array.isArray(pageParams.attributeRanges)
+        ? pageParams.attributeRanges
+        : [pageParams.attributeRanges].filter(Boolean);
+
+    const price = parseAlertPriceRange(ranges);
+    if (price) {
+        draft.priceMinCents = price.min;
+        draft.priceMaxCents = price.max;
+    }
+    draft.otherRanges = ranges
+        .filter(entry => alertRangeKeyOf(entry) && alertRangeKeyOf(entry) !== 'PriceCents')
+        .map(entry => (typeof entry === 'object'
+            ? searchRangeParam(entry.attributeKey, entry.from ?? null, entry.to ?? null)
+            : String(entry)));
+
+    if (Array.isArray(pageParams.attributesById)) {
+        draft.attributesById = pageParams.attributesById.map(String);
+    } else if (pageParams.attributesById) {
+        draft.attributesById = [String(pageParams.attributesById)];
+    }
+    if (Array.isArray(pageParams.attributesByKey)) {
+        draft.attributesByKey = pageParams.attributesByKey.map(String);
+    }
+
+    // The category keys sit in the path of the page we came from, and they are
+    // what the alert's own link gets rebuilt from. The first facet response
+    // replaces them with the site's, so a wrong guess corrects itself.
+    const pathKeys = window.location.pathname.match(/^\/l\/([^/]+)(?:\/([^/]+))?/) || [];
+    if (draft.l1CategoryId && pathKeys[1]) draft.l1Key = pathKeys[1];
+    if (draft.l2CategoryId && pathKeys[2] && pathKeys[2] !== 'p') draft.l2Key = pathKeys[2];
+
+    // Filters that came across belong on screen, not folded away: the point of
+    // showing them is that the user knows what the alert will actually watch.
+    if (countAlertCreateFilters(draft) > 0) cleanplaatsAlertsRuntime.createFilterOpen = true;
+}
+
+/**
+ * Runs the search the create box currently describes, for a single result, and
+ * hands back both the total and the filter data the site itself would show for
+ * it. One request feeds three things: the live count under the box, the broad
+ * search warning, and the contents of the category dropdowns.
+ */
+function fetchAlertCreateFacets(searchParams) {
+    const params = new URLSearchParams({ limit: '1', offset: '0', viewOptions: 'list-view' });
+    Object.entries(searchParams).forEach(([key, value]) => {
+        if (Array.isArray(value)) value.forEach(item => params.append(`${key}[]`, item));
+        else params.set(key, value);
+    });
+
+    // Same-origin on every supported site, so this rides along on the session
+    // the user already has.
+    return fetch(`/lrp/api/search?${params.toString()}`, { headers: { 'Accept': 'application/json' } })
+        .then(response => (response.ok ? response.json() : null))
+        .then(data => {
+            if (!data) return null;
+            const facets = Array.isArray(data.facets) ? data.facets : [];
+            const categoryFacet = facets.find(facet => facet.key === 'RelevantCategories');
+            return {
+                total: Number.isFinite(data.totalResultCount) ? data.totalResultCount : null,
+                // Only the categories worth offering for this term, with counts.
+                categories: (categoryFacet && categoryFacet.categories) || [],
+                // Every main category, so picking one the term does not favour
+                // stays possible. Filtered on having no parent: as soon as a
+                // category is selected the site repurposes this list for its own
+                // drill-down and fills it with that category's subcategories,
+                // which are not main categories at all.
+                categoryOptions: (Array.isArray(data.searchCategoryOptions) ? data.searchCategoryOptions : [])
+                    .filter(item => item.parentId === null || item.parentId === undefined),
+                attributeFacets: facets.filter(facet => facet.type === 'AttributeGroupFacet'),
+                // What the site made of the ids we sent: the authoritative
+                // source for their keys and names.
+                selected: (data.searchRequest && data.searchRequest.categories) || {}
+            };
+        })
+        .catch(() => null);
+}
+
+function syncAlertDraftCategoryNames(draft, selected) {
+    const l1 = selected && selected.l1Category;
+    const l2 = selected && selected.l2Category;
+    if (l1 && String(l1.id) === String(draft.l1CategoryId)) {
+        draft.l1Key = l1.key || draft.l1Key;
+        draft.l1Label = l1.fullName || draft.l1Label;
+    }
+    if (l2 && String(l2.id) === String(draft.l2CategoryId)) {
+        draft.l2Key = l2.key || draft.l2Key;
+        draft.l2Label = l2.fullName || draft.l2Label;
+    }
+}
+
+/**
+ * Re-runs the count and refills the dropdowns for whatever is in the box now. A
+ * sequence number rather than an abort: a slow early response must not land on
+ * top of a newer one and put the previous term's categories back.
+ */
+function refreshAlertCreateFacets() {
+    const input = document.getElementById('cleanplaats-alert-label-input');
+    if (!input) return;
+
+    const draft = getAlertCreateDraft();
+    const params = buildAlertCreateSearchParams(draft, alertCreateQueryTerm(input.value));
+
+    // Re-rendering the dashboard rewires this box every time — switching views,
+    // toggling a row open, coming back from a PATCH — and none of that changes
+    // the search. Asking the site again for an answer we are still holding costs
+    // a request per click, so an unchanged box repaints from what we have.
+    // Nothing typed and nothing filtered describes no search at all, and the
+    // site answers that with an empty body. Worth not asking.
+    if (Object.keys(params).length === 0) {
+        cleanplaatsAlertsRuntime.createFacetsKey = '';
+        paintAlertCategoryOptions();
+        paintAlertCreateCount(null);
+        return;
+    }
+
+    const key = JSON.stringify(params);
+    if (key === cleanplaatsAlertsRuntime.createFacetsKey && cleanplaatsAlertsRuntime.createFacets) {
+        paintAlertCategoryOptions();
+        paintAlertCreateCount(cleanplaatsAlertsRuntime.createFacets.total);
+        return;
+    }
+
+    cleanplaatsAlertsRuntime.createFacetsKey = key;
+    const seq = ++cleanplaatsAlertsRuntime.createFacetsSeq;
+
+    fetchAlertCreateFacets(params).then(result => {
+        if (seq !== cleanplaatsAlertsRuntime.createFacetsSeq) return;
+        // The panel closed while this was in flight, and the draft it describes
+        // is gone. Painting now would build a new one out of nothing.
+        if (!cleanplaatsAlertsRuntime.createDraft) return;
+        // A failed request keeps the categories that are already on screen: a
+        // dropdown emptied by a hiccup is a worse answer than a slightly stale
+        // one, and the count is the only part that has to stay honest.
+        if (result) {
+            cleanplaatsAlertsRuntime.createFacets = result;
+            if (result.categoryOptions.length > 1) {
+                cleanplaatsAlertsRuntime.createMainCategories = result.categoryOptions;
+            }
+            syncAlertDraftCategoryNames(draft, result.selected);
+            paintAlertCategoryOptions();
+            // The raw text, not the search term: this only needs *a* word to
+            // ask the site for its category list, and on a category page the
+            // term is deliberately empty.
+            loadAlertMainCategories(input.value);
+        } else {
+            // Nothing came back, so nothing is cached under this key either —
+            // let the next paint try again instead of repeating the silence.
+            cleanplaatsAlertsRuntime.createFacetsKey = '';
+        }
+        paintAlertCreateCount(result ? result.total : null);
+    });
+}
+
+/**
+ * The main categories as the page already carries them, so the dropdown is
+ * filled the moment the box opens rather than after a round trip. The two page
+ * types keep them in different places: a search page in __NEXT_DATA__, with the
+ * keys the alert's own link is built from, and the home page, which has no
+ * __NEXT_DATA__ at all, in the header's inline config without keys. Either way
+ * in the language of the site.
+ *
+ * Returns null when neither is readable; the request path fills the list then.
+ */
+function readAlertMainCategoriesFromPage() {
+    try {
+        const nextDataEl = document.getElementById('__NEXT_DATA__');
+        const options = nextDataEl && JSON.parse(nextDataEl.textContent)
+            ?.props?.pageProps?.searchRequestAndResponse?.searchCategoryOptions;
+        // With a category selected the site refills this with that category's
+        // children, so only the parentless entries are main categories.
+        const main = (options || []).filter(item => item.parentId === null || item.parentId === undefined);
+        if (main.length > 1) {
+            return main.map(item => ({ id: item.id, name: item.name || item.fullName, key: item.key || '' }));
+        }
+    } catch (error) {
+        /* A page shape we don't know. The header config below, or the request
+           path, still gets there. */
+    }
+
+    try {
+        const script = [...document.querySelectorAll('script')]
+            .find(node => node.textContent.includes('window.__HEADER_CONFIG__'));
+        if (!script) return null;
+
+        // A plain JSON object literal, read out of the script's text the same
+        // way __NEXT_DATA__ is: a content script cannot reach the page's own
+        // window to read the variable itself.
+        const match = script.textContent.match(/window\.__HEADER_CONFIG__\s*=\s*(\{[\s\S]*?\});/);
+        if (!match) return null;
+
+        const main = (JSON.parse(match[1])?.searchBar?.categoryOptions || [])
+            // Its own "all categories" entry, which this dropdown already has.
+            .filter(item => item.value && item.value !== '0')
+            .map(item => ({ id: item.value, name: item.label, key: '' }));
+        return main.length > 1 ? main : null;
+    } catch (error) {
+        return null;
+    }
+}
+
+/**
+ * Stops scanning once the list has keys, and upgrades a keyless one (read off a
+ * home page) as soon as a page that does carry them is open. That also bounds
+ * the work: the scan repeats only while there is something better to find.
+ */
+function ensureAlertMainCategoriesFromPage() {
+    const current = cleanplaatsAlertsRuntime.createMainCategories;
+    if (current && current.some(item => item.key)) return;
+
+    const fromPage = readAlertMainCategoriesFromPage();
+    if (fromPage && (!current || fromPage.some(item => item.key))) {
+        cleanplaatsAlertsRuntime.createMainCategories = fromPage;
+    }
+}
+
+/**
+ * The main categories from a request, for the pages that carry neither list.
+ * They do not depend on the search term, and the box's own request cannot be
+ * relied on for them: the moment it carries a category the site answers with
+ * that branch instead of the whole list. So one extra request, and only when
+ * there is nothing on the page to read.
+ */
+function loadAlertMainCategories(term) {
+    if (cleanplaatsAlertsRuntime.createMainCategories) return;
+    // Every keystroke comes back through here until the list lands, and they
+    // would all ask for the same thing.
+    if (cleanplaatsAlertCreateCategoriesPending) return;
+
+    // A search with no term at all comes back with an empty body, so there is
+    // nothing to ask for yet. The next keystroke arrives back here.
+    const query = String(term || '').trim();
+    if (!query) return;
+
+    cleanplaatsAlertCreateCategoriesPending = true;
+    fetchAlertCreateFacets({ query }).then(result => {
+        cleanplaatsAlertCreateCategoriesPending = false;
+        if (!result || result.categoryOptions.length <= 1) return;
+        // Worth keeping whenever it arrives — the list outlives any one draft.
+        cleanplaatsAlertsRuntime.createMainCategories = result.categoryOptions;
+        // Painting is a different matter: with the box gone it would leave an
+        // empty draft behind that the next seed then refuses to fill.
+        if (cleanplaatsAlertsRuntime.createDraft) paintAlertCategoryOptions();
+    });
+}
+
+function scheduleAlertCreateRefresh(delay = 400) {
+    clearTimeout(cleanplaatsAlertCreateRefreshTimer);
+    cleanplaatsAlertCreateRefreshTimer = setTimeout(refreshAlertCreateFacets, delay);
+}
+
+function addAlertCategoryOption(parent, value, label, count, selectedValue, key) {
+    const option = document.createElement('option');
+    option.value = String(value);
+    option.textContent = count
+        ? `${label} · ${count.toLocaleString(CLEANPLAATS_ALERTS_NUMBER_LOCALE)}`
+        : String(label);
+    // The name without the result count, and the slug the alert's link is built
+    // from, kept beside the option rather than parsed back out of its text:
+    // "Racefietsen · 27.197" is what the user reads, not what either is.
+    option.dataset.label = String(label);
+    if (key) option.dataset.key = String(key);
+    if (String(selectedValue || '') === String(value)) option.selected = true;
+    parent.appendChild(option);
+}
+
+/**
+ * Built as elements rather than markup: the labels are the site's own text, and
+ * this way there is no escaping to get wrong. Repainting the options instead of
+ * the whole block also keeps focus where the user put it.
+ */
+function paintAlertCategoryOptions() {
+    const l1Select = document.getElementById('cleanplaats-alert-cat1');
+    const l2Select = document.getElementById('cleanplaats-alert-cat2');
+    if (!l1Select || !l2Select) return;
+
+    const draft = getAlertCreateDraft();
+    const facets = cleanplaatsAlertsRuntime.createFacets;
+    const allCategories = cleanplaatsAlertsRuntime.createMainCategories || [];
+    const tree = (facets && facets.categories) || [];
+    const relevantIds = new Set(
+        tree.filter(item => item.parentId === null || item.parentId === undefined)
+            .map(item => String(item.id))
+    );
+
+    l1Select.textContent = '';
+    addAlertCategoryOption(l1Select, '', ALERTS_TEXT.createFilterCategoryAll, 0, draft.l1CategoryId);
+
+    if (allCategories.length === 0) {
+        // Nothing has come back yet. Keep a category that is already chosen
+        // visible, so a prefilled one does not blink away while the first
+        // request is out.
+        if (draft.l1CategoryId) {
+            addAlertCategoryOption(l1Select, draft.l1CategoryId,
+                draft.l1Label || ALERTS_TEXT.createFilterCategoryLoading, 0, draft.l1CategoryId, draft.l1Key);
+        }
+        l1Select.disabled = true;
+    } else {
+        const relevant = allCategories.filter(item => relevantIds.has(String(item.id)));
+        const rest = allCategories.filter(item => !relevantIds.has(String(item.id)));
+        // The site puts the categories that fit the term first. Only worth two
+        // groups when both are non-empty; otherwise the headings say nothing.
+        const groups = (relevant.length > 0 && rest.length > 0)
+            ? [[ALERTS_TEXT.createFilterCategoryRelevant, relevant], [ALERTS_TEXT.createFilterCategoryOther, rest]]
+            : [[null, allCategories]];
+
+        groups.forEach(([groupLabel, items]) => {
+            let target = l1Select;
+            if (groupLabel) {
+                target = document.createElement('optgroup');
+                target.label = groupLabel;
+                l1Select.appendChild(target);
+            }
+            items.forEach(item => addAlertCategoryOption(
+                target, item.id, item.name || item.fullName, 0, draft.l1CategoryId, item.key));
+        });
+        l1Select.disabled = false;
+    }
+
+    l2Select.textContent = '';
+    addAlertCategoryOption(l2Select, '', ALERTS_TEXT.createFilterSubcategoryAll, 0, draft.l2CategoryId);
+
+    if (!draft.l1CategoryId) {
+        l2Select.disabled = true;
+        return;
+    }
+
+    const children = tree.filter(item => String(item.parentId) === String(draft.l1CategoryId));
+    const seen = new Set();
+    children.forEach(item => {
+        seen.add(String(item.id));
+        addAlertCategoryOption(l2Select, item.id, item.label, item.histogramCount, draft.l2CategoryId, item.key);
+    });
+
+    // A subcategory the term no longer turns up (you retyped the search) must
+    // not disappear out of the dropdown without a word: leaving it selected lets
+    // the live count underneath explain what happened.
+    if (draft.l2CategoryId && !seen.has(String(draft.l2CategoryId))) {
+        addAlertCategoryOption(l2Select, draft.l2CategoryId,
+            draft.l2Label || ALERTS_TEXT.createFilterCategoryLoading, 0, draft.l2CategoryId, draft.l2Key);
+    }
+
+    l2Select.disabled = children.length === 0 && !draft.l2CategoryId;
+}
+
+function paintAlertCreateFilterCount() {
+    const countEl = document.querySelector('.cleanplaats-alerts-create-filters .cleanplaats-alerts-filter-count');
+    if (!countEl) return;
+
+    const active = countAlertCreateFilters(getAlertCreateDraft());
+    countEl.textContent = active > 0 ? ALERTS_TEXT.filterCountActive(active) : ALERTS_TEXT.createFilterNone;
+    countEl.classList.toggle('cleanplaats-alerts-filter-count-zero', active === 0);
+}
+
+/**
+ * The line under the box: how many advertisements the search finds right now,
+ * and, past the point where an alert would fire constantly, the warning that
+ * used to be the only thing here.
+ */
+function paintAlertCreateCount(total) {
+    const countEl = document.getElementById('cleanplaats-alert-result-count');
+    const warningEl = document.getElementById('cleanplaats-alert-broad-warning');
+    if (warningEl) warningEl.hidden = true;
+    if (!countEl) return;
+
+    if (!Number.isFinite(total)) {
+        // No count is no reason to say anything: the box still works.
+        countEl.textContent = '';
+        countEl.hidden = true;
+        return;
+    }
+
+    countEl.hidden = false;
+    countEl.textContent = total === 0
+        ? ALERTS_TEXT.createResultCountNone
+        : ALERTS_TEXT.createResultCount(total);
+    countEl.classList.toggle('cleanplaats-alerts-create-count-none', total === 0);
+
+    if (warningEl && total >= CLEANPLAATS_ALERTS_BROAD_RESULT_COUNT) {
+        warningEl.textContent = ALERTS_TEXT.createBroadWarning(total);
+        warningEl.hidden = false;
+    }
+}
+
+function buildAlertCreateFacetsHtml() {
+    const facets = (cleanplaatsAlertsRuntime.createFacets || {}).attributeFacets || [];
+    const draft = getAlertCreateDraft();
+
+    return ALERT_CREATE_FACET_KEYS.map(key => {
+        const facet = facets.find(item => item.key === key);
+        const values = (facet && facet.attributeGroup) || [];
+        if (values.length === 0) return '';
+
+        const boxes = values.map(value => `
+            <label class="cleanplaats-alerts-create-facet-opt">
+                <input type="checkbox" data-facet-value="${escapeHtmlText(String(value.attributeValueId))}"${draft.attributesById.includes(String(value.attributeValueId)) ? ' checked' : ''}>
+                <span class="cleanplaats-alerts-filter-opt-box">${alertIcon('check', 12)}</span>
+                <span class="cleanplaats-alerts-filter-opt-label">${escapeHtmlText(value.attributeValueLabel || value.attributeValueKey || '')}</span>
+            </label>
+        `).join('');
+
+        return `
+            <div class="cleanplaats-alerts-create-field">
+                <span class="cleanplaats-alerts-create-field-label">${escapeHtmlText(facet.label || '')}</span>
+                <div class="cleanplaats-alerts-create-facet-opts">${boxes}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+function buildAlertCreateFilterHtml() {
+    // Before the first paint, so the category dropdown comes up filled instead
+    // of greyed out until a request lands.
+    ensureAlertMainCategoriesFromPage();
+
+    const draft = getAlertCreateDraft();
+    const open = cleanplaatsAlertsRuntime.createFilterOpen;
+    const active = countAlertCreateFilters(draft);
+    const summary = active > 0
+        ? `<span class="cleanplaats-alerts-filter-count">${ALERTS_TEXT.filterCountActive(active)}</span>`
+        : `<span class="cleanplaats-alerts-filter-count cleanplaats-alerts-filter-count-zero">${ALERTS_TEXT.createFilterNone}</span>`;
+
+    const distanceOptions = [
+        `<option value="">${escapeHtmlText(ALERTS_TEXT.createFilterDistanceAll)}</option>`,
+        ...ALERT_DISTANCE_STEPS.map(meters => {
+            const selected = String(draft.distanceMeters) === String(meters) ? ' selected' : '';
+            return `<option value="${meters}"${selected}>${escapeHtmlText(ALERTS_TEXT.createFilterDistanceOption(meters / 1000))}</option>`;
+        })
+    ].join('');
+
+    const euros = cents => (cents === null ? '' : String(Math.round(cents / 100)));
+    const postcodeValid = isValidAlertPostcode(draft.postcode);
+
+    return `
+        <div class="cleanplaats-alerts-create-filters${open ? ' cleanplaats-alerts-create-filters-open' : ''}">
+            <button type="button" class="cleanplaats-alerts-create-filters-trigger" id="cleanplaats-alert-filters-trigger" aria-expanded="${open ? 'true' : 'false'}" aria-controls="cleanplaats-alert-filters-editor">
+                <span class="cleanplaats-alerts-create-filters-trigger-left">
+                    ${alertIcon('filter', 13)}<span>${ALERTS_TEXT.createFilterTrigger}</span>${summary}
+                </span>
+                <span class="cleanplaats-alerts-filter-chevron">${alertIcon('chevron', 15)}</span>
+            </button>
+            <div class="cleanplaats-alerts-create-filters-editor" id="cleanplaats-alert-filters-editor"${open ? '' : ' hidden'}>
+                <div class="cleanplaats-alerts-create-field">
+                    <span class="cleanplaats-alerts-create-field-label">${ALERTS_TEXT.createFilterCategory}</span>
+                    <div class="cleanplaats-alerts-create-field-controls">
+                        <select id="cleanplaats-alert-cat1" aria-label="${ALERTS_TEXT.createFilterCategory}" disabled></select>
+                        <select id="cleanplaats-alert-cat2" aria-label="${ALERTS_TEXT.createFilterSubcategory}" disabled></select>
+                    </div>
+                </div>
+                <div class="cleanplaats-alerts-create-field">
+                    <span class="cleanplaats-alerts-create-field-label">${ALERTS_TEXT.createFilterPrice}</span>
+                    <div class="cleanplaats-alerts-create-field-controls">
+                        <span class="cleanplaats-alerts-create-money">
+                            <span class="cleanplaats-alerts-create-money-sign">€</span>
+                            <input type="text" id="cleanplaats-alert-price-min" inputmode="numeric" maxlength="9" value="${escapeHtmlText(euros(draft.priceMinCents))}" placeholder="${ALERTS_TEXT.createFilterPriceFrom}" aria-label="${ALERTS_TEXT.createFilterPriceFrom}">
+                        </span>
+                        <span class="cleanplaats-alerts-create-money">
+                            <span class="cleanplaats-alerts-create-money-sign">€</span>
+                            <input type="text" id="cleanplaats-alert-price-max" inputmode="numeric" maxlength="9" value="${escapeHtmlText(euros(draft.priceMaxCents))}" placeholder="${ALERTS_TEXT.createFilterPriceTo}" aria-label="${ALERTS_TEXT.createFilterPriceTo}">
+                        </span>
+                    </div>
+                </div>
+                <div class="cleanplaats-alerts-create-field">
+                    <span class="cleanplaats-alerts-create-field-label">${ALERTS_TEXT.createFilterDistance}</span>
+                    <div class="cleanplaats-alerts-create-field-controls">
+                        <input type="text" id="cleanplaats-alert-postcode" maxlength="8" value="${escapeHtmlText(draft.postcode)}" placeholder="${ALERTS_TEXT.createFilterPostcode}" aria-label="${ALERTS_TEXT.createFilterPostcode}">
+                        <select id="cleanplaats-alert-distance" aria-label="${ALERTS_TEXT.createFilterDistance}"${postcodeValid ? '' : ' disabled'}>${distanceOptions}</select>
+                    </div>
+                </div>
+                ${buildAlertCreateFacetsHtml()}
+                <div class="cleanplaats-alerts-create-hint" id="cleanplaats-alert-postcode-hint" hidden>${ALERTS_TEXT.createFilterPostcodeInvalid}</div>
+            </div>
+        </div>
+    `;
+}
+
 function buildAlertsCreateHtml(context, me) {
     const atLimit = (me.alertCount || 0) >= me.maxAlerts;
     return `
@@ -2697,6 +3514,8 @@ function buildAlertsCreateHtml(context, me) {
                 <button id="cleanplaats-alert-create" class="cleanplaats-alerts-primary-btn">${ALERTS_TEXT.createButton}</button>
             </div>
             ${context ? `<div class="cleanplaats-alerts-create-note" id="cleanplaats-alert-create-note">${ALERTS_TEXT.createContextHint}</div>` : ''}
+            ${buildAlertCreateFilterHtml()}
+            <div class="cleanplaats-alerts-create-count" id="cleanplaats-alert-result-count" hidden></div>
             ${atLimit ? `<div class="cleanplaats-alerts-create-note cleanplaats-alerts-create-note-limit">${ALERTS_TEXT.createAtLimitHint(me.maxAlerts)}</div>` : ''}
             <div class="cleanplaats-alerts-create-warning" id="cleanplaats-alert-broad-warning" hidden></div>
         </section>
@@ -2930,7 +3749,17 @@ function renderAlertsMainView() {
     const alerts = cleanplaatsAlertsRuntime.cachedAlerts || [];
     const matches = cleanplaatsAlertsRuntime.cachedMatches || [];
     const view = alertsCurrentView();
-    const context = getAlertSearchContext();
+
+    // A create just went through, so this one render starts from nothing. The
+    // page behind the panel has not changed, so seeding from it again would put
+    // the filters that were just saved straight back into the empty box.
+    const cleared = cleanplaatsAlertsRuntime.createCleared;
+    cleanplaatsAlertsRuntime.createCleared = false;
+    const context = cleared ? null : getAlertSearchContext();
+
+    // Before the create box is built, so its controls come up already showing
+    // whatever the page we were opened from had filtered on.
+    seedAlertCreateDraftFromContext(context);
 
     document.querySelectorAll('.cleanplaats-alerts-nav-item[data-nav]').forEach(button => {
         const active = button.dataset.nav === view;
@@ -2977,48 +3806,10 @@ function buildAlertsViewHead(title, subtitle) {
 // "iphone": 40.204, "stoel": 337.959).
 var CLEANPLAATS_ALERTS_BROAD_RESULT_COUNT = 5000;
 
-/**
- * Warns before the fact when the search behind the box is so broad that the
- * alert would fire constantly. Stays silent on any failure: a missing count is
- * no reason to hold up the dashboard.
- *
- * `term` is what is actually in the input. While it matches the page we came
- * from, the page's filters (category, distance) count towards the total; once
- * it is edited, the alert would be a plain search for that word, so that is
- * what gets counted.
- */
-function warnWhenSearchIsBroad(context, term) {
-    const element = document.getElementById('cleanplaats-alert-broad-warning');
-    if (!element) return;
-    element.hidden = true;
-
-    const typed = String(term == null ? '' : term).trim();
-    const usesContext = Boolean(context && context.searchParams) &&
-        (!typed || typed.toLowerCase() === context.suggestedLabel.trim().toLowerCase());
-
-    const searchParams = usesContext
-        ? context.searchParams
-        : (typed ? { query: typed } : null);
-    if (!searchParams) return;
-
-    const params = new URLSearchParams({ limit: '1', offset: '0' });
-    Object.entries(searchParams).forEach(([key, value]) => {
-        if (Array.isArray(value)) value.forEach(item => params.append(`${key}[]`, item));
-        else params.set(key, value);
-    });
-
-    // Same-origin on every supported site, so this rides along on the session
-    // the user already has.
-    fetch(`/lrp/api/search?${params.toString()}`, { headers: { 'Accept': 'application/json' } })
-        .then(response => (response.ok ? response.json() : null))
-        .then(data => {
-            const count = data && data.totalResultCount;
-            if (!Number.isFinite(count) || count < CLEANPLAATS_ALERTS_BROAD_RESULT_COUNT) return;
-            element.textContent = ALERTS_TEXT.createBroadWarning(count);
-            element.hidden = false;
-        })
-        .catch(() => {});
-}
+// The count under the create box, and the warning that goes with it, are
+// painted by refreshAlertCreateFacets(): the request that fills the category
+// dropdowns already carries the total, so the box asks the site once rather
+// than twice about the same search. See paintAlertCreateCount().
 
 /**
  * Everything inside the main surface. Called after every render of it, so it
@@ -3052,6 +3843,143 @@ function wireAlertsMainEvents(main, view) {
     });
 }
 
+/**
+ * The filter controls under the term input. Every change writes straight into
+ * the draft on the runtime and asks the site for a fresh count, so what the box
+ * says it will watch and what it will actually watch never drift apart.
+ */
+function wireAlertCreateFilters(main) {
+    const block = main.querySelector('.cleanplaats-alerts-create-filters');
+    const trigger = main.querySelector('#cleanplaats-alert-filters-trigger');
+    const editor = main.querySelector('#cleanplaats-alert-filters-editor');
+    if (!block || !trigger || !editor) return;
+
+    const draft = getAlertCreateDraft();
+
+    trigger.addEventListener('click', () => {
+        const opening = editor.hasAttribute('hidden');
+        if (opening) editor.removeAttribute('hidden');
+        else editor.setAttribute('hidden', '');
+        trigger.setAttribute('aria-expanded', String(opening));
+        block.classList.toggle('cleanplaats-alerts-create-filters-open', opening);
+        cleanplaatsAlertsRuntime.createFilterOpen = opening;
+    });
+
+    const afterChange = (immediate = true) => {
+        paintAlertCreateFilterCount();
+        paintAlertCategoryOptions();
+        if (immediate) refreshAlertCreateFacets();
+        else scheduleAlertCreateRefresh();
+    };
+
+    const l1Select = main.querySelector('#cleanplaats-alert-cat1');
+    const l2Select = main.querySelector('#cleanplaats-alert-cat2');
+
+    // The option carries the site's own slug and its plain name. Reading them
+    // here means the alert's link is right from the click rather than from the
+    // next response — create before that lands and the row still opens the
+    // category, not a broader search — and that a subcategory's stored name
+    // never keeps the result count that is only there to be read.
+    l1Select?.addEventListener('change', () => {
+        const option = l1Select.selectedOptions[0];
+        draft.l1CategoryId = l1Select.value;
+        draft.l1Key = option?.dataset.key || '';
+        draft.l1Label = option?.dataset.label || '';
+        // The subcategory belonged to the old category, so it goes with it.
+        draft.l2CategoryId = '';
+        draft.l2Key = '';
+        draft.l2Label = '';
+        afterChange();
+    });
+
+    l2Select?.addEventListener('change', () => {
+        const option = l2Select.selectedOptions[0];
+        draft.l2CategoryId = l2Select.value;
+        draft.l2Key = option?.dataset.key || '';
+        draft.l2Label = option?.dataset.label || '';
+        afterChange();
+    });
+
+    const priceMin = main.querySelector('#cleanplaats-alert-price-min');
+    const priceMax = main.querySelector('#cleanplaats-alert-price-max');
+
+    // Whole euros only, and anything that is not a digit is dropped as it is
+    // typed: "1.500" and "1 500" mean the same thing and both have to work.
+    const readPrice = input => {
+        const digits = String(input.value || '').replace(/[^\d]/g, '');
+        if (digits !== input.value) input.value = digits;
+        return digits ? Number(digits) * 100 : null;
+    };
+
+    priceMin?.addEventListener('input', () => {
+        draft.priceMinCents = readPrice(priceMin);
+        afterChange(false);
+    });
+    priceMax?.addEventListener('input', () => {
+        draft.priceMaxCents = readPrice(priceMax);
+        afterChange(false);
+    });
+
+    // Once the field is left alone, put the two ends on screen in the order the
+    // search will actually use them, so nothing is reinterpreted behind the
+    // user's back. Not while typing: "5" on its way to "5000" is briefly below
+    // the maximum and swapping it there would fight the keyboard.
+    const orderPriceFields = () => {
+        const ordered = alertPriceRangeFor(draft);
+        if (!ordered || ordered.from === null || ordered.to === null) return;
+        if (draft.priceMinCents <= draft.priceMaxCents) return;
+        draft.priceMinCents = ordered.from;
+        draft.priceMaxCents = ordered.to;
+        if (priceMin) priceMin.value = String(Math.round(ordered.from / 100));
+        if (priceMax) priceMax.value = String(Math.round(ordered.to / 100));
+    };
+    priceMin?.addEventListener('change', orderPriceFields);
+    priceMax?.addEventListener('change', orderPriceFields);
+
+    const postcode = main.querySelector('#cleanplaats-alert-postcode');
+    const distance = main.querySelector('#cleanplaats-alert-distance');
+    const postcodeHint = main.querySelector('#cleanplaats-alert-postcode-hint');
+
+    // A radius means nothing without a postcode, so it stays out of reach until
+    // there is one the site can actually resolve. Half-typed is not yet wrong:
+    // the hint waits until something is in the field.
+    const applyPostcodeState = () => {
+        const valid = isValidAlertPostcode(draft.postcode);
+        if (distance) {
+            distance.disabled = !valid;
+            if (!valid) {
+                distance.value = '';
+                draft.distanceMeters = '';
+            }
+        }
+        if (postcodeHint) postcodeHint.hidden = valid || draft.postcode.trim().length === 0;
+    };
+
+    postcode?.addEventListener('input', () => {
+        draft.postcode = postcode.value;
+        applyPostcodeState();
+        afterChange(false);
+    });
+
+    distance?.addEventListener('change', () => {
+        draft.distanceMeters = distance.value;
+        afterChange();
+    });
+
+    main.querySelectorAll('[data-facet-value]').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            const value = checkbox.dataset.facetValue;
+            draft.attributesById = checkbox.checked
+                ? [...new Set([...draft.attributesById, value])]
+                : draft.attributesById.filter(item => item !== value);
+            afterChange();
+        });
+    });
+
+    applyPostcodeState();
+    paintAlertCategoryOptions();
+}
+
 function wireAlertsCreateBox(main) {
     const createButton = main.querySelector('#cleanplaats-alert-create');
     if (!createButton) return;
@@ -3067,17 +3995,15 @@ function wireAlertsCreateBox(main) {
         });
     }
 
-    // The warning belongs to whatever is in the box, not to the page it was
-    // opened from: someone who types a term of their own deserves the same
-    // heads-up as someone who arrived from a broad search page.
+    wireAlertCreateFilters(main);
+
+    // The count and the categories belong to whatever is in the box, not to the
+    // page it was opened from: someone who types a term of their own gets the
+    // same numbers and the same choices as someone who arrived from a search.
     if (labelInput) {
-        let debounce = null;
-        labelInput.addEventListener('input', () => {
-            clearTimeout(debounce);
-            debounce = setTimeout(() => warnWhenSearchIsBroad(getAlertSearchContext(), labelInput.value), 500);
-        });
+        labelInput.addEventListener('input', () => scheduleAlertCreateRefresh());
     }
-    warnWhenSearchIsBroad(getAlertSearchContext(), labelInput?.value);
+    refreshAlertCreateFacets();
 
     createButton.onclick = () => {
         const term = (labelInput?.value || '').trim();
@@ -3095,18 +4021,26 @@ function wireAlertsCreateBox(main) {
             return;
         }
 
-        // Reuse the page's search context (category/location filters) only
-        // while the term still matches it; an edited term is a new, plain
-        // search.
-        const context = getAlertSearchContext();
-        const usesContext = Boolean(context) &&
-            term.toLowerCase() === context.suggestedLabel.trim().toLowerCase();
-        const searchParams = usesContext
-            ? context.searchParams
-            : { query: term };
-        const searchUrl = usesContext
-            ? context.searchUrl
-            : `${getAlertsSiteOrigin()}/q/${encodeURIComponent(term).replace(/%20/g, '+')}/`;
+        // The controls are the whole truth about the search now: they start out
+        // holding whatever the page we were opened from filtered on, and the
+        // user can see and change every part of that. So there is no longer a
+        // context to fall back on, and editing the term no longer quietly drops
+        // the filters that came with it.
+        const draft = getAlertCreateDraft();
+        // On a category page the box names the alert after the category, and
+        // that name is not something to search for. What is left is the
+        // category itself, which is exactly the search on screen.
+        const query = alertCreateQueryTerm(term);
+        const searchParams = buildAlertCreateSearchParams(draft, query);
+        const searchUrl = buildAlertSearchUrl(draft, query);
+
+        // Clearing the category out of an alert that never had a term leaves
+        // nothing to watch but the whole site.
+        if (Object.keys(searchParams).length === 0) {
+            showBubbleNotification(ALERTS_TEXT.createTermMissing);
+            if (labelInput) labelInput.focus();
+            return;
+        }
 
         createButton.disabled = true;
         alertsApiFetch('/api/alerts', {
@@ -3123,6 +4057,13 @@ function wireAlertsCreateBox(main) {
             })
         }).then(() => {
             showBubbleNotification(ALERTS_TEXT.createdToast);
+            // The next zoekopdracht is a new one: leaving this one's filters in
+            // the box would quietly attach them to whatever gets typed next.
+            // The flag makes that stick through the reload underneath, which
+            // re-renders the box and would otherwise seed it from the page all
+            // over again.
+            resetAlertCreateDraft();
+            cleanplaatsAlertsRuntime.createCleared = true;
             cleanplaatsAlertsRuntime.view = 'alerts';
             loadAlertsDashboard();
         }).catch(error => {
@@ -3470,8 +4411,8 @@ var ALERTS_WALKTHROUGH_TEXT_NL = {
     loginTitle: 'Eerst een account',
     loginBody: 'Je e-mailadres is je account. Je krijgt er een inlogcode op, dus er is geen wachtwoord om te onthouden.',
     createTitle: 'Maak je eerste melding',
-    createBody: 'Je huidige zoekopdracht staat al ingevuld, mét de filters die je nu gebruikt. Eén klik en Cleanplaats zoekt vanaf nu voor je door.',
-    createBodyPlain: 'Vul hier een zoekterm in. Doe je dit vanaf een zoekresultatenpagina, dan staan je zoekopdracht en filters er meteen klaar.',
+    createBody: 'Je huidige zoekopdracht staat al ingevuld, mét de filters die je nu gebruikt. Pas categorie, prijs of afstand hieronder nog aan, en Cleanplaats zoekt vanaf nu voor je door.',
+    createBodyPlain: 'Vul hier een zoekterm in en verfijn hem met categorie, prijs en afstand. Kom je vanaf een zoekresultatenpagina, dan staan die filters al ingevuld.',
     telegramTitle: 'Koppel Telegram',
     telegramBody: 'Je meldingen komen binnen via Telegram, ook als je browser dicht is. Zonder koppeling blijft het stil.',
     telegramLinkedTitle: 'Zo ontvang je ze',
@@ -3488,8 +4429,8 @@ var ALERTS_WALKTHROUGH_TEXT_FR = {
     loginTitle: 'D’abord un compte',
     loginBody: 'Votre adresse e-mail est votre compte. Vous y recevez un code de connexion, il n’y a donc pas de mot de passe à retenir.',
     createTitle: 'Créez votre première recherche',
-    createBody: 'Votre recherche actuelle est déjà remplie, avec les filtres que vous utilisez en ce moment. Un clic et Cleanplaats continue à chercher pour vous.',
-    createBodyPlain: 'Saisissez un terme ici. Si vous le faites depuis une page de résultats, votre recherche et vos filtres sont déjà prêts.',
+    createBody: 'Votre recherche actuelle est déjà remplie, avec les filtres que vous utilisez. Ajustez encore la catégorie, le prix ou la distance ci-dessous, et Cleanplaats continue à chercher pour vous.',
+    createBodyPlain: 'Saisissez un terme ici et affinez-le avec la catégorie, le prix et la distance. Si vous venez d’une page de résultats, ces filtres sont déjà remplis.',
     telegramTitle: 'Liez Telegram',
     telegramBody: 'Vos notifications arrivent via Telegram, même navigateur fermé. Sans liaison, rien ne part.',
     telegramLinkedTitle: 'Voilà comment vous les recevez',

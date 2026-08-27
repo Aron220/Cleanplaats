@@ -772,6 +772,16 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_NL = {
+    '2.2.0': {
+        intro: 'Cleanplaats 2.2.0 laat je een zoekopdracht meteen verfijnen. Categorie, prijs en afstand stel je nu in het venster zelf in, dus je hoeft er niet eerst op de site een zoekopdracht voor op te bouwen.',
+        highlights: [
+            'Nieuw: onder de zoekterm staat "Categorie, prijs en afstand". Klap het open en kies een categorie en subcategorie, een prijs vanaf en tot, en een postcode met een afstand eromheen.',
+            'Terwijl je kiest zie je eronder hoeveel advertenties je zoekopdracht op dit moment vindt. Zo weet je voordat je hem aanzet of hij scherp genoeg staat.',
+            'De categorieën komen rechtstreeks van de site waar je bent, met het aantal advertenties erbij, en de categorieën die bij je zoekterm passen staan bovenaan.',
+            'Kom je vanaf je zoekresultaten? Dan staan die filters nu ingevuld in beeld in plaats van onzichtbaar mee te gaan, en je kunt ze aanpassen zonder ze kwijt te raken.'
+        ],
+        note: 'Verfijnen is splinternieuw. Werkt er iets niet zoals je verwacht, of mis je een filter? Mail naar info@cleanplaats.com, elk bericht komt bij de maker terecht.'
+    },
     '2.1.7': {
         intro: 'Cleanplaats 2.1.7 brengt Zoekopdrachten naar 2dehands en 2ememain. Wat je op Marktplaats al kon, kan nu op alle drie de sites: een zoekopdracht opslaan en een bericht in Telegram krijgen zodra er een nieuwe advertentie voor verschijnt, ook als je browser dicht is.',
         highlights: [
@@ -848,6 +858,16 @@ var CLEANPLAATS_UPDATE_NOTES_NL = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_FR = {
+    '2.2.0': {
+        intro: 'Cleanplaats 2.2.0 vous laisse affiner une recherche tout de suite. La catégorie, le prix et la distance se règlent maintenant dans la fenêtre même, sans devoir d’abord construire la recherche sur le site.',
+        highlights: [
+            'Nouveau : sous le terme de recherche se trouve "Catégorie, prix et distance". Dépliez-le et choisissez une catégorie et une sous-catégorie, un prix à partir de et jusqu’à, et un code postal avec une distance autour.',
+            'Pendant que vous choisissez, vous voyez en dessous combien d’annonces votre recherche trouve en ce moment. Vous savez donc avant de l’activer si elle est assez précise.',
+            'Les catégories viennent directement du site où vous êtes, avec le nombre d’annonces, et celles qui correspondent à votre terme figurent en haut.',
+            'Vous arrivez depuis vos résultats ? Ces filtres sont désormais remplis à l’écran au lieu d’être repris de façon invisible, et vous pouvez les modifier sans les perdre.'
+        ],
+        note: 'Affiner est tout nouveau. Quelque chose ne fonctionne pas comme prévu, ou un filtre vous manque ? Écrivez à info@cleanplaats.com, chaque message arrive chez le créateur.'
+    },
     '2.1.7': {
         intro: 'Cleanplaats 2.1.7 apporte les Recherches à 2dehands et 2ememain. Ce que vous pouviez déjà faire sur Marktplaats fonctionne maintenant sur les trois sites : enregistrer une recherche et recevoir un message dans Telegram dès qu’une nouvelle annonce y apparaît, même si votre navigateur est fermé.',
         highlights: [
