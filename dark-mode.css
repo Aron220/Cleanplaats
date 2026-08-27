@@ -627,6 +627,30 @@ html.cleanplaats-dark-mode .cleanplaats-info-overlay {
   background: rgba(15, 23, 42, 0.55) !important;
 }
 
+/* Het welkomstvenster krijgt hierboven alleen een donkere achtergrond; de kop,
+   stapteksten en sluitknop hebben eigen lichte-modus-kleuren die zonder deze
+   overrides donker-op-donker uitvallen. */
+html.cleanplaats-dark-mode .cleanplaats-onboarding-content {
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-onboarding-header h3 {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-onboarding-step p {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-onboarding-close {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-onboarding-close:hover,
+html.cleanplaats-dark-mode .cleanplaats-onboarding-close:focus-visible {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
 html.cleanplaats-dark-mode .cleanplaats-blacklist-modal,
 html.cleanplaats-dark-mode .cleanplaats-terms-modal {
   background: var(--cleanplaats-dark-bg-elevated) !important;
