@@ -44,13 +44,21 @@ var API_REQUEST_DOMAINS = ['marktplaats.nl', '2dehands.be', '2ememain.be'];
 //
 // urlFilters stay locale-agnostic: the banner bundle is per-locale
 // (index.mp.nlnl, index.mp.nlbe, index.mp.frbe), so matching on the path up to
-// 'index.' covers 2dehands and 2ememain too.
+// 'index.' covers 2dehands and 2ememain too. The ga-tracking bundle is
+// content-hashed the same way, so that rule stops at the directory.
+//
+// Audience targeting is reachable on two paths: the /lrp/api/ one the search
+// page calls, and a bare /audience-targeting/v1/ on the api host. Rule 11 only
+// covers the first, so rule 15 catches the second.
 var AD_BLOCK_RULES = [
     { id: 10, urlFilter: '||tagmanager.marktplaats.nl^' },
     { id: 11, urlFilter: '/lrp/api/audience-targeting' },
     { id: 12, urlFilter: '/ecg-js-banners/ads/ads-adsscript' },
     { id: 13, urlFilter: '/ecg-js-banners/index.' },
-    { id: 14, urlFilter: '/auroraAdobeDmpJs' }
+    { id: 14, urlFilter: '/auroraAdobeDmpJs' },
+    { id: 15, urlFilter: '/audience-targeting/v1/' },
+    { id: 16, urlFilter: '/ecg-js-ga-tracking/' },
+    { id: 17, urlFilter: '||securepubads.g.doubleclick.net^' }
 ];
 
 // Admarkt is the paid-placement platform, so these only make sense while the
