@@ -59,6 +59,14 @@ var API_REQUEST_DOMAINS = ['marktplaats.nl', '2dehands.be', '2ememain.be'];
 // The Datadog bundle is real user monitoring, not error logging: session id,
 // views and interactions. It currently loads without ever initialising, so
 // this mostly saves 180 kB and forecloses the tracking if that changes.
+//
+// Pubmatic is the header bidding side of the ad stack: ads.pubmatic.com serves
+// the prebid wrapper, ut.pubmatic.com does a geo lookup carrying the publisher
+// id. Nothing functional hangs off either, so the whole domain goes.
+//
+// analytics.js is pulled in by the page itself, not by the ecg-js-ga-tracking
+// bundle, which is why rule 16 never caught it. Matching the domain covers the
+// regional endpoints (region1.google-analytics.com and friends) too.
 var AD_BLOCK_RULES = [
     { id: 10, urlFilter: '||tagmanager.marktplaats.nl^' },
     { id: 11, urlFilter: '/lrp/api/audience-targeting' },
@@ -69,7 +77,11 @@ var AD_BLOCK_RULES = [
     { id: 16, urlFilter: '/ecg-js-ga-tracking/' },
     { id: 17, urlFilter: '||securepubads.g.doubleclick.net^' },
     { id: 18, urlFilter: '||p.marktplaats.net^' },
-    { id: 19, urlFilter: '||datadoghq-browser-agent.com^' }
+    { id: 19, urlFilter: '||datadoghq-browser-agent.com^' },
+    { id: 22, urlFilter: '||pubmatic.com^' },
+    { id: 23, urlFilter: '||googlesyndication.com^' },
+    { id: 24, urlFilter: '||google-analytics.com^' },
+    { id: 25, urlFilter: '||adtrafficquality.google^' }
 ];
 
 // Admarkt is the paid-placement platform, so these only make sense while the
