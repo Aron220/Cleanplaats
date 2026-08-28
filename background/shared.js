@@ -50,6 +50,15 @@ var API_REQUEST_DOMAINS = ['marktplaats.nl', '2dehands.be', '2ememain.be'];
 // Audience targeting is reachable on two paths: the /lrp/api/ one the search
 // page calls, and a bare /audience-targeting/v1/ on the api host. Rule 11 only
 // covers the first, so rule 15 catches the second.
+//
+// p.marktplaats.net serves one file, /identity/v2/mid.js. The response sets a
+// SameSite=None cookie on that host and the script body writes the same fresh
+// UUID back as a first-party __mpx cookie on .marktplaats.nl, both for 180
+// days. It is an identifier and nothing else, so the whole host goes.
+//
+// The Datadog bundle is real user monitoring, not error logging: session id,
+// views and interactions. It currently loads without ever initialising, so
+// this mostly saves 180 kB and forecloses the tracking if that changes.
 var AD_BLOCK_RULES = [
     { id: 10, urlFilter: '||tagmanager.marktplaats.nl^' },
     { id: 11, urlFilter: '/lrp/api/audience-targeting' },
@@ -58,7 +67,9 @@ var AD_BLOCK_RULES = [
     { id: 14, urlFilter: '/auroraAdobeDmpJs' },
     { id: 15, urlFilter: '/audience-targeting/v1/' },
     { id: 16, urlFilter: '/ecg-js-ga-tracking/' },
-    { id: 17, urlFilter: '||securepubads.g.doubleclick.net^' }
+    { id: 17, urlFilter: '||securepubads.g.doubleclick.net^' },
+    { id: 18, urlFilter: '||p.marktplaats.net^' },
+    { id: 19, urlFilter: '||datadoghq-browser-agent.com^' }
 ];
 
 // Admarkt is the paid-placement platform, so these only make sense while the
