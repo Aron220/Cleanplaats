@@ -14,6 +14,36 @@
         distance:       { sortBy: 'LOCATION',   sortOrder: 'INCREASING' }
     };
     const EARLY_STYLE_ID = 'cleanplaats-early-dark-mode';
+    const LISTING_MASK_ID = 'cleanplaats-listing-mask';
+    const HIDES_LISTINGS_STORAGE_KEY = 'cleanplaats:hidesListings';
+    /* The first page of results is server-rendered into the document, so paid
+       listings get painted while the parser is still working. The content script
+       that hides them only runs at document_end and then waits on two storage
+       round trips, which is long enough to see the ads sit there and vanish.
+       Masking just the results list until that first pass lands turns a flash of
+       ads into a slightly later reveal of an already-clean page. Chrome has no
+       way to strip them from the response instead: filterResponseData is Firefox
+       only, and doing this in one browser but not the other is worse than a
+       short mask in both.
+
+       No !important on the visibility: an important declaration would outrank
+       the animation and the failsafe below would never fire. That failsafe is
+       the whole reason this is safe to ship. If the content script throws, never
+       loads, or the page turns out to have no listings at all, the animation
+       uncovers the list on its own and the user is left with an ordinary page
+       rather than a permanently blank one. */
+    const LISTING_MASK_REVEAL_DELAY = '1200ms';
+    const LISTING_MASK_CSS = `
+.hz-Listings,
+.listings-container {
+  visibility: hidden;
+  animation: cleanplaats-listing-reveal 0s linear ${LISTING_MASK_REVEAL_DELAY} forwards;
+}
+
+@keyframes cleanplaats-listing-reveal {
+  to { visibility: visible; }
+}
+`;
     /* Marktplaats server-renders <html data-theme="light"> and ships a matching
        dark token set they never exposed a switcher for. Flipping this attribute
        is what actually themes the site; dark-mode.css only patches the gaps.
@@ -142,6 +172,36 @@ html.cleanplaats-dark-mode [class*="Skeleton-withAnimation"]::before {
         (document.head || document.documentElement).appendChild(style);
     }
 
+    function shouldMaskListings() {
+        /* Only the search and category pages server-render a listing grid, and
+           they are the only places the flash shows up. */
+        const href = location.href;
+        if (!href.includes('/l/') && !href.includes('/q/')) {
+            return false;
+        }
+
+        try {
+            /* Missing means the user has not loaded a page since this shipped.
+               Every listing filter defaults to on, so masking is the safe guess;
+               only an explicit 'false' means there is nothing to hide. */
+            return window.localStorage.getItem(HIDES_LISTINGS_STORAGE_KEY) !== 'false';
+        } catch (error) {
+            console.warn('Cleanplaats: Failed to read listing mask hint from localStorage', error);
+            return false;
+        }
+    }
+
+    function installListingMask() {
+        if (!shouldMaskListings() || document.getElementById(LISTING_MASK_ID)) {
+            return;
+        }
+
+        const style = document.createElement('style');
+        style.id = LISTING_MASK_ID;
+        style.textContent = LISTING_MASK_CSS;
+        (document.head || document.documentElement).appendChild(style);
+    }
+
     function syncSiteThemeClass() {
         const isTwhSite = location.hostname.includes('2dehands.be') || location.hostname.includes('2ememain.be');
         document.documentElement.classList.toggle(TWH_SITE_CLASS, isTwhSite);
@@ -219,5 +279,6 @@ html.cleanplaats-dark-mode [class*="Skeleton-withAnimation"]::before {
 
     applyDarkMode(readDarkModePreference());
     applyDefaultSort();
+    installListingMask();
     registerStorageSync();
 })();

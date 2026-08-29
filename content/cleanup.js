@@ -145,6 +145,19 @@ function performInitialCleanup() {
         performCleanup();
     } catch (error) {
         console.error('Cleanplaats: Initial cleanup failed', error);
+    } finally {
+        revealListings();
+    }
+}
+
+// Drops the mask theme-init.js put over the results list at document_start. In
+// the finally above on purpose: a cleanup that threw still has to hand the user
+// their results back, otherwise one bad selector turns into a blank page.
+function revealListings() {
+    try {
+        document.getElementById('cleanplaats-listing-mask')?.remove();
+    } catch (error) {
+        console.warn('Cleanplaats: Failed to reveal the listing container', error);
     }
 }
 

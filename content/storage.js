@@ -2,6 +2,8 @@
  * Content-script storage and state persistence.
  */
 
+var CLEANPLAATS_HIDES_LISTINGS_STORAGE_KEY = 'cleanplaats:hidesListings';
+
 function normalizeViewedListings(viewedListings) {
     if (!viewedListings || typeof viewedListings !== 'object') {
         return {};
@@ -180,6 +182,7 @@ function loadSettings() {
 
                 setViewedListingsRuntime(items[CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY]);
                 persistSortPreference();
+                persistHidesListingsPreference();
                 resolve();
             } catch (error) {
                 console.error('Cleanplaats: Failed to parse settings from storage', error);
@@ -197,11 +200,36 @@ function persistSortPreference() {
     }
 }
 
+// theme-init.js masks the results list at document_start when this says the
+// cleanup pass is going to hide something. It runs long before storage.local is
+// readable, so localStorage is the only place that answer can live. The key
+// name is repeated there for the same reason the theme and sort keys are.
+function persistHidesListingsPreference() {
+    try {
+        const settings = CLEANPLAATS.settings;
+        const hidesSomething = Boolean(
+            settings.removeTopAds
+            || settings.removeDagtoppers
+            || settings.removePromotedListings
+            || settings.removeOpvalStickers
+            || settings.removeReservedListings
+            || settings.blacklistedTerms?.length
+            || settings.blacklistedDescriptionTerms?.length
+            || settings.blacklistedSellers?.length
+            || settings.blockedListings?.length
+        );
+        window.localStorage.setItem(CLEANPLAATS_HIDES_LISTINGS_STORAGE_KEY, hidesSomething ? 'true' : 'false');
+    } catch (error) {
+        console.warn('Cleanplaats: Failed to persist listing mask hint in localStorage', error);
+    }
+}
+
 function saveSettings() {
     return new Promise((resolve, reject) => {
         try {
             persistDarkModePreference(Boolean(CLEANPLAATS.settings.darkMode));
             persistSortPreference();
+            persistHidesListingsPreference();
             browserAPI.storage.local.set({
                 cleanplaatsSettings: JSON.stringify(CLEANPLAATS.settings),
                 panelState: JSON.stringify(CLEANPLAATS.panelState)
