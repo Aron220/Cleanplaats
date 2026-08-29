@@ -37,10 +37,31 @@ var API_REQUEST_DOMAINS = ['marktplaats.nl', '2dehands.be', '2ememain.be'];
 // BrandTileBanner rule works around), so cancelling the request is both cheaper
 // and free of layout shift.
 //
-// Deliberately NOT blocked: consent.marktplaats.nl (the CMP — blocking it can
-// leave a permanent consent overlay), faas.marktplaats.nl (unidentified, may
-// serve feature flags) and /v/api/feed-items (may back recommendation content
-// the user actually wants).
+// Deliberately NOT blocked: consent.marktplaats.nl, faas.marktplaats.nl,
+// *.sdk.awswaf.com and /v/api/feed-items. The feed items may back
+// recommendation content the user actually wants.
+//
+// consent.marktplaats.nl is the CMP. Blocking it does not strand anyone under
+// an overlay: the CMP injects its own UI, so with the script gone there is
+// nothing to be stuck under, and a cold first visit still renders the full
+// results page. It stays unblocked because suppressing it means no consent
+// choice is ever recorded for the user, which is not ours to decide for them.
+//
+// faas.marktplaats.nl is not feature flags. It is a first-party alias for a
+// third-party fraud-scoring service and it fingerprints the device: a 100 kB
+// tag script, a handful of beacons and iframes, and calls back out to the
+// vendor's own hosts. It only loads on the login flow, never on search or
+// listing pages, so blocking it would buy nothing where people actually
+// browse while risking a sign-in being scored as suspicious. Same trade as
+// the bot-protection challenge.
+//
+// The awswaf challenge is that bot protection, not an analytics tag: it loads
+// a challenge script, collects browser inputs and posts them back for a token.
+// It does profile the browser, but the signals go to the site's own bot
+// scoring rather than to an ad or analytics vendor. Browsing works with it
+// blocked right up until the origin decides to enforce the challenge, and
+// then the check can never complete, so the failure mode is a hard stop
+// rather than a slightly worse page. Not worth it.
 //
 // urlFilters stay locale-agnostic: the banner bundle is per-locale
 // (index.mp.nlnl, index.mp.nlbe, index.mp.frbe), so matching on the path up to
