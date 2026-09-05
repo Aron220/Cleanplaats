@@ -53,6 +53,7 @@
           "content/theme.js",
           "content/storage.js",
           "content/notifications.js",
+          "content/seller-verification.js",
           "content/cleanup.js",
           "content/blacklist.js",
           "content/alerts.js",

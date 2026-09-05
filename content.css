@@ -6443,3 +6443,151 @@
       grid-template-columns: 1fr;
     }
   }
+
+  /* Verkoper-check: the seller verification panel on a listing page */
+  .cleanplaats-seller-verification {
+    margin: 12px 0 0;
+    padding: 14px 16px;
+    border: 1px solid #dfe4ea;
+    border-radius: 10px;
+    background: #ffffff;
+    font-family: inherit;
+    color: #1a1a1a;
+  }
+
+  .cleanplaats-seller-verification-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .cleanplaats-seller-verification-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+
+  .cleanplaats-seller-verification-summary {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .cleanplaats-seller-verification-summary.cleanplaats-tone-all {
+    background: rgba(31, 138, 76, 0.12);
+    color: #1a6b3c;
+  }
+
+  .cleanplaats-seller-verification-summary.cleanplaats-tone-partial {
+    background: rgba(198, 129, 16, 0.14);
+    color: #8a5a05;
+  }
+
+  .cleanplaats-seller-verification-summary.cleanplaats-tone-none {
+    background: rgba(198, 40, 40, 0.12);
+    color: #a32020;
+  }
+
+  .cleanplaats-seller-checks {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .cleanplaats-seller-check {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .cleanplaats-seller-check-mark {
+    flex: 0 0 auto;
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  .cleanplaats-seller-check.is-ok .cleanplaats-seller-check-mark {
+    color: #1f8a4c;
+  }
+
+  .cleanplaats-seller-check.is-missing .cleanplaats-seller-check-mark {
+    color: #c62828;
+  }
+
+  .cleanplaats-seller-check.is-missing .cleanplaats-seller-check-label {
+    font-weight: 600;
+  }
+
+  .cleanplaats-seller-check-state {
+    color: #5f6b76;
+    font-weight: 400;
+  }
+
+  .cleanplaats-seller-check-state::before {
+    content: " · ";
+  }
+
+  .cleanplaats-seller-verification-reviews {
+    margin: 10px 0 0;
+    font-size: 12px;
+    color: #5f6b76;
+  }
+
+  .cleanplaats-seller-verification-advice {
+    margin: 10px 0 0;
+    padding-top: 10px;
+    border-top: 1px solid #eceff2;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #a32020;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-seller-verification {
+    border-color: #33404f;
+    background: #182029;
+    color: #dfe7ef;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-seller-verification-summary.cleanplaats-tone-all {
+    background: rgba(76, 190, 128, 0.16);
+    color: #7fd3a2;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-seller-verification-summary.cleanplaats-tone-partial {
+    background: rgba(226, 168, 62, 0.16);
+    color: #e8bd6c;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-seller-verification-summary.cleanplaats-tone-none {
+    background: rgba(233, 96, 96, 0.16);
+    color: #f09a9a;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-seller-check.is-ok .cleanplaats-seller-check-mark {
+    color: #6fc78f;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-seller-check.is-missing .cleanplaats-seller-check-mark {
+    color: #f08585;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-seller-check-state,
+  html.cleanplaats-dark-mode .cleanplaats-seller-verification-reviews {
+    color: #9aa8b6;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-seller-verification-advice {
+    border-top-color: #2b3641;
+    color: #f0a0a0;
+  }

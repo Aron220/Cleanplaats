@@ -526,6 +526,18 @@ function createControlPanel() {
                             </span>
                         </label>
                     </div>
+                    <div class="cleanplaats-option cleanplaats-option-preference">
+                        <label class="cleanplaats-switch">
+                            <input type="checkbox" id="sellerVerificationPanelEnabled" ${CLEANPLAATS.settings.sellerVerificationPanelEnabled ? 'checked' : ''}>
+                            <span class="cleanplaats-switch-slider"></span>
+                        </label>
+                        <label for="sellerVerificationPanelEnabled" class="cleanplaats-option-label">
+                            <span class="cleanplaats-option-label-text">
+                                ${panelText.sellerVerificationLabel}
+                                <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.sellerVerificationTooltip}">?</span>
+                            </span>
+                        </label>
+                    </div>
                     <div class="cleanplaats-option cleanplaats-option-preference cleanplaats-option-preference-block">
                         <div class="cleanplaats-option-main">
                             <label class="cleanplaats-switch">
@@ -1035,7 +1047,7 @@ function setupEventListeners() {
     });
 
     ['removeTopAds', 'removeDagtoppers', 'removePromotedListings',
-        'removeOpvalStickers', 'removeReservedListings', 'expandPanelOnPageLoad', 'showUpdatePopups', 'showViewedListingsIndicator', 'removeFavoriteRelatedAds', 'sellerAgeWarningEnabled'].forEach(id => {
+        'removeOpvalStickers', 'removeReservedListings', 'expandPanelOnPageLoad', 'showUpdatePopups', 'showViewedListingsIndicator', 'removeFavoriteRelatedAds', 'sellerAgeWarningEnabled', 'sellerVerificationPanelEnabled'].forEach(id => {
         const checkbox = document.getElementById(id);
         if (checkbox) {
             checkbox.addEventListener('change', handleCheckboxChange);
@@ -1112,6 +1124,12 @@ function handleCheckboxChange(event) {
             if (setting === 'sellerAgeWarningEnabled') {
                 showSettingFeedback();
                 scheduleSellerAgeWarningCheck({ force: true });
+                return;
+            }
+
+            if (setting === 'sellerVerificationPanelEnabled') {
+                showSettingFeedback();
+                scheduleSellerVerificationCheck({ force: true });
                 return;
             }
 

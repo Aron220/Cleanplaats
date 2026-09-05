@@ -283,13 +283,13 @@ function getListingSellerId(listing) {
 // detail page has no __NEXT_DATA__ and no seller link either, but it does assign
 // window.__CONFIG__ in an inline script. Content scripts run in an isolated
 // world and cannot read page globals, so parse the script's own text.
-function getDetailPageSellerId() {
-    if (!isProductDetailPage()) return '';
+function getDetailPageSeller() {
+    if (!isProductDetailPage()) return null;
 
-    const cached = CLEANPLAATS.runtime.detailPageSellerId;
-    if (cached && cached.path === window.location.pathname) return cached.sellerId;
+    const cached = CLEANPLAATS.runtime.detailPageSeller;
+    if (cached && cached.path === window.location.pathname) return cached.seller;
 
-    let sellerId = '';
+    let seller = null;
     try {
         const script = [...document.querySelectorAll('script:not([src])')]
             .find(node => node.textContent.includes('__CONFIG__'));
@@ -298,15 +298,30 @@ function getDetailPageSellerId() {
             const match = script.textContent.match(/__CONFIG__\s*=\s*(\{)/);
             if (match) {
                 const json = extractJsonObject(script.textContent, match.index + match[0].length - 1);
-                sellerId = json ? String(JSON.parse(json)?.listing?.seller?.id || '') : '';
+                const raw = json ? JSON.parse(json)?.listing?.seller : null;
+
+                if (raw && raw.id) {
+                    seller = {
+                        id: String(raw.id),
+                        name: String(raw.name || '').trim(),
+                        // Marktplaats sets this to false for the sellers whose
+                        // verification block it does not render at all. When the
+                        // site stays quiet about a seller, so do we.
+                        showVerifications: raw.showVerifications !== false
+                    };
+                }
             }
         }
     } catch (error) {
-        sellerId = '';
+        seller = null;
     }
 
-    CLEANPLAATS.runtime.detailPageSellerId = { path: window.location.pathname, sellerId };
-    return sellerId;
+    CLEANPLAATS.runtime.detailPageSeller = { path: window.location.pathname, seller };
+    return seller;
+}
+
+function getDetailPageSellerId() {
+    return getDetailPageSeller()?.id || '';
 }
 
 // __CONFIG__ is followed by more script, so the object has to be cut out by
@@ -442,6 +457,23 @@ function getPanelLocaleText() {
                 months: 'mois',
                 years: 'ans'
             },
+            sellerVerificationLabel: 'Contrôle du vendeur',
+            sellerVerificationTooltip: "Affiche sur la page d'une annonce ce que 2ememain a vérifié chez ce vendeur, y compris ce qui n'est pas vérifié.",
+            sellerVerificationTitle: 'Contrôle du vendeur',
+            sellerVerificationChecks: {
+                bankAccount: 'Compte bancaire',
+                phoneNumber: 'Numéro de téléphone',
+                identification: "Pièce d'identité",
+                smbVerified: 'Numéro d\u2019entreprise'
+            },
+            sellerVerificationCheckedSuffix: 'vérifié',
+            sellerVerificationUncheckedSuffix: 'non vérifié',
+            sellerVerificationSummaryAll: 'Tout est vérifié',
+            sellerVerificationSummaryPartial: (done, total) => `${done} sur ${total} vérifiés`,
+            sellerVerificationSummaryNone: 'Rien de vérifié',
+            sellerVerificationReviews: (rating, count) => `${rating} sur 5, ${count} avis`,
+            sellerVerificationNoReviews: 'Pas encore d\u2019avis',
+            sellerVerificationAdvice: 'Payez via 2ememain et gardez la conversation sur le site.',
             sellerAgeWarningToastTitle: 'Compte vendeur récent',
             sellerAgeWarningToastMessage: (sellerName, sellerAgeText, thresholdLabel) => `${sellerName} est sur la plateforme depuis ${sellerAgeText}. Votre seuil est ${thresholdLabel}.`,
             preferencesLabel: 'Préférences',
@@ -593,6 +625,23 @@ function getPanelLocaleText() {
         viewedListingsClearButtonAriaLabel: 'Wis alle opgeslagen bekeken advertenties',
         viewedListingsClearedToast: 'Alle bekeken-markeringen zijn gewist.',
         viewedListingRemovedToast: 'Deze advertentie is niet meer gemarkeerd als bekeken.',
+        sellerVerificationLabel: 'Verkoper-check',
+        sellerVerificationTooltip: 'Toont op een advertentiepagina wat er van deze verkoper gecontroleerd is, en net zo duidelijk wat niet.',
+        sellerVerificationTitle: 'Verkoper-check',
+        sellerVerificationChecks: {
+            bankAccount: 'Bankrekening',
+            phoneNumber: 'Telefoonnummer',
+            identification: 'Identiteitsbewijs',
+            smbVerified: 'KvK-nummer'
+        },
+        sellerVerificationCheckedSuffix: 'gecontroleerd',
+        sellerVerificationUncheckedSuffix: 'niet gecontroleerd',
+        sellerVerificationSummaryAll: 'Alles gecontroleerd',
+        sellerVerificationSummaryPartial: (done, total) => `${done} van de ${total} gecontroleerd`,
+        sellerVerificationSummaryNone: 'Niets gecontroleerd',
+        sellerVerificationReviews: (rating, count) => `${rating} van de 5, ${count} beoordeling${count === 1 ? '' : 'en'}`,
+        sellerVerificationNoReviews: 'Nog geen beoordelingen',
+        sellerVerificationAdvice: 'Betaal via de site en houd het gesprek op de site.',
         sellerAgeWarningLabel: 'Waarschuwing voor nieuwe verkoperaccounts',
         sellerAgeWarningTooltip: 'Toont op een advertentiepagina een waarschuwing als het verkopersaccount jonger is dan jouw ingestelde grens.',
         sellerAgeWarningThresholdLabel: 'Waarschuwen onder',
@@ -733,6 +782,7 @@ var CLEANPLAATS = {
         sellerAgeWarningEnabled: false,
         sellerAgeWarningThresholdValue: 3,
         sellerAgeWarningThresholdUnit: 'days',
+        sellerVerificationPanelEnabled: true,
         darkMode: false,
         blacklistedSellers: [],
         blacklistedTerms: [],
@@ -781,7 +831,13 @@ var CLEANPLAATS = {
         // itemId -> sellerId, learned from the page's own search payloads. See
         // the seller identity section above.
         sellerIdsByListingId: {},
-        detailPageSellerId: null
+        detailPageSeller: null,
+        sellerVerificationProfiles: {},
+        sellerVerificationTimer: 0,
+        // key identifies the seller the panel was last built for; status is
+        // idle | pending | ready | empty. Kept together so a half finished
+        // request cannot be mistaken for a finished one.
+        sellerVerification: { key: '', status: 'idle', profile: null }
     },
 
     featureFlags: {

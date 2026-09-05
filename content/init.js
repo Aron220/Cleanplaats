@@ -116,6 +116,7 @@ function initCleanplaats() {
                     setupAllObservers();
                     applySettings();
                     scheduleSellerAgeWarningCheck({ resetState: true });
+                    scheduleSellerVerificationCheck({ resetState: true });
                     showOnboarding(currentVersion);
 
                     let cleanupWaitAttempts = 0;

@@ -11,6 +11,7 @@ function performCleanupAndCheckForEmptyPage() {
 
     clearBubbleNotification();
     scheduleSellerAgeWarningCheck({ resetState: true });
+    scheduleSellerVerificationCheck({ resetState: true });
 
     // Marktplaats pages client-side, so this is the only moment we learn we are
     // looking at a different result set. Without this the counters keep summing
@@ -142,6 +143,7 @@ function setupObservers() {
                             node.querySelector?.(CLEANPLAATS_SELLER_INFO_SELECTOR)
                         ) {
                             scheduleSellerAgeWarningCheck();
+                            scheduleSellerVerificationCheck();
                         }
 
                         if (
@@ -178,6 +180,7 @@ function setupObservers() {
                 const target = mutation.target;
                 if (target?.matches?.(CLEANPLAATS_SELLER_INFO_SELECTOR)) {
                     scheduleSellerAgeWarningCheck();
+                    scheduleSellerVerificationCheck();
                 }
 
                 if (
