@@ -83,6 +83,17 @@ function getCleanplaatsSiteKey() {
     return '';
 }
 
+/**
+ * The site's own name, spelled the way the site spells it. For telling the user
+ * where information came from, which the site key is too lowercase for.
+ */
+function getCleanplaatsSiteDisplayName() {
+    if (location.hostname.includes('marktplaats.nl')) return 'Marktplaats';
+    if (location.hostname.includes('2dehands.be')) return '2dehands';
+    if (location.hostname.includes('2ememain.be')) return '2ememain';
+    return '';
+}
+
 function isProductDetailPage() {
     return /\/v\//.test(window.location.pathname);
 }
@@ -460,6 +471,7 @@ function getPanelLocaleText() {
             sellerVerificationLabel: 'Contrôle du vendeur',
             sellerVerificationTooltip: "Affiche sur la page d'une annonce ce que 2ememain a vérifié chez ce vendeur, y compris ce qui n'est pas vérifié.",
             sellerVerificationTitle: 'Contrôle du vendeur',
+            sellerVerificationSource: siteName => `Cleanplaats · données de ${siteName}`,
             sellerVerificationChecks: {
                 bankAccount: 'Compte bancaire',
                 phoneNumber: 'Numéro de téléphone',
@@ -628,6 +640,7 @@ function getPanelLocaleText() {
         sellerVerificationLabel: 'Verkoper-check',
         sellerVerificationTooltip: 'Toont op een advertentiepagina wat er van deze verkoper gecontroleerd is, en net zo duidelijk wat niet.',
         sellerVerificationTitle: 'Verkoper-check',
+        sellerVerificationSource: siteName => `Cleanplaats · gegevens van ${siteName}`,
         sellerVerificationChecks: {
             bankAccount: 'Bankrekening',
             phoneNumber: 'Telefoonnummer',

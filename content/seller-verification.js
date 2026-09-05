@@ -16,9 +16,12 @@
 
 var CLEANPLAATS_SELLER_VERIFICATION_ID = 'cleanplaats-seller-verification';
 
-// The panel sits in Marktplaats' own sidebar and looks at home there, which is
-// the point visually and a problem editorially: it passes judgement on a seller
-// and nobody should read that as the site's own verdict. So it signs its name.
+// The panel sits in the site's own sidebar and looks at home there, which is the
+// point visually and a problem editorially. Two things have to be unambiguous
+// and they pull in opposite directions: the panel is ours, so nobody mistakes
+// our judgement for the site's, but the checks are the site's, so nobody thinks
+// Cleanplaats vetted this seller itself. All we do is name what the site
+// verified and, unlike the site, what it did not. Hence both names on one line.
 // Same mark as the control panel, inlined because a content script cannot count
 // on loading an extension file into a page.
 var CLEANPLAATS_SELLER_VERIFICATION_LOGO = `
@@ -147,7 +150,7 @@ function buildSellerVerificationMarkup(profile) {
     return `
         <div class="cleanplaats-seller-verification-brand">
             ${CLEANPLAATS_SELLER_VERIFICATION_LOGO}
-            <span>Cleanplaats</span>
+            <span>${panelText.sellerVerificationSource(getCleanplaatsSiteDisplayName())}</span>
         </div>
         <div class="cleanplaats-seller-verification-head">
             <span class="cleanplaats-seller-verification-title">${panelText.sellerVerificationTitle}</span>
