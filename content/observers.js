@@ -138,8 +138,8 @@ function setupObservers() {
                         }
 
                         if (
-                            node.classList?.contains('SellerInfoSmall-root') ||
-                            node.querySelector?.('.SellerInfoSmall-root')
+                            node.matches?.(CLEANPLAATS_SELLER_INFO_SELECTOR) ||
+                            node.querySelector?.(CLEANPLAATS_SELLER_INFO_SELECTOR)
                         ) {
                             scheduleSellerAgeWarningCheck();
                         }
@@ -176,9 +176,7 @@ function setupObservers() {
 
             if (mutation.type === 'attributes') {
                 const target = mutation.target;
-                if (
-                    target?.classList?.contains('SellerInfoSmall-root')
-                ) {
+                if (target?.matches?.(CLEANPLAATS_SELLER_INFO_SELECTOR)) {
                     scheduleSellerAgeWarningCheck();
                 }
 

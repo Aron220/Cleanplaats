@@ -306,8 +306,8 @@ function removeSellerFromBlacklist(entryKey) {
 
 function injectProductDetailBlacklistButton() {
     const panelText = getPanelLocaleText();
-    const sellerRoot = document.querySelector('.SellerInfoSmall-root');
-    const sellerNameElement = sellerRoot?.querySelector('.SellerInfoSmall-name a, .SellerInfoSmall-name');
+    const sellerRoot = document.querySelector(CLEANPLAATS_SELLER_INFO_SELECTOR);
+    const sellerNameElement = sellerRoot?.querySelector(CLEANPLAATS_SELLER_INFO_NAME_SELECTOR);
     const existingRow = document.querySelector('.cleanplaats-detail-blacklist-row');
 
     if (!isProductDetailPage() || !sellerRoot || !sellerNameElement) {

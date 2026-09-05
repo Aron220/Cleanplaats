@@ -23,6 +23,17 @@ var TWH_DESKTOP_LOGO_MATCH = /\/(?:tenant|brand-logo)--(?:nlbe|frbe)(?:\.[a-z0-9
 // .hz-Listing. Anything that waits for "the listings are there" has to accept both,
 // otherwise it waits forever on the homepage.
 var CLEANPLAATS_LISTING_SELECTOR = '.hz-Listing, .hz-StructuredListing';
+// The compact seller box in the sidebar of a listing page. Marktplaats moved this
+// component to CSS modules, so .SellerInfoSmall-root became
+// .SellerInfoSmall-module-root and .SellerInfoSmall-row became
+// .SellerInfoSmall-module-row. The old names are gone from the page entirely,
+// which is why everything that keyed on them stopped firing. Match on the module
+// prefix and keep the old names for any bundle that has not caught up yet.
+// The name element is the exception: it still carries the legacy
+// .SellerInfoSmall-name alongside the module class.
+var CLEANPLAATS_SELLER_INFO_SELECTOR = '[class*="SellerInfoSmall-module-root"], .SellerInfoSmall-root';
+var CLEANPLAATS_SELLER_INFO_ROW_SELECTOR = '[class*="SellerInfoSmall-module-row"], .SellerInfoSmall-row';
+var CLEANPLAATS_SELLER_INFO_NAME_SELECTOR = '.SellerInfoSmall-name a, .SellerInfoSmall-name, [class*="SellerInfoSmall-module-name"] a, [class*="SellerInfoSmall-module-name"]';
 var cleanplaatsStorageSyncRegistered = false;
 var notificationTimeout;
 var notificationVisible = false;

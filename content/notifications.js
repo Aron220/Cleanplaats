@@ -280,9 +280,10 @@ function getSellerAgeWarningThresholdLabel() {
 }
 
 function getSellerAgeInfoFromPage() {
-    const sellerRows = Array.from(document.querySelectorAll('.SellerInfoSmall-root .SellerInfoSmall-row'));
+    const sellerRoot = document.querySelector(CLEANPLAATS_SELLER_INFO_SELECTOR);
+    const sellerRows = Array.from(sellerRoot?.querySelectorAll(CLEANPLAATS_SELLER_INFO_ROW_SELECTOR) || []);
     const sellerAgeRow = sellerRows.find(row => parseSellerAgeToDays(row.textContent) !== null);
-    const sellerNameElement = document.querySelector('.SellerInfoSmall-root .SellerInfoSmall-name a, .SellerInfoSmall-root .SellerInfoSmall-name');
+    const sellerNameElement = sellerRoot?.querySelector(CLEANPLAATS_SELLER_INFO_NAME_SELECTOR);
     const sellerAgeText = sellerAgeRow?.textContent?.trim() || '';
     const sellerName = sellerNameElement?.textContent?.trim() || 'Deze verkoper';
     const sellerAgeDays = parseSellerAgeToDays(sellerAgeText);
