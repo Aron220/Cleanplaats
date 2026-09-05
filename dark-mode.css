@@ -367,13 +367,19 @@ html.cleanplaats-dark-mode .cleanplaats-detail-blacklist-row {
   border-top-color: var(--cleanplaats-dark-border-subtle) !important;
 }
 
-html.cleanplaats-dark-mode .cleanplaats-detail-blacklist-btn {
+/* Every hide button shares .cleanplaats-blacklist-btn: the two on a search
+   result (hide seller, hide advert), the inline one on car adverts and the
+   one under the seller block on an advert page. Their light styling is a
+   near-white #f8f9fa, which on a dark result list reads as two glowing chips
+   next to every listing. The inline variant sets its colours with
+   !important, so these have to as well. */
+html.cleanplaats-dark-mode .cleanplaats-blacklist-btn {
   background: var(--cleanplaats-dark-bg-soft) !important;
   color: var(--cleanplaats-dark-text) !important;
   border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
 }
 
-html.cleanplaats-dark-mode .cleanplaats-detail-blacklist-btn:hover {
+html.cleanplaats-dark-mode .cleanplaats-blacklist-btn:hover {
   background: #c14444 !important;
   color: #fff !important;
   border-color: #c14444 !important;
