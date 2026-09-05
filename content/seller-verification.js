@@ -16,6 +16,17 @@
 
 var CLEANPLAATS_SELLER_VERIFICATION_ID = 'cleanplaats-seller-verification';
 
+// The panel sits in Marktplaats' own sidebar and looks at home there, which is
+// the point visually and a problem editorially: it passes judgement on a seller
+// and nobody should read that as the site's own verdict. So it signs its name.
+// Same mark as the control panel, inlined because a content script cannot count
+// on loading an extension file into a page.
+var CLEANPLAATS_SELLER_VERIFICATION_LOGO = `
+    <svg class="cleanplaats-seller-verification-logo" viewBox="8 8 112 112" width="14" height="14" aria-hidden="true">
+        <circle cx="64" cy="64" r="56" fill="#eda566"></circle>
+        <path d="M 32 36.5 H 96 L 71 70.5 V 84 L 57.5 94.5 V 67.5 Z" fill="none" stroke="#2d3c4d" stroke-width="6.75" stroke-linejoin="round"></path>
+    </svg>`;
+
 // Order matters: this is the order the rows are read in. KvK is deliberately
 // last because it only shows up for the business sellers that have it.
 var CLEANPLAATS_SELLER_VERIFICATION_CHECKS = ['bankAccount', 'phoneNumber', 'identification'];
@@ -134,6 +145,10 @@ function buildSellerVerificationMarkup(profile) {
         : '';
 
     return `
+        <div class="cleanplaats-seller-verification-brand">
+            ${CLEANPLAATS_SELLER_VERIFICATION_LOGO}
+            <span>Cleanplaats</span>
+        </div>
         <div class="cleanplaats-seller-verification-head">
             <span class="cleanplaats-seller-verification-title">${panelText.sellerVerificationTitle}</span>
             <span class="cleanplaats-seller-verification-summary cleanplaats-tone-${tone}">${summaryText}</span>

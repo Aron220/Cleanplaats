@@ -6455,6 +6455,23 @@
     color: #1a1a1a;
   }
 
+  /* Signs the panel so it is not mistaken for one of Marktplaats' own boxes. */
+  .cleanplaats-seller-verification-brand {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #7a8590;
+  }
+
+  .cleanplaats-seller-verification-logo {
+    flex: 0 0 auto;
+    display: block;
+  }
+
   .cleanplaats-seller-verification-head {
     display: flex;
     align-items: center;
@@ -6580,6 +6597,10 @@
 
   html.cleanplaats-dark-mode .cleanplaats-seller-check.is-missing .cleanplaats-seller-check-mark {
     color: #f08585;
+  }
+
+  html.cleanplaats-dark-mode .cleanplaats-seller-verification-brand {
+    color: #8d9aa8;
   }
 
   html.cleanplaats-dark-mode .cleanplaats-seller-check-state,
