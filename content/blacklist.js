@@ -380,6 +380,19 @@ function getListingContentWrapper(listing) {
     return null;
 }
 
+// Marktplaats ships one listview wrapper per breakpoint and switches between
+// them with CSS alone, so no mutation tells us which one is live. Only the mweb
+// wrapper stacks its children in a column; the tablet and horizontal ones are
+// flex rows, and a seller row inserted as their first child turns into an extra
+// column that shoves the image, title and price off the page. Ask the rendered
+// layout instead of inferring it from the window width.
+function listingLayoutStacksChildren(content) {
+    if (!content) return false;
+    const style = getComputedStyle(content);
+    if (style.display !== 'flex' && style.display !== 'inline-flex') return true;
+    return style.flexDirection.startsWith('column');
+}
+
 function injectBlacklistButtons() {
     const panelText = getPanelLocaleText();
     indexSellerIdsFromNextData();
@@ -421,7 +434,9 @@ function injectBlacklistButtons() {
             return;
         }
 
-        if (window.innerWidth < 700) {
+        const stackedContent = window.innerWidth < 700 ? getListingContentWrapper(listing) : null;
+
+        if (listingLayoutStacksChildren(stackedContent)) {
             if (oldTopRight && oldTopRight.dataset.cleanplaatsSellerName === sellerName) {
                 return;
             }
@@ -444,11 +459,10 @@ function injectBlacklistButtons() {
                   </svg>
                 </button>
             `);
-            const content = getListingContentWrapper(listing);
-            if (content && content.firstChild) {
-                content.insertBefore(topRow, content.firstChild);
-            } else if (content) {
-                content.appendChild(topRow);
+            if (stackedContent.firstChild) {
+                stackedContent.insertBefore(topRow, stackedContent.firstChild);
+            } else {
+                stackedContent.appendChild(topRow);
             }
             topRow.querySelector('.cleanplaats-blacklist-btn-mobile').onclick = (e) => {
                 e.preventDefault();
