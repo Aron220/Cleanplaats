@@ -131,7 +131,13 @@ var cleanplaatsAlertsRuntime = {
     // The site's main categories. Fetched once and kept: the list never changes
     // with the search term, and the ordinary request cannot supply it (see
     // loadAlertMainCategories).
-    createMainCategories: null
+    createMainCategories: null,
+    // The subcategories of the main category in the box, as { l1, items }, from
+    // the last answer that still listed them all. Once a subcategory is
+    // selected the site narrows its category facet to that one subcategory:
+    // right for the count, useless for a dropdown that has to keep offering the
+    // siblings. See paintAlertCategoryOptions().
+    createSubCategories: null
 };
 
 /**
@@ -1303,7 +1309,7 @@ function getAlertSearchContext() {
         // the endpoint and then ignored — sending them would look like a filter
         // and behave like none. readSearchFilters() in cleanup.js has already
         // put the facets under these keys, fragment included.
-        ['l1CategoryId', 'l2CategoryId', 'postcode', 'distanceMeters',
+        ['l1CategoryId', 'postcode', 'distanceMeters',
             'attributesById', 'attributesByKey', 'attributeRanges'].forEach(key => {
             const value = pageQuery[key];
             if (value !== undefined && value !== null && value !== ''
@@ -1311,6 +1317,13 @@ function getAlertSearchContext() {
                 searchParams[key] = value;
             }
         });
+
+        // The subcategory is a list on the page and a single value on an alert,
+        // so only one of them transfers. Two is not a choice to make on the
+        // user's behalf: the alert keeps the main category then, broader than
+        // the page but never a different search than the one on screen.
+        const l2Ids = pageQuery.l2CategoryIds || [];
+        if (l2Ids.length === 1) searchParams.l2CategoryId = String(l2Ids[0]);
     } else if (urlQuery) {
         // No filters we can still trust: the term on its own makes a correct
         // alert, just a broader one than the page the user is looking at.
@@ -2791,6 +2804,7 @@ var ALERT_POSTCODE_PATTERNS = [/^\d{4}\s?[a-z]{2}$/i, /^\d{4}$/];
 
 var cleanplaatsAlertCreateRefreshTimer = null;
 var cleanplaatsAlertCreateCategoriesPending = false;
+var cleanplaatsAlertCreateSubCategoriesPending = '';
 
 function emptyAlertCreateDraft() {
     return {
@@ -2826,6 +2840,7 @@ function resetAlertCreateDraft() {
     cleanplaatsAlertsRuntime.createFilterOpen = false;
     cleanplaatsAlertsRuntime.createFacetsKey = '';
     cleanplaatsAlertsRuntime.createLabelOnly = '';
+    cleanplaatsAlertsRuntime.createSubCategories = null;
     // Requests already out belong to the draft that just went away. Moving the
     // sequence on retires them: without this a response landing after the panel
     // closed would repopulate the facets and, through paintAlertCategoryOptions,
@@ -3074,7 +3089,13 @@ function seedAlertCreateDraftFromContext(context) {
 function fetchAlertCreateFacets(searchParams) {
     const params = new URLSearchParams({ limit: '1', offset: '0', viewOptions: 'list-view' });
     Object.entries(searchParams).forEach(([key, value]) => {
-        if (Array.isArray(value)) value.forEach(item => params.append(`${key}[]`, item));
+        // The subcategory only counts under its plural name. As l2CategoryId
+        // the endpoint accepts it and ignores it, and the count under the box
+        // would be the main category's — the same number the poller was
+        // matching on. The main category is the reverse (l1CategoryId works,
+        // l1CategoryIds does not), so this renames one parameter.
+        if (key === 'l2CategoryId') params.append('l2CategoryIds[]', value);
+        else if (Array.isArray(value)) value.forEach(item => params.append(`${key}[]`, item));
         else params.set(key, value);
     });
 
@@ -3108,12 +3129,16 @@ function fetchAlertCreateFacets(searchParams) {
 
 function syncAlertDraftCategoryNames(draft, selected) {
     const l1 = selected && selected.l1Category;
-    const l2 = selected && selected.l2Category;
+    // l2Categories, plural: the endpoint answers with a list even for the one
+    // subcategory an alert can hold. Read as l2Category this was always
+    // undefined, so the site's own key and name never reached the draft.
+    const l2 = ((selected && selected.l2Categories) || [])
+        .find(item => item && String(item.id) === String(draft.l2CategoryId));
     if (l1 && String(l1.id) === String(draft.l1CategoryId)) {
         draft.l1Key = l1.key || draft.l1Key;
         draft.l1Label = l1.fullName || draft.l1Label;
     }
-    if (l2 && String(l2.id) === String(draft.l2CategoryId)) {
+    if (l2) {
         draft.l2Key = l2.key || draft.l2Key;
         draft.l2Label = l2.fullName || draft.l2Label;
     }
@@ -3166,6 +3191,18 @@ function refreshAlertCreateFacets() {
             cleanplaatsAlertsRuntime.createFacets = result;
             if (result.categoryOptions.length > 1) {
                 cleanplaatsAlertsRuntime.createMainCategories = result.categoryOptions;
+            }
+            // Kept while the answer still has all of them: with a subcategory
+            // selected the site lists only that one, and the dropdown would
+            // have nothing left to switch to.
+            if (draft.l1CategoryId && !draft.l2CategoryId) {
+                cleanplaatsAlertsRuntime.createSubCategories = {
+                    l1: String(draft.l1CategoryId),
+                    items: result.categories.filter(
+                        item => String(item.parentId) === String(draft.l1CategoryId))
+                };
+            } else {
+                loadAlertSubCategories(params, draft.l1CategoryId);
             }
             syncAlertDraftCategoryNames(draft, result.selected);
             paintAlertCategoryOptions();
@@ -3274,6 +3311,36 @@ function loadAlertMainCategories(term) {
     });
 }
 
+/**
+ * The subcategories of the main category in the box, asked for without the
+ * subcategory that is already selected. With one selected the ordinary request
+ * comes back listing only that one, which is the right answer to the question
+ * it was asked and the wrong list for a dropdown: the user opened the panel on
+ * a subcategory page and would have nothing to switch to. One request per main
+ * category, and only when the ordinary one cannot supply the list itself.
+ */
+function loadAlertSubCategories(params, l1CategoryId) {
+    if (!l1CategoryId || !params.l2CategoryId) return;
+
+    const l1 = String(l1CategoryId);
+    const cached = cleanplaatsAlertsRuntime.createSubCategories;
+    if (cached && String(cached.l1) === l1) return;
+    if (cleanplaatsAlertCreateSubCategoriesPending === l1) return;
+
+    const { l2CategoryId, ...withoutSubcategory } = params;
+    cleanplaatsAlertCreateSubCategoriesPending = l1;
+    fetchAlertCreateFacets(withoutSubcategory).then(result => {
+        cleanplaatsAlertCreateSubCategoriesPending = '';
+        if (!result) return;
+        const items = result.categories.filter(item => String(item.parentId) === l1);
+        if (items.length === 0) return;
+        cleanplaatsAlertsRuntime.createSubCategories = { l1, items };
+        // Same reason as loadAlertMainCategories: with the box gone, painting
+        // would leave an empty draft behind that the next seed then refuses.
+        if (cleanplaatsAlertsRuntime.createDraft) paintAlertCategoryOptions();
+    });
+}
+
 function scheduleAlertCreateRefresh(delay = 400) {
     clearTimeout(cleanplaatsAlertCreateRefreshTimer);
     cleanplaatsAlertCreateRefreshTimer = setTimeout(refreshAlertCreateFacets, delay);
@@ -3355,7 +3422,16 @@ function paintAlertCategoryOptions() {
         return;
     }
 
-    const children = tree.filter(item => String(item.parentId) === String(draft.l1CategoryId));
+    // A selected subcategory narrows the site's own category facet to that one
+    // subcategory. The last answer that still listed the siblings describes
+    // them just as well, and keeps switching to one of them a single click.
+    const listed = tree.filter(item => String(item.parentId) === String(draft.l1CategoryId));
+    const remembered = cleanplaatsAlertsRuntime.createSubCategories;
+    const children = (listed.length <= 1 && draft.l2CategoryId && remembered
+        && String(remembered.l1) === String(draft.l1CategoryId))
+        ? remembered.items
+        : listed;
+
     const seen = new Set();
     children.forEach(item => {
         seen.add(String(item.id));

@@ -789,7 +789,14 @@ function getNextDataQuery() {
         // where the category lives, so the path decides.
         const categories = nextData.props?.pageProps?.searchRequestAndResponse?.searchRequest?.categories;
         const path = window.location.pathname;
-        const categoryKeys = [categories?.l1Category?.key, categories?.l2Category?.key].filter(Boolean);
+        // l2Categories, plural: the site reports the subcategory as a list even
+        // when the page shows one. Read as l2Category the key was always
+        // undefined, and the path check below then only ever validated the main
+        // category — a stale subcategory passed it unnoticed.
+        const categoryKeys = [
+            categories?.l1Category?.key,
+            ...(categories?.l2Categories || []).map(item => item?.key)
+        ].filter(Boolean);
 
         if (path.startsWith('/l/') && categoryKeys.some(key => !path.includes(`/${key}/`))) return null;
 
@@ -799,6 +806,17 @@ function getNextDataQuery() {
 
         // The URL wins: on category pages the term only exists in the hash.
         const result = { ...query, searchQuery: urlQuery };
+
+        // __NEXT_DATA__ calls the subcategory l2CategoryIds, and so does
+        // /lrp/api/search: sent as l2CategoryId it is accepted and then ignored,
+        // and the search runs on the whole main category instead. Normalised to
+        // a list of ids here so every caller sends it the way the page does.
+        const l2Ids = [query.l2CategoryIds].flat()
+            .flatMap(value => String(value ?? '').split(','))
+            .map(value => value.trim())
+            .filter(value => /^\d+$/.test(value));
+        if (l2Ids.length > 0) result.l2CategoryIds = l2Ids;
+        else delete result.l2CategoryIds;
 
         // The facet filters, under the names /lrp/api/search actually answers
         // to. nextData.query only has the path-shaped ones, and the endpoint
@@ -811,7 +829,7 @@ function getNextDataQuery() {
         // inside the category they just removed.
         if (!path.startsWith('/l/') && categoryKeys.length > 0) {
             delete result.l1CategoryId;
-            delete result.l2CategoryId;
+            delete result.l2CategoryIds;
             // The facets go with it. They were read off the same snapshot, and
             // that snapshot is the one thing we already know is out of date —
             // keeping half of it would describe a search that never existed.
@@ -841,7 +859,7 @@ function buildSearchApiUrl(offset, limit) {
 
     if (query.searchQuery) params.set('query', query.searchQuery);
     if (query.l1CategoryId) params.set('l1CategoryId', query.l1CategoryId);
-    if (query.l2CategoryId) params.set('l2CategoryId', query.l2CategoryId);
+    (query.l2CategoryIds || []).forEach(id => params.append('l2CategoryIds[]', id));
     if (query.postcode) params.set('postcode', query.postcode);
     if (query.distanceMeters) params.set('distanceMeters', query.distanceMeters);
     if (query.searchInTitleAndDescription) params.set('searchInTitleAndDescription', query.searchInTitleAndDescription);
