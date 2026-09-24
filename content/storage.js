@@ -97,52 +97,110 @@ function rememberCurrentListingVisit() {
     });
 }
 
+function applyViewedListingsFromStorage(viewedListings) {
+    setViewedListingsRuntime(viewedListings);
+
+    if (typeof applyViewedListingIndicators === 'function') {
+        applyViewedListingIndicators();
+    }
+
+    if (typeof syncViewedListingsControlsState === 'function') {
+        syncViewedListingsControlsState();
+    }
+}
+
+// saveSettings() writes the whole settings object, so a tab that kept its own
+// copy from page load would put that copy back on its next save and silently
+// undo everything done in other tabs since: block a seller in one tab, collapse
+// the panel in another, and the block is gone. Every tab therefore takes over
+// whatever another tab saved, the moment it is saved.
+function applySettingsFromOtherTab(serializedSettings) {
+    const pendingWrites = CLEANPLAATS.runtime.pendingSettingsWrites;
+    const ownWriteIndex = pendingWrites.indexOf(serializedSettings);
+    if (ownWriteIndex !== -1) {
+        // Our own save coming back. Anything before it in the list was
+        // superseded by it and will not be reported separately.
+        pendingWrites.splice(0, ownWriteIndex + 1);
+        return;
+    }
+
+    if (serializedSettings === JSON.stringify(CLEANPLAATS.settings)) {
+        return;
+    }
+
+    let nextSettings;
+    try {
+        nextSettings = JSON.parse(serializedSettings);
+    } catch (error) {
+        console.error('Cleanplaats: Failed to read settings saved by another tab', error);
+        return;
+    }
+    if (!nextSettings || typeof nextSettings !== 'object') return;
+
+    const darkModeEnabled = Boolean(nextSettings.darkMode);
+    const darkModeChanged = CLEANPLAATS.settings.darkMode !== darkModeEnabled;
+
+    Object.assign(CLEANPLAATS.settings, nextSettings);
+
+    if (darkModeChanged) {
+        applyDarkModeToDocument(darkModeEnabled);
+        syncDarkModeToggle(darkModeEnabled);
+    } else {
+        persistDarkModePreference(darkModeEnabled);
+    }
+
+    persistSortPreference();
+    persistHidesListingsPreference();
+
+    if (typeof syncPanelControlsToSettings === 'function') {
+        syncPanelControlsToSettings();
+    }
+
+    // Blocks can have been lifted as well as added, so start from a clean page
+    // rather than only hiding more, the same way a filter toggle does.
+    if (typeof runScheduledCleanup === 'function') {
+        resetPreviousChanges();
+        runScheduledCleanup();
+    }
+
+    updateBlacklistModal();
+    updateTermsModal();
+    updateBlockedListingsModal();
+}
+
+function applyPanelStateFromOtherTab(serializedPanelState) {
+    try {
+        const nextPanelState = JSON.parse(serializedPanelState);
+        if (nextPanelState && typeof nextPanelState === 'object') {
+            // Only adopted, not applied: collapsing the panel in one tab should
+            // not fold it away in front of the user in another. It just must not
+            // be written back stale (a lost lastSeenVersion shows the update
+            // popup again).
+            Object.assign(CLEANPLAATS.panelState, nextPanelState);
+        }
+    } catch (error) {
+        console.error('Cleanplaats: Failed to read panel state saved by another tab', error);
+    }
+}
+
 function registerSettingsStorageSync() {
     if (cleanplaatsStorageSyncRegistered || !browserAPI?.storage?.onChanged?.addListener) {
         return;
     }
 
     browserAPI.storage.onChanged.addListener((changes, areaName) => {
-        if (areaName !== 'local' || !changes.cleanplaatsSettings?.newValue) {
-            if (areaName === 'local' && Object.prototype.hasOwnProperty.call(changes, CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY)) {
-                setViewedListingsRuntime(changes[CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY].newValue);
+        if (areaName !== 'local') return;
 
-                if (typeof applyViewedListingIndicators === 'function') {
-                    applyViewedListingIndicators();
-                }
-
-                if (typeof syncViewedListingsControlsState === 'function') {
-                    syncViewedListingsControlsState();
-                }
-            }
-            return;
+        if (changes.cleanplaatsSettings?.newValue) {
+            applySettingsFromOtherTab(changes.cleanplaatsSettings.newValue);
         }
 
-        try {
-            const nextSettings = JSON.parse(changes.cleanplaatsSettings.newValue);
-            const darkModeEnabled = Boolean(nextSettings?.darkMode);
-
-            if (CLEANPLAATS.settings.darkMode !== darkModeEnabled) {
-                CLEANPLAATS.settings.darkMode = darkModeEnabled;
-                applyDarkModeToDocument(darkModeEnabled);
-                syncDarkModeToggle(darkModeEnabled);
-            } else {
-                persistDarkModePreference(darkModeEnabled);
-            }
-        } catch (error) {
-            console.error('Cleanplaats: Failed to sync dark mode from storage', error);
+        if (changes.panelState?.newValue) {
+            applyPanelStateFromOtherTab(changes.panelState.newValue);
         }
 
         if (Object.prototype.hasOwnProperty.call(changes, CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY)) {
-            setViewedListingsRuntime(changes[CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY].newValue);
-
-            if (typeof applyViewedListingIndicators === 'function') {
-                applyViewedListingIndicators();
-            }
-
-            if (typeof syncViewedListingsControlsState === 'function') {
-                syncViewedListingsControlsState();
-            }
+            applyViewedListingsFromStorage(changes[CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY].newValue);
         }
     });
 
@@ -230,11 +288,17 @@ function saveSettings() {
             persistDarkModePreference(Boolean(CLEANPLAATS.settings.darkMode));
             persistSortPreference();
             persistHidesListingsPreference();
+            const serializedSettings = JSON.stringify(CLEANPLAATS.settings);
+            CLEANPLAATS.runtime.pendingSettingsWrites.push(serializedSettings);
             browserAPI.storage.local.set({
-                cleanplaatsSettings: JSON.stringify(CLEANPLAATS.settings),
+                cleanplaatsSettings: serializedSettings,
                 panelState: JSON.stringify(CLEANPLAATS.panelState)
             }, () => {
                 if (browserAPI.runtime.lastError) {
+                    const pendingWrites = CLEANPLAATS.runtime.pendingSettingsWrites;
+                    const failedIndex = pendingWrites.lastIndexOf(serializedSettings);
+                    if (failedIndex !== -1) pendingWrites.splice(failedIndex, 1);
+
                     console.error('Cleanplaats: Failed to save settings to storage', browserAPI.runtime.lastError);
                     reject(browserAPI.runtime.lastError);
                     return;

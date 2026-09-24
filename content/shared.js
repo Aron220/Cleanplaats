@@ -240,8 +240,8 @@ function getBlacklistedSellerLabel(entry) {
 
 // An id-based entry deliberately does not fall back to matching on name: doing
 // so would hide the very lookalike sellers this exists to stop hiding. When the
-// id cannot be resolved the listing stays visible and the next page load, which
-// does resolve it, hides it again.
+// id cannot be resolved yet the listing stays visible until the search response
+// that carries it comes in through listenForPageSearchResults().
 function isSellerBlacklisted(sellerId, sellerName) {
     const id = sellerId === null || sellerId === undefined ? '' : String(sellerId).trim();
     const name = (sellerName || '').trim();
@@ -264,9 +264,11 @@ function indexSellerIdsFromApiListings(apiListings) {
     });
 }
 
-// Marktplaats replaces __NEXT_DATA__ on client-side navigation, so this is read
-// on every cleanup pass and merged into the map rather than replacing it: ids
-// learned from an earlier search stay valid for cards still on the page.
+// __NEXT_DATA__ only describes the result set the server rendered. Marktplaats
+// does not rewrite it on client-side navigation, and a search with hash
+// parameters (sort, results per page) is refetched on load, so on those pages
+// it covers few or none of the cards. listenForPageSearchResults() fills in the
+// rest. Merged into the map rather than replacing it, like every other source.
 function indexSellerIdsFromNextData() {
     try {
         const nextDataEl = document.getElementById('__NEXT_DATA__');
@@ -279,6 +281,44 @@ function indexSellerIdsFromNextData() {
     } catch (error) {
         // A parse failure only costs us id resolution on this pass.
     }
+}
+
+var CLEANPLAATS_SEARCH_BRIDGE_SOURCE = 'cleanplaats-search-bridge';
+
+// content/search-bridge.js runs in the page's world and forwards the seller ids
+// from every /lrp/api/search response the page itself fetches. Registered once
+// settings are loaded so the cleanup it triggers runs with the user's filters;
+// the replay request picks up whatever arrived before that.
+function listenForPageSearchResults() {
+    if (CLEANPLAATS.runtime.searchBridgeListening) return;
+    CLEANPLAATS.runtime.searchBridgeListening = true;
+
+    window.addEventListener('message', event => {
+        if (event.source !== window) return;
+        const data = event.data;
+        if (!data || data.source !== CLEANPLAATS_SEARCH_BRIDGE_SOURCE || data.type !== 'sellers') return;
+        if (!Array.isArray(data.sellers)) return;
+
+        const known = CLEANPLAATS.runtime.sellerIdsByListingId;
+        let learnedSomething = false;
+
+        data.sellers.forEach(seller => {
+            const itemId = String(seller?.itemId || '').toLowerCase();
+            const sellerId = String(seller?.sellerId || '');
+            if (!itemId || !sellerId || known[itemId] === sellerId) return;
+
+            rememberSellerId(itemId, sellerId);
+            learnedSomething = true;
+        });
+
+        // The cards for this response may already be on screen, and nothing else
+        // would re-check them now that their seller can be matched.
+        if (learnedSomething && typeof scheduleCleanup === 'function') {
+            scheduleCleanup();
+        }
+    });
+
+    window.postMessage({ source: CLEANPLAATS_SEARCH_BRIDGE_SOURCE, type: 'replay' }, window.location.origin);
 }
 
 function getListingSellerId(listing) {
@@ -844,6 +884,10 @@ var CLEANPLAATS = {
         // itemId -> sellerId, learned from the page's own search payloads. See
         // the seller identity section above.
         sellerIdsByListingId: {},
+        searchBridgeListening: false,
+        // Serialized settings this tab wrote and has not seen come back through
+        // storage.onChanged yet. See registerSettingsStorageSync().
+        pendingSettingsWrites: [],
         detailPageSeller: null,
         sellerVerificationProfiles: {},
         sellerVerificationTimer: 0,

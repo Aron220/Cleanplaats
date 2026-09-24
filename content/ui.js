@@ -815,6 +815,40 @@ function setupGlobalTooltip() {
     });
 }
 
+// Each of these is both a settings key and the id of its checkbox.
+var CLEANPLAATS_PANEL_CHECKBOX_SETTINGS = ['removeTopAds', 'removeDagtoppers', 'removePromotedListings',
+    'removeOpvalStickers', 'removeReservedListings', 'expandPanelOnPageLoad', 'showUpdatePopups', 'showViewedListingsIndicator', 'removeFavoriteRelatedAds', 'sellerAgeWarningEnabled', 'sellerVerificationPanelEnabled'];
+
+// The panel is rendered from the settings once, at page load. When another tab
+// changes them this brings the controls in line, so the next click here does
+// not act on a checkbox showing the old value.
+function syncPanelControlsToSettings() {
+    const settings = CLEANPLAATS.settings;
+
+    CLEANPLAATS_PANEL_CHECKBOX_SETTINGS.forEach(id => {
+        const checkbox = document.getElementById(id);
+        if (checkbox) checkbox.checked = Boolean(settings[id]);
+    });
+
+    const resultsDropdown = document.getElementById('cleanplaats-results-dropdown');
+    if (resultsDropdown) resultsDropdown.value = String(settings.resultsPerPage);
+
+    const sortDropdown = document.getElementById('cleanplaats-sort-dropdown');
+    if (sortDropdown) sortDropdown.value = settings.defaultSortMode;
+
+    const thresholdValue = document.getElementById('cleanplaats-seller-age-threshold-value');
+    if (thresholdValue && document.activeElement !== thresholdValue) {
+        thresholdValue.value = Math.max(1, parseInt(settings.sellerAgeWarningThresholdValue, 10) || 1);
+    }
+
+    const thresholdUnit = document.getElementById('cleanplaats-seller-age-threshold-unit');
+    if (thresholdUnit) thresholdUnit.value = settings.sellerAgeWarningThresholdUnit;
+
+    syncSellerAgeThresholdControlsState();
+
+    if (typeof refreshDonationNudge === 'function') refreshDonationNudge();
+}
+
 function syncSellerAgeThresholdControlsState() {
     const controls = document.getElementById('cleanplaats-seller-age-threshold-controls');
     const valueInput = document.getElementById('cleanplaats-seller-age-threshold-value');
@@ -1046,8 +1080,7 @@ function setupEventListeners() {
         setActivePanelView('filters');
     });
 
-    ['removeTopAds', 'removeDagtoppers', 'removePromotedListings',
-        'removeOpvalStickers', 'removeReservedListings', 'expandPanelOnPageLoad', 'showUpdatePopups', 'showViewedListingsIndicator', 'removeFavoriteRelatedAds', 'sellerAgeWarningEnabled', 'sellerVerificationPanelEnabled'].forEach(id => {
+    CLEANPLAATS_PANEL_CHECKBOX_SETTINGS.forEach(id => {
         const checkbox = document.getElementById(id);
         if (checkbox) {
             checkbox.addEventListener('change', handleCheckboxChange);
