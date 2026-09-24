@@ -912,6 +912,16 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_NL = {
+    '2.2.1': {
+        intro: 'Cleanplaats 2.2.1 toont wat er níet van een verkoper is gecontroleerd, en houdt geblokkeerde verkopers echt weg.',
+        highlights: [
+            'Nieuw: de Verkoper-check bij een advertentie toont of bankrekening, telefoonnummer en identiteit van de verkoper zijn gecontroleerd. Uit te zetten via Voorkeuren.',
+            'Fix: geblokkeerde verkopers kwamen soms terug, bijvoorbeeld op pagina 2 of in een ander tabblad. Ze blijven nu weg.',
+            'Fix: verkopers verbergen en de waarschuwing voor nieuwe accounts werken weer op advertentiepagina\'s.',
+            'Verder: betaalde advertenties flitsen niet meer voorbij, en een zoekopdracht vanaf een subcategorie zoekt alleen daarin.'
+        ],
+        note: null
+    },
     '2.2.0': {
         intro: 'Cleanplaats 2.2.0 draait om Zoekopdrachten: je stelt er nu meteen categorie, prijs en afstand voor in, en ze werken voortaan ook op 2dehands en 2ememain.',
         highlights: [
@@ -988,6 +998,16 @@ var CLEANPLAATS_UPDATE_NOTES_NL = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_FR = {
+    '2.2.1': {
+        intro: 'Cleanplaats 2.2.1 montre ce qui n’a pas été vérifié chez un vendeur, et garde vraiment les vendeurs bloqués hors de vue.',
+        highlights: [
+            'Nouveau : le Contrôle du vendeur sur une annonce indique si le compte bancaire, le numéro de téléphone et l’identité du vendeur ont été vérifiés. Désactivable dans Préférences.',
+            'Correctif : les vendeurs bloqués réapparaissaient parfois, par exemple en page 2 ou dans un autre onglet. Ils restent maintenant masqués.',
+            'Correctif : masquer un vendeur et l’alerte pour les comptes récents fonctionnent de nouveau sur les pages d’annonce.',
+            'Et aussi : les annonces payantes ne s’affichent plus un instant, et une recherche créée depuis une sous-catégorie ne cherche plus que dans celle-ci.'
+        ],
+        note: null
+    },
     '2.2.0': {
         intro: 'Cleanplaats 2.2.0 tourne autour des Recherches : vous y réglez maintenant tout de suite la catégorie, le prix et la distance, et elles fonctionnent désormais aussi sur 2dehands et 2ememain.',
         highlights: [
