@@ -885,9 +885,9 @@ var CLEANPLAATS = {
         // the seller identity section above.
         sellerIdsByListingId: {},
         searchBridgeListening: false,
-        // Serialized settings this tab wrote and has not seen come back through
-        // storage.onChanged yet. See registerSettingsStorageSync().
-        pendingSettingsWrites: [],
+        // Sent along with every save so storage.onChanged can tell this tab's
+        // own writes from another tab's. See applySettingsFromOtherTab().
+        settingsWriterId: Math.random().toString(36).slice(2) + Date.now().toString(36),
         detailPageSeller: null,
         sellerVerificationProfiles: {},
         sellerVerificationTimer: 0,

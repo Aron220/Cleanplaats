@@ -114,16 +114,29 @@ function applyViewedListingsFromStorage(viewedListings) {
 // undo everything done in other tabs since: block a seller in one tab, collapse
 // the panel in another, and the block is gone. Every tab therefore takes over
 // whatever another tab saved, the moment it is saved.
-function applySettingsFromOtherTab(serializedSettings) {
-    const pendingWrites = CLEANPLAATS.runtime.pendingSettingsWrites;
-    const ownWriteIndex = pendingWrites.indexOf(serializedSettings);
-    if (ownWriteIndex !== -1) {
-        // Our own save coming back. Anything before it in the list was
-        // superseded by it and will not be reported separately.
-        pendingWrites.splice(0, ownWriteIndex + 1);
-        return;
-    }
+//
+// Each save carries the id of the tab that wrote it. Comparing values instead
+// does not work: Chromium leaves a write out of onChanged when the value did not
+// change, so a tab cannot count on seeing its own writes come back, and a list of
+// them goes stale and ends up swallowing a real change from another tab.
+var CLEANPLAATS_SETTINGS_WRITER_KEY = 'cleanplaatsSettingsWriter';
 
+// The stamp is unique per write, not just per tab: an unchanged stamp would be
+// left out of onChanged for the same reason, and a tab's second save in a row
+// would then look like it came from somewhere else.
+var cleanplaatsSettingsWriteCount = 0;
+
+function nextSettingsWriteStamp() {
+    cleanplaatsSettingsWriteCount += 1;
+    return `${CLEANPLAATS.runtime.settingsWriterId}:${cleanplaatsSettingsWriteCount}`;
+}
+
+function isOwnSettingsWrite(changes) {
+    const stamp = changes[CLEANPLAATS_SETTINGS_WRITER_KEY]?.newValue;
+    return typeof stamp === 'string' && stamp.startsWith(`${CLEANPLAATS.runtime.settingsWriterId}:`);
+}
+
+function applySettingsFromOtherTab(serializedSettings) {
     if (serializedSettings === JSON.stringify(CLEANPLAATS.settings)) {
         return;
     }
@@ -191,12 +204,15 @@ function registerSettingsStorageSync() {
     browserAPI.storage.onChanged.addListener((changes, areaName) => {
         if (areaName !== 'local') return;
 
-        if (changes.cleanplaatsSettings?.newValue) {
-            applySettingsFromOtherTab(changes.cleanplaatsSettings.newValue);
-        }
+        // Our own save coming back: this tab is already there, or further along.
+        if (!isOwnSettingsWrite(changes)) {
+            if (changes.cleanplaatsSettings?.newValue) {
+                applySettingsFromOtherTab(changes.cleanplaatsSettings.newValue);
+            }
 
-        if (changes.panelState?.newValue) {
-            applyPanelStateFromOtherTab(changes.panelState.newValue);
+            if (changes.panelState?.newValue) {
+                applyPanelStateFromOtherTab(changes.panelState.newValue);
+            }
         }
 
         if (Object.prototype.hasOwnProperty.call(changes, CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY)) {
@@ -288,17 +304,12 @@ function saveSettings() {
             persistDarkModePreference(Boolean(CLEANPLAATS.settings.darkMode));
             persistSortPreference();
             persistHidesListingsPreference();
-            const serializedSettings = JSON.stringify(CLEANPLAATS.settings);
-            CLEANPLAATS.runtime.pendingSettingsWrites.push(serializedSettings);
             browserAPI.storage.local.set({
-                cleanplaatsSettings: serializedSettings,
-                panelState: JSON.stringify(CLEANPLAATS.panelState)
+                cleanplaatsSettings: JSON.stringify(CLEANPLAATS.settings),
+                panelState: JSON.stringify(CLEANPLAATS.panelState),
+                [CLEANPLAATS_SETTINGS_WRITER_KEY]: nextSettingsWriteStamp()
             }, () => {
                 if (browserAPI.runtime.lastError) {
-                    const pendingWrites = CLEANPLAATS.runtime.pendingSettingsWrites;
-                    const failedIndex = pendingWrites.lastIndexOf(serializedSettings);
-                    if (failedIndex !== -1) pendingWrites.splice(failedIndex, 1);
-
                     console.error('Cleanplaats: Failed to save settings to storage', browserAPI.runtime.lastError);
                     reject(browserAPI.runtime.lastError);
                     return;
