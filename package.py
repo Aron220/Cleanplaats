@@ -42,7 +42,11 @@ DIRS = ["background", "content", "icons"]
 # Wordt door geen enkel bestand geladen, maar zit wel in web_accessible_resources
 # ("icons/*") en zou dus zonder reden aan elke Marktplaats-pagina blootgesteld
 # worden. Weglaten in plaats van meesturen.
-SKIP = {"icons/cleanplaats_icon.png"}
+SKIP = {
+    "icons/cleanplaats_icon.png",
+    # Het oude donkere logo; theme.js gebruikt sinds de nieuwe icons darkmode_icon.svg.
+    "icons/darkmode_icon_128.png",
+}
 
 
 def collect():
