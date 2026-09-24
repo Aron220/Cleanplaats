@@ -20,7 +20,7 @@ server/
 .env.*
 wrangler-account.json
 
-claude.md
+CLAUDE.md
 # Playwright MCP scratch output (screenshots, snapshots, console logs)
 .playwright-mcp/
 
