@@ -20,6 +20,7 @@ Draaien:  python3 package.py
 
 import json
 import pathlib
+import re
 import sys
 import zipfile
 
@@ -98,7 +99,33 @@ def check_manifest(members):
     if missing:
         sys.exit("manifest verwijst naar bestanden die niet in de zip zitten:\n  " + "\n  ".join(missing))
 
+    check_background_lists(background)
+
     return manifest["version"]
+
+
+def check_background_lists(background):
+    """
+    Chrome laadt alleen de service worker, die de modules zelf via importScripts
+    binnenhaalt; Firefox leest background.scripts. Loopt die twee lijsten uit
+    elkaar, dan werkt de achtergrond in één van de twee browsers niet, en dat
+    zie je aan geen van beide winkels.
+    """
+    worker = background.get("service_worker")
+    if not worker:
+        return
+
+    source = (ROOT / worker).read_text()
+    call = re.search(r"importScripts\((.*?)\)", source, re.S)
+    imported = re.findall(r"['\"]([^'\"]+)['\"]", call.group(1)) if call else []
+    scripts = background.get("scripts", [])
+
+    if imported != scripts:
+        sys.exit(
+            f"{worker} (importScripts) en manifest background.scripts lopen uit elkaar:\n"
+            f"  importScripts: {imported}\n"
+            f"  scripts:       {scripts}"
+        )
 
 
 def main():
