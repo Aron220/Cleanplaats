@@ -657,6 +657,36 @@ html.cleanplaats-dark-mode .cleanplaats-onboarding-close:focus-visible {
   color: var(--cleanplaats-dark-text) !important;
 }
 
+/* Zelfde verhaal voor de 'Wat is er nieuw?'-pop-up (.cleanplaats-info-*): de
+   kaart wordt donker, maar titel, intro, lijst, notitie en de schakelaarregel
+   houden hun donkere lichte-modus-kleuren en zijn dan onleesbaar. */
+html.cleanplaats-dark-mode .cleanplaats-info-card {
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-info-eyebrow {
+  color: #4ade80 !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-info-title,
+html.cleanplaats-dark-mode .cleanplaats-info-steps {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-info-intro,
+html.cleanplaats-dark-mode .cleanplaats-info-note,
+html.cleanplaats-dark-mode .cleanplaats-info-option {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-info-option .cleanplaats-switch-slider {
+  background-color: #4c5f72;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-info-option .cleanplaats-switch input:checked + .cleanplaats-switch-slider {
+  background-color: #16a34a;
+}
+
 html.cleanplaats-dark-mode .cleanplaats-blacklist-modal,
 html.cleanplaats-dark-mode .cleanplaats-terms-modal {
   background: var(--cleanplaats-dark-bg-elevated) !important;
