@@ -391,6 +391,16 @@ function createControlPanel() {
                             <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.reservedTooltip}">?</span>
                         </label>
                     </div>
+                    <div class="cleanplaats-option">
+                        <label class="cleanplaats-switch">
+                            <input type="checkbox" id="removeListingsWithBids" ${CLEANPLAATS.settings.removeListingsWithBids ? 'checked' : ''}>
+                            <span class="cleanplaats-switch-slider"></span>
+                        </label>
+                        <label for="removeListingsWithBids" class="cleanplaats-option-label">
+                            ${panelText.bidsLabel}
+                            <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.bidsTooltip}">?</span>
+                        </label>
+                    </div>
                     <button id="cleanplaats-open-preferences" class="cleanplaats-button secondary cleanplaats-panel-nav-button" type="button">${panelText.preferencesLabel}</button>
                     <div class="cleanplaats-option cleanplaats-results-dropdown-row">
                         <label for="cleanplaats-results-dropdown" class="cleanplaats-option-label" style="min-width:120px;">${panelText.resultsPerPageLabel}</label>
@@ -435,6 +445,10 @@ function createControlPanel() {
                     <div class="cleanplaats-stat-item">
                         <span class="cleanplaats-stat-label">${panelText.statsReserved}</span>
                         <span class="cleanplaats-stat-value" id="cleanplaats-reserved-count">0</span>
+                    </div>
+                    <div class="cleanplaats-stat-item">
+                        <span class="cleanplaats-stat-label">${panelText.statsBids}</span>
+                        <span class="cleanplaats-stat-value" id="cleanplaats-bids-count">0</span>
                     </div>
                     <div class="cleanplaats-stat-item">
                         <span class="cleanplaats-stat-label">${panelText.statsUserBlocked}</span>
@@ -817,7 +831,7 @@ function setupGlobalTooltip() {
 
 // Each of these is both a settings key and the id of its checkbox.
 var CLEANPLAATS_PANEL_CHECKBOX_SETTINGS = ['removeTopAds', 'removeDagtoppers', 'removePromotedListings',
-    'removeOpvalStickers', 'removeReservedListings', 'expandPanelOnPageLoad', 'showUpdatePopups', 'showViewedListingsIndicator', 'removeFavoriteRelatedAds', 'sellerAgeWarningEnabled', 'sellerVerificationPanelEnabled'];
+    'removeOpvalStickers', 'removeReservedListings', 'removeListingsWithBids', 'expandPanelOnPageLoad', 'showUpdatePopups', 'showViewedListingsIndicator', 'removeFavoriteRelatedAds', 'sellerAgeWarningEnabled', 'sellerVerificationPanelEnabled'];
 
 // The panel is rendered from the settings once, at page load. When another tab
 // changes them this brings the controls in line, so the next click here does

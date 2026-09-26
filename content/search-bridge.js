@@ -2,17 +2,24 @@
  * Runs in the page's own JavaScript world (manifest "world": "MAIN"), not in
  * the content script's isolated one. It has two jobs, one per block below.
  *
- * Seller blocks match on seller id, and a listing card does not carry that id
- * anywhere in its markup. __NEXT_DATA__ has it, but only for the result set the
- * server rendered: every client-side page, filter or sort change, and every
- * search with hash parameters (our own results-per-page and sort settings
- * included) is fetched from /lrp/api/search afterwards and never written back
- * into it. This reads those responses as the page receives them and hands the
- * item id -> seller id pairs to the content script, so the cards on screen can
- * always be matched without a request of our own.
+ * Two things travel this way, and a card tells us neither of them itself:
  *
- * Only ids go across. Anything posting a fake pair can at most decide which
- * listing a block applies to on this page, which the page could do anyway.
+ * - Seller blocks match on seller id, and a listing card does not carry that id
+ *   anywhere in its markup.
+ * - The bid filter matches on price type. Only MIN_BID and FAST_BID listings can
+ *   have a bid on them, so that field decides which cards are worth looking up
+ *   on their own ad page. See content/bid-listings.js.
+ *
+ * __NEXT_DATA__ has both, but only for the result set the server rendered: every
+ * client-side page, filter or sort change, and every search with hash parameters
+ * (our own results-per-page and sort settings included) is fetched from
+ * /lrp/api/search afterwards and never written back into it. This reads those
+ * responses as the page receives them and hands the pairs to the content script,
+ * so the cards on screen can always be matched without a request of our own.
+ *
+ * Only ids and a price type go across. Anything posting a fake pair can at most
+ * decide which listing a block applies to on this page, which the page could do
+ * anyway.
  */
 (() => {
     const SOURCE = 'cleanplaats-search-bridge';
@@ -27,20 +34,33 @@
     // can arrive before that, so it asks for a replay of what it missed.
     let buffered = [];
 
-    function post(sellers) {
-        window.postMessage({ source: SOURCE, type: 'sellers', sellers }, window.location.origin);
+    function post(listings) {
+        window.postMessage({ source: SOURCE, type: 'listings', listings }, window.location.origin);
     }
 
-    function collectSellers(data) {
+    function collectListings(data) {
         const listings = [...(data?.listings || []), ...(data?.topBlock || [])];
 
         return listings
             .map(listing => ({
                 itemId: listing?.itemId,
-                sellerId: listing?.sellerInformation?.sellerId
+                sellerId: listing?.sellerInformation?.sellerId,
+                priceType: listing?.priceInfo?.priceType
             }))
-            .filter(({ itemId, sellerId }) => itemId && sellerId !== null && sellerId !== undefined && sellerId !== '')
-            .map(({ itemId, sellerId }) => ({ itemId: String(itemId), sellerId: String(sellerId) }));
+            // An entry is worth sending when either fact is usable. A listing
+            // with no seller id still carries a price type, and the bid filter
+            // needs exactly those entries.
+            .filter(({ itemId, sellerId, priceType }) => itemId && (
+                (typeof priceType === 'string' && priceType !== '')
+                || (sellerId !== null && sellerId !== undefined && sellerId !== '')
+            ))
+            .map(({ itemId, sellerId, priceType }) => ({
+                itemId: String(itemId),
+                // An empty string rather than null, so the content script has one
+                // absent value to test instead of two.
+                sellerId: sellerId === null || sellerId === undefined ? '' : String(sellerId),
+                priceType: typeof priceType === 'string' ? priceType : ''
+            }));
     }
 
     function getRequestUrl(input) {
@@ -66,11 +86,11 @@
             if (!response.ok) return;
 
             response.clone().json().then(data => {
-                const sellers = collectSellers(data);
-                if (!sellers.length) return;
+                const listings = collectListings(data);
+                if (!listings.length) return;
 
-                buffered = buffered.concat(sellers).slice(-MAX_BUFFERED);
-                post(sellers);
+                buffered = buffered.concat(listings).slice(-MAX_BUFFERED);
+                post(listings);
             }).catch(() => {});
         }, () => {});
 

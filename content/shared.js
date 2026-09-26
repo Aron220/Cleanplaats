@@ -10,6 +10,7 @@ var CLEANPLAATS_SORT_STORAGE_KEY = 'cleanplaats:sortMode';
 var CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY = 'cleanplaatsViewedListings';
 var CLEANPLAATS_MAX_VIEWED_LISTINGS = 1500;
 var CLEANPLAATS_SELLER_ADS_STORAGE_KEY = 'cleanplaatsBlockedSellerAds';
+var CLEANPLAATS_LISTING_BIDS_STORAGE_KEY = 'cleanplaatsListingBids';
 var CLEANPLAATS_FLOATING_OFFSET_VAR = '--cleanplaats-floating-offset';
 // Marktplaats renamed this asset from tenant--nlnl to brand-logo--nlnl; match both.
 var MARKTPLAATS_DESKTOP_LOGO_MATCH = /\/(?:tenant|brand-logo)--nlnl(?:\.[a-z0-9]+)?\.svg$/i;
@@ -279,18 +280,42 @@ function rememberSellerId(itemId, sellerId) {
     CLEANPLAATS.runtime.sellerIdsByListingId[key] = String(sellerId);
 }
 
-function indexSellerIdsFromApiListings(apiListings) {
+// The price type of a listing, which is what tells the bid filter apart the
+// cards that can have a bid on them from the ones that cannot. See
+// content/bid-listings.js.
+function rememberPriceType(itemId, priceType) {
+    const key = String(itemId || '').toLowerCase();
+    const type = String(priceType || '');
+
+    if (!key || !type || CLEANPLAATS.runtime.priceTypesByListingId[key] === type) {
+        return false;
+    }
+
+    CLEANPLAATS.runtime.priceTypesByListingId[key] = type;
+    return true;
+}
+
+// Every source below hands us whole API listing objects, so this indexes all of
+// what a card cannot say about itself in one go. Returns whether anything was
+// new, which is what tells the caller a cleanup pass is worth scheduling.
+function indexApiListings(apiListings) {
+    let learnedSomething = false;
+
     (apiListings || []).forEach(listing => {
-        rememberSellerId(listing?.itemId, listing?.sellerInformation?.sellerId);
+        const itemId = listing?.itemId;
+        rememberSellerId(itemId, listing?.sellerInformation?.sellerId);
+        if (rememberPriceType(itemId, listing?.priceInfo?.priceType)) learnedSomething = true;
     });
+
+    return learnedSomething;
 }
 
 // __NEXT_DATA__ only describes the result set the server rendered. Marktplaats
 // does not rewrite it on client-side navigation, and a search with hash
 // parameters (sort, results per page) is refetched on load, so on those pages
 // it covers few or none of the cards. listenForPageSearchResults() fills in the
-// rest. Merged into the map rather than replacing it, like every other source.
-function indexSellerIdsFromNextData() {
+// rest. Merged into the maps rather than replacing them, like every other source.
+function indexApiListingsFromNextData() {
     try {
         const nextDataEl = document.getElementById('__NEXT_DATA__');
         if (!nextDataEl) return;
@@ -298,7 +323,7 @@ function indexSellerIdsFromNextData() {
         const response = JSON.parse(nextDataEl.textContent)?.props?.pageProps?.searchRequestAndResponse;
         if (!response) return;
 
-        indexSellerIdsFromApiListings([...(response.listings || []), ...(response.topBlock || [])]);
+        indexApiListings([...(response.listings || []), ...(response.topBlock || [])]);
     } catch (error) {
         // A parse failure only costs us id resolution on this pass.
     }
@@ -351,10 +376,11 @@ function listenForPageHydration() {
     fallbackTimer = setTimeout(markHydrated, Math.max(0, CLEANPLAATS_HYDRATION_FALLBACK_MS - performance.now()));
 }
 
-// content/search-bridge.js runs in the page's world and forwards the seller ids
-// from every /lrp/api/search response the page itself fetches. Registered once
-// settings are loaded so the cleanup it triggers runs with the user's filters;
-// the replay request picks up whatever arrived before that.
+// content/search-bridge.js runs in the page's world and forwards the seller id
+// and price type of every listing in each /lrp/api/search response the page
+// itself fetches. Registered once settings are loaded so the cleanup it triggers
+// runs with the user's filters; the replay request picks up whatever arrived
+// before that.
 function listenForPageSearchResults() {
     if (CLEANPLAATS.runtime.searchBridgeListening) return;
     CLEANPLAATS.runtime.searchBridgeListening = true;
@@ -362,23 +388,28 @@ function listenForPageSearchResults() {
     window.addEventListener('message', event => {
         if (event.source !== window) return;
         const data = event.data;
-        if (!data || data.source !== CLEANPLAATS_SEARCH_BRIDGE_SOURCE || data.type !== 'sellers') return;
-        if (!Array.isArray(data.sellers)) return;
+        if (!data || data.source !== CLEANPLAATS_SEARCH_BRIDGE_SOURCE || data.type !== 'listings') return;
+        if (!Array.isArray(data.listings)) return;
 
-        const known = CLEANPLAATS.runtime.sellerIdsByListingId;
         let learnedSomething = false;
 
-        data.sellers.forEach(seller => {
-            const itemId = String(seller?.itemId || '').toLowerCase();
-            const sellerId = String(seller?.sellerId || '');
-            if (!itemId || !sellerId || known[itemId] === sellerId) return;
+        data.listings.forEach(listing => {
+            const itemId = String(listing?.itemId || '').toLowerCase();
+            if (!itemId) return;
 
-            rememberSellerId(itemId, sellerId);
-            learnedSomething = true;
+            const sellerId = String(listing?.sellerId || '');
+            if (sellerId && CLEANPLAATS.runtime.sellerIdsByListingId[itemId] !== sellerId) {
+                rememberSellerId(itemId, sellerId);
+                learnedSomething = true;
+            }
+
+            // Newly learned price types matter as much as seller ids: they are
+            // what makes a card a candidate for the bid lookup below.
+            if (rememberPriceType(itemId, listing?.priceType)) learnedSomething = true;
         });
 
         // The cards for this response may already be on screen, and nothing else
-        // would re-check them now that their seller can be matched.
+        // would re-check them now that their seller or price type is known.
         if (learnedSomething && typeof scheduleCleanup === 'function') {
             scheduleCleanup();
         }
@@ -394,6 +425,23 @@ function getListingSellerId(listing) {
     if (!itemId) return '';
 
     return CLEANPLAATS.runtime.sellerIdsByListingId[itemId] || '';
+}
+
+// What the bid filter needs off a card: which listing it is, whether that
+// listing accepts bids at all, and the address of its own page. Same href
+// lookup as above; the caller turns the href into something it can fetch.
+function getListingBidFacts(listing) {
+    if (!(listing instanceof Element)) return null;
+
+    const href = listing.querySelector('a[href*="/v/"]')?.href || '';
+    const itemId = getListingIdFromUrl(href);
+    if (!itemId) return null;
+
+    return {
+        itemId,
+        priceType: CLEANPLAATS.runtime.priceTypesByListingId[itemId] || '',
+        href
+    };
 }
 
 // The listing page and the detail page are different rendering stacks: the
@@ -556,6 +604,8 @@ function getPanelLocaleText() {
             stickersTooltip: 'Supprime les annonces avec des autocollants promotionnels',
             reservedLabel: 'Réservées',
             reservedTooltip: "Masque les annonces marquées 'Réservé'",
+            bidsLabel: 'Annonces avec offre',
+            bidsTooltip: "Masque les annonces sur lesquelles une offre a déjà été faite. Cleanplaats doit lire la page de l'annonce pour le savoir, elles disparaissent donc parfois une seconde après les autres.",
             favoriteRelatedAdsLabel: 'Annonces similaires dans les favoris',
             favoriteRelatedAdsTooltip: 'Masque la liste des annonces similaires affichée dans les favoris',
             viewedListingsLabel: 'Marquer les annonces déjà ouvertes',
@@ -645,6 +695,7 @@ function getPanelLocaleText() {
             statsBusiness: 'Professionnel :',
             statsStickers: 'Autocollants :',
             statsReserved: 'Réservées :',
+            statsBids: 'Avec offre :',
             statsUserBlocked: 'Masquées par vous :',
             statsOther: 'Autres :',
             statsTotal: 'Total :',
@@ -764,6 +815,8 @@ function getPanelLocaleText() {
         stickersTooltip: 'Verwijdert advertenties met opvalstickers',
         reservedLabel: 'Gereserveerde',
         reservedTooltip: "Verbergt advertenties die 'Gereserveerd' zijn",
+        bidsLabel: 'Advertenties met biedingen',
+        bidsTooltip: 'Verbergt advertenties waar al een bod op is uitgebracht. Cleanplaats moet daarvoor de advertentiepagina zelf lezen, dus ze verdwijnen soms een seconde later dan de rest.',
         favoriteRelatedAdsLabel: 'Gerelateerde advertenties bij favorieten',
         favoriteRelatedAdsTooltip: 'Verbergt het blok met gerelateerde advertenties op de favorietenpagina',
         viewedListingsLabel: 'Markeer eerder geopende advertenties',
@@ -855,6 +908,7 @@ function getPanelLocaleText() {
         statsBusiness: 'Bedrijf:',
         statsStickers: 'Stickers:',
         statsReserved: 'Gereserveerd:',
+        statsBids: 'Met biedingen:',
         statsUserBlocked: 'Door jou verborgen:',
         statsOther: 'Overig:',
         statsTotal: 'Totaal:',
@@ -954,6 +1008,7 @@ var CLEANPLAATS = {
         removePromotedListings: true,
         removeOpvalStickers: true,
         removeReservedListings: false,
+        removeListingsWithBids: false,
         removeFavoriteRelatedAds: false,
         showViewedListingsIndicator: false,
         sellerAgeWarningEnabled: false,
@@ -987,6 +1042,7 @@ var CLEANPLAATS = {
         promotedListingsRemoved: 0,
         opvalStickersRemoved: 0,
         reservedRemoved: 0,
+        bidListingsRemoved: 0,
         userBlockedRemoved: 0,
         otherAdsRemoved: 0,
         totalRemoved: 0
@@ -1008,6 +1064,25 @@ var CLEANPLAATS = {
         // itemId -> sellerId, learned from the page's own search payloads. See
         // the seller identity section above.
         sellerIdsByListingId: {},
+        // itemId -> priceInfo.priceType, from the same payloads. Only MIN_BID
+        // and FAST_BID listings can carry a bid, so this is what decides which
+        // cards the bid filter looks up. See content/bid-listings.js.
+        priceTypesByListingId: {},
+        // The bid filter's cache and its work in progress, see
+        // content/bid-listings.js. `checked` is the part that is persisted.
+        listingBids: {
+            checked: { yes: {}, no: {}, fail: {} },
+            // itemId -> path still to ask, and the ids being asked right now.
+            queue: new Map(),
+            inFlight: new Set(),
+            controller: null,
+            // Set when the site refuses us; see CLEANPLAATS_BID_BACKOFF_MIN_MS.
+            pausedUntil: 0,
+            backoffMs: 0,
+            persistTimer: 0,
+            // The ad page whose own bids were last recorded.
+            detailPagePath: ''
+        },
         searchBridgeListening: false,
         // See isPageHydrated().
         pageHydrated: false,
@@ -1044,6 +1119,15 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_NL = {
+    '2.3.0': {
+        intro: 'Cleanplaats 2.3.0 kan advertenties uit je zoekresultaten houden waar al een bod op staat.',
+        highlights: [
+            'Nieuw: zet "Advertenties met biedingen" aan bij de filters. Cleanplaats leest daarvoor per advertentie de advertentiepagina zelf, want alleen daar staat of er geboden is. Die ene advertentie verdwijnt dus soms een seconde later dan de rest.',
+            'Wat Cleanplaats gelezen heeft blijft een tijd bewaard, zodat opnieuw zoeken meestal geen extra leeswerk kost.',
+            'Fix voor 2dehands: Topzoekertjes vallen nu onder hun eigen schakelaar, in plaats van onder Topadvertenties.'
+        ],
+        note: null
+    },
     '2.2.1': {
         intro: 'Cleanplaats 2.2.1 toont wat er níet van een verkoper is gecontroleerd, en houdt geblokkeerde verkopers echt weg.',
         highlights: [
@@ -1130,6 +1214,15 @@ var CLEANPLAATS_UPDATE_NOTES_NL = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_FR = {
+    '2.3.0': {
+        intro: 'Cleanplaats 2.3.0 peut écarter de vos résultats les annonces sur lesquelles une offre a déjà été faite.',
+        highlights: [
+            'Nouveau : activez "Annonces avec offre" dans les filtres. Cleanplaats lit pour cela la page de chaque annonce, car c’est le seul endroit où figurent les offres. Cette annonce disparaît donc parfois une seconde après les autres.',
+            'Ce que Cleanplaats a lu est conservé un moment, pour qu’une nouvelle recherche ne coûte le plus souvent aucune lecture supplémentaire.',
+            'Correctif : les "Annonces au top" sont de nouveau masquées, et un tri choisi dans le menu de 2ememain est désormais repris par Cleanplaats. Le panneau et ses messages sont aussi entièrement en français.'
+        ],
+        note: null
+    },
     '2.2.1': {
         intro: 'Cleanplaats 2.2.1 montre ce qui n’a pas été vérifié chez un vendeur, et garde vraiment les vendeurs bloqués hors de vue.',
         highlights: [

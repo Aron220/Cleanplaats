@@ -18,6 +18,11 @@ function performCleanupAndCheckForEmptyPage() {
     // across every page visited and report far more removals than the page holds.
     resetStats();
 
+    // The bid lookups belong to the page they were started for, and this is the
+    // only place that knows the page changed. Answers already in are kept; the
+    // next page queues its own.
+    abortBidLookups();
+
     let attempts = 0;
     const checkContentLoaded = setInterval(() => {
         const hasContent = document.querySelector(CLEANPLAATS_LISTING_SELECTOR)

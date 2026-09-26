@@ -398,7 +398,7 @@ function injectBlacklistButtons() {
     if (!isPageHydrated()) return;
 
     const panelText = getPanelLocaleText();
-    indexSellerIdsFromNextData();
+    indexApiListingsFromNextData();
     document.querySelectorAll('.hz-Listing').forEach(listing => {
         const oldBtn = listing.querySelector('.cleanplaats-blacklist-btn-row');
         const oldTopRight = listing.querySelector('.cleanplaats-seller-topright-mobile');

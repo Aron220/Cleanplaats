@@ -123,11 +123,13 @@ function updateStatsDisplay() {
     updateElementText('cleanplaats-promoted-count', stats.promotedListingsRemoved);
     updateElementText('cleanplaats-stickers-count', stats.opvalStickersRemoved);
     updateElementText('cleanplaats-reserved-count', stats.reservedRemoved);
+    updateElementText('cleanplaats-bids-count', stats.bidListingsRemoved);
     updateElementText('cleanplaats-userblocked-count', stats.userBlockedRemoved);
     updateElementText('cleanplaats-otherads-count', stats.otherAdsRemoved);
 
     const total = stats.topAdsRemoved + stats.dagtoppersRemoved + stats.promotedListingsRemoved
-        + stats.opvalStickersRemoved + stats.reservedRemoved + stats.userBlockedRemoved + stats.otherAdsRemoved;
+        + stats.opvalStickersRemoved + stats.reservedRemoved + stats.bidListingsRemoved
+        + stats.userBlockedRemoved + stats.otherAdsRemoved;
     stats.totalRemoved = total;
 
     updateElementText('cleanplaats-total-count-stats', total);
@@ -174,6 +176,7 @@ function performCleanup() {
     if (CLEANPLAATS.settings.removePromotedListings) removePromotedListings();
     if (CLEANPLAATS.settings.removeOpvalStickers) removeOpvalStickerListings();
     if (CLEANPLAATS.settings.removeReservedListings) removeReservedListings();
+    if (CLEANPLAATS.settings.removeListingsWithBids) removeListingsWithBids();
 
     // Everything below hides listings on the user's own instructions rather than
     // because of a filter, so it counts towards its own statistic. Without that
@@ -181,7 +184,7 @@ function performCleanup() {
     // an empty page look like the filters are over-blocking.
     let userBlockedCount = 0;
 
-    indexSellerIdsFromNextData();
+    indexApiListingsFromNextData();
 
     document.querySelectorAll('.hz-Listing').forEach(listing => {
         const sellerNameEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-name-new, .hz-Listing-seller-link, .hz-Listing-sellerName, .hz-Listing-sellerName-new');
@@ -243,6 +246,11 @@ function performCleanup() {
     CLEANPLAATS.stats.userBlockedRemoved += userBlockedCount;
 
     applyViewedListingIndicators();
+
+    // Never awaited: the bid filter hides from what is already known and starts
+    // its lookups alongside this pass, so the page is never held up by a request.
+    ensureBidLookups();
+
     updateStatsDisplay();
     updateEmptyPageBanner();
 }
@@ -908,6 +916,17 @@ function isApiListingBlocked(apiListing) {
     if (CLEANPLAATS.settings.removePromotedListings
         && (apiListing.sellerInformation?.showWebsiteUrl === true || listingId.startsWith('a'))) return true;
 
+    // The bid filter can only be mirrored from the answers it already has: the
+    // search API says nothing about bids, so counting every MIN_BID and FAST_BID
+    // listing as hidden here would skip past pages that are in fact full of
+    // listings. What this does buy is that a page of ads the user has already
+    // been shown does not get promised as visible again.
+    //
+    // That leaves the scanner able to land on a page this filter then empties,
+    // which needs every listing on it to have a bid. Asking about each listing
+    // up front is not an option: the scanner walks up to a hundred pages.
+    if (CLEANPLAATS.settings.removeListingsWithBids && isListingKnownToHaveBids(listingId)) return true;
+
     return false;
 }
 
@@ -933,8 +952,9 @@ async function searchMatchesCurrentPage(currentOffset, pageSize) {
         const data = await resp.json();
         const apiListings = [...(data.topBlock || []), ...(data.listings || [])];
         // This response describes the page the user is on, so it is also the
-        // cheapest source of seller ids for cards __NEXT_DATA__ no longer covers.
-        indexSellerIdsFromApiListings(apiListings);
+        // cheapest source of the seller ids and price types for cards
+        // __NEXT_DATA__ no longer covers.
+        indexApiListings(apiListings);
         const apiIds = apiListings.map(listing => (listing.itemId || '').toLowerCase());
 
         // Paid placements rotate between requests, so require a solid majority

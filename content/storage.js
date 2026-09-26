@@ -225,7 +225,7 @@ function registerSettingsStorageSync() {
 
 function loadSettings() {
     return new Promise((resolve, reject) => {
-        browserAPI.storage.local.get(['cleanplaatsSettings', 'panelState', CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY, CLEANPLAATS_SELLER_ADS_STORAGE_KEY], (items) => {
+        browserAPI.storage.local.get(['cleanplaatsSettings', 'panelState', CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY, CLEANPLAATS_SELLER_ADS_STORAGE_KEY, CLEANPLAATS_LISTING_BIDS_STORAGE_KEY], (items) => {
             if (browserAPI.runtime.lastError) {
                 console.error('Cleanplaats: Failed to load settings from storage', browserAPI.runtime.lastError);
                 reject(browserAPI.runtime.lastError);
@@ -256,6 +256,7 @@ function loadSettings() {
 
                 setViewedListingsRuntime(items[CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY]);
                 setSellerAdsFromStorage(items[CLEANPLAATS_SELLER_ADS_STORAGE_KEY]);
+                setListingBidsFromStorage(items[CLEANPLAATS_LISTING_BIDS_STORAGE_KEY]);
                 persistSortPreference();
                 persistHidesListingsPreference();
                 resolve();
@@ -279,6 +280,13 @@ function persistSortPreference() {
 // cleanup pass is going to hide something. It runs long before storage.local is
 // readable, so localStorage is the only place that answer can live. The key
 // name is repeated there for the same reason the theme and sort keys are.
+//
+// removeListingsWithBids is deliberately not in the list below, and should not
+// be added to it. It is the one filter whose answer is not on the page: the
+// lookups that answer it land about a second after the cards do. Masking the
+// result list for a filter that cannot hide anything until then would put a
+// blank page in front of every visitor for a second, and would do it on the
+// many searches where nothing ends up hidden at all.
 function persistHidesListingsPreference() {
     try {
         const settings = CLEANPLAATS.settings;

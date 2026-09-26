@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Cleanplaats - Marktplaats zonder spam",
-    "version": "2.2.1",
+    "version": "2.3.0",
     "description": "Zelf in de hand wat je wel én niet wil zien op Marktplaats door te filteren",
     "author": "",
     "permissions": [
@@ -65,6 +65,7 @@
           "content/notifications.js",
           "content/seller-verification.js",
           "content/feed-sellers.js",
+          "content/bid-listings.js",
           "content/cleanup.js",
           "content/blacklist.js",
           "content/alerts.js",
