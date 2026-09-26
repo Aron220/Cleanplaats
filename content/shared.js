@@ -1119,12 +1119,13 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_NL = {
-    '2.3.0': {
-        intro: 'Cleanplaats 2.3.0 kan advertenties uit je zoekresultaten houden waar al een bod op staat.',
+    '2.2.2': {
+        intro: 'Nieuw in deze versie:',
         highlights: [
-            'Nieuw: zet "Advertenties met biedingen" aan bij de filters. Cleanplaats leest daarvoor per advertentie de advertentiepagina zelf, want alleen daar staat of er geboden is. Die ene advertentie verdwijnt dus soms een seconde later dan de rest.',
-            'Wat Cleanplaats gelezen heeft blijft een tijd bewaard, zodat opnieuw zoeken meestal geen extra leeswerk kost.',
-            'Fix voor 2dehands: Topzoekertjes vallen nu onder hun eigen schakelaar, in plaats van onder Topadvertenties.'
+            'Verborgen verkopers blijven nu ook weg uit Voor jou en In je buurt op de homepage.',
+            'Zie je daar toch nog een advertentie van een verborgen verkoper? Klik op het oog linksboven op die advertentie en al hun advertenties verdwijnen. Met hetzelfde oog verberg je ook een nieuwe verkoper.',
+            'Nieuwe filter "Advertenties met biedingen": verbergt advertenties waar al een bod op staat.',
+            'Meer trackers geblokkeerd.'
         ],
         note: null
     },
@@ -1214,12 +1215,14 @@ var CLEANPLAATS_UPDATE_NOTES_NL = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_FR = {
-    '2.3.0': {
-        intro: 'Cleanplaats 2.3.0 peut écarter de vos résultats les annonces sur lesquelles une offre a déjà été faite.',
+    '2.2.2': {
+        intro: 'Nouveautés de cette version :',
         highlights: [
-            'Nouveau : activez "Annonces avec offre" dans les filtres. Cleanplaats lit pour cela la page de chaque annonce, car c’est le seul endroit où figurent les offres. Cette annonce disparaît donc parfois une seconde après les autres.',
-            'Ce que Cleanplaats a lu est conservé un moment, pour qu’une nouvelle recherche ne coûte le plus souvent aucune lecture supplémentaire.',
-            'Correctif : les "Annonces au top" sont de nouveau masquées, et un tri choisi dans le menu de 2ememain est désormais repris par Cleanplaats. Le panneau et ses messages sont aussi entièrement en français.'
+            'Les vendeurs masqués n’apparaissent plus non plus dans « Pour vous » et « Près de chez vous » sur la page d’accueil.',
+            'Vous y voyez encore une annonce d’un vendeur masqué ? Cliquez sur l’œil en haut à gauche de cette annonce et toutes ses annonces disparaissent. Le même œil sert aussi à masquer un nouveau vendeur.',
+            'Nouveau filtre "Annonces avec offre" : masque les annonces qui ont déjà reçu une offre.',
+            'Plus de traceurs bloqués.',
+            'Les "Annonces au top" sont désormais masquées.'
         ],
         note: null
     },
