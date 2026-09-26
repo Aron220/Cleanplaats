@@ -2237,25 +2237,49 @@
 
   /* Verbeterde statistieken styling */
   .cleanplaats-stats.cleanplaats-stats-compact {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2px 10px;
     font-size: 12px;
-    padding: 8px 10px;
+    padding: 0;
     margin-top: 10px;
     background: #f9f9f9;
     border-radius: 6px;
     border: 1px solid #f0f0f0;
   }
+  .cleanplaats-stats-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+  }
+  .cleanplaats-stats-summary::-webkit-details-marker {
+    display: none;
+  }
   .cleanplaats-stats.cleanplaats-stats-compact .cleanplaats-section-title {
-    grid-column: 1 / -1;
-    margin-bottom: 4px;
+    flex: 1;
+    margin: 0;
     font-size: 11px;
-    margin-top: 0;
     color: #757575;
     font-weight: 500;
     letter-spacing: 0.3px;
     text-transform: uppercase;
+  }
+  .cleanplaats-stats-chevron {
+    width: 12px;
+    height: 12px;
+    flex: 0 0 auto;
+    color: #9e9e9e;
+    transition: transform 0.18s ease;
+  }
+  .cleanplaats-stats[open] .cleanplaats-stats-chevron {
+    transform: rotate(180deg);
+  }
+  .cleanplaats-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 10px;
+    padding: 0 10px 8px;
   }
   .cleanplaats-stats.cleanplaats-stats-compact .cleanplaats-stat-item {
     margin: 0;
@@ -2264,9 +2288,6 @@
     justify-content: space-between;
     align-items: center;
     min-height: 16px;
-  }
-  .cleanplaats-stats.cleanplaats-stats-compact .cleanplaats-stat-item:last-child {
-    border-bottom: none;
   }
   .cleanplaats-stats.cleanplaats-stats-compact .cleanplaats-stat-label {
     font-size: 11px;
@@ -2279,9 +2300,8 @@
     font-weight: 600;
   }
   @media (max-width: 400px) {
-    .cleanplaats-stats.cleanplaats-stats-compact {
+    .cleanplaats-stats-grid {
       grid-template-columns: 1fr;
-      padding: 8px;
     }
   }
 

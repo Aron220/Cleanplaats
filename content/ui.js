@@ -424,45 +424,47 @@ function createControlPanel() {
                 </div>
 
                 ${CLEANPLAATS.featureFlags.showStats ? `
-                <div class="cleanplaats-stats cleanplaats-stats-compact" id="cleanplaats-stats">
-                    <div class="cleanplaats-section-title">${panelText.statsTitle}</div>
-                    <div class="cleanplaats-stat-item">
-                        <span class="cleanplaats-stat-label">${panelText.statsTop}</span>
-                        <span class="cleanplaats-stat-value" id="cleanplaats-topads-count">0</span>
-                    </div>
-                    <div class="cleanplaats-stat-item">
-                        <span class="cleanplaats-stat-label">${panelText.statsDagtoppers}</span>
-                        <span class="cleanplaats-stat-value" id="cleanplaats-dagtoppers-count">0</span>
-                    </div>
-                    <div class="cleanplaats-stat-item">
-                        <span class="cleanplaats-stat-label">${panelText.statsBusiness}</span>
-                        <span class="cleanplaats-stat-value" id="cleanplaats-promoted-count">0</span>
-                    </div>
-                    <div class="cleanplaats-stat-item">
-                        <span class="cleanplaats-stat-label">${panelText.statsStickers}</span>
-                        <span class="cleanplaats-stat-value" id="cleanplaats-stickers-count">0</span>
-                    </div>
-                    <div class="cleanplaats-stat-item">
-                        <span class="cleanplaats-stat-label">${panelText.statsReserved}</span>
-                        <span class="cleanplaats-stat-value" id="cleanplaats-reserved-count">0</span>
-                    </div>
-                    <div class="cleanplaats-stat-item">
-                        <span class="cleanplaats-stat-label">${panelText.statsBids}</span>
-                        <span class="cleanplaats-stat-value" id="cleanplaats-bids-count">0</span>
-                    </div>
-                    <div class="cleanplaats-stat-item">
-                        <span class="cleanplaats-stat-label">${panelText.statsUserBlocked}</span>
-                        <span class="cleanplaats-stat-value" id="cleanplaats-userblocked-count">0</span>
-                    </div>
-                    <div class="cleanplaats-stat-item">
-                        <span class="cleanplaats-stat-label">${panelText.statsOther}</span>
-                        <span class="cleanplaats-stat-value" id="cleanplaats-otherads-count">0</span>
-                    </div>
-                    <div class="cleanplaats-stat-item">
-                        <span class="cleanplaats-stat-label">${panelText.statsTotal}</span>
+                <details class="cleanplaats-stats cleanplaats-stats-compact" id="cleanplaats-stats" ${CLEANPLAATS.panelState.statsExpanded ? 'open' : ''}>
+                    <summary class="cleanplaats-stats-summary">
+                        <span class="cleanplaats-section-title">${panelText.statsTitle}</span>
                         <span class="cleanplaats-stat-value" id="cleanplaats-total-count-stats">0</span>
+                        <svg class="cleanplaats-stats-chevron" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </summary>
+                    <div class="cleanplaats-stats-grid">
+                        <div class="cleanplaats-stat-item">
+                            <span class="cleanplaats-stat-label">${panelText.statsTop}</span>
+                            <span class="cleanplaats-stat-value" id="cleanplaats-topads-count">0</span>
+                        </div>
+                        <div class="cleanplaats-stat-item">
+                            <span class="cleanplaats-stat-label">${panelText.statsDagtoppers}</span>
+                            <span class="cleanplaats-stat-value" id="cleanplaats-dagtoppers-count">0</span>
+                        </div>
+                        <div class="cleanplaats-stat-item">
+                            <span class="cleanplaats-stat-label">${panelText.statsBusiness}</span>
+                            <span class="cleanplaats-stat-value" id="cleanplaats-promoted-count">0</span>
+                        </div>
+                        <div class="cleanplaats-stat-item">
+                            <span class="cleanplaats-stat-label">${panelText.statsStickers}</span>
+                            <span class="cleanplaats-stat-value" id="cleanplaats-stickers-count">0</span>
+                        </div>
+                        <div class="cleanplaats-stat-item">
+                            <span class="cleanplaats-stat-label">${panelText.statsReserved}</span>
+                            <span class="cleanplaats-stat-value" id="cleanplaats-reserved-count">0</span>
+                        </div>
+                        <div class="cleanplaats-stat-item">
+                            <span class="cleanplaats-stat-label">${panelText.statsBids}</span>
+                            <span class="cleanplaats-stat-value" id="cleanplaats-bids-count">0</span>
+                        </div>
+                        <div class="cleanplaats-stat-item">
+                            <span class="cleanplaats-stat-label">${panelText.statsUserBlocked}</span>
+                            <span class="cleanplaats-stat-value" id="cleanplaats-userblocked-count">0</span>
+                        </div>
+                        <div class="cleanplaats-stat-item">
+                            <span class="cleanplaats-stat-label">${panelText.statsOther}</span>
+                            <span class="cleanplaats-stat-value" id="cleanplaats-otherads-count">0</span>
+                        </div>
                     </div>
-                </div>
+                </details>
                 ` : ''}
 
                 <button id="cleanplaats-manage-terms" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageTerms}</button>
@@ -1071,6 +1073,11 @@ function setupEventListeners() {
             }
         });
     }
+
+    document.getElementById('cleanplaats-stats')?.addEventListener('toggle', (event) => {
+        CLEANPLAATS.panelState.statsExpanded = event.currentTarget.open;
+        saveSettings().catch(() => {});
+    });
 
     openPreferencesButton?.addEventListener('click', (event) => {
         event.preventDefault();

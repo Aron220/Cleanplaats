@@ -673,7 +673,7 @@ function getPanelLocaleText() {
             onboardingSteps: [
                 'Cleanplaats supprime automatiquement les publicités et le contenu promotionnel',
                 'Utilisez le panneau en bas à droite pour ajuster le filtrage. Vous ouvrez et fermez le panneau via la flèche en haut.',
-                'Consultez les statistiques des éléments supprimés dans le panneau'
+                'Consultez les statistiques des éléments masqués dans le panneau'
             ],
             onboardingButton: 'C’est parti !',
             onboardingCloseAriaLabel: 'Fermer le message de bienvenue',
@@ -689,7 +689,7 @@ function getPanelLocaleText() {
                 price_high_low: 'Prix ↓',
                 distance: 'Distance'
             },
-            statsTitle: 'Éléments supprimés',
+            statsTitle: 'Éléments masqués',
             statsTop: 'Top :',
             statsDagtoppers: 'Annonces au top :',
             statsBusiness: 'Professionnel :',
@@ -698,7 +698,6 @@ function getPanelLocaleText() {
             statsBids: 'Avec offre :',
             statsUserBlocked: 'Masquées par vous :',
             statsOther: 'Autres :',
-            statsTotal: 'Total :',
             manageTerms: 'Gérer les termes masqués',
             manageSellers: 'Gérer les vendeurs masqués',
             manageBlockedListings: 'Gérer les annonces masquées',
@@ -766,7 +765,7 @@ function getPanelLocaleText() {
             sellerAgeFallbackName: 'Ce vendeur',
             blockSellerConfirm: sellerName => `Masquer toutes les annonces de ${sellerName} ?`,
             panelToggleAriaLabel: 'Replier ou déplier le panneau',
-            welcomeToast: removed => (removed > 0 ? `Cleanplaats est actif (${removed} éléments supprimés)` : 'Cleanplaats est actif'),
+            welcomeToast: removed => (removed > 0 ? `Cleanplaats est actif (${removed} éléments masqués)` : 'Cleanplaats est actif'),
             donationNudgeText: count => `Vous avez déjà filtré ${count} fois avec Cleanplaats 🎉 Si cela vous fait gagner du temps, pensez à faire un petit don.`,
             donationNudgeDismiss: 'Peut-être plus tard',
             // The rest of the alerts copy lives in content/alerts.js
@@ -886,7 +885,7 @@ function getPanelLocaleText() {
         onboardingSteps: [
             'Cleanplaats verwijdert automatisch advertenties en promotionele content',
             'Gebruik het configuratiescherm rechtsonder om de filtering aan te passen. Je opent en sluit het paneel via het pijltje bovenin.',
-            'Bekijk statistieken over verwijderde items in het configuratiescherm'
+            'Bekijk statistieken over verborgen items in het configuratiescherm'
         ],
         onboardingButton: 'Aan de slag!',
         onboardingCloseAriaLabel: 'Welkomstbericht sluiten',
@@ -902,7 +901,7 @@ function getPanelLocaleText() {
             price_high_low: 'Prijs ↓',
             distance: 'Afstand'
         },
-        statsTitle: 'Verwijderde items',
+        statsTitle: 'Verborgen items',
         statsTop: 'Top:',
         statsDagtoppers: is2dehands ? 'Topzoekertjes:' : 'Dagtoppers:',
         statsBusiness: 'Bedrijf:',
@@ -911,7 +910,6 @@ function getPanelLocaleText() {
         statsBids: 'Met biedingen:',
         statsUserBlocked: 'Door jou verborgen:',
         statsOther: 'Overig:',
-        statsTotal: 'Totaal:',
         manageTerms: 'Beheer blacklist-termen',
         manageSellers: 'Beheer verborgen verkopers',
         manageBlockedListings: 'Beheer verborgen advertenties',
@@ -979,7 +977,7 @@ function getPanelLocaleText() {
         sellerAgeFallbackName: 'Deze verkoper',
         blockSellerConfirm: sellerName => `Wil je alle advertenties van ${sellerName} verbergen?`,
         panelToggleAriaLabel: 'Paneel inklappen of uitklappen',
-        welcomeToast: removed => (removed > 0 ? `Cleanplaats is actief (${removed} items verwijderd)` : 'Cleanplaats is actief'),
+        welcomeToast: removed => (removed > 0 ? `Cleanplaats is actief (${removed} items verborgen)` : 'Cleanplaats is actief'),
         // Other alert strings live in content/alerts.js, which carries a Dutch
         // and a French table (ALERTS_TEXT_NL / ALERTS_TEXT_FR) and picks by the
         // same locale check this function uses.
@@ -1114,7 +1112,8 @@ var CLEANPLAATS = {
         hasShownWelcomeToast: false,
         hasSeenFeedSellerHint: false,
         lastSeenVersion: '',
-        activeView: 'filters'
+        activeView: 'filters',
+        statsExpanded: false
     }
 };
 
