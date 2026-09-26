@@ -545,9 +545,15 @@
     margin-left: 0 !important;
   }
 
+  /* The text takes the free width, so every ? lines up in one column on the
+     right, even when a long label wraps. */
   .cleanplaats-option-label-text {
-    display: inline;
+    flex: 1;
     min-width: 0;
+  }
+
+  .cleanplaats-option-label > .cleanplaats-tooltip-icon {
+    flex: 0 0 auto;
   }
 
   .cleanplaats-results-dropdown-row .cleanplaats-option-label {
@@ -580,12 +586,6 @@
   .cleanplaats-option-preference .cleanplaats-switch {
     flex: 0 0 auto;
     margin-top: 2px;
-  }
-
-  .cleanplaats-option-preference .cleanplaats-tooltip-icon {
-    margin-left: 6px;
-    margin-top: 0;
-    vertical-align: text-top;
   }
 
   .cleanplaats-inline-button {

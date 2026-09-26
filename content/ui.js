@@ -347,7 +347,7 @@ function createControlPanel() {
                             <span class="cleanplaats-switch-slider"></span>
                         </label>
                         <label for="removeTopAds" class="cleanplaats-option-label">
-                            ${panelText.topAdLabel}
+                            <span class="cleanplaats-option-label-text">${panelText.topAdLabel}</span>
                             <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.topAdTooltip}">?</span>
                         </label>
                     </div>
@@ -357,7 +357,7 @@ function createControlPanel() {
                             <span class="cleanplaats-switch-slider"></span>
                         </label>
                         <label for="removeDagtoppers" class="cleanplaats-option-label">
-                            ${panelText.dagtoppersLabel}
+                            <span class="cleanplaats-option-label-text">${panelText.dagtoppersLabel}</span>
                             <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.dagtoppersTooltip}">?</span>
                         </label>
                     </div>
@@ -367,7 +367,7 @@ function createControlPanel() {
                             <span class="cleanplaats-switch-slider"></span>
                         </label>
                         <label for="removePromotedListings" class="cleanplaats-option-label">
-                            ${panelText.promotedListingsLabel}
+                            <span class="cleanplaats-option-label-text">${panelText.promotedListingsLabel}</span>
                             <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.promotedListingsTooltip}">?</span>
                         </label>
                     </div>
@@ -377,7 +377,7 @@ function createControlPanel() {
                             <span class="cleanplaats-switch-slider"></span>
                         </label>
                         <label for="removeOpvalStickers" class="cleanplaats-option-label">
-                            ${panelText.stickersLabel}
+                            <span class="cleanplaats-option-label-text">${panelText.stickersLabel}</span>
                             <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.stickersTooltip}">?</span>
                         </label>
                     </div>
@@ -387,7 +387,7 @@ function createControlPanel() {
                             <span class="cleanplaats-switch-slider"></span>
                         </label>
                         <label for="removeReservedListings" class="cleanplaats-option-label">
-                            ${panelText.reservedLabel}
+                            <span class="cleanplaats-option-label-text">${panelText.reservedLabel}</span>
                             <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.reservedTooltip}">?</span>
                         </label>
                     </div>
@@ -397,7 +397,7 @@ function createControlPanel() {
                             <span class="cleanplaats-switch-slider"></span>
                         </label>
                         <label for="removeListingsWithBids" class="cleanplaats-option-label">
-                            ${panelText.bidsLabel}
+                            <span class="cleanplaats-option-label-text">${panelText.bidsLabel}</span>
                             <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.bidsTooltip}">?</span>
                         </label>
                     </div>
@@ -489,10 +489,8 @@ function createControlPanel() {
                             <span class="cleanplaats-switch-slider"></span>
                         </label>
                         <label for="expandPanelOnPageLoad" class="cleanplaats-option-label">
-                            <span class="cleanplaats-option-label-text">
-                                ${panelText.expandPanelOnPageLoadLabel}
-                                <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.expandPanelOnPageLoadTooltip}">?</span>
-                            </span>
+                            <span class="cleanplaats-option-label-text">${panelText.expandPanelOnPageLoadLabel}</span>
+                            <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.expandPanelOnPageLoadTooltip}">?</span>
                         </label>
                     </div>
                     <div class="cleanplaats-option cleanplaats-option-preference">
@@ -501,10 +499,8 @@ function createControlPanel() {
                             <span class="cleanplaats-switch-slider"></span>
                         </label>
                         <label for="showUpdatePopups" class="cleanplaats-option-label">
-                            <span class="cleanplaats-option-label-text">
-                                ${panelText.showUpdatePopupsLabel}
-                                <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.showUpdatePopupsTooltip}">?</span>
-                            </span>
+                            <span class="cleanplaats-option-label-text">${panelText.showUpdatePopupsLabel}</span>
+                            <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.showUpdatePopupsTooltip}">?</span>
                         </label>
                     </div>
                     <div class="cleanplaats-option cleanplaats-option-preference">
@@ -513,10 +509,8 @@ function createControlPanel() {
                             <span class="cleanplaats-switch-slider"></span>
                         </label>
                         <label for="showViewedListingsIndicator" class="cleanplaats-option-label">
-                            <span class="cleanplaats-option-label-text">
-                                ${panelText.viewedListingsLabel}
-                                <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.viewedListingsTooltip}">?</span>
-                            </span>
+                            <span class="cleanplaats-option-label-text">${panelText.viewedListingsLabel}</span>
+                            <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.viewedListingsTooltip}">?</span>
                         </label>
                         <button
                             id="cleanplaats-clear-viewed-listings"
@@ -534,10 +528,8 @@ function createControlPanel() {
                             <span class="cleanplaats-switch-slider"></span>
                         </label>
                         <label for="removeFavoriteRelatedAds" class="cleanplaats-option-label">
-                            <span class="cleanplaats-option-label-text">
-                                ${panelText.favoriteRelatedAdsLabel}
-                                <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.favoriteRelatedAdsTooltip}">?</span>
-                            </span>
+                            <span class="cleanplaats-option-label-text">${panelText.favoriteRelatedAdsLabel}</span>
+                            <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.favoriteRelatedAdsTooltip}">?</span>
                         </label>
                     </div>
                     <div class="cleanplaats-option cleanplaats-option-preference">
@@ -546,10 +538,8 @@ function createControlPanel() {
                             <span class="cleanplaats-switch-slider"></span>
                         </label>
                         <label for="sellerVerificationPanelEnabled" class="cleanplaats-option-label">
-                            <span class="cleanplaats-option-label-text">
-                                ${panelText.sellerVerificationLabel}
-                                <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.sellerVerificationTooltip}">?</span>
-                            </span>
+                            <span class="cleanplaats-option-label-text">${panelText.sellerVerificationLabel}</span>
+                            <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.sellerVerificationTooltip}">?</span>
                         </label>
                     </div>
                     <div class="cleanplaats-option cleanplaats-option-preference cleanplaats-option-preference-block">
@@ -559,10 +549,8 @@ function createControlPanel() {
                                 <span class="cleanplaats-switch-slider"></span>
                             </label>
                             <label for="sellerAgeWarningEnabled" class="cleanplaats-option-label">
-                                <span class="cleanplaats-option-label-text">
-                                    ${panelText.sellerAgeWarningLabel}
-                                    <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.sellerAgeWarningTooltip}">?</span>
-                                </span>
+                                <span class="cleanplaats-option-label-text">${panelText.sellerAgeWarningLabel}</span>
+                                <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.sellerAgeWarningTooltip}">?</span>
                             </label>
                         </div>
                         <div class="cleanplaats-threshold-controls ${CLEANPLAATS.settings.sellerAgeWarningEnabled ? '' : 'is-disabled'}" id="cleanplaats-seller-age-threshold-controls">
