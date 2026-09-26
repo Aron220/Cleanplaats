@@ -566,9 +566,10 @@
     border-top: 1px solid #f1f3f5;
   }
 
-  .cleanplaats-option-preference > .cleanplaats-inline-button {
-    margin-left: auto;
-    margin-top: 0;
+  /* A secondary action under a preference, lined up with the label text. */
+  .cleanplaats-option-sub-button {
+    align-self: flex-start;
+    margin-left: 48px;
   }
 
   .cleanplaats-option-preference-block {

@@ -503,18 +503,20 @@ function createControlPanel() {
                             <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.showUpdatePopupsTooltip}">?</span>
                         </label>
                     </div>
-                    <div class="cleanplaats-option cleanplaats-option-preference">
-                        <label class="cleanplaats-switch">
-                            <input type="checkbox" id="showViewedListingsIndicator" ${CLEANPLAATS.settings.showViewedListingsIndicator ? 'checked' : ''}>
-                            <span class="cleanplaats-switch-slider"></span>
-                        </label>
-                        <label for="showViewedListingsIndicator" class="cleanplaats-option-label">
-                            <span class="cleanplaats-option-label-text">${panelText.viewedListingsLabel}</span>
-                            <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.viewedListingsTooltip}">?</span>
-                        </label>
+                    <div class="cleanplaats-option cleanplaats-option-preference cleanplaats-option-preference-block">
+                        <div class="cleanplaats-option-main">
+                            <label class="cleanplaats-switch">
+                                <input type="checkbox" id="showViewedListingsIndicator" ${CLEANPLAATS.settings.showViewedListingsIndicator ? 'checked' : ''}>
+                                <span class="cleanplaats-switch-slider"></span>
+                            </label>
+                            <label for="showViewedListingsIndicator" class="cleanplaats-option-label">
+                                <span class="cleanplaats-option-label-text">${panelText.viewedListingsLabel}</span>
+                                <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.viewedListingsTooltip}">?</span>
+                            </label>
+                        </div>
                         <button
                             id="cleanplaats-clear-viewed-listings"
-                            class="cleanplaats-inline-button"
+                            class="cleanplaats-inline-button cleanplaats-option-sub-button"
                             type="button"
                             aria-label="${panelText.viewedListingsClearButtonAriaLabel}"
                             title="${panelText.viewedListingsClearButtonAriaLabel}"
