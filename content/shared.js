@@ -286,6 +286,51 @@ function indexSellerIdsFromNextData() {
 
 var CLEANPLAATS_SEARCH_BRIDGE_SOURCE = 'cleanplaats-search-bridge';
 
+// Search and category pages are Next.js: the server sends the results as
+// finished HTML, and React takes that markup over afterwards (hydration). A
+// node added inside it before then is one React did not render, and React
+// answers by throwing the server markup away and rendering the page again
+// (error #418). On a first visit, with nothing cached yet, that can come
+// seconds after the first cleanup pass. Hiding only sets attributes, which
+// React leaves alone, so it starts straight away; the buttons, badges and
+// banners we add wait for this.
+function isPageHydrated() {
+    return CLEANPLAATS.runtime.pageHydrated || !document.getElementById('__NEXT_DATA__');
+}
+
+// For when the page never says so, for instance after a Next.js update that
+// stops recording the measure search-bridge.js watches: late buttons are
+// better than none.
+var CLEANPLAATS_HYDRATION_FALLBACK_MS = 10000;
+
+// search-bridge.js says when the page is hydrated. Like the seller ids, that
+// can have happened before this listens: the replay requested in
+// listenForPageSearchResults() covers it.
+function listenForPageHydration() {
+    if (isPageHydrated()) return;
+
+    let fallbackTimer = 0;
+
+    const markHydrated = () => {
+        if (CLEANPLAATS.runtime.pageHydrated) return;
+        CLEANPLAATS.runtime.pageHydrated = true;
+        clearTimeout(fallbackTimer);
+        window.removeEventListener('message', onMessage);
+        // Hydration itself changes nothing on the page, so no mutation would
+        // bring on the pass that adds what was held back.
+        runScheduledCleanup();
+    };
+
+    const onMessage = event => {
+        if (event.source !== window) return;
+        if (event.data?.source !== CLEANPLAATS_SEARCH_BRIDGE_SOURCE || event.data.type !== 'hydrated') return;
+        markHydrated();
+    };
+
+    window.addEventListener('message', onMessage);
+    fallbackTimer = setTimeout(markHydrated, Math.max(0, CLEANPLAATS_HYDRATION_FALLBACK_MS - performance.now()));
+}
+
 // content/search-bridge.js runs in the page's world and forwards the seller ids
 // from every /lrp/api/search response the page itself fetches. Registered once
 // settings are loaded so the cleanup it triggers runs with the user's filters;
@@ -894,6 +939,8 @@ var CLEANPLAATS = {
         // the seller identity section above.
         sellerIdsByListingId: {},
         searchBridgeListening: false,
+        // See isPageHydrated().
+        pageHydrated: false,
         // The ads of blocked sellers, which is how the homepage feed gets
         // matched. See content/feed-sellers.js.
         sellerAds: { ads: {}, picked: {}, quickAt: {}, fullAt: {}, sizes: {}, resolved: new Map() },

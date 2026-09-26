@@ -114,6 +114,7 @@ function initCleanplaats() {
                     createControlPanel();
                     setupWebchatCollisionAvoidance();
                     setupAllObservers();
+                    listenForPageHydration();
                     listenForPageSearchResults();
                     applySettings();
                     scheduleSellerAgeWarningCheck({ resetState: true });

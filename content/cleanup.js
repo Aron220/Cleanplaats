@@ -78,6 +78,8 @@ function ensureViewedListingBadge(listing, label) {
 }
 
 function applyViewedListingIndicators() {
+    if (!isPageHydrated()) return;
+
     const listings = document.querySelectorAll('.hz-Listing');
 
     if (!listings.length) {
@@ -982,6 +984,7 @@ function removeEmptyPageBanner() {
 }
 
 function updateEmptyPageBanner() {
+    if (!isPageHydrated()) return;
     if (!isMarktplaatsSite() && !is2dehandsFamilySite()) return;
 
     const href = window.location.href;

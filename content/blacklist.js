@@ -395,6 +395,8 @@ function listingLayoutStacksChildren(content) {
 }
 
 function injectBlacklistButtons() {
+    if (!isPageHydrated()) return;
+
     const panelText = getPanelLocaleText();
     indexSellerIdsFromNextData();
     document.querySelectorAll('.hz-Listing').forEach(listing => {
