@@ -555,56 +555,33 @@ function removeAllAds() {
     CLEANPLAATS.stats.otherAdsRemoved += count;
 }
 
+// Hidden, never removed. Most of these nodes are React's, and React throws
+// ("removeChild ... not a child of this node") when it later goes to remove a
+// node that was taken out from under it. Hiding is enough to keep them away:
+// the stylesheet holds [data-cleanplaats-hidden] at display: none even when an
+// ad script resets the inline style.
 function removePersistentGoogleAds() {
     let count = 0;
+    const hide = element => {
+        if (hideElement(element)) count++;
+    };
 
     document.querySelectorAll('#adsense-root, .creative, div[id^="google_ads_iframe"], div[data-google-query-id], div[aria-label="Advertisement"]').forEach(ad => {
-        try {
-            const gridItem = ad.closest('.hz-Link.hz-Link--block');
-            if (gridItem && gridItem.parentNode) {
-                gridItem.parentNode.removeChild(gridItem);
-                count++;
-                return;
-            }
-            if (ad.parentNode) {
-                ad.parentNode.removeChild(ad);
-                count++;
-            }
-        } catch (error) {
-            console.error('Cleanplaats: Error removing persistent ad', error);
-        }
+        hide(ad.closest('.hz-Link.hz-Link--block') || ad);
     });
 
-    document.querySelectorAll('#banner-right-container').forEach(banner => {
-        if (banner.parentNode) {
-            banner.parentNode.removeChild(banner);
-            count++;
-        }
-    });
-
-    document.querySelectorAll('#banner-top-dt-container').forEach(container => {
-        if (container.parentNode) {
-            container.parentNode.removeChild(container);
-            count++;
-        }
-    });
+    document.querySelectorAll('#banner-right-container, #banner-top-dt-container').forEach(hide);
 
     document.querySelectorAll('.BannerTop-root').forEach(banner => {
         const hasAdContent = banner.querySelector(
             '.hz-Banner, .hz-Banner--fluid, iframe, [data-google-query-id], [id*="google_ads_iframe"], ins.adsbygoogle'
         );
-        if (!hasAdContent && banner.parentNode) {
-            banner.parentNode.removeChild(banner);
-            count++;
-        }
+        if (!hasAdContent) hide(banner);
     });
 
     document.querySelectorAll('#top-banner-root').forEach(container => {
         const hasVisibleContent = Array.from(container.children).some(child => child.offsetParent !== null);
-        if (!hasVisibleContent && container.parentNode) {
-            container.parentNode.removeChild(container);
-            count++;
-        }
+        if (!hasVisibleContent) hide(container);
     });
 
     document.querySelectorAll('.hz-FeedBannerBlock, .Banners-bannerFeedItem').forEach(banner => {
@@ -612,10 +589,7 @@ function removePersistentGoogleAds() {
             banner.childElementCount === 0 ||
             Array.from(banner.children).every(child => child.offsetParent === null)
         ) {
-            if (banner.parentNode) {
-                banner.parentNode.removeChild(banner);
-                count++;
-            }
+            hide(banner);
         }
     });
 

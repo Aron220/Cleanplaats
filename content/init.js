@@ -133,16 +133,13 @@ function initCleanplaats() {
                             const interval = setInterval(() => {
                                 removePersistentGoogleAds();
 
-                                document.querySelectorAll('#banner-top-dt').forEach(banner => {
-                                    if (banner.parentNode) {
-                                        banner.parentNode.removeChild(banner);
-                                    }
-                                });
+                                // Hidden rather than removed, see removePersistentGoogleAds().
+                                document.querySelectorAll('#banner-top-dt').forEach(banner => hideElement(banner));
 
                                 document.body.offsetHeight;
                                 attempts++;
                                 if (
-                                    (!document.querySelector('#banner-right-container') && !document.querySelector('#banner-top-dt')) ||
+                                    !document.querySelector('#banner-right-container:not([data-cleanplaats-hidden]), #banner-top-dt:not([data-cleanplaats-hidden])') ||
                                     attempts >= maxAttempts
                                 ) {
                                     clearInterval(interval);
