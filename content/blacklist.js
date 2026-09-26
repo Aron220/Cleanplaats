@@ -526,6 +526,7 @@ function injectBlacklistButtons() {
 
     injectListingBlockButtons();
     injectProductDetailBlacklistButton();
+    injectFeedSellerButtons();
 }
 
 function showBlacklistModal(triggerButton) {

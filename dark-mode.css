@@ -386,7 +386,9 @@ html.cleanplaats-dark-mode .cleanplaats-blacklist-btn:hover {
 }
 
 html.cleanplaats-dark-mode .cleanplaats-detail-blacklist-btn:disabled,
-html.cleanplaats-dark-mode .cleanplaats-detail-blacklist-btn[aria-disabled="true"] {
+html.cleanplaats-dark-mode .cleanplaats-detail-blacklist-btn[aria-disabled="true"],
+html.cleanplaats-dark-mode .cleanplaats-feed-seller-btn:disabled,
+html.cleanplaats-dark-mode .cleanplaats-feed-seller-btn:disabled:hover {
   background: rgba(166, 189, 214, 0.08) !important;
   color: var(--cleanplaats-dark-text-muted) !important;
   border-color: rgba(166, 189, 214, 0.14) !important;

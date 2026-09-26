@@ -1501,6 +1501,36 @@
     text-decoration: line-through !important;
   }
 
+  /* Under a homepage feed card. The cards in a row stretch to the tallest one,
+     so the button goes to the bottom to line up with its neighbours. */
+  .cleanplaats-feed-seller-row {
+    margin-top: auto;
+    margin-bottom: 0;
+    padding-top: 6px;
+  }
+
+  /* The homepage is off-white, where the grey fill of the search result
+     buttons all but disappears. */
+  .cleanplaats-feed-seller-btn {
+    background: #fff;
+    border: 1px solid #e3e7ec;
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+
+  .cleanplaats-feed-seller-btn:hover {
+    border-color: #ff4d4d;
+  }
+
+  .cleanplaats-feed-seller-btn:disabled,
+  .cleanplaats-feed-seller-btn:disabled:hover {
+    background: #eef2f6;
+    border-color: #e3e7ec;
+    color: #8a94a3;
+    cursor: progress;
+    transform: none;
+  }
+
   /* Blacklist toast notification */
   .cleanplaats-blacklist-toast {
     position: fixed;

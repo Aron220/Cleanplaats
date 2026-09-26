@@ -346,23 +346,17 @@ function getDetailPageSeller() {
         const script = [...document.querySelectorAll('script:not([src])')]
             .find(node => node.textContent.includes('__CONFIG__'));
 
-        if (script) {
-            const match = script.textContent.match(/__CONFIG__\s*=\s*(\{)/);
-            if (match) {
-                const json = extractJsonObject(script.textContent, match.index + match[0].length - 1);
-                const raw = json ? JSON.parse(json)?.listing?.seller : null;
+        const raw = script ? getConfigListingFromText(script.textContent)?.seller : null;
 
-                if (raw && raw.id) {
-                    seller = {
-                        id: String(raw.id),
-                        name: String(raw.name || '').trim(),
-                        // Marktplaats sets this to false for the sellers whose
-                        // verification block it does not render at all. When the
-                        // site stays quiet about a seller, so do we.
-                        showVerifications: raw.showVerifications !== false
-                    };
-                }
-            }
+        if (raw && raw.id) {
+            seller = {
+                id: String(raw.id),
+                name: String(raw.name || '').trim(),
+                // Marktplaats sets this to false for the sellers whose
+                // verification block it does not render at all. When the
+                // site stays quiet about a seller, so do we.
+                showVerifications: raw.showVerifications !== false
+            };
         }
     } catch (error) {
         seller = null;
@@ -374,6 +368,16 @@ function getDetailPageSeller() {
 
 function getDetailPageSellerId() {
     return getDetailPageSeller()?.id || '';
+}
+
+// The listing an ad page describes in window.__CONFIG__, cut out of the text of
+// the script that assigns it, or of the whole page.
+function getConfigListingFromText(text) {
+    const match = String(text || '').match(/__CONFIG__\s*=\s*(\{)/);
+    if (!match) return null;
+
+    const json = extractJsonObject(text, match.index + match[0].length - 1);
+    return json ? JSON.parse(json)?.listing || null : null;
 }
 
 // __CONFIG__ is followed by more script, so the object has to be cut out by
@@ -602,6 +606,8 @@ function getPanelLocaleText() {
             hideSellerButton: 'Masquer le vendeur',
             hiddenSellerButton: 'Vendeur masqué',
             hideSellerButtonAriaLabel: 'Masquer ce vendeur',
+            feedSellerLookingUp: 'Recherche du vendeur…',
+            feedSellerLookupFailed: 'Échec, réessayez',
             blockedListingsModalTitle: 'Annonces masquées',
             blockedListingsEmpty: 'Aucune annonce masquée',
             hideListingButton: "Masquer l'annonce",
@@ -782,6 +788,8 @@ function getPanelLocaleText() {
         hideSellerButton: 'Verkoper verbergen',
         hiddenSellerButton: 'Verkoper verborgen',
         hideSellerButtonAriaLabel: 'Verberg deze verkoper',
+        feedSellerLookingUp: 'Verkoper opzoeken…',
+        feedSellerLookupFailed: 'Mislukt, probeer opnieuw',
         blockedListingsModalTitle: 'Verborgen advertenties',
         blockedListingsEmpty: 'Geen advertenties verborgen',
         hideListingButton: 'Verberg advertentie',
@@ -888,7 +896,7 @@ var CLEANPLAATS = {
         searchBridgeListening: false,
         // The ads of blocked sellers, which is how the homepage feed gets
         // matched. See content/feed-sellers.js.
-        sellerAds: { ads: {}, fetchedAt: {}, resolved: new Map() },
+        sellerAds: { ads: {}, picked: {}, quickAt: {}, fullAt: {}, sizes: {}, resolved: new Map() },
         sellerAdsRefreshing: false,
         sellerAdsFailedAt: 0,
         // Sent along with every save so storage.onChanged can tell this tab's
