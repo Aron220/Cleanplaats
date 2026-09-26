@@ -1501,34 +1501,181 @@
     text-decoration: line-through !important;
   }
 
-  /* Under a homepage feed card. The cards in a row stretch to the tallest one,
-     so the button goes to the bottom to line up with its neighbours. */
+  /* The button on a homepage feed card sits on the thumbnail, as a card action
+     icon beside the favourite heart, rather than as a chip under every card.
+     One visit shows hundreds of cards, and the same label under each of them
+     reads as noise. At rest it is the eye alone, and the label unfolds while
+     the pointer or the keyboard is on it.
+
+     The row is taken out of the card's flow, so the button covers the photo
+     instead of pushing the title and the price around, and the cards end on
+     the price like the site's own do. */
+  .hz-StructuredListing:has(.cleanplaats-feed-seller-row) {
+    position: relative;
+  }
+
   .cleanplaats-feed-seller-row {
-    margin-top: auto;
-    margin-bottom: 0;
-    padding-top: 6px;
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 3;
+    width: auto;
+    margin: 0;
+    padding: 0;
   }
 
-  /* The homepage is off-white, where the grey fill of the search result
-     buttons all but disappears. */
+  /* The button is only as wide as what is in it, and never clips: it grows
+     around the label as that comes out. A button that clips instead shows the
+     middle of the word rather than nothing at all, since a clipped label sits
+     centred in it, and catching that mid-animation is how "Verkoper verbergen"
+     came out as "per v". */
   .cleanplaats-feed-seller-btn {
-    background: #fff;
-    border: 1px solid #e3e7ec;
+    box-sizing: border-box;
+    height: 28px;
+    min-width: 28px;
+    padding: 0 6px;
+    gap: 0;
+    /* Only does anything while the button is wider than its content, which is
+       the folded circle and the roomier touch size. */
+    justify-content: center;
+    border-radius: 999px;
+    white-space: nowrap;
     font-size: 12px;
-    padding: 4px 8px;
+    color: #5b6673;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.14);
+    opacity: 0.72;
+    transition: gap 0.18s ease, opacity 0.15s ease, background 0.15s ease,
+                border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
   }
 
-  .cleanplaats-feed-seller-btn:hover {
-    border-color: #ff4d4d;
+  .cleanplaats-feed-seller-btn::before {
+    font-size: 15px;
+    margin: 0;
   }
 
+  /* Folded shut, and the only thing that gets clipped anywhere here. It opens
+     from its left edge, so the words come out in order. */
+  .cleanplaats-feed-seller-label {
+    display: inline-block;
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-width 0.18s ease, opacity 0.14s ease;
+  }
+
+  .cleanplaats-feed-seller-btn:focus-visible {
+    outline: 2px solid #0b6fd8;
+    outline-offset: 2px;
+  }
+
+  /* Where a pointer can hover: the icon wakes up on the card it is in, and the
+     label comes out on the control itself. */
+  @media (hover: hover) and (pointer: fine) {
+    .hz-StructuredListing:hover .cleanplaats-feed-seller-btn {
+      opacity: 1;
+    }
+
+    .cleanplaats-feed-seller-btn:hover,
+    .cleanplaats-feed-seller-btn:focus-visible {
+      padding: 0 11px 0 9px;
+      gap: 6px;
+      opacity: 1;
+      color: #b42318;
+      background: #fff;
+      border-color: #f2c6c2;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.16);
+    }
+
+    .cleanplaats-feed-seller-btn:hover .cleanplaats-feed-seller-label,
+    .cleanplaats-feed-seller-btn:focus-visible .cleanplaats-feed-seller-label {
+      max-width: 170px;
+      opacity: 1;
+    }
+
+    .cleanplaats-feed-seller-btn:hover::before {
+      text-decoration: line-through;
+    }
+  }
+
+  /* Without hover there is nothing to wake the icon up and nothing to unfold
+     it, so it stays a size that is comfortable to tap and fully opaque. The tap
+     asks first, see hideSellerOfFeedCard(). */
+  @media (hover: none), (pointer: coarse) {
+    .cleanplaats-feed-seller-btn {
+      height: 34px;
+      min-width: 34px;
+      max-width: 34px;
+      opacity: 0.95;
+    }
+
+    .cleanplaats-feed-seller-btn::before {
+      font-size: 17px;
+    }
+  }
+
+  /* While the seller is looked up. The pointer that just clicked is still on
+     the button, so it stays unfolded and reads the state out; away from it
+     there is only the greyed-out circle. */
   .cleanplaats-feed-seller-btn:disabled,
   .cleanplaats-feed-seller-btn:disabled:hover {
     background: #eef2f6;
     border-color: #e3e7ec;
     color: #8a94a3;
     cursor: progress;
-    transform: none;
+  }
+
+  /* The once-only note that points at the first feed button. It sits in the
+     body rather than in the card, because the feed rebuilds its cards, and
+     never takes a click: whatever the user aims at next is under it. */
+  .cleanplaats-feed-hint {
+    position: fixed;
+    z-index: 2147483646;
+    box-sizing: border-box;
+    /* The placing code clamps against this width, so it has to include the
+       padding: border-box, not the browser default. */
+    max-width: 232px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #1a1a1a;
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.28);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.45;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .cleanplaats-feed-hint--visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Points up at the button it belongs to. */
+  .cleanplaats-feed-hint::before {
+    content: "";
+    position: absolute;
+    top: -4px;
+    left: 12px;
+    width: 9px;
+    height: 9px;
+    background: #1a1a1a;
+    transform: rotate(45deg);
+  }
+
+  .cleanplaats-feed-hint-title {
+    display: block;
+    font-weight: 700;
+  }
+
+  .cleanplaats-feed-hint-body {
+    display: block;
+    margin-top: 3px;
+    opacity: 0.78;
   }
 
   /* Blacklist toast notification */

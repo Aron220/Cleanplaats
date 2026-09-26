@@ -37,6 +37,12 @@
  * still does not say whose ad it is, so that one ad is looked up when the
  * button is used: one request, and only then. The seller is blocked by id,
  * which is what the lookups above need.
+ *
+ * That button is the eye on the card's photo, next to the favourite heart. It
+ * is one small icon rather than a labelled chip under every card, because one
+ * visit shows hundreds of cards and the same label under each of them reads as
+ * noise. The label unfolds while the pointer or the keyboard is on it, and a
+ * note points at it once, see maybeShowFeedSellerHint().
  */
 
 // The search endpoint answers a 500 for more sellers than this in one request,
@@ -517,7 +523,7 @@ function forgetUnblockedSellers() {
     });
 }
 
-// The button under every feed card, see the top of this file. Only on the
+// The button on every feed card, see the top of this file. Only on the
 // homepage, which is where the feed is.
 function injectFeedSellerButtons() {
     if (window.location.pathname !== '/') return;
@@ -531,18 +537,122 @@ function injectFeedSellerButtons() {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'cleanplaats-blacklist-btn cleanplaats-feed-seller-btn';
-        button.textContent = panelText.hideSellerButton;
+        // The label lives in its own element, see the stylesheet: the button
+        // unfolding around a label it clips would show the middle of the words.
+        const label = document.createElement('span');
+        label.className = 'cleanplaats-feed-seller-label';
+        button.appendChild(label);
+        setFeedSellerButtonLabel(button, panelText.hideSellerButton);
         button.addEventListener('click', event => {
             event.preventDefault();
             event.stopPropagation();
             hideSellerOfFeedCard(card, button);
         });
 
-        // Next to the card's link, not inside it, so a click cannot open the ad.
+        // On the photo, next to the card's link rather than inside it, so a
+        // click cannot open the ad.
         const row = document.createElement('div');
         row.className = 'cleanplaats-blacklist-btn-row cleanplaats-feed-seller-row';
         row.appendChild(button);
         card.appendChild(row);
+    });
+
+    maybeShowFeedSellerHint();
+}
+
+// The label is what the button unfolds into, and the only thing it is called
+// where the stylesheet has folded it shut. An aria-label would go stale as the
+// text changes with the lookup, so the two are set together.
+function setFeedSellerButtonLabel(button, text) {
+    button.querySelector('.cleanplaats-feed-seller-label').textContent = text;
+    button.setAttribute('aria-label', text);
+}
+
+// Whether the label can unfold under the pointer, which is what the two media
+// queries on .cleanplaats-feed-seller-btn in content.css turn on. Where it
+// cannot, the icon is all there is to go on, and a tap asks first. The two have
+// to agree: hover: none does not always come with pointer: coarse, and a button
+// that neither unfolds nor asks is a blind click on a card-sized target.
+function canUnfoldFeedSellerLabel() {
+    return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+}
+
+// The eye says little on its own, so the first feed card that carries one gets
+// a short note pointing at it. Once ever, and only on the homepage: the button
+// is the only way to hide a seller from the feed, since a feed card does not say
+// whose ad it is.
+var CLEANPLAATS_FEED_HINT_MAX_AGE_MS = 14 * 1000;
+
+function maybeShowFeedSellerHint() {
+    if (CLEANPLAATS.panelState.hasSeenFeedSellerHint) return;
+    if (document.getElementById('cleanplaats-feed-hint')) return;
+    // The welcome modal is the first thing a new visitor sees, and it points at
+    // the panel. Two notes at once is one too many; the modal asks again for
+    // this one when it closes.
+    if (document.querySelector('.cleanplaats-onboarding')) return;
+
+    // The first button the user can actually see, so that the note is never
+    // anchored to a card that is above the fold and about to be scrolled away.
+    const button = [...document.querySelectorAll('.cleanplaats-feed-seller-btn')].find(candidate => {
+        const rect = candidate.getBoundingClientRect();
+        return rect.width > 0 && rect.top > 0 && rect.bottom < window.innerHeight;
+    });
+    if (!button) return;
+
+    const panelText = getPanelLocaleText();
+    const hint = document.createElement('div');
+    hint.className = 'cleanplaats-feed-hint';
+    hint.id = 'cleanplaats-feed-hint';
+    hint.innerHTML = DOMPurify.sanitize(`
+        <span class="cleanplaats-feed-hint-title">${panelText.feedSellerHintTitle}</span>
+        <span class="cleanplaats-feed-hint-body">${panelText.feedSellerHintBody}</span>
+    `);
+
+    let timer = 0;
+
+    // Fixed, and following the card it belongs to: the feed keeps mutating, and
+    // a card can be replaced under it.
+    const place = () => {
+        if (!button.isConnected) {
+            dismiss();
+            return;
+        }
+        const rect = button.getBoundingClientRect();
+        // The note hangs under its button, but never off the right edge: in a
+        // narrow window the feed reaches the side of the screen.
+        const width = hint.offsetWidth || 232;
+        hint.style.left = `${Math.round(Math.min(rect.left - 3, window.innerWidth - width - 8))}px`;
+        hint.style.top = `${Math.round(rect.bottom + 10)}px`;
+    };
+
+    const dismiss = () => {
+        clearTimeout(timer);
+        window.removeEventListener('scroll', place);
+        document.removeEventListener('click', dismiss, true);
+        document.removeEventListener('keydown', onKeydown, true);
+        hint.remove();
+    };
+
+    const onKeydown = event => {
+        if (event.key === 'Escape') dismiss();
+    };
+
+    place();
+    document.body.appendChild(hint);
+    // A frame between placing it and fading it in, or it animates in from
+    // wherever the note was before it had a position.
+    requestAnimationFrame(() => hint.classList.add('cleanplaats-feed-hint--visible'));
+
+    timer = setTimeout(dismiss, CLEANPLAATS_FEED_HINT_MAX_AGE_MS);
+    window.addEventListener('scroll', place, { passive: true });
+    // Anything the user does means they are on their way elsewhere, and a click
+    // on the button itself is the one thing that makes the note pointless.
+    document.addEventListener('click', dismiss, true);
+    document.addEventListener('keydown', onKeydown, true);
+
+    CLEANPLAATS.panelState.hasSeenFeedSellerHint = true;
+    saveSettings().catch(error => {
+        console.warn('Cleanplaats: Failed to store that the feed hint was shown', error);
     });
 }
 
@@ -550,11 +660,16 @@ async function hideSellerOfFeedCard(card, button) {
     if (button.disabled) return;
 
     const panelText = getPanelLocaleText();
+
+    // Where the label does not unfold there is no hover to aim with either, and
+    // a card is easy to hit while scrolling, so ask before a whole seller goes.
+    if (!canUnfoldFeedSellerLabel() && !window.confirm(panelText.feedSellerConfirm)) return;
+
     const photoId = getFeedCardPhotoId(card);
     const ad = getFeedCardAd(card, photoId);
 
     button.disabled = true;
-    button.textContent = panelText.feedSellerLookingUp;
+    setFeedSellerButtonLabel(button, panelText.feedSellerLookingUp);
 
     try {
         if (!ad) throw new Error('No ad found for this card');
@@ -578,10 +693,10 @@ async function hideSellerOfFeedCard(card, button) {
         }
 
         // Ready for when the seller is shown again.
-        button.textContent = panelText.hideSellerButton;
+        setFeedSellerButtonLabel(button, panelText.hideSellerButton);
     } catch (error) {
         console.warn('Cleanplaats: Failed to look up the seller of a feed card', error);
-        button.textContent = panelText.feedSellerLookupFailed;
+        setFeedSellerButtonLabel(button, panelText.feedSellerLookupFailed);
     } finally {
         button.disabled = false;
     }

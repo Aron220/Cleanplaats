@@ -653,6 +653,9 @@ function getPanelLocaleText() {
             hideSellerButtonAriaLabel: 'Masquer ce vendeur',
             feedSellerLookingUp: 'Recherche du vendeur…',
             feedSellerLookupFailed: 'Échec, réessayez',
+            feedSellerConfirm: 'Masquer toutes les annonces de ce vendeur ?',
+            feedSellerHintTitle: 'Masquer le vendeur ? Cliquez sur l’œil.',
+            feedSellerHintBody: 'Toutes ses annonces disparaissent alors de « Pour vous » et « Près de chez vous ».',
             blockedListingsModalTitle: 'Annonces masquées',
             blockedListingsEmpty: 'Aucune annonce masquée',
             hideListingButton: "Masquer l'annonce",
@@ -835,6 +838,9 @@ function getPanelLocaleText() {
         hideSellerButtonAriaLabel: 'Verberg deze verkoper',
         feedSellerLookingUp: 'Verkoper opzoeken…',
         feedSellerLookupFailed: 'Mislukt, probeer opnieuw',
+        feedSellerConfirm: 'Alle advertenties van deze verkoper verbergen?',
+        feedSellerHintTitle: 'Verkoper verbergen? Klik op het oog.',
+        feedSellerHintBody: 'Dan blijven alle advertenties van die verkoper weg uit Voor jou en In je buurt.',
         blockedListingsModalTitle: 'Verborgen advertenties',
         blockedListingsEmpty: 'Geen advertenties verborgen',
         hideListingButton: 'Verberg advertentie',
@@ -967,6 +973,7 @@ var CLEANPLAATS = {
     panelState: {
         isCollapsed: false,
         hasShownWelcomeToast: false,
+        hasSeenFeedSellerHint: false,
         lastSeenVersion: '',
         activeView: 'filters'
     }

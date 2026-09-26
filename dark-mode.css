@@ -385,6 +385,26 @@ html.cleanplaats-dark-mode .cleanplaats-blacklist-btn:hover {
   border-color: #c14444 !important;
 }
 
+/* The feed button is a small round icon over a photo, not the chip the rule
+   above is about, so it keeps a surface of its own instead of the #c14444
+   hover fill: a thumb-sized red dot on every card would be the noise the icon
+   is there to avoid. Listed before the :disabled rule below, which has to keep
+   winning while a seller is looked up. */
+html.cleanplaats-dark-mode .cleanplaats-feed-seller-btn {
+  background: rgba(26, 32, 41, 0.92) !important;
+  color: var(--cleanplaats-dark-text-muted) !important;
+  border-color: rgba(166, 189, 214, 0.16) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-feed-seller-btn:hover,
+html.cleanplaats-dark-mode .cleanplaats-feed-seller-btn:focus-visible {
+  background: var(--cleanplaats-dark-bg-soft) !important;
+  color: #ff9d97 !important;
+  border-color: rgba(255, 157, 151, 0.4) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+}
+
 html.cleanplaats-dark-mode .cleanplaats-detail-blacklist-btn:disabled,
 html.cleanplaats-dark-mode .cleanplaats-detail-blacklist-btn[aria-disabled="true"],
 html.cleanplaats-dark-mode .cleanplaats-feed-seller-btn:disabled,
@@ -392,6 +412,21 @@ html.cleanplaats-dark-mode .cleanplaats-feed-seller-btn:disabled:hover {
   background: rgba(166, 189, 214, 0.08) !important;
   color: var(--cleanplaats-dark-text-muted) !important;
   border-color: rgba(166, 189, 214, 0.14) !important;
+}
+
+/* The note that points at a feed button. Its own background is near black,
+   which on a dark page needs an edge to sit against. */
+html.cleanplaats-dark-mode .cleanplaats-feed-hint {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  color: var(--cleanplaats-dark-text) !important;
+  border: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-feed-hint::before {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  border-left: 1px solid var(--cleanplaats-dark-border-subtle) !important;
+  border-top: 1px solid var(--cleanplaats-dark-border-subtle) !important;
 }
 
 @media (hover: none), (pointer: coarse) {

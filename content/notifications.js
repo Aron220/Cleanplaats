@@ -29,20 +29,26 @@ function showFirstTimeOnboarding() {
         </div>
     `);
 
+    const dismiss = () => {
+        onboarding.classList.add('cleanplaats-fade-out');
+        setTimeout(() => {
+            onboarding.remove();
+            // This modal stands where the note about the feed button goes, so
+            // the note waits for it and is shown once this is out of the way.
+            if (typeof maybeShowFeedSellerHint === 'function') {
+                maybeShowFeedSellerHint();
+            }
+        }, 300);
+    };
+
     document.body.appendChild(onboarding);
 
     ['cleanplaats-onboarding-close', 'cleanplaats-onboarding-got-it'].forEach(id => {
-        document.getElementById(id)?.addEventListener('click', () => {
-            onboarding.classList.add('cleanplaats-fade-out');
-            setTimeout(() => onboarding.remove(), 300);
-        });
+        document.getElementById(id)?.addEventListener('click', dismiss);
     });
 
     setTimeout(() => {
-        if (onboarding.parentNode) {
-            onboarding.classList.add('cleanplaats-fade-out');
-            setTimeout(() => onboarding.remove(), 300);
-        }
+        if (onboarding.parentNode) dismiss();
     }, 15000);
 }
 
