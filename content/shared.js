@@ -136,11 +136,21 @@ function hashStringToId(value) {
 // on the cover link (role="link" plus a JS click handler instead), so those cards carry
 // no item id anywhere in the DOM. Fall back to a fingerprint of the card's own content
 // so they can still be blocked individually.
-function getListingCardFingerprint(listing) {
+//
+// The image hosts are per country: images./admarkt-cdn.marktplaats.com for
+// Marktplaats, images./admarkt-cdn.2dehands.com for 2dehands and 2ememain.
+// Admarkt image paths put a two-character shard before the uuid
+// (/images/e7/e79c1925-...), which the uuid match has to skip.
+//
+// `legacy` is the fingerprint as it was computed before both of those were
+// handled: Marktplaats hosts only, no shard. See getListingCardId().
+function getListingCardFingerprint(listing, legacy = false) {
     if (!(listing instanceof Element)) return '';
 
-    const imageSrc = listing.querySelector('img[src*="marktplaats.com"]')?.getAttribute('src') || '';
-    const imageId = imageSrc.match(/\/images\/([0-9a-f-]{8,})/i)?.[1] || '';
+    const imageSelector = legacy ? 'img[src*="marktplaats.com"]' : 'img[src*="marktplaats.com"], img[src*="2dehands.com"]';
+    const imagePattern = legacy ? /\/images\/([0-9a-f-]{8,})/i : /\/images\/(?:[0-9a-f]{2}\/)?([0-9a-f-]{8,})/i;
+    const imageSrc = listing.querySelector(imageSelector)?.getAttribute('src') || '';
+    const imageId = imageSrc.match(imagePattern)?.[1] || '';
 
     const title = typeof getListingTitleText === 'function' ? getListingTitleText(listing) : '';
 
@@ -172,7 +182,17 @@ function getListingCardId(listing) {
     const listingId = getListingIdFromUrl(listing.querySelector('a[href*="/v/"]')?.href);
     if (listingId) return listingId;
 
-    return getListingCardFingerprint(listing);
+    // Blocks made before the fingerprint read 2dehands and Admarkt images are
+    // stored under the old one. Answering to it keeps those cards hidden, and
+    // keeps them unblockable from the panel, which finds the card by this id.
+    const fingerprint = getListingCardFingerprint(listing);
+    const legacyFingerprint = getListingCardFingerprint(listing, true);
+    if (legacyFingerprint && legacyFingerprint !== fingerprint
+        && CLEANPLAATS.settings.blockedListings?.some(entry => entry.id === legacyFingerprint)) {
+        return legacyFingerprint;
+    }
+
+    return fingerprint;
 }
 
 /* ===== Seller identity =====
@@ -528,8 +548,8 @@ function getPanelLocaleText() {
             optionsTitle: 'Options de filtrage',
             topAdLabel: 'Pub au top',
             topAdTooltip: "Masque les annonces marquées 'Pub au top'",
-            dagtoppersLabel: 'Tops du jour',
-            dagtoppersTooltip: "Supprime les annonces marquées 'Top du jour'",
+            dagtoppersLabel: 'Annonces au top',
+            dagtoppersTooltip: "Supprime les annonces marquées 'Annonce au top'",
             promotedListingsLabel: 'Annonces professionnelles',
             promotedListingsTooltip: "Masque les annonces de boutiques et d'entreprises, y compris sur la page d'accueil dans 'Pour vous' et 'Près de chez vous'",
             stickersLabel: 'Autocollants promotionnels',
@@ -621,7 +641,7 @@ function getPanelLocaleText() {
             },
             statsTitle: 'Éléments supprimés',
             statsTop: 'Top :',
-            statsDagtoppers: 'Tops du jour :',
+            statsDagtoppers: 'Annonces au top :',
             statsBusiness: 'Professionnel :',
             statsStickers: 'Autocollants :',
             statsReserved: 'Réservées :',
@@ -677,6 +697,25 @@ function getPanelLocaleText() {
             emptyPageSearching: 'Recherche en cours…',
             emptyPageNotFound: 'Aucune page avec des annonces visibles trouvée.',
             emptyPageSearchUnavailable: 'Recherche impossible pour cette recherche.',
+            emptyPageSearchingPhrases: [
+                'Je feuillette les pages…',
+                'J’évite les arnaqueurs…',
+                'Ici peut-être ? Non...',
+                'À la recherche de bonnes affaires…',
+                'Je cherche de l’or de seconde main…',
+                'Je trie le bric-à-brac…',
+                'Je fouille les annonces…',
+                'Je regarde un peu plus loin…',
+                'Je réfléchis, je réfléchis, j’ai une idée !…',
+                'Je passe les trouvailles au crible…'
+            ],
+            emptyPageFound: '🎯 Trouvé ! Chargement de la page…',
+            emptyPageToast: 'La page est vide car elle ne contenait que des publicités ! Essayez la page suivante ou modifiez les filtres.',
+            fewResultsToast: (visible, hidden) => `Il reste ${visible} résultat${visible === 1 ? '' : 's'} après que Cleanplaats a masqué ${hidden} annonce${hidden === 1 ? '' : 's'}.`,
+            sellerAgeFallbackName: 'Ce vendeur',
+            blockSellerConfirm: sellerName => `Masquer toutes les annonces de ${sellerName} ?`,
+            panelToggleAriaLabel: 'Replier ou déplier le panneau',
+            welcomeToast: removed => (removed > 0 ? `Cleanplaats est actif (${removed} éléments supprimés)` : 'Cleanplaats est actif'),
             donationNudgeText: count => `Vous avez déjà filtré ${count} fois avec Cleanplaats 🎉 Si cela vous fait gagner du temps, pensez à faire un petit don.`,
             donationNudgeDismiss: 'Peut-être plus tard',
             // The rest of the alerts copy lives in content/alerts.js
@@ -696,6 +735,10 @@ function getPanelLocaleText() {
         };
     }
 
+    // The Dutch text serves Marktplaats and 2dehands both. Where the two sites
+    // name a thing differently, the copy follows the site it is shown on.
+    const is2dehands = location.hostname.includes('2dehands.be');
+
     return {
         feedbackText: 'GitHub issues',
         feedbackAriaLabel: 'Open GitHub issues voor functieverzoeken, wijzigingen en bugs',
@@ -710,11 +753,11 @@ function getPanelLocaleText() {
         donationNudgeDismiss: 'Misschien later',
         optionsTitle: 'Filteropties',
         topAdLabel: 'Topadvertenties',
-        topAdTooltip: location.hostname.includes('2dehands.be')
-            ? "Verbergt 'Topadvertentie' en 'Topzoekertje' listings"
-            : "Verwijdert betaalde 'Topadvertentie' advertenties",
-        dagtoppersLabel: 'Dagtoppers',
-        dagtoppersTooltip: "Verwijdert 'Dagtopper' advertenties",
+        topAdTooltip: "Verwijdert betaalde 'Topadvertentie' advertenties",
+        // 2dehands sells the same product as the Dagtopper, but its badge reads
+        // "Topzoekertje". See getPriorityBadgeLabels() in content/cleanup.js.
+        dagtoppersLabel: is2dehands ? 'Topzoekertjes' : 'Dagtoppers',
+        dagtoppersTooltip: is2dehands ? "Verwijdert 'Topzoekertje' advertenties" : "Verwijdert 'Dagtopper' advertenties",
         promotedListingsLabel: 'Bedrijfsadvertenties',
         promotedListingsTooltip: "Verbergt advertenties van bedrijven en winkels, zoals Catawiki, ook op de homepage bij 'Voor jou' en 'In je buurt'",
         stickersLabel: 'Opvalstickers',
@@ -740,7 +783,9 @@ function getPanelLocaleText() {
             bankAccount: 'Bankrekening',
             phoneNumber: 'Telefoonnummer',
             identification: 'Identiteitsbewijs',
-            smbVerified: 'KvK-nummer'
+            // The business register differs per country: the KvK in the
+            // Netherlands, the KBO in Belgium.
+            smbVerified: is2dehands ? 'Ondernemingsnummer' : 'KvK-nummer'
         },
         sellerVerificationCheckedSuffix: 'gecontroleerd',
         sellerVerificationUncheckedSuffix: 'niet gecontroleerd',
@@ -793,7 +838,7 @@ function getPanelLocaleText() {
         onboardingButton: 'Aan de slag!',
         onboardingCloseAriaLabel: 'Welkomstbericht sluiten',
         darkModeLabel: 'Donkere modus',
-        darkModeTooltip: 'Schakelt een donker thema in voor Marktplaats en het Cleanplaats-paneel. Experimenteel: werkt meestal goed, maar zet het uit als iets slecht leesbaar is.',
+        darkModeTooltip: `Schakelt een donker thema in voor ${is2dehands ? '2dehands' : 'Marktplaats'} en het Cleanplaats-paneel. Experimenteel: werkt meestal goed, maar zet het uit als iets slecht leesbaar is.`,
         resultsPerPageLabel: 'Resultaten per pagina:',
         defaultSortLabel: 'Standaard sortering:',
         sortOptions: {
@@ -806,7 +851,7 @@ function getPanelLocaleText() {
         },
         statsTitle: 'Verwijderde items',
         statsTop: 'Top:',
-        statsDagtoppers: 'Dagtoppers:',
+        statsDagtoppers: is2dehands ? 'Topzoekertjes:' : 'Dagtoppers:',
         statsBusiness: 'Bedrijf:',
         statsStickers: 'Stickers:',
         statsReserved: 'Gereserveerd:',
@@ -862,6 +907,25 @@ function getPanelLocaleText() {
         emptyPageSearching: 'Zoeken…',
         emptyPageNotFound: 'Geen pagina met zichtbare advertenties gevonden.',
         emptyPageSearchUnavailable: 'Zoeken lukt niet voor deze zoekopdracht.',
+        emptyPageSearchingPhrases: [
+            'Pagina\'s afstruinen…',
+            'Oplichters overslaan…',
+            'Hier misschien? Nee...',
+            'Zoeken naar koopjes…',
+            'Tweedehands goud zoeken…',
+            'Door de zooi heen ploegen…',
+            is2dehands ? 'Zoekertjes afzoeken…' : 'Marktplaatsen afzoeken…',
+            'Even verder kijken…',
+            'Denk, denk, denk, ideetje!…',
+            'Spulletjes scannen…'
+        ],
+        emptyPageFound: '🎯 Gevonden! Pagina laden…',
+        emptyPageToast: 'De pagina is leeg omdat deze helemaal uit advertenties bestond! Probeer een volgende pagina of wijzig de filters.',
+        fewResultsToast: (visible, hidden) => `Er ${visible === 1 ? 'is' : 'zijn'} nog ${visible} ${visible === 1 ? 'resultaat' : 'resultaten'} over nadat Cleanplaats ${hidden} ${hidden === 1 ? 'advertentie' : 'advertenties'} heeft verwijderd.`,
+        sellerAgeFallbackName: 'Deze verkoper',
+        blockSellerConfirm: sellerName => `Wil je alle advertenties van ${sellerName} verbergen?`,
+        panelToggleAriaLabel: 'Paneel inklappen of uitklappen',
+        welcomeToast: removed => (removed > 0 ? `Cleanplaats is actief (${removed} items verwijderd)` : 'Cleanplaats is actief'),
         // Other alert strings live in content/alerts.js, which carries a Dutch
         // and a French table (ALERTS_TEXT_NL / ALERTS_TEXT_FR) and picks by the
         // same locale check this function uses.
@@ -1156,13 +1220,21 @@ var CLEANPLAATS_UPDATE_NOTES_FR = {
 var CLEANPLAATS_UPDATE_NOTES = is2ememainLocale() ? CLEANPLAATS_UPDATE_NOTES_FR : CLEANPLAATS_UPDATE_NOTES_NL;
 
 
+// The options of the site's own sort dropdown. Marktplaats and 2dehands word
+// them the same; 2ememain has its own French set.
 var MARKTPLAATS_SORT_LABEL_TO_MODE = {
     'standaard': 'standard',
     'datum (nieuw-oud)': 'date_new_old',
     'datum (oud-nieuw)': 'date_old_new',
     'prijs (laag-hoog)': 'price_low_high',
     'prijs (hoog-laag)': 'price_high_low',
-    'afstand': 'distance'
+    'afstand': 'distance',
+    'standard': 'standard',
+    'date (nouvelle-ancienne)': 'date_new_old',
+    'date (ancienne-nouvelle)': 'date_old_new',
+    'prix (bas-haut)': 'price_low_high',
+    'prix (haut-bas)': 'price_high_low',
+    'distance': 'distance'
 };
 
 function normalizeSortLabel(label) {
@@ -1176,10 +1248,9 @@ function getSortModeFromLabel(label) {
 function isMarketplaceSortDropdown(element) {
     if (!(element instanceof HTMLSelectElement)) return false;
 
-    const ariaLabel = normalizeSortLabel(element.getAttribute('aria-label'));
-    if (ariaLabel === 'sorteer op') return true;
-
+    // The dropdown has no aria-label on any of the three sites, so it is
+    // recognised by its options, in whichever language the site speaks.
     return Array.from(element.options || []).some(option => {
-        return normalizeSortLabel(option.textContent) === 'datum (nieuw-oud)';
+        return getSortModeFromLabel(option.textContent) === 'date_new_old';
     });
 }

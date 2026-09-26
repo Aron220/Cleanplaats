@@ -261,28 +261,37 @@ function resetPreviousChanges() {
     });
 }
 
+var CLEANPLAATS_PRIORITY_BADGE_SELECTOR = [
+    '.hz-Listing-priority span',
+    '.hz-Listing-priority-new',
+    '[class*="hz-Listing-priority-new"]'
+].join(', ');
+
+// The badge each site prints on a paid placement, per priorityProduct in the
+// search payload (checked card by card on all three sites, 2026-09). The names
+// do not carry over between sites: on 2dehands a Dagtopper reads "Topzoekertje",
+// and on 2ememain it reads "Annonce au top", next to "Pub au top" for the top
+// ad. Matching the wrong list hid Dagtoppers as top ads on 2dehands and not at
+// all on 2ememain.
+function getPriorityBadgeLabels() {
+    if (is2ememainLocale()) {
+        return { topAd: ['Pub au top'], dagtopper: ['Annonce au top'] };
+    }
+
+    if (location.hostname.includes('2dehands.be')) {
+        return { topAd: ['Topadvertentie'], dagtopper: ['Topzoekertje'] };
+    }
+
+    return { topAd: ['Topadvertentie'], dagtopper: ['Dagtopper'] };
+}
+
 function removeTopAdvertisements() {
-    const is2dehands = location.hostname.includes('2dehands.be');
-    const is2ememain = location.hostname.includes('2ememain.be');
-    const labels = is2ememain ? ['Pub au top'] : is2dehands ? ['Topzoekertje', 'Topadvertentie'] : ['Topadvertentie'];
-    const priorityBadgeSelector = [
-        '.hz-Listing-priority span',
-        '.hz-Listing-priority-new',
-        '[class*="hz-Listing-priority-new"]'
-    ].join(', ');
-    const removedCount = labels.reduce((total, label) => {
-        return total + findAndHideListings(priorityBadgeSelector, label);
-    }, 0);
+    const removedCount = findAndHideListings(CLEANPLAATS_PRIORITY_BADGE_SELECTOR, getPriorityBadgeLabels().topAd);
     CLEANPLAATS.stats.topAdsRemoved += removedCount;
 }
 
 function removeDagtoppers() {
-    const priorityBadgeSelector = [
-        '.hz-Listing-priority span',
-        '.hz-Listing-priority-new',
-        '[class*="hz-Listing-priority-new"]'
-    ].join(', ');
-    const removedCount = findAndHideListings(priorityBadgeSelector, 'Dagtopper');
+    const removedCount = findAndHideListings(CLEANPLAATS_PRIORITY_BADGE_SELECTOR, getPriorityBadgeLabels().dagtopper);
     CLEANPLAATS.stats.dagtoppersRemoved += removedCount;
 }
 
@@ -1031,18 +1040,7 @@ function updateEmptyPageBanner() {
 
         btn.disabled = true;
 
-        const searchingPhrases = [
-            'Pagina\'s afstruinen…',
-            'Oplichters overslaan…',
-            'Hier misschien? Nee...',
-            'Zoeken naar koopjes…',
-            'Tweedehands goud zoeken…',
-            'Door de zooi heen ploegen…',
-            'Marktplaatsen afzoeken…',
-            'Even verder kijken…',
-            'Denk, denk, denk, ideetje!…',
-            'Spulletjes scannen…',
-        ];
+        const searchingPhrases = panelText.emptyPageSearchingPhrases;
         let phraseIndex = Math.floor(Math.random() * searchingPhrases.length);
         status.textContent = searchingPhrases[phraseIndex];
         status.classList.add('searching');
@@ -1080,7 +1078,7 @@ function updateEmptyPageBanner() {
             return;
         }
 
-        status.textContent = '🎯 Gevonden! Pagina laden…';
+        status.textContent = panelText.emptyPageFound;
         const targetPage = foundOffset / MARKTPLAATS_PAGE_SIZE + 1;
         setTimeout(() => { window.location.href = buildPageUrl(targetPage); }, 400);
     });

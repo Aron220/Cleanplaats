@@ -287,7 +287,7 @@ function createControlPanel() {
                             </span>
                         </span>
                     </button>
-                    <button id="cleanplaats-toggle" class="cleanplaats-toggle" type="button" aria-label="Paneel inklappen of uitklappen">▲</button>
+                    <button id="cleanplaats-toggle" class="cleanplaats-toggle" type="button" aria-label="${panelText.panelToggleAriaLabel}">▲</button>
                 </div>
             </div>
             <div class="cleanplaats-contact-grid">

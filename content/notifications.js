@@ -150,9 +150,10 @@ function showUpdatePopup(version) {
 }
 
 function showWelcomeToast() {
+    // The homepage of each site itself, not a subdomain or a frame on it.
     if (CLEANPLAATS.panelState.hasShownWelcomeToast ||
         location.pathname !== '/' ||
-        location.hostname !== 'www.marktplaats.nl') {
+        !/^www\.(?:marktplaats\.nl|2dehands\.be|2ememain\.be)$/.test(location.hostname)) {
         return;
     }
 
@@ -160,10 +161,7 @@ function showWelcomeToast() {
     toast.className = 'cleanplaats-toast';
     toast.id = 'cleanplaats-toast';
 
-    const totalRemoved = CLEANPLAATS.stats.totalRemoved;
-    const message = totalRemoved > 0
-        ? `Cleanplaats is actief (${totalRemoved} items verwijderd)`
-        : 'Cleanplaats is actief';
+    const message = getPanelLocaleText().welcomeToast(CLEANPLAATS.stats.totalRemoved);
 
     toast.innerHTML = DOMPurify.sanitize(`
         <div class="cleanplaats-toast-content">
@@ -216,12 +214,11 @@ function checkForEmptyPage() {
 
         clearAllNotifications();
 
+        const panelText = getPanelLocaleText();
         if (visibleListings.length === 0) {
-            showBubbleNotification('De pagina is leeg omdat deze helemaal uit advertenties bestond! Probeer een volgende pagina of wijzig de filters.');
+            showBubbleNotification(panelText.emptyPageToast);
         } else if (visibleListings.length < 5) {
-            const listingWord = visibleListings.length === 1 ? 'resultaat' : 'resultaten';
-            const removedWord = hiddenCount === 1 ? 'advertentie' : 'advertenties';
-            showBubbleNotification(`Er ${visibleListings.length === 1 ? 'is' : 'zijn'} nog ${visibleListings.length} ${listingWord} over nadat Cleanplaats ${hiddenCount} ${removedWord} heeft verwijderd.`);
+            showBubbleNotification(panelText.fewResultsToast(visibleListings.length, hiddenCount));
         }
     }, 1000);
 }
@@ -291,7 +288,7 @@ function getSellerAgeInfoFromPage() {
     const sellerAgeRow = sellerRows.find(row => parseSellerAgeToDays(row.textContent) !== null);
     const sellerNameElement = sellerRoot?.querySelector(CLEANPLAATS_SELLER_INFO_NAME_SELECTOR);
     const sellerAgeText = sellerAgeRow?.textContent?.trim() || '';
-    const sellerName = sellerNameElement?.textContent?.trim() || 'Deze verkoper';
+    const sellerName = sellerNameElement?.textContent?.trim() || getPanelLocaleText().sellerAgeFallbackName;
     const sellerAgeDays = parseSellerAgeToDays(sellerAgeText);
 
     if (!sellerAgeText || sellerAgeDays === null) {

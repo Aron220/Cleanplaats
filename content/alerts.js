@@ -331,7 +331,6 @@ var ALERTS_TEXT_NL = {
     filterButton: 'Filters',
     filterEditorTitle: 'Wat wil je overslaan?',
     filterEditorIntro: 'Vink aan welke soorten advertenties je voor deze zoekopdracht níét wilt zien.',
-    filterDagtoppers: 'Dagtoppers',
     filterReserved: 'Gereserveerd',
     filterOpval: 'Opvalstickers',
     filterCountActive: n => `${n} actief`,
@@ -657,9 +656,6 @@ var ALERTS_TEXT_FR = {
     filterButton: 'Filtres',
     filterEditorTitle: 'Que voulez-vous ignorer ?',
     filterEditorIntro: 'Cochez les types d’annonces que vous ne voulez pas voir pour cette recherche.',
-    // Matches the wording the Cleanplaats panel already uses on 2ememain, so
-    // the same filter is not called two different things in one product.
-    filterDagtoppers: 'Tops du jour',
     filterReserved: 'Réservées',
     filterOpval: 'Autocollants promotionnels',
     filterCountActive: n => `${n} actif${n === 1 ? '' : 's'}`,
@@ -796,7 +792,10 @@ var ALERTS_TEXT = is2ememainLocale() ? ALERTS_TEXT_FR : ALERTS_TEXT_NL;
  * new alert is created.
  */
 var ALERT_FILTER_DEFS = [
-    { key: 'removeDagtoppers', setting: 'removeDagtoppers', label: () => ALERTS_TEXT.filterDagtoppers },
+    // Named after the badge the site prints, which differs per site, so it is
+    // taken from the panel: the same filter is then never called two different
+    // things in one product.
+    { key: 'removeDagtoppers', setting: 'removeDagtoppers', label: () => getPanelLocaleText().dagtoppersLabel },
     { key: 'removeOpvalStickers', setting: 'removeOpvalStickers', label: () => ALERTS_TEXT.filterOpval },
     { key: 'removeReservedListings', setting: 'removeReservedListings', label: () => ALERTS_TEXT.filterReserved }
 ];

@@ -470,7 +470,7 @@ function injectBlacklistButtons() {
             topRow.querySelector('.cleanplaats-blacklist-btn-mobile').onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                if (confirm(`Wil je alle advertenties van ${sellerName} verbergen?`)) {
+                if (confirm(getPanelLocaleText().blockSellerConfirm(sellerName))) {
                     addSellerToBlacklist(sellerName, sellerId);
                 }
             };
