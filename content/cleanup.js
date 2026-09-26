@@ -190,6 +190,8 @@ function performCleanup() {
         }
     });
 
+    userBlockedCount += hideBlockedSellersInFeed();
+
     document.querySelectorAll('.hz-Link').forEach(link => {
         const title = getListingTitleText(link);
         if (!title) return;

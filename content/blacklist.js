@@ -297,6 +297,7 @@ function removeSellerFromBlacklist(entryKey) {
                     listing.style.display = '';
                 }
             });
+            showFeedCardsOfSeller(removed);
         }
         performCleanup();
         injectBlacklistButtons();

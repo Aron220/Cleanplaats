@@ -225,7 +225,7 @@ function registerSettingsStorageSync() {
 
 function loadSettings() {
     return new Promise((resolve, reject) => {
-        browserAPI.storage.local.get(['cleanplaatsSettings', 'panelState', CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY], (items) => {
+        browserAPI.storage.local.get(['cleanplaatsSettings', 'panelState', CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY, CLEANPLAATS_SELLER_ADS_STORAGE_KEY], (items) => {
             if (browserAPI.runtime.lastError) {
                 console.error('Cleanplaats: Failed to load settings from storage', browserAPI.runtime.lastError);
                 reject(browserAPI.runtime.lastError);
@@ -255,6 +255,7 @@ function loadSettings() {
                 }
 
                 setViewedListingsRuntime(items[CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY]);
+                setSellerAdsFromStorage(items[CLEANPLAATS_SELLER_ADS_STORAGE_KEY]);
                 persistSortPreference();
                 persistHidesListingsPreference();
                 resolve();

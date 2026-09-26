@@ -9,6 +9,7 @@ var CLEANPLAATS_THEME_STORAGE_KEY = 'cleanplaats:darkMode';
 var CLEANPLAATS_SORT_STORAGE_KEY = 'cleanplaats:sortMode';
 var CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY = 'cleanplaatsViewedListings';
 var CLEANPLAATS_MAX_VIEWED_LISTINGS = 1500;
+var CLEANPLAATS_SELLER_ADS_STORAGE_KEY = 'cleanplaatsBlockedSellerAds';
 var CLEANPLAATS_FLOATING_OFFSET_VAR = '--cleanplaats-floating-offset';
 // Marktplaats renamed this asset from tenant--nlnl to brand-logo--nlnl; match both.
 var MARKTPLAATS_DESKTOP_LOGO_MATCH = /\/(?:tenant|brand-logo)--nlnl(?:\.[a-z0-9]+)?\.svg$/i;
@@ -885,6 +886,11 @@ var CLEANPLAATS = {
         // the seller identity section above.
         sellerIdsByListingId: {},
         searchBridgeListening: false,
+        // The ads of blocked sellers, which is how the homepage feed gets
+        // matched. See content/feed-sellers.js.
+        sellerAds: { ads: {}, fetchedAt: {}, resolved: new Map() },
+        sellerAdsRefreshing: false,
+        sellerAdsFailedAt: 0,
         // Sent along with every save so storage.onChanged can tell this tab's
         // own writes from another tab's. See applySettingsFromOtherTab().
         settingsWriterId: Math.random().toString(36).slice(2) + Date.now().toString(36),

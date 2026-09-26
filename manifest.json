@@ -64,6 +64,7 @@
           "content/storage.js",
           "content/notifications.js",
           "content/seller-verification.js",
+          "content/feed-sellers.js",
           "content/cleanup.js",
           "content/blacklist.js",
           "content/alerts.js",
