@@ -108,8 +108,12 @@ var AD_BLOCK_RULES = [
 // Admarkt is the paid-placement platform, so these only make sense while the
 // user is hiding promoted listings. Blocking them with the setting off would
 // break images on listings they asked to keep seeing.
+//
+// The Admarkt CDN is per country: Marktplaats loads from
+// admarkt-cdn.marktplaats.com, 2dehands and 2ememain both from
+// admarkt-cdn.2dehands.com. Anchoring on the subdomain alone covers all three.
 var PROMOTED_BLOCK_RULES = [
-    { id: 20, urlFilter: '||admarkt-cdn.marktplaats.com^' },
+    { id: 20, urlFilter: '||admarkt-cdn.' },
     { id: 21, urlFilter: '/lrp/api/complementary-listings' }
 ];
 
