@@ -50,10 +50,11 @@ var API_REQUEST_DOMAINS = ['marktplaats.nl', '2dehands.be', '2ememain.be'];
 // faas.marktplaats.nl is not feature flags. It is a first-party alias for a
 // third-party fraud-scoring service and it fingerprints the device: a 100 kB
 // tag script, a handful of beacons and iframes, and calls back out to the
-// vendor's own hosts. It only loads on the login flow, never on search or
-// listing pages, so blocking it would buy nothing where people actually
-// browse while risking a sign-in being scored as suspicious. Same trade as
-// the bot-protection challenge.
+// vendor's own hosts. It loads with the login form, never on search or
+// listing pages. The homepage does embed that form in a frame for visitors
+// who are not signed in, so it runs there too, but blocking it would still
+// risk every sign-in being scored as suspicious. Same trade as the
+// bot-protection challenge.
 //
 // The awswaf challenge is that bot protection, not an analytics tag: it loads
 // a challenge script, collects browser inputs and posts them back for a token.
@@ -88,21 +89,61 @@ var API_REQUEST_DOMAINS = ['marktplaats.nl', '2dehands.be', '2ememain.be'];
 // analytics.js is pulled in by the page itself, not by the ecg-js-ga-tracking
 // bundle, which is why rule 16 never caught it. Matching the domain covers the
 // regional endpoints (region1.google-analytics.com and friends) too.
+//
+// The tag manager is a first-party Google Tag Manager, one per site:
+// (load.)tagmanager.marktplaats.nl, tagmanager.2dehands.be and
+// tagmanager.2ememain.be. Anchoring on the subdomain covers all three. Naming
+// only the Marktplaats host left the Belgian sites loading everything it
+// injects: Meta's pixel, Criteo, Brandmetrics, Gemius, UserZoom, Qualaroo and
+// Google's Floodlight and Ads conversion tags. Those vendors get rules of
+// their own as well (17 and 28 to 39), so a tag that moves out of the tag
+// manager, or a tag manager on a new host, does not bring them back. Meta is
+// matched on the pixel alone: the rest of connect.facebook.net is the Facebook
+// SDK, which a Facebook login would need. Likewise only the conversion paths
+// on www.google.com (ccm, gmp, rmkt) go, not the host.
+//
+// doubleclick.net is Google's ad server and nothing else. securepubads serves
+// the ad library; fls, ad and googleads are the conversion and remarketing
+// pings the Belgian tag managers fired.
+//
+// demdex.net is Adobe Audience Manager, a data management platform that hands
+// out a visitor id and syncs it with ad partners. Rule 14 blocks its loader
+// script, but the search page carries the same code in its own chunks and
+// calls demdex.net directly, on all three sites.
+//
+// google.com/adsense/ is AdSense for Search, the sponsored links under the
+// results. removeAllAds() hides their containers anyway, so the loader only
+// fed the ad auction. Matched on the path, because www.google.com serves more
+// than ads.
 var AD_BLOCK_RULES = [
-    { id: 10, urlFilter: '||tagmanager.marktplaats.nl^' },
+    { id: 10, urlFilter: '||tagmanager.' },
     { id: 11, urlFilter: '/lrp/api/audience-targeting' },
     { id: 12, urlFilter: '/ecg-js-banners/ads/ads-adsscript' },
     { id: 13, urlFilter: '/ecg-js-banners/index.' },
     { id: 14, urlFilter: '/auroraAdobeDmpJs' },
     { id: 15, urlFilter: '/audience-targeting/v1/' },
     { id: 16, urlFilter: '/ecg-js-ga-tracking/' },
-    { id: 17, urlFilter: '||securepubads.g.doubleclick.net^' },
+    { id: 17, urlFilter: '||doubleclick.net^' },
     { id: 18, urlFilter: '||p.marktplaats.net^' },
     { id: 19, urlFilter: '||datadoghq-browser-agent.com^' },
     { id: 22, urlFilter: '||pubmatic.com^' },
     { id: 23, urlFilter: '||googlesyndication.com^' },
     { id: 24, urlFilter: '||google-analytics.com^' },
-    { id: 25, urlFilter: '||adtrafficquality.google^' }
+    { id: 25, urlFilter: '||adtrafficquality.google^' },
+    { id: 26, urlFilter: '||demdex.net^' },
+    { id: 27, urlFilter: '||google.com/adsense/' },
+    { id: 28, urlFilter: '||googletagmanager.com^' },
+    { id: 29, urlFilter: '||analytics.google.com^' },
+    { id: 30, urlFilter: '||connect.facebook.net/*/fbevents.js' },
+    { id: 31, urlFilter: '||facebook.com/tr^' },
+    { id: 32, urlFilter: '||criteo.net^' },
+    { id: 33, urlFilter: '||brandmetrics.com^' },
+    { id: 34, urlFilter: '||gemius.pl^' },
+    { id: 35, urlFilter: '||userzoom.com^' },
+    { id: 36, urlFilter: '||s3.amazonaws.com/ki.js/' },
+    { id: 37, urlFilter: '||google.com/ccm/' },
+    { id: 38, urlFilter: '||google.com/gmp/' },
+    { id: 39, urlFilter: '||google.com/rmkt/' }
 ];
 
 // Admarkt is the paid-placement platform, so these only make sense while the
