@@ -385,9 +385,13 @@ function isHomepagePartnerListing(listing) {
 
 function removeOpvalStickerListings() {
     let count = 0;
+    // "Moet nu weg" is a separate paid product (urgencyFeatureActive in the
+    // search payload) with its own badge outside the sticker wrapper, and only
+    // in the tablet and mobile layouts. To the user it is just another sticker.
     const stickerSelectors = [
         '.hz-Listing-Opvalsticker-wrapper, .hz-Listing-Opvalsticker-wrapper-new',
-        '[data-testid="listing-opval-sticker"]'
+        '[data-testid="listing-opval-sticker"]',
+        '[class*="hz-Listing-urgency-badge"]'
     ];
 
     stickerSelectors.forEach(selector => {
@@ -907,7 +911,10 @@ function isApiListingBlocked(apiListing) {
     if (CLEANPLAATS.settings.removeTopAds && apiListing.priorityProduct === 'TOPADVERTENTIE') return true;
     if (CLEANPLAATS.settings.removeDagtoppers && apiListing.priorityProduct === 'DAGTOPPER') return true;
     if (CLEANPLAATS.settings.removeReservedListings && apiListing.reserved === true) return true;
-    if (CLEANPLAATS.settings.removeOpvalStickers && apiListing.traits?.includes('ETALAGE')) return true;
+    // A sticker renders only for a non-empty opvalStickerText; no listing
+    // carries an ETALAGE trait (checked 2026-09).
+    if (CLEANPLAATS.settings.removeOpvalStickers
+        && (apiListing.opvalStickerText || apiListing.urgencyFeatureActive === true)) return true;
 
     // API mirror of removePromotedListings(): showWebsiteUrl renders the "Bezoek
     // website" seller link, an 'a'-prefixed itemId means the placement was bought

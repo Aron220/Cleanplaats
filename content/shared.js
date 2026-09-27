@@ -811,7 +811,9 @@ function getPanelLocaleText() {
         promotedListingsLabel: 'Bedrijfsadvertenties',
         promotedListingsTooltip: "Verbergt advertenties van bedrijven en winkels, zoals Catawiki, ook op de homepage bij 'Voor jou' en 'In je buurt'",
         stickersLabel: 'Opvalstickers',
-        stickersTooltip: 'Verwijdert advertenties met opvalstickers',
+        // 2dehands and 2ememain showed no "Moet nu weg" badge in the searches
+        // checked (2026-09), so its wording there is unknown and not named.
+        stickersTooltip: is2dehands ? 'Verwijdert advertenties met opvalstickers' : "Verwijdert advertenties met opvalstickers of een 'Moet nu weg'-label",
         reservedLabel: 'Gereserveerde',
         reservedTooltip: "Verbergt advertenties die 'Gereserveerd' zijn",
         bidsLabel: 'Advertenties met biedingen',
