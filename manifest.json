@@ -67,6 +67,7 @@
           "content/feed-sellers.js",
           "content/bid-listings.js",
           "content/cleanup.js",
+          "content/range-filters.js",
           "content/blacklist.js",
           "content/alerts.js",
           "content/ui.js",

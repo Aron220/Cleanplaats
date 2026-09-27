@@ -116,6 +116,7 @@ function initCleanplaats() {
                     setupAllObservers();
                     listenForPageHydration();
                     listenForPageSearchResults();
+                    watchZeroRangeFilters();
                     applySettings();
                     scheduleSellerAgeWarningCheck({ resetState: true });
                     scheduleSellerVerificationCheck({ resetState: true });

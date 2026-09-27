@@ -364,6 +364,7 @@ function listenForPageHydration() {
         // Hydration itself changes nothing on the page, so no mutation would
         // bring on the pass that adds what was held back.
         runScheduledCleanup();
+        scheduleZeroRangeFilterRestore();
     };
 
     const onMessage = event => {
