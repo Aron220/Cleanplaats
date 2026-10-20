@@ -514,6 +514,10 @@
     margin: 12px 0 8px;
     text-transform: uppercase;
   }
+
+  .cleanplaats-section-title-next {
+    margin-top: 18px;
+  }
   
   .cleanplaats-option {
     display: flex;

@@ -381,6 +381,7 @@ function createControlPanel() {
                             <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.stickersTooltip}">?</span>
                         </label>
                     </div>
+                    <div class="cleanplaats-section-title cleanplaats-section-title-next">${panelText.searchResultsTitle}</div>
                     <div class="cleanplaats-option">
                         <label class="cleanplaats-switch">
                             <input type="checkbox" id="removeReservedListings" ${CLEANPLAATS.settings.removeReservedListings ? 'checked' : ''}>
@@ -401,7 +402,6 @@ function createControlPanel() {
                             <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.bidsTooltip}">?</span>
                         </label>
                     </div>
-                    <button id="cleanplaats-open-preferences" class="cleanplaats-button secondary cleanplaats-panel-nav-button" type="button">${panelText.preferencesLabel}</button>
                     <div class="cleanplaats-option cleanplaats-results-dropdown-row">
                         <label for="cleanplaats-results-dropdown" class="cleanplaats-option-label" style="min-width:120px;">${panelText.resultsPerPageLabel}</label>
                         <select id="cleanplaats-results-dropdown" class="cleanplaats-results-dropdown">
@@ -421,6 +421,7 @@ function createControlPanel() {
                             <option value="distance" ${CLEANPLAATS.settings.defaultSortMode == 'distance' ? 'selected' : ''}>${panelText.sortOptions.distance}</option>
                         </select>
                     </div>
+                    <button id="cleanplaats-open-preferences" class="cleanplaats-button secondary cleanplaats-panel-nav-button" type="button">${panelText.preferencesLabel}</button>
                 </div>
 
                 ${CLEANPLAATS.featureFlags.showStats ? `
