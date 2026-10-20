@@ -1123,6 +1123,20 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_NL = {
+    '2.2.3': {
+        intro: 'Nieuw in deze versie:',
+        highlights: [
+            'Op een advertentiepagina kun je nu ook de advertentie zelf verbergen, naast de verkoper. Hij verdwijnt dan ook uit je zoekresultaten.',
+            // Direct kopen and the "Moet nu weg" label only exist on Marktplaats.
+            ...(isMarktplaatsSite() ? [
+                'Bij een nieuwe zoekopdracht kun je kiezen voor alleen advertenties met Direct kopen.',
+                'Het filter Opvalstickers verbergt nu ook advertenties met een "Moet nu weg"-label.'
+            ] : []),
+            'De filters zijn opgesplitst in Reclame verbergen en Zoekresultaten. Bij Verborgen items zie je nu alleen het totaal, klik erop voor de aantallen per filter.',
+            'Zoek je met een prijs van 0, bijvoorbeeld voor gratis spullen, dan blijft die 0 nu in de prijsvakjes staan.'
+        ],
+        note: null
+    },
     '2.2.2': {
         intro: 'Nieuw in deze versie:',
         highlights: [
@@ -1219,6 +1233,15 @@ var CLEANPLAATS_UPDATE_NOTES_NL = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_FR = {
+    '2.2.3': {
+        intro: 'Nouveautés de cette version :',
+        highlights: [
+            'Sur la page d’une annonce, vous pouvez désormais masquer l’annonce elle-même, en plus du vendeur. Elle disparaît alors aussi de vos résultats de recherche.',
+            'Les filtres sont répartis en deux groupes : Masquer la publicité et Résultats de recherche. Éléments masqués n’affiche plus que le total, cliquez dessus pour voir le nombre par filtre.',
+            'Si vous cherchez avec un prix de 0, par exemple pour des objets gratuits, ce 0 reste désormais dans les champs de prix.'
+        ],
+        note: null
+    },
     '2.2.2': {
         intro: 'Nouveautés de cette version :',
         highlights: [
