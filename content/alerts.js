@@ -203,8 +203,9 @@ var ALERTS_TEXT_NL = {
 
     // The filters you can set on the search itself, in the create box. Named
     // one by one on the trigger: "Verfijnen" alone left people assuming the
-    // panel could only watch a plain search term.
-    createFilterTrigger: 'Categorie, prijs en afstand',
+    // panel could only watch a plain search term. Direct kopen only exists on
+    // Marktplaats.
+    createFilterTrigger: isMarktplaatsSite() ? 'Categorie, prijs, afstand en Direct kopen' : 'Categorie, prijs en afstand',
     createFilterNone: 'Instellen',
     createFilterCategory: 'Categorie',
     createFilterCategoryAll: 'Alle categorieën',
@@ -221,6 +222,8 @@ var ALERTS_TEXT_NL = {
     createFilterDistanceAll: 'Alle afstanden',
     createFilterDistanceOption: km => `Binnen ${km} km`,
     createFilterPostcodeInvalid: 'Vul een geldige postcode in, bijvoorbeeld 1011 AB of 2000.',
+    createFilterBuyItNow: 'Direct kopen',
+    createFilterBuyItNowOption: 'Alleen advertenties die je meteen kunt kopen',
     createResultCount: count => (count === 1
         ? '1 advertentie op dit moment'
         : `${count.toLocaleString(CLEANPLAATS_ALERTS_NUMBER_LOCALE)} advertenties op dit moment`),
@@ -2796,6 +2799,61 @@ var ALERT_DISTANCE_STEPS = [3000, 5000, 10000, 15000, 25000, 50000, 75000];
 // included — they arrive in the same response once a category is picked.
 var ALERT_CREATE_FACET_KEYS = [];
 
+// Direct kopen is Marktplaats' own search filter, the "buyitnow" facet, so an
+// alert gets it the way the search page does: as attributesById, which the
+// poller sends on to /lrp/api/search unchanged. The listings themselves say
+// nothing about it, so it could not be a filter on the poller's side. It has a
+// control of its own rather than going through ALERT_CREATE_FACET_KEYS: those
+// are drawn from the facet response and so missing until it lands, and this one
+// is worth showing straight away. 2dehands and 2ememain have no Direct kopen,
+// and on Marktplaats a few main categories (auto's, huizen, vacatures...) have
+// no facet and the site ignores the filter there.
+var ALERT_BUY_IT_NOW_ATTRIBUTE_ID = '14055';
+var ALERT_BUY_IT_NOW_FACET_KEY = 'buyitnow';
+
+// Until the first facet response it is offered: nearly every category has it.
+function isAlertBuyItNowOffered() {
+    if (!isMarktplaatsSite()) return false;
+    const facets = cleanplaatsAlertsRuntime.createFacets;
+    if (!facets) return true;
+    return facets.attributeFacets.some(facet => facet.key === ALERT_BUY_IT_NOW_FACET_KEY);
+}
+
+// Hidden in a category without Direct kopen, and unticked with it: a filter the
+// site ignores would still be counted in the summary, over a search that does
+// not apply it.
+function paintAlertBuyItNowOption() {
+    const field = document.getElementById('cleanplaats-alert-buy-it-now-field');
+    if (!field) return;
+
+    const offered = isAlertBuyItNowOffered();
+    field.hidden = !offered;
+    if (offered) return;
+
+    const draft = getAlertCreateDraft();
+    if (!draft.attributesById.includes(ALERT_BUY_IT_NOW_ATTRIBUTE_ID)) return;
+    draft.attributesById = draft.attributesById.filter(id => id !== ALERT_BUY_IT_NOW_ATTRIBUTE_ID);
+    const checkbox = document.getElementById('cleanplaats-alert-buy-it-now');
+    if (checkbox) checkbox.checked = false;
+    paintAlertCreateFilterCount();
+}
+
+function buildAlertBuyItNowHtml(draft) {
+    if (!isMarktplaatsSite()) return '';
+    const checked = draft.attributesById.includes(ALERT_BUY_IT_NOW_ATTRIBUTE_ID) ? ' checked' : '';
+
+    return `
+        <div class="cleanplaats-alerts-create-field" id="cleanplaats-alert-buy-it-now-field"${isAlertBuyItNowOffered() ? '' : ' hidden'}>
+            <span class="cleanplaats-alerts-create-field-label">${ALERTS_TEXT.createFilterBuyItNow}</span>
+            <label class="cleanplaats-alerts-create-facet-opt">
+                <input type="checkbox" id="cleanplaats-alert-buy-it-now"${checked}>
+                <span class="cleanplaats-alerts-filter-opt-box">${alertIcon('check', 12)}</span>
+                <span class="cleanplaats-alerts-filter-opt-label">${ALERTS_TEXT.createFilterBuyItNowOption}</span>
+            </label>
+        </div>
+    `;
+}
+
 // Dutch "1011 AB" (the space optional) and Belgian "2000". Both accepted on
 // every site: a Dutch user searching 2dehands is unusual, not wrong, and
 // refusing their postcode would be.
@@ -3205,6 +3263,7 @@ function refreshAlertCreateFacets() {
             }
             syncAlertDraftCategoryNames(draft, result.selected);
             paintAlertCategoryOptions();
+            paintAlertBuyItNowOption();
             // The raw text, not the search term: this only needs *a* word to
             // ask the site for its category list, and on a category page the
             // term is deliberately empty.
@@ -3572,6 +3631,7 @@ function buildAlertCreateFilterHtml() {
                         <select id="cleanplaats-alert-distance" aria-label="${ALERTS_TEXT.createFilterDistance}"${postcodeValid ? '' : ' disabled'}>${distanceOptions}</select>
                     </div>
                 </div>
+                ${buildAlertBuyItNowHtml(draft)}
                 ${buildAlertCreateFacetsHtml()}
                 <div class="cleanplaats-alerts-create-hint" id="cleanplaats-alert-postcode-hint" hidden>${ALERTS_TEXT.createFilterPostcodeInvalid}</div>
             </div>
@@ -4038,6 +4098,14 @@ function wireAlertCreateFilters(main) {
 
     distance?.addEventListener('change', () => {
         draft.distanceMeters = distance.value;
+        afterChange();
+    });
+
+    const buyItNow = main.querySelector('#cleanplaats-alert-buy-it-now');
+    buyItNow?.addEventListener('change', () => {
+        draft.attributesById = buyItNow.checked
+            ? [...new Set([...draft.attributesById, ALERT_BUY_IT_NOW_ATTRIBUTE_ID])]
+            : draft.attributesById.filter(item => item !== ALERT_BUY_IT_NOW_ATTRIBUTE_ID);
         afterChange();
     });
 
