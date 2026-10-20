@@ -26,3 +26,6 @@ CLAUDE.md
 
 # Output van de /brag-skill (promovideo), hoort niet bij de extensie
 brag-output/
+
+# Python-cache van package.py
+__pycache__/
