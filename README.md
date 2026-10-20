@@ -1,118 +1,153 @@
+<p align="center">
+  <img src="docs/voor-en-na.jpg" alt="Dezelfde zoekopdracht op Marktplaats naast elkaar. Links zonder Cleanplaats: de bovenste resultaten zijn allemaal topadvertenties en bedrijfsadvertenties. Rechts met Cleanplaats: alleen gewone advertenties, met het Cleanplaats-paneel ernaast." width="100%">
+</p>
+
+<p align="center">
+  <a href="https://chromewebstore.google.com/detail/cleanplaats-marktplaats-z/peebdbeclpkljmfocjifjpjlngfpfhjp"><img src="https://img.shields.io/chrome-web-store/v/peebdbeclpkljmfocjifjpjlngfpfhjp?label=Chrome%20Web%20Store&logo=googlechrome&logoColor=white&color=eda566" alt="Chrome Web Store"></a>
+  <a href="https://addons.mozilla.org/nl/firefox/addon/cleanplaats-marktplaats-filter/"><img src="https://img.shields.io/amo/v/cleanplaats-marktplaats-filter?label=Firefox%20Add-ons&logo=firefoxbrowser&logoColor=white&color=eda566" alt="Firefox Add-ons"></a>
+  <img src="https://img.shields.io/github/manifest-json/v/Aron220/Cleanplaats?label=versie&color=2d3c4d" alt="Versie">
+</p>
+
 # Cleanplaats
 
-Cleanplaats is een browserextensie voor [Marktplaats](https://www.marktplaats.nl/), [2dehands](https://www.2dehands.be/) en [2ememain](https://www.2ememain.be/) die rommel uit zoekresultaten en overzichtspagina's haalt. De extensie helpt gebruikers om sneller door relevante advertenties te bladeren door promotionele, storende en ongewenste listings te verbergen.
+Cleanplaats is een browserextensie voor [Marktplaats](https://www.marktplaats.nl/), [2dehands](https://www.2dehands.be/) en [2ememain](https://www.2ememain.be/). Jij bepaalt wat een zoekpagina je mag laten zien: geen topadvertenties, dagtoppers, winkels of opvalstickers meer, alleen de advertenties waarvoor je kwam.
 
-Gebouwd voor Chromium-browsers en Firefox, met een modulaire codebase die eenvoudiger te onderhouden en uit te breiden is.
+*Hierboven: echte zoekresultaten voor "thinkpad" op 20 oktober 2026. Links zijn de betaalde plaatsingen en bedrijfsadvertenties voor de duidelijkheid rood omlijnd. Op de eerste pagina van "lego" was die dag zelfs elke advertentie betaald.*
 
 ## Wat doet Cleanplaats?
 
-Cleanplaats voegt een compact bedieningspaneel toe aan ondersteunde pagina's en laat gebruikers zelf bepalen wat verborgen wordt.
+**Reclame verbergen**
 
-Belangrijkste functies:
+- Topadvertenties, dagtoppers (topzoekertjes op 2dehands), bedrijfsadvertenties en advertenties met opvalstickers of een "Moet nu weg"-label
+- Ook de winkels in "Voor jou" en "In je buurt" op de homepage
+- Reclamebanners en de trackers van de advertentieketen worden geblokkeerd voordat ze laden
 
-- Verbergt topadvertenties, dagtoppers, bedrijfsadvertenties en promotionele stickers
-- Ondersteunt verborgen verkopers en blacklist-termen op basis van advertentietitels
-- Bevat een dark mode voor zowel het paneel als de marktplaatsinterface
-- Ondersteunt meertalige varianten, inclusief Nederlandse en Franse termen op 2dehands en 2ememain
-- Onthoudt voorkeuren zoals filters, sortering, resultaten per pagina en thema-instelling
-- Toont onboarding en update-notities bij nieuwe versies
+**Zoekresultaten naar jouw hand**
 
-## Ondersteunde websites
+- Verberg gereserveerde advertenties, of advertenties waar al op geboden is
+- Verberg een verkoper of een losse advertentie met één klik, vanaf de zoekresultaten, de homepage of de advertentiepagina zelf
+- Blacklist-termen voor titels en beschrijvingen
+- 30, 50 of 100 resultaten per pagina en een vaste standaardsortering
+- Is een pagina helemaal leeg gefilterd, dan zoekt Cleanplaats zelf de volgende pagina met zichtbare advertenties
+- Markeer advertenties die je eerder al hebt geopend
 
-- `marktplaats.nl`
-- `2dehands.be`
-- `2ememain.be`
+**Zoekopdrachten**
 
-## Screenshot
-in progress
+- Cleanplaats blijft voor je zoeken als je browser dicht is, en stuurt je via Telegram een bericht zodra er iets nieuws verschijnt
+- Je filters en geblokkeerde verkopers tellen gewoon mee, ook "Direct kopen", categorie, prijs en afstand
 
-## Installatie voor lokaal gebruik
+**Veiliger handelen**
 
-### Chrome of andere Chromium-browsers
+- Verkoper-check: zie op de advertentiepagina wat Marktplaats van een verkoper gecontroleerd heeft, en ook wat niet
+- Een waarschuwing bij verkopersaccounts die jonger zijn dan een grens die je zelf kiest
+
+**En verder**
+
+- Donkere modus voor de hele site, die Marktplaats zelf niet heeft
+- Volledig in het Nederlands, en in het Frans op 2ememain
+- Je instellingen blijven bewaard en gelden in elk tabblad
+
+<p align="center">
+  <img src="docs/donkere-modus.jpg" alt="Een Marktplaats-zoekpagina die diagonaal gesplitst is: links in de normale lichte weergave, rechts in de donkere modus van Cleanplaats." width="100%">
+</p>
+
+## Installeren
+
+De makkelijkste weg is via de winkel van je browser:
+
+- [Chrome Web Store](https://chromewebstore.google.com/detail/cleanplaats-marktplaats-z/peebdbeclpkljmfocjifjpjlngfpfhjp) (ook voor Edge, Brave, Opera en andere Chromium-browsers)
+- [Firefox Add-ons](https://addons.mozilla.org/nl/firefox/addon/cleanplaats-marktplaats-filter/)
+
+### Lokaal vanuit deze repository
+
+**Chrome of een andere Chromium-browser**
 
 1. Clone deze repository.
-2. Open `chrome://extensions`.
-3. Zet `Developer mode` aan.
-4. Kies `Load unpacked`.
-5. Selecteer de rootmap van deze repository.
+2. Open `chrome://extensions` en zet `Developer mode` aan.
+3. Kies `Load unpacked` en selecteer de rootmap van de repository.
 
-### Firefox
+**Firefox**
 
 1. Clone deze repository.
 2. Open `about:debugging#/runtime/this-firefox`.
-3. Kies `Load Temporary Add-on`.
-4. Selecteer het bestand [manifest.json](/home/aron/projects/Cleanplaats/manifest.json).
+3. Kies `Load Temporary Add-on` en selecteer [manifest.json](manifest.json).
 
 ## Ontwikkeling
 
-Deze repository gebruikt geen buildstap. De extensie draait direct op de bestanden in de repo.
+Er is geen buildstap: de extensie draait direct op de bestanden in de repo.
 
-Tijdens development werk je meestal zo:
-
-1. Pas bestanden aan in de repo.
+1. Pas bestanden aan.
 2. Herlaad de extensie in de browser.
-3. Ververs een ondersteunde pagina op Marktplaats, 2dehands of 2ememain.
+3. Ververs een pagina op Marktplaats, 2dehands of 2ememain.
 
-Handige controle:
+Snelle syntaxcontrole:
 
 ```bash
-node --check content/shared.js
-node --check content/notifications.js
+for f in content/*.js background/*.js; do node --check "$f"; done
 ```
+
+Een zip voor de Chrome Web Store en addons.mozilla.org bouw je met:
+
+```bash
+python3 package.py
+```
+
+Dat script neemt bewust alleen de bestanden van de extensie mee en controleert of het manifest naar niets ontbrekends wijst.
 
 ## Projectstructuur
 
-De codebase is opgesplitst per verantwoordelijkheid:
-
 ```text
-background/         Service worker modules
-content/            Content-script modules
-icons/              Extensie-assets
-background.js       Bootstrap voor background modules
-content.js          Bootstrap voor content modules
-content.css         Paneel- en UI-styling
-dark-mode.css       Dark mode overrides voor ondersteunde sites
-theme-init.js       Vroege theme-initialisatie om flash te voorkomen
-manifest.json       Browser extension manifest
+background/         Service worker: URL-regels, blokkeerregels, berichten, levenscyclus
+content/            Content scripts, één module per functie
+icons/              Logo's en iconen
+docs/               Afbeeldingen voor deze README (gaan niet mee in de zip)
+background.js       Laadt de background-modules
+content.js          Laadt de content-modules
+content.css         Styling van het paneel en de knoppen op de pagina
+dark-mode.css       Donkere modus voor de ondersteunde sites
+theme-init.js       Zet het thema vroeg, zodat de pagina niet wit oplicht
+manifest.json       Het extensiemanifest
+package.py          Bouwt de zip voor de winkels
 ```
 
-## Belangrijke modules
+### Belangrijke modules
 
-- `content/cleanup.js`: detecteert en verbergt listings
-- `content/blacklist.js`: beheer van blacklist-termen en verborgen verkopers
-- `content/theme.js`: thema-logica en dark mode synchronisatie
-- `content/notifications.js`: onboarding, update-popup en toastmeldingen
-- `content/ui.js`: opbouw van het Cleanplaats-paneel
-- `background/`: achtergrondlogica voor lifecycle, messaging en URL-regels
+| Module | Wat het doet |
+| --- | --- |
+| `content/cleanup.js` | Herkent advertenties en verbergt wat volgens je filters weg moet |
+| `content/blacklist.js` | Blacklist-termen, verborgen verkopers en verborgen advertenties |
+| `content/bid-listings.js` | Zoekt uit op welke advertenties al geboden is |
+| `content/feed-sellers.js` | Herkent geblokkeerde verkopers in de homepage-feed |
+| `content/alerts.js` | Het scherm voor zoekopdrachten |
+| `content/seller-verification.js` | De verkoper-check op advertentiepagina's |
+| `content/search-bridge.js` | Leest de zoekdata van de pagina zelf mee |
+| `content/range-filters.js` | Herstelt een prijsfilter van 0, dat de site zelf kwijtraakt |
+| `content/theme.js` | Donkere modus en het synchroniseren ervan |
+| `content/notifications.js` | Welkomstvenster, updatemeldingen en toasts |
+| `content/ui.js` | Het Cleanplaats-paneel |
+| `background/url-rules.js` | Resultaten per pagina, sortering en het blokkeren van advertentie-URL's |
 
 ## Rechten
 
-Cleanplaats gebruikt browserrechten die nodig zijn voor:
+| Recht | Waarvoor |
+| --- | --- |
+| `storage` | Je instellingen, verborgen verkopers en blacklist bewaren |
+| `tabs`, `webNavigation` | Zoek-URL's aanpassen voor resultaten per pagina en sortering |
+| `declarativeNetRequest` | Reclame en trackers blokkeren voordat ze laden |
+| `alarms` | De background-worker wakker houden voor terugkerende taken |
 
-- opslag van gebruikersinstellingen
-- injecteren van scripts en styles op ondersteunde domeinen
-- tab- en navigatie-events voor extensielogica
-
-Zie [manifest.json](/home/aron/projects/Cleanplaats/manifest.json) voor de actuele lijst van permissies en host-permissies.
-
-## Roadmap
-
-Mogelijke vervolgstappen:
-
-- extra regressietests voor selector-wijzigingen op de ondersteunde sites
-- visuele regression checks voor dark mode
-- verdere opschoning van content-script styling en componentstructuur
+Cleanplaats draait alleen op `marktplaats.nl`, `2dehands.be` en `2ememain.be`. Zie [manifest.json](manifest.json) voor de actuele lijst.
 
 ## Bijdragen
 
-Issues en verbeterideeën zijn welkom. Gebruik bij voorkeur GitHub Issues voor:
+Issues en ideeën zijn welkom via [GitHub Issues](https://github.com/Aron220/Cleanplaats/issues), bijvoorbeeld voor:
 
-- bugs
-- regressies na markup-wijzigingen op de marktplaatssites
-- feature requests
-- compatibiliteitsproblemen tussen Chrome en Firefox
+- bugs, of iets dat stuk ging nadat Marktplaats de site veranderde
+- functieverzoeken
+- verschillen tussen Chrome en Firefox
 
-## Versie
+Vragen of feedback kan ook per mail: [info@cleanplaats.com](mailto:info@cleanplaats.com).
 
-Huidige versie in deze repository: `2.0.8`
+## Licentie
 
+[MPL-2.0](LICENSE)
