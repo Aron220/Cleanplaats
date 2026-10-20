@@ -345,9 +345,39 @@ function injectProductDetailBlacklistButton() {
 
     detailRow.replaceChildren(button);
 
+    const listingButton = createProductDetailListingButton(panelText);
+    if (listingButton) detailRow.appendChild(listingButton);
+
     if (!existingRow) {
         sellerRoot.insertAdjacentElement('afterend', detailRow);
     }
+}
+
+// The advert's own id is in the URL, in the same form a search result card
+// links to, so a block made here also hides the advert from search results.
+function createProductDetailListingButton(panelText) {
+    const listingId = getListingIdFromUrl(window.location.href);
+    if (!listingId) return null;
+
+    const isBlocked = (CLEANPLAATS.settings.blockedListings || []).some(b => b.id === listingId);
+
+    const button = document.createElement('button');
+    button.className = 'cleanplaats-blacklist-btn cleanplaats-detail-blacklist-btn';
+    button.type = 'button';
+    button.tabIndex = 0;
+    button.textContent = isBlocked ? panelText.hiddenListingButton : panelText.hideListingButton;
+    button.disabled = isBlocked;
+    button.setAttribute('aria-disabled', isBlocked ? 'true' : 'false');
+
+    if (!isBlocked) {
+        button.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            addListingToBlocklist(listingId, document.querySelector('h1')?.textContent?.trim());
+        });
+    }
+
+    return button;
 }
 
 // Marktplaats renders desktop/tablet/mweb listing variants side by side and hides
@@ -665,6 +695,7 @@ function addListingToBlocklist(listingId, title) {
     incrementActionCount();
     saveSettings().then(() => {
         performCleanup();
+        injectProductDetailBlacklistButton();
         updateBlockedListingsModal();
         refreshDonationNudge();
         const panelText = getPanelLocaleText();
