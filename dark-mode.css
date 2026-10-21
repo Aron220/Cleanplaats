@@ -405,6 +405,17 @@ html.cleanplaats-dark-mode .cleanplaats-feed-seller-btn:focus-visible {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
 }
 
+/* Without hover, the hover above is only what a tap leaves behind, until the
+   next tap somewhere else. */
+@media (hover: none), (pointer: coarse) {
+  html.cleanplaats-dark-mode .cleanplaats-feed-seller-btn:hover {
+    background: rgba(26, 32, 41, 0.92) !important;
+    color: var(--cleanplaats-dark-text-muted) !important;
+    border-color: rgba(166, 189, 214, 0.16) !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+  }
+}
+
 html.cleanplaats-dark-mode .cleanplaats-detail-blacklist-btn:disabled,
 html.cleanplaats-dark-mode .cleanplaats-detail-blacklist-btn[aria-disabled="true"],
 html.cleanplaats-dark-mode .cleanplaats-feed-seller-btn:disabled,
@@ -412,6 +423,38 @@ html.cleanplaats-dark-mode .cleanplaats-feed-seller-btn:disabled:hover {
   background: rgba(166, 189, 214, 0.08) !important;
   color: var(--cleanplaats-dark-text-muted) !important;
   border-color: rgba(166, 189, 214, 0.14) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-card-menu {
+  background: var(--cleanplaats-dark-bg-elevated) !important;
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-card-menu-item {
+  color: var(--cleanplaats-dark-text) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-card-menu-item:hover,
+html.cleanplaats-dark-mode .cleanplaats-card-menu-item:focus-visible {
+  background: rgba(255, 157, 151, 0.12) !important;
+  color: #ff9d97 !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-card-menu-detail {
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-card-menu-item:disabled,
+html.cleanplaats-dark-mode .cleanplaats-card-menu-item:disabled:hover {
+  background: transparent !important;
+  color: var(--cleanplaats-dark-text-muted) !important;
+}
+
+/* The toasts are near black in either theme, and on a dark page they need an
+   edge to sit against too. */
+html.cleanplaats-dark-mode .cleanplaats-blacklist-toast:not(.cleanplaats-blacklist-toast-warning) {
+  border: 1px solid var(--cleanplaats-dark-border-subtle);
 }
 
 /* The note that points at a feed button. Its own background is near black,

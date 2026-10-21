@@ -807,6 +807,11 @@ function getPanelLocaleText() {
             hideListingButton: "Masquer l'annonce",
             hiddenListingButton: 'Annonce masquée',
             hideListingButtonAriaLabel: 'Masquer cette annonce',
+            galleryMenuButton: 'Masquer',
+            galleryMenuHideListing: "Masquer l'annonce",
+            galleryMenuSellerDetail: sellerName => `Toutes les annonces de ${sellerName}`,
+            galleryMenuSellerLoading: 'Chargement du vendeur…',
+            toastUndoButton: 'Annuler',
             listingToastHidden: (title) => `"${title}" est maintenant masquée.`,
             listingToastShown: (title) => `"${title}" est à nouveau visible.`,
             blacklistToastHint: 'Gérez les vendeurs masqués via le panneau',
@@ -1022,6 +1027,11 @@ function getPanelLocaleText() {
         hideListingButton: 'Verberg advertentie',
         hiddenListingButton: 'Advertentie verborgen',
         hideListingButtonAriaLabel: 'Verberg deze advertentie',
+        galleryMenuButton: 'Verbergen',
+        galleryMenuHideListing: 'Advertentie verbergen',
+        galleryMenuSellerDetail: sellerName => `Alle advertenties van ${sellerName}`,
+        galleryMenuSellerLoading: 'Verkoper laden…',
+        toastUndoButton: 'Ongedaan maken',
         listingToastHidden: (title) => `"${title}" is nu verborgen.`,
         listingToastShown: (title) => `"${title}" is weer zichtbaar.`,
         blacklistToastHint: 'Beheer verborgen verkopers via het paneel',
@@ -1148,6 +1158,9 @@ var CLEANPLAATS = {
         // itemId -> what a photo-grid card does not show: seller name,
         // reserved, sticker, description. See getListingFactsFromApi().
         listingFactsById: {},
+        // The photo-grid card menu that is open, if any. See
+        // toggleGalleryCardMenu().
+        galleryCardMenu: null,
         // The bid filter's cache and its work in progress, see
         // content/bid-listings.js. `checked` is the part that is persisted.
         listingBids: {

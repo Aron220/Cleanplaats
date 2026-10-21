@@ -268,7 +268,11 @@ function addSellersToBlacklist(sellers) {
         refreshDonationNudge();
 
         if (newEntries.length === 1) {
-            showBlacklistToast(getBlacklistedSellerLabel(newEntries[0]));
+            const label = getBlacklistedSellerLabel(newEntries[0]);
+            showBlacklistToast(label, () => {
+                showUnblacklistToast(label);
+                removeSellerFromBlacklist(getBlacklistedSellerKey(newEntries[0]));
+            });
             return;
         }
 
@@ -700,7 +704,7 @@ function addListingToBlocklist(listingId, title) {
         updateBlockedListingsModal();
         refreshDonationNudge();
         const panelText = getPanelLocaleText();
-        showBubbleNotification(panelText.listingToastHidden(displayTitle));
+        showBubbleNotification(panelText.listingToastHidden(displayTitle), () => removeListingFromBlocklist(listingId));
     });
 }
 
@@ -740,7 +744,7 @@ function injectListingBlockButtons() {
 
         if (listing.querySelector('.cleanplaats-listing-block-btn')) return;
 
-        const title = getListingTitleText(listing);
+        const title = getListingDisplayTitle(listing);
 
         const btn = document.createElement('button');
         btn.className = 'cleanplaats-blacklist-btn cleanplaats-listing-block-btn';
@@ -787,11 +791,13 @@ function injectListingBlockButtons() {
     });
 }
 
-// The photo grid ("Foto's") has no seller line to put the buttons under, so they
-// go on the photo, styled like the homepage feed's (see injectFeedSellerButtons()).
-// Unlike a feed card, a grid card's seller is in the search payload, so hiding
-// them needs no lookup. React reuses these cards when the results change in
-// place, so a click reads the card as it is then, not as it was here.
+// The photo grid ("Foto's") has no seller line to put the buttons under, so a
+// card gets one icon on its photo, styled like the homepage feed's (see
+// injectFeedSellerButtons()), and that opens a menu with the two ways to hide:
+// the ad, or everything of its seller. Two icons on every photo were clutter,
+// and the same eye twice could only be told apart by hovering, which a touch
+// screen cannot. The menu says it in words, and names the seller, which the
+// card itself does not: the name comes from the search payload.
 function injectGalleryCardButtons() {
     const panelText = getPanelLocaleText();
     const blockedListings = CLEANPLAATS.settings.blockedListings || [];
@@ -812,57 +818,199 @@ function injectGalleryCardButtons() {
             return;
         }
 
-        let row = card.querySelector('.cleanplaats-gallery-btn-row');
-        if (!row) {
-            row = document.createElement('div');
-            row.className = 'cleanplaats-blacklist-btn-row cleanplaats-gallery-btn-row';
-            row.appendChild(createGalleryCardButton('cleanplaats-listing-block-btn', panelText.hideListingButton, () => {
-                addListingToBlocklist(getListingCardId(card), getListingTitleText(card));
-            }));
-            card.appendChild(row);
-        }
+        if (card.querySelector('.cleanplaats-gallery-btn-row')) return;
 
-        // The seller is only known once the search response for this card is in.
-        const sellerName = getListingSellerName(card);
-        let sellerButton = row.querySelector('.cleanplaats-gallery-seller-btn');
-        if (!sellerName) {
-            sellerButton?.remove();
-            return;
-        }
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'cleanplaats-blacklist-btn cleanplaats-feed-seller-btn cleanplaats-gallery-menu-btn';
+        button.setAttribute('aria-haspopup', 'menu');
+        button.setAttribute('aria-expanded', 'false');
+        button.setAttribute('aria-label', panelText.galleryMenuButton);
 
-        if (!sellerButton) {
-            sellerButton = createGalleryCardButton('cleanplaats-gallery-seller-btn', panelText.hideSellerButton, () => {
-                const name = getListingSellerName(card);
-                if (!name) return;
-                // Where the label does not unfold, the eye is all there is, and the
-                // card does not say whose ad it is: name them before they go.
-                if (!canUnfoldFeedSellerLabel() && !window.confirm(getPanelLocaleText().blockSellerConfirm(name))) return;
-                addSellerToBlacklist(name, getListingSellerId(card));
-            });
-            row.insertBefore(sellerButton, row.firstChild);
-        }
-        sellerButton.title = sellerName;
+        const label = document.createElement('span');
+        label.className = 'cleanplaats-feed-seller-label';
+        label.textContent = panelText.galleryMenuButton;
+        button.appendChild(label);
+
+        button.addEventListener('click', event => {
+            event.preventDefault();
+            event.stopPropagation();
+            toggleGalleryCardMenu(card, button);
+        });
+
+        // On the photo, next to the card's link rather than inside it, so a
+        // click cannot open the ad.
+        const row = document.createElement('div');
+        row.className = 'cleanplaats-blacklist-btn-row cleanplaats-gallery-btn-row';
+        row.appendChild(button);
+        card.appendChild(row);
     });
+
+    // React reuses a card for another ad when the results change in place, and
+    // a menu left open would then offer to hide what is no longer there.
+    const open = CLEANPLAATS.runtime.galleryCardMenu;
+    if (open && (!open.button.isConnected || open.card.hasAttribute('data-cleanplaats-hidden')
+        || getListingCardId(open.card) !== open.listingId)) {
+        closeGalleryCardMenu();
+    }
 }
 
-function createGalleryCardButton(className, label, onClick) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = `cleanplaats-blacklist-btn cleanplaats-feed-seller-btn ${className}`;
+// The menu lives in the body, outside the card and the link it is wrapped in.
+// What it offers is read off the card when it opens, and that is what a choice
+// in it acts on: the seller it names is the seller who goes.
+function toggleGalleryCardMenu(card, button) {
+    const wasOpen = CLEANPLAATS.runtime.galleryCardMenu?.button === button;
+    closeGalleryCardMenu();
+    if (wasOpen) return;
 
-    const labelEl = document.createElement('span');
-    labelEl.className = 'cleanplaats-feed-seller-label';
-    labelEl.textContent = label;
-    button.appendChild(labelEl);
-    button.setAttribute('aria-label', label);
+    const panelText = getPanelLocaleText();
+    const listingId = getListingCardId(card);
+    if (!listingId) return;
+    const title = getListingDisplayTitle(card);
+    const sellerName = getListingSellerName(card);
+    const sellerId = getListingSellerId(card);
 
-    button.addEventListener('click', event => {
+    const menu = document.createElement('div');
+    menu.className = 'cleanplaats-card-menu';
+    menu.id = 'cleanplaats-card-menu';
+    menu.setAttribute('role', 'menu');
+    menu.setAttribute('aria-label', panelText.galleryMenuButton);
+
+    const addItem = (text, detail, onChoose) => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'cleanplaats-card-menu-item';
+        item.setAttribute('role', 'menuitem');
+
+        const textEl = document.createElement('span');
+        textEl.className = 'cleanplaats-card-menu-text';
+        textEl.textContent = text;
+        item.appendChild(textEl);
+
+        if (detail) {
+            const detailEl = document.createElement('span');
+            detailEl.className = 'cleanplaats-card-menu-detail';
+            detailEl.textContent = detail;
+            item.appendChild(detailEl);
+        }
+
+        if (onChoose) {
+            item.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                closeGalleryCardMenu();
+                onChoose();
+            });
+        } else {
+            item.disabled = true;
+            item.setAttribute('aria-disabled', 'true');
+        }
+
+        menu.appendChild(item);
+    };
+
+    addItem(panelText.galleryMenuHideListing, '', () => addListingToBlocklist(listingId, title));
+    // The seller is only known once the search response for this card is in.
+    if (sellerName) {
+        addItem(panelText.hideSellerButton, panelText.galleryMenuSellerDetail(sellerName), () => addSellerToBlacklist(sellerName, sellerId));
+    } else {
+        addItem(panelText.hideSellerButton, panelText.galleryMenuSellerLoading, null);
+    }
+
+    document.body.appendChild(menu);
+    placeGalleryCardMenu(menu, button);
+    button.setAttribute('aria-expanded', 'true');
+    card.classList.add('cleanplaats-card-menu-open');
+
+    const items = () => [...menu.querySelectorAll('.cleanplaats-card-menu-item:not(:disabled)')];
+
+    const onPointerDown = event => {
+        if (menu.contains(event.target) || button.contains(event.target)) return;
+        closeGalleryCardMenu();
+    };
+
+    const onKeydown = event => {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            closeGalleryCardMenu();
+            button.focus();
+            return;
+        }
+        if (!menu.contains(document.activeElement)) return;
+
+        const list = items();
+        const index = list.indexOf(document.activeElement);
+        let next = -1;
+        if (event.key === 'ArrowDown') next = (index + 1) % list.length;
+        else if (event.key === 'ArrowUp') next = (index - 1 + list.length) % list.length;
+        else if (event.key === 'Home') next = 0;
+        else if (event.key === 'End') next = list.length - 1;
+        else if (event.key === 'Tab') {
+            // Back on the icon, so the Tab carries on from the card it came from.
+            closeGalleryCardMenu();
+            button.focus();
+            return;
+        }
+        if (next < 0) return;
         event.preventDefault();
-        event.stopPropagation();
-        onClick();
-    });
+        list[next].focus();
+    };
 
-    return button;
+    // Fixed in place, so it would float away from its card on a scroll. The
+    // icon having moved is what counts, not the event as such: the last scroll
+    // event of a fling can come in after the tap that opened the menu.
+    const openedAt = button.getBoundingClientRect();
+    const onScroll = () => {
+        const rect = button.getBoundingClientRect();
+        if (Math.abs(rect.top - openedAt.top) < 4 && Math.abs(rect.left - openedAt.left) < 4) return;
+        closeGalleryCardMenu();
+    };
+
+    document.addEventListener('pointerdown', onPointerDown, true);
+    document.addEventListener('keydown', onKeydown, true);
+    window.addEventListener('scroll', onScroll, true);
+    window.addEventListener('resize', closeGalleryCardMenu);
+
+    CLEANPLAATS.runtime.galleryCardMenu = {
+        menu, button, card, listingId,
+        cleanup: () => {
+            document.removeEventListener('pointerdown', onPointerDown, true);
+            document.removeEventListener('keydown', onKeydown, true);
+            window.removeEventListener('scroll', onScroll, true);
+            window.removeEventListener('resize', closeGalleryCardMenu);
+        }
+    };
+
+    items()[0]?.focus({ preventScroll: true });
+}
+
+function closeGalleryCardMenu() {
+    const open = CLEANPLAATS.runtime.galleryCardMenu;
+    if (!open) return;
+    CLEANPLAATS.runtime.galleryCardMenu = null;
+    open.cleanup();
+    open.menu.remove();
+    open.button.setAttribute('aria-expanded', 'false');
+    open.card.classList.remove('cleanplaats-card-menu-open');
+}
+
+// Under the icon, or above it when the card is near the bottom of the screen,
+// and never past the side of a narrow one.
+function placeGalleryCardMenu(menu, button) {
+    const rect = button.getBoundingClientRect();
+    const gap = 6;
+    const margin = 8;
+    const width = menu.offsetWidth;
+    const height = menu.offsetHeight;
+
+    const left = Math.max(margin, Math.min(rect.left, window.innerWidth - width - margin));
+    const below = rect.bottom + gap;
+    const top = below + height <= window.innerHeight - margin || rect.top - gap - height < margin
+        ? below
+        : rect.top - gap - height;
+
+    menu.style.left = `${Math.round(left)}px`;
+    menu.style.top = `${Math.round(top)}px`;
 }
 
 function showBlockedListingsModal(triggerButton) {

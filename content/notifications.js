@@ -223,7 +223,7 @@ function checkForEmptyPage() {
     }, 1000);
 }
 
-function showBubbleNotification(message) {
+function showBubbleNotification(message, onUndo) {
     let toast = document.getElementById('cleanplaats-bubble-notification');
 
     if (toast) {
@@ -249,18 +249,69 @@ function showBubbleNotification(message) {
         setTimeout(() => requestAnimationFrame(() => toast.classList.add('visible')), 0);
     }
 
-    if (toast.timeoutId) {
-        clearTimeout(toast.timeoutId);
+    removeOtherBlacklistToasts(toast);
+
+    // The bubble is reused, so an undo from the message before goes with it.
+    // Its own undo only takes the button away: what the undo does says so with
+    // a message of its own, in this same bubble.
+    toast.querySelector('.cleanplaats-toast-undo')?.remove();
+    if (onUndo) {
+        addToastUndoButton(toast, () => {
+            toast.querySelector('.cleanplaats-toast-undo')?.remove();
+            onUndo();
+        });
     }
 
+    scheduleToastDismiss(toast, onUndo ? CLEANPLAATS_UNDO_TOAST_MS : 5000);
+}
+
+// These toasts all sit in the same spot at the bottom of the screen, so a new
+// one takes the place of the one before instead of landing on top of it, where
+// an undo underneath could no longer be reached. The seller age warning on an
+// ad page is left alone: it is not about something the user just did.
+function removeOtherBlacklistToasts(keep) {
+    document.querySelectorAll('.cleanplaats-blacklist-toast:not(.cleanplaats-blacklist-toast-warning)').forEach(toast => {
+        if (toast === keep) return;
+        clearTimeout(toast.timeoutId);
+        toast.remove();
+    });
+}
+
+function appendBlacklistToast(toast) {
+    removeOtherBlacklistToasts(toast);
+    document.body.appendChild(toast);
+}
+
+// A toast with an undo stays up longer than one without: it takes a moment to
+// see that the wrong thing went, and then to get to the button.
+var CLEANPLAATS_UNDO_TOAST_MS = 7000;
+
+// The toast stays while the pointer is on it, since that is someone on their
+// way to its button, and goes a little after the pointer leaves.
+function scheduleToastDismiss(toast, delay) {
+    clearTimeout(toast.timeoutId);
     toast.timeoutId = setTimeout(() => {
         toast.classList.remove('visible');
-        setTimeout(() => {
-            if (toast) {
-                toast.remove();
-            }
-        }, 300);
-    }, 5000);
+        setTimeout(() => toast.remove(), 300);
+    }, delay);
+
+    if (toast.dataset.cleanplaatsHoverPause) return;
+    toast.dataset.cleanplaatsHoverPause = 'true';
+    toast.addEventListener('mouseenter', () => clearTimeout(toast.timeoutId));
+    toast.addEventListener('mouseleave', () => scheduleToastDismiss(toast, 2000));
+}
+
+function addToastUndoButton(toast, onUndo) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'cleanplaats-toast-undo';
+    button.textContent = getPanelLocaleText().toastUndoButton;
+    button.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        onUndo();
+    });
+    toast.querySelector('.cleanplaats-blacklist-toast-content').appendChild(button);
 }
 
 function clearSellerAgeWarningToast() {
@@ -409,7 +460,7 @@ function showSettingFeedback() {
     return;
 }
 
-function showBlacklistToast(sellerName) {
+function showBlacklistToast(sellerName, onUndo) {
     const panelText = getPanelLocaleText();
     const toast = document.createElement('div');
     toast.className = 'cleanplaats-blacklist-toast';
@@ -424,15 +475,22 @@ function showBlacklistToast(sellerName) {
         </div>
     `);
 
-    document.body.appendChild(toast);
+    // Gone at once on an undo, to make room for the toast that says the seller
+    // is back.
+    if (onUndo) {
+        addToastUndoButton(toast, () => {
+            clearTimeout(toast.timeoutId);
+            toast.remove();
+            onUndo();
+        });
+    }
+
+    appendBlacklistToast(toast);
     setTimeout(() => {
         requestAnimationFrame(() => toast.classList.add('visible'));
     }, 50);
 
-    setTimeout(() => {
-        toast.classList.remove('visible');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    scheduleToastDismiss(toast, onUndo ? CLEANPLAATS_UNDO_TOAST_MS : 3000);
 }
 
 function showBulkBlacklistToast(count) {
@@ -450,7 +508,7 @@ function showBulkBlacklistToast(count) {
         </div>
     `);
 
-    document.body.appendChild(toast);
+    appendBlacklistToast(toast);
     setTimeout(() => {
         requestAnimationFrame(() => toast.classList.add('visible'));
     }, 50);
@@ -476,7 +534,7 @@ function showUnblacklistToast(sellerName) {
         </div>
     `);
 
-    document.body.appendChild(toast);
+    appendBlacklistToast(toast);
     setTimeout(() => {
         requestAnimationFrame(() => toast.classList.add('visible'));
     }, 50);
@@ -500,7 +558,7 @@ function showBlacklistTermToast(term) {
             </div>
         </div>
     `);
-    document.body.appendChild(toast);
+    appendBlacklistToast(toast);
     setTimeout(() => { requestAnimationFrame(() => toast.classList.add('visible')); }, 50);
     setTimeout(() => {
         toast.classList.remove('visible');
@@ -521,7 +579,7 @@ function showUnblacklistTermToast(term) {
             </div>
         </div>
     `);
-    document.body.appendChild(toast);
+    appendBlacklistToast(toast);
     setTimeout(() => { requestAnimationFrame(() => toast.classList.add('visible')); }, 50);
     setTimeout(() => {
         toast.classList.remove('visible');

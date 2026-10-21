@@ -20,6 +20,19 @@ function getListingTitleText(container) {
     return titleElement?.textContent?.trim().toLowerCase() || '';
 }
 
+// The title as the card shows it, for the toast and the list of hidden ads.
+// getListingTitleText() is lowercased for the filters, and on a photo-grid tile
+// reads the whole body, price and place included.
+function getListingDisplayTitle(container) {
+    const titleElement = container.querySelector([
+        '.hz-StructuredListing-title',
+        '.hz-Listing-title',
+        '[class*="ListingTitle_hz-Listing-title"]',
+        '[class*="ListingTitle_hz-StructuredListing-title"]'
+    ].join(', '));
+    return titleElement?.textContent?.trim() || getListingTitleText(container);
+}
+
 function getListingDescriptionText(container) {
     if (!(container instanceof Element)) return '';
     const el = container.querySelector([
