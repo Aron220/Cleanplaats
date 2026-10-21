@@ -20,11 +20,35 @@ var CLEANPLAATS_DARK_LOGO_PATH = 'icons/marktplaats-logo-darkmode.svg';
 // their own CDN, so those sites need no bundled logo of ours; see
 // resolveNativeSvgAssetUrl() in content/theme.js.
 var TWH_DESKTOP_LOGO_MATCH = /\/(?:tenant|brand-logo)--(?:nlbe|frbe)(?:\.[a-z0-9]+)?\.svg$/i;
-// Search results render as .hz-Listing, but the homepage feed ("Voor jou" / "In je
-// buurt") renders as .hz-StructuredListing cards and never contains a single
-// .hz-Listing. Anything that waits for "the listings are there" has to accept both,
+// Search results in list view render as .hz-Listing, but the homepage feed ("Voor
+// jou" / "In je buurt") and the photo-grid search view render as
+// .hz-StructuredListing cards and never contain a single .hz-Listing. Anything that waits for "the listings are there" has to accept both,
 // otherwise it waits forever on the homepage.
 var CLEANPLAATS_LISTING_SELECTOR = '.hz-Listing, .hz-StructuredListing';
+
+var CLEANPLAATS_SELLER_NAME_SELECTOR = '.hz-Listing-seller-name, .hz-Listing-seller-name-new, .hz-Listing-seller-link, .hz-Listing-sellerName, .hz-Listing-sellerName-new';
+
+// The search results, in either of the two views the site offers. "Lijst" renders
+// .hz-Listing rows; "Foto's" (view:gallery-view in the hash) renders the same
+// results as .hz-StructuredListing tiles, the markup the homepage feed uses.
+// Off the search pages a .hz-StructuredListing is a feed card, which has its own
+// handling in content/feed-sellers.js.
+function getSearchResultCards() {
+    return document.querySelectorAll(isSearchResultsPage() ? CLEANPLAATS_LISTING_SELECTOR : '.hz-Listing');
+}
+
+function getGalleryCards() {
+    return isSearchResultsPage() ? document.querySelectorAll('.hz-StructuredListing') : [];
+}
+
+// A row names its seller; a photo-grid tile does not, and gets the name from the
+// search payload instead.
+function getListingSellerName(listing) {
+    const sellerNameEl = listing.querySelector(CLEANPLAATS_SELLER_NAME_SELECTOR);
+    if (sellerNameEl) return sellerNameEl.textContent.trim();
+
+    return listing.classList.contains('hz-StructuredListing') ? getListingFacts(listing)?.sellerName || '' : '';
+}
 // The compact seller box in the sidebar of a listing page. Marktplaats moved this
 // component to CSS modules, so .SellerInfoSmall-root became
 // .SellerInfoSmall-module-root and .SellerInfoSmall-row became
@@ -295,6 +319,54 @@ function rememberPriceType(itemId, priceType) {
     return true;
 }
 
+// What the filters need to know about a listing whose card is a photo-grid
+// tile, which shows none of it. These are facts about the ad itself, the same
+// wherever it is placed: priorityProduct is not one of them, as the top block
+// and the regular results list the same ad, once as TOPADVERTENTIE and once as
+// NONE. The grid prints that badge on the card, so it is read from there.
+// Shaped the way content/search-bridge.js sends it.
+function getListingFactsFromApi(listing) {
+    return {
+        sellerName: String(listing?.sellerInformation?.sellerName || '').trim(),
+        reserved: listing?.reserved === true,
+        sticker: Boolean(listing?.opvalStickerText) || listing?.urgencyFeatureActive === true,
+        description: [listing?.description, listing?.categorySpecificDescription]
+            .filter(text => typeof text === 'string' && text)
+            .join(' ')
+    };
+}
+
+function rememberListingFacts(itemId, facts) {
+    const key = String(itemId || '').toLowerCase();
+    if (!key || !facts) return false;
+
+    const normalized = {
+        sellerName: String(facts.sellerName || ''),
+        reserved: facts.reserved === true,
+        sticker: facts.sticker === true,
+        description: String(facts.description || '')
+    };
+
+    const known = CLEANPLAATS.runtime.listingFactsById[key];
+    if (known
+        && known.sellerName === normalized.sellerName
+        && known.reserved === normalized.reserved
+        && known.sticker === normalized.sticker
+        && known.description === normalized.description) {
+        return false;
+    }
+
+    CLEANPLAATS.runtime.listingFactsById[key] = normalized;
+    return true;
+}
+
+function getListingFacts(listing) {
+    if (!(listing instanceof Element)) return null;
+
+    const itemId = getListingIdFromUrl(listing.querySelector('a[href*="/v/"]')?.href);
+    return itemId ? CLEANPLAATS.runtime.listingFactsById[itemId] || null : null;
+}
+
 // Every source below hands us whole API listing objects, so this indexes all of
 // what a card cannot say about itself in one go. Returns whether anything was
 // new, which is what tells the caller a cleanup pass is worth scheduling.
@@ -305,6 +377,7 @@ function indexApiListings(apiListings) {
         const itemId = listing?.itemId;
         rememberSellerId(itemId, listing?.sellerInformation?.sellerId);
         if (rememberPriceType(itemId, listing?.priceInfo?.priceType)) learnedSomething = true;
+        if (rememberListingFacts(itemId, getListingFactsFromApi(listing))) learnedSomething = true;
     });
 
     return learnedSomething;
@@ -407,6 +480,7 @@ function listenForPageSearchResults() {
             // Newly learned price types matter as much as seller ids: they are
             // what makes a card a candidate for the bid lookup below.
             if (rememberPriceType(itemId, listing?.priceType)) learnedSomething = true;
+            if (rememberListingFacts(itemId, listing)) learnedSomething = true;
         });
 
         // The cards for this response may already be on screen, and nothing else
@@ -1071,6 +1145,9 @@ var CLEANPLAATS = {
         // and FAST_BID listings can carry a bid, so this is what decides which
         // cards the bid filter looks up. See content/bid-listings.js.
         priceTypesByListingId: {},
+        // itemId -> what a photo-grid card does not show: seller name,
+        // reserved, sticker, description. See getListingFactsFromApi().
+        listingFactsById: {},
         // The bid filter's cache and its work in progress, see
         // content/bid-listings.js. `checked` is the part that is persisted.
         listingBids: {

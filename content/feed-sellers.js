@@ -208,6 +208,10 @@ function getFeedCardPhotoId(card) {
 // The feed half of the seller blacklist, run from performCleanup(). Returns how
 // many cards it hid, for the "Door jou verborgen" count.
 function hideBlockedSellersInFeed() {
+    // The photo grid on the search pages uses the same cards, but its sellers
+    // come with the page's own search response: see getListingSellerName().
+    if (isSearchResultsPage()) return 0;
+
     const cards = document.querySelectorAll('.hz-StructuredListing');
     if (!cards.length || !getBlacklistedSellerEntries().length) return 0;
 

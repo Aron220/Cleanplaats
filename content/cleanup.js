@@ -26,7 +26,11 @@ function getListingDescriptionText(container) {
         '[class*="ListingDescription_hz-Listing-description"]',
         '.hz-Listing-description'
     ].join(', '));
-    return el?.textContent?.trim().toLowerCase() || '';
+    if (el) return el.textContent?.trim().toLowerCase() || '';
+
+    // A photo-grid tile prints no description at all.
+    if (!container.classList.contains('hz-StructuredListing')) return '';
+    return (getListingFacts(container)?.description || '').toLowerCase();
 }
 
 function getViewedListingCardLink(listing) {
@@ -59,6 +63,8 @@ function setViewedBadgeInteractionState(badge, isUndoState) {
 }
 
 function ensureViewedListingBadge(listing, label) {
+    // A photo-grid tile takes it on the card itself, next to the card's link
+    // rather than inside it, so clicking the badge does not open the ad.
     const wrapper = listing.querySelector('.hz-Listing-item-wrapper-new') || listing;
     const panelText = getPanelLocaleText();
     let badge = wrapper.querySelector('.cleanplaats-viewed-badge');
@@ -80,7 +86,7 @@ function ensureViewedListingBadge(listing, label) {
 function applyViewedListingIndicators() {
     if (!isPageHydrated()) return;
 
-    const listings = document.querySelectorAll('.hz-Listing');
+    const listings = getSearchResultCards();
 
     if (!listings.length) {
         return;
@@ -186,10 +192,9 @@ function performCleanup() {
 
     indexApiListingsFromNextData();
 
-    document.querySelectorAll('.hz-Listing').forEach(listing => {
-        const sellerNameEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-name-new, .hz-Listing-seller-link, .hz-Listing-sellerName, .hz-Listing-sellerName-new');
-        if (!sellerNameEl) return;
-        const sellerName = sellerNameEl.textContent.trim();
+    getSearchResultCards().forEach(listing => {
+        const sellerName = getListingSellerName(listing);
+        if (!sellerName) return;
         if (isSellerBlacklisted(getListingSellerId(listing), sellerName) && hideElement(listing)) {
             userBlockedCount++;
         }
@@ -219,7 +224,7 @@ function performCleanup() {
     });
 
     if (CLEANPLAATS.settings.blacklistedDescriptionTerms?.length > 0) {
-        document.querySelectorAll('.hz-Listing').forEach(listing => {
+        getSearchResultCards().forEach(listing => {
             if (listing.hasAttribute('data-cleanplaats-hidden')) return;
             const description = getListingDescriptionText(listing);
             if (!description) return;
@@ -232,7 +237,7 @@ function performCleanup() {
     }
 
     if (CLEANPLAATS.settings.blockedListings?.length > 0) {
-        document.querySelectorAll('.hz-Listing').forEach(listing => {
+        getSearchResultCards().forEach(listing => {
             if (listing.hasAttribute('data-cleanplaats-hidden')) return;
             const listingId = getListingCardId(listing);
             if (!listingId) return;
@@ -272,7 +277,9 @@ function resetPreviousChanges() {
 var CLEANPLAATS_PRIORITY_BADGE_SELECTOR = [
     '.hz-Listing-priority span',
     '.hz-Listing-priority-new',
-    '[class*="hz-Listing-priority-new"]'
+    '[class*="hz-Listing-priority-new"]',
+    // The photo grid ("Foto's").
+    '.hz-StructuredListing .hz-priority-product'
 ].join(', ');
 
 // The badge each site prints on a paid placement, per priorityProduct in the
@@ -294,8 +301,39 @@ function getPriorityBadgeLabels() {
 }
 
 function removeTopAdvertisements() {
-    const removedCount = findAndHideListings(CLEANPLAATS_PRIORITY_BADGE_SELECTOR, getPriorityBadgeLabels().topAd);
+    let removedCount = findAndHideListings(CLEANPLAATS_PRIORITY_BADGE_SELECTOR, getPriorityBadgeLabels().topAd);
+    removedCount += hideRepeatsOfTopAds();
     CLEANPLAATS.stats.topAdsRemoved += removedCount;
+}
+
+// A top ad is bought twice over: the labelled slot at the top, and an Admarkt
+// slot among the regular results that carries no label (every seventh result,
+// checked 2026-10, in both views). Same item id, so it is the same paid ad and
+// not a repost, and the search payload marks only the first copy
+// TOPADVERTENTIE. The labelled copy is what tells us which ones they are.
+function hideRepeatsOfTopAds() {
+    const labels = getPriorityBadgeLabels().topAd.map(label => label.toLowerCase());
+    const topAdIds = new Set();
+
+    document.querySelectorAll(CLEANPLAATS_PRIORITY_BADGE_SELECTOR).forEach(badge => {
+        if (!labels.includes(badge.textContent?.trim().toLowerCase())) return;
+
+        const listing = badge.closest(CLEANPLAATS_LISTING_SELECTOR);
+        const itemId = getListingIdFromUrl(listing?.querySelector('a[href*="/v/"]')?.href);
+        if (itemId) topAdIds.add(itemId);
+    });
+
+    if (!topAdIds.size) return 0;
+
+    let count = 0;
+    getSearchResultCards().forEach(listing => {
+        if (listing.hasAttribute('data-cleanplaats-hidden')) return;
+
+        const itemId = getListingIdFromUrl(listing.querySelector('a[href*="/v/"]')?.href);
+        if (itemId && topAdIds.has(itemId) && hideElement(listing)) count++;
+    });
+
+    return count;
 }
 
 function removeDagtoppers() {
@@ -311,7 +349,9 @@ function removePromotedListings() {
 
     const selectors = [
         '.hz-Listing-seller-link',
-        '.hz-Listing-seller-external-link'
+        '.hz-Listing-seller-external-link',
+        // The photo grid's version, a link beside the card's own.
+        '.hz-StructuredListing .hz-Link--isolated'
     ];
 
     selectors.forEach(selector => {
@@ -321,7 +361,7 @@ function removePromotedListings() {
                     .some(el => visitWebsiteLabels.includes(el.textContent?.trim()));
 
                 if (hasVisitWebsite) {
-                    const listing = sellerLink.closest('.hz-Listing');
+                    const listing = sellerLink.closest(CLEANPLAATS_LISTING_SELECTOR);
                     if (listing && !listing.hasAttribute('data-cleanplaats-hidden') && hideElement(listing)) {
                         count++;
                     }
@@ -407,15 +447,35 @@ function removeOpvalStickerListings() {
         });
     });
 
+    // The photo grid shows a sticker as a plain badge, one class for any text.
+    count += hideGalleryCardsWhere(facts => facts.sticker);
+
     CLEANPLAATS.stats.opvalStickersRemoved += count;
 }
 
 function removeReservedListings() {
-    const count = findAndHideListings('.hz-Listing-price, [class*="ListingPrice_hz-Listing-price"], .hz-StructuredListing-price', [
+    let count = findAndHideListings('.hz-Listing-price, [class*="ListingPrice_hz-Listing-price"], .hz-StructuredListing-price', [
         'gereserveerd',
         'réservé'
     ]);
+    count += hideGalleryCardsWhere(facts => facts.reserved);
     CLEANPLAATS.stats.reservedRemoved += count;
+}
+
+// For the filters a photo-grid tile gives nothing to go on, see
+// getListingFacts(). A card whose listing is not known yet stays up: the search
+// response that describes it schedules another pass when it comes in.
+function hideGalleryCardsWhere(test) {
+    let count = 0;
+
+    getGalleryCards().forEach(card => {
+        if (card.hasAttribute('data-cleanplaats-hidden')) return;
+
+        const facts = getListingFacts(card);
+        if (facts && test(facts) && hideElement(card)) count++;
+    });
+
+    return count;
 }
 
 function removeAllAds() {
@@ -887,7 +947,9 @@ function buildSearchApiUrl(offset, limit) {
     return `/lrp/api/search?${params.toString()}`;
 }
 
-function isApiListingBlocked(apiListing) {
+// topAdIds: the ids the same response lists as TOPADVERTENTIE, whose unlabelled
+// repeats among the results removeTopAdvertisements() hides as well.
+function isApiListingBlocked(apiListing, topAdIds = new Set()) {
     const listingId = (apiListing.itemId || '').toLowerCase();
     if (listingId && CLEANPLAATS.settings.blockedListings?.some(b => b.id === listingId)) return true;
 
@@ -908,7 +970,8 @@ function isApiListingBlocked(apiListing) {
         if (CLEANPLAATS.settings.blacklistedDescriptionTerms.some(term => description.includes(term.toLowerCase()))) return true;
     }
 
-    if (CLEANPLAATS.settings.removeTopAds && apiListing.priorityProduct === 'TOPADVERTENTIE') return true;
+    if (CLEANPLAATS.settings.removeTopAds
+        && (apiListing.priorityProduct === 'TOPADVERTENTIE' || topAdIds.has(listingId))) return true;
     if (CLEANPLAATS.settings.removeDagtoppers && apiListing.priorityProduct === 'DAGTOPPER') return true;
     if (CLEANPLAATS.settings.removeReservedListings && apiListing.reserved === true) return true;
     // A sticker renders only for a non-empty opvalStickerText; no listing
@@ -938,7 +1001,7 @@ function isApiListingBlocked(apiListing) {
 }
 
 function getPageListingIds() {
-    return [...document.querySelectorAll('.hz-Listing')]
+    return [...getSearchResultCards()]
         .map(listing => getListingIdFromUrl(listing.querySelector('a[href*="/v/"]')?.href))
         .filter(Boolean);
 }
@@ -991,7 +1054,10 @@ async function findFirstNonEmptyOffset(startOffset, pageSize) {
                 // towards a page having something visible left.
                 const listings = [...(data.topBlock || []), ...(data.listings || [])];
                 if (!listings.length) return { offset, exhausted: true };
-                const hasVisible = listings.some(l => !isApiListingBlocked(l));
+                const topAdIds = new Set(listings
+                    .filter(l => l.priorityProduct === 'TOPADVERTENTIE')
+                    .map(l => (l.itemId || '').toLowerCase()));
+                const hasVisible = listings.some(l => !isApiListingBlocked(l, topAdIds));
                 return { offset, exhausted: false, hasVisible };
             } catch (e) {
                 return { offset, exhausted: false };
@@ -1029,13 +1095,13 @@ function updateEmptyPageBanner() {
         return;
     }
 
-    const allListings = document.querySelectorAll('.hz-Listing');
+    const allListings = [...getSearchResultCards()];
     if (allListings.length === 0) {
         removeEmptyPageBanner();
         return;
     }
 
-    const hasVisible = document.querySelector('.hz-Listing:not([data-cleanplaats-hidden])');
+    const hasVisible = allListings.some(listing => !listing.hasAttribute('data-cleanplaats-hidden'));
     if (hasVisible) {
         removeEmptyPageBanner();
         return;
@@ -1055,7 +1121,7 @@ function updateEmptyPageBanner() {
         </div>
     `);
 
-    const listingsEl = document.querySelector('.hz-Listings');
+    const listingsEl = document.querySelector('.hz-Listings, .hz-ContentCards');
     if (listingsEl) {
         listingsEl.insertAdjacentElement('beforebegin', banner);
     }

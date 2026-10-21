@@ -206,8 +206,8 @@ function checkForEmptyPage() {
     notificationTimeout = setTimeout(() => {
         performCleanup();
 
-        const visibleListings = document.querySelectorAll('.hz-Listing:not([data-cleanplaats-hidden])');
-        const totalListings = document.querySelectorAll('.hz-Listing');
+        const totalListings = [...getSearchResultCards()];
+        const visibleListings = totalListings.filter(listing => !listing.hasAttribute('data-cleanplaats-hidden'));
         const hiddenCount = totalListings.length - visibleListings.length;
 
         if (hiddenCount === 0) return;

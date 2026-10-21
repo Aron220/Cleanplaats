@@ -211,7 +211,7 @@ function setupDescriptionTermsModalButtons() {
 }
 
 function unhideListingsByDescriptionTerm(term) {
-    document.querySelectorAll('.hz-Listing').forEach(listing => {
+    getSearchResultCards().forEach(listing => {
         const description = getListingDescriptionText(listing);
         if (description.includes(term.toLowerCase())) {
             listing.removeAttribute('data-cleanplaats-hidden');
@@ -284,13 +284,13 @@ function removeSellerFromBlacklist(entryKey) {
 
     saveSettings().then(() => {
         if (removed) {
-            document.querySelectorAll('.hz-Listing').forEach(listing => {
-                const sellerNameEl = listing.querySelector('.hz-Listing-seller-name, .hz-Listing-seller-name-new, .hz-Listing-seller-link, .hz-Listing-sellerName, .hz-Listing-sellerName-new');
-                if (!sellerNameEl) return;
+            getSearchResultCards().forEach(listing => {
+                const sellerName = getListingSellerName(listing);
+                if (!sellerName) return;
 
                 const matches = removed.id
                     ? getListingSellerId(listing) === removed.id
-                    : sellerNameEl.textContent.trim() === removed.name;
+                    : sellerName === removed.name;
 
                 if (matches) {
                     listing.removeAttribute('data-cleanplaats-hidden');
@@ -557,6 +557,7 @@ function injectBlacklistButtons() {
     });
 
     injectListingBlockButtons();
+    injectGalleryCardButtons();
     injectProductDetailBlacklistButton();
     injectFeedSellerButtons();
 }
@@ -784,6 +785,84 @@ function injectListingBlockButtons() {
         const content = getListingContentWrapper(listing);
         if (content) content.appendChild(row);
     });
+}
+
+// The photo grid ("Foto's") has no seller line to put the buttons under, so they
+// go on the photo, styled like the homepage feed's (see injectFeedSellerButtons()).
+// Unlike a feed card, a grid card's seller is in the search payload, so hiding
+// them needs no lookup. React reuses these cards when the results change in
+// place, so a click reads the card as it is then, not as it was here.
+function injectGalleryCardButtons() {
+    const panelText = getPanelLocaleText();
+    const blockedListings = CLEANPLAATS.settings.blockedListings || [];
+
+    getGalleryCards().forEach(card => {
+        if (card.hasAttribute('data-cleanplaats-hidden')) return;
+        // Still a placeholder.
+        if (!card.querySelector('img')) return;
+
+        const listingId = getListingCardId(card);
+        if (!listingId) return;
+
+        card.dataset.cleanplaatsListingId = listingId;
+
+        if (blockedListings.some(b => b.id === listingId)) {
+            card.setAttribute('data-cleanplaats-hidden', 'true');
+            card.style.display = 'none';
+            return;
+        }
+
+        let row = card.querySelector('.cleanplaats-gallery-btn-row');
+        if (!row) {
+            row = document.createElement('div');
+            row.className = 'cleanplaats-blacklist-btn-row cleanplaats-gallery-btn-row';
+            row.appendChild(createGalleryCardButton('cleanplaats-listing-block-btn', panelText.hideListingButton, () => {
+                addListingToBlocklist(getListingCardId(card), getListingTitleText(card));
+            }));
+            card.appendChild(row);
+        }
+
+        // The seller is only known once the search response for this card is in.
+        const sellerName = getListingSellerName(card);
+        let sellerButton = row.querySelector('.cleanplaats-gallery-seller-btn');
+        if (!sellerName) {
+            sellerButton?.remove();
+            return;
+        }
+
+        if (!sellerButton) {
+            sellerButton = createGalleryCardButton('cleanplaats-gallery-seller-btn', panelText.hideSellerButton, () => {
+                const name = getListingSellerName(card);
+                if (!name) return;
+                // Where the label does not unfold, the eye is all there is, and the
+                // card does not say whose ad it is: name them before they go.
+                if (!canUnfoldFeedSellerLabel() && !window.confirm(getPanelLocaleText().blockSellerConfirm(name))) return;
+                addSellerToBlacklist(name, getListingSellerId(card));
+            });
+            row.insertBefore(sellerButton, row.firstChild);
+        }
+        sellerButton.title = sellerName;
+    });
+}
+
+function createGalleryCardButton(className, label, onClick) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `cleanplaats-blacklist-btn cleanplaats-feed-seller-btn ${className}`;
+
+    const labelEl = document.createElement('span');
+    labelEl.className = 'cleanplaats-feed-seller-label';
+    labelEl.textContent = label;
+    button.appendChild(labelEl);
+    button.setAttribute('aria-label', label);
+
+    button.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        onClick();
+    });
+
+    return button;
 }
 
 function showBlockedListingsModal(triggerButton) {

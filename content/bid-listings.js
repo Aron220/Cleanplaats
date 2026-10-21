@@ -52,7 +52,7 @@ var CLEANPLAATS_BIDDABLE_PRICE_TYPES = ['MIN_BID', 'FAST_BID'];
 // site's own words. A MIN_BID card shows its asking price instead, so this only
 // ever adds cards the search payload has not told us about yet.
 var CLEANPLAATS_BID_PRICE_WORDS = ['bieden', 'faire une offre'];
-var CLEANPLAATS_BID_PRICE_SELECTOR = '.hz-Listing-price, [class*="ListingPrice_hz-Listing-price"], .hz-StructuredListing-price';
+var CLEANPLAATS_BID_PRICE_SELECTOR = '.hz-Listing-price, [class*="ListingPrice_hz-Listing-price"], .hz-StructuredListing-price, .hz-StructuredListing-body .hz-Title';
 
 var CLEANPLAATS_BID_CONCURRENCY = 3;
 
@@ -320,7 +320,7 @@ function recordBidAnswer(itemId, verdict, now) {
 // The filter itself, like removeReservedListings() in content/cleanup.js: it
 // hides what the answered lookups say. Hiding never waits on a request.
 function removeListingsWithBids() {
-    document.querySelectorAll('.hz-Listing').forEach(listing => {
+    getSearchResultCards().forEach(listing => {
         const facts = getListingBidFacts(listing);
         if (!facts || !isListingKnownToHaveBids(facts.itemId)) return;
 
@@ -343,7 +343,7 @@ function getBidLookupCandidates(now) {
     const seen = new Set();
     const candidates = [];
 
-    document.querySelectorAll('.hz-Listing').forEach(listing => {
+    getSearchResultCards().forEach(listing => {
         // A hidden card is either answered already or hidden by another filter,
         // and asking about it would change nothing on screen.
         if (listing.hasAttribute('data-cleanplaats-hidden')) return;

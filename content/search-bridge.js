@@ -2,24 +2,29 @@
  * Runs in the page's own JavaScript world (manifest "world": "MAIN"), not in
  * the content script's isolated one. It has two jobs, one per block below.
  *
- * Two things travel this way, and a card tells us neither of them itself:
+ * What travels this way is what a card does not tell us itself:
  *
  * - Seller blocks match on seller id, and a listing card does not carry that id
  *   anywhere in its markup.
  * - The bid filter matches on price type. Only MIN_BID and FAST_BID listings can
  *   have a bid on them, so that field decides which cards are worth looking up
  *   on their own ad page. See content/bid-listings.js.
+ * - The photo grid ("Foto's", view:gallery-view) renders the same listings as
+ *   bare cards: title, price, place, date. No seller name, no description, no
+ *   "Gereserveerd" label, and a sticker only as an unnamed badge. Those filters
+ *   read the card's listing here instead. See getListingFacts() in
+ *   content/shared.js.
  *
- * __NEXT_DATA__ has both, but only for the result set the server rendered: every
- * client-side page, filter or sort change, and every search with hash parameters
- * (our own results-per-page and sort settings included) is fetched from
- * /lrp/api/search afterwards and never written back into it. This reads those
- * responses as the page receives them and hands the pairs to the content script,
- * so the cards on screen can always be matched without a request of our own.
+ * __NEXT_DATA__ has all of it, but only for the result set the server rendered:
+ * every client-side page, filter, sort or view change, and every search with
+ * hash parameters (our own results-per-page and sort settings included, and the
+ * photo grid itself) is fetched from /lrp/api/search afterwards and never
+ * written back into it. This reads those responses as the page receives them
+ * and hands the facts to the content script, so the cards on screen can always
+ * be matched without a request of our own.
  *
- * Only ids and a price type go across. Anything posting a fake pair can at most
- * decide which listing a block applies to on this page, which the page could do
- * anyway.
+ * Anything posting fake facts can at most decide which listings Cleanplaats
+ * hides on this page, which the page could do anyway.
  */
 (() => {
     const SOURCE = 'cleanplaats-search-bridge';
@@ -42,25 +47,29 @@
         const listings = [...(data?.listings || []), ...(data?.topBlock || [])];
 
         return listings
-            .map(listing => ({
-                itemId: listing?.itemId,
-                sellerId: listing?.sellerInformation?.sellerId,
-                priceType: listing?.priceInfo?.priceType
-            }))
-            // An entry is worth sending when either fact is usable. A listing
-            // with no seller id still carries a price type, and the bid filter
-            // needs exactly those entries.
-            .filter(({ itemId, sellerId, priceType }) => itemId && (
-                (typeof priceType === 'string' && priceType !== '')
-                || (sellerId !== null && sellerId !== undefined && sellerId !== '')
-            ))
-            .map(({ itemId, sellerId, priceType }) => ({
-                itemId: String(itemId),
-                // An empty string rather than null, so the content script has one
-                // absent value to test instead of two.
-                sellerId: sellerId === null || sellerId === undefined ? '' : String(sellerId),
-                priceType: typeof priceType === 'string' ? priceType : ''
-            }));
+            .filter(listing => listing?.itemId)
+            .map(listing => {
+                const sellerId = listing.sellerInformation?.sellerId;
+                const priceType = listing.priceInfo?.priceType;
+
+                return {
+                    itemId: String(listing.itemId),
+                    // An empty string rather than null, so the content script has one
+                    // absent value to test instead of two.
+                    sellerId: sellerId === null || sellerId === undefined ? '' : String(sellerId),
+                    priceType: typeof priceType === 'string' ? priceType : '',
+                    sellerName: String(listing.sellerInformation?.sellerName || '').trim(),
+                    reserved: listing.reserved === true,
+                    // "Moet nu weg" is a product of its own, but the grid shows it
+                    // as just another badge, so to the user it is a sticker.
+                    sticker: Boolean(listing.opvalStickerText) || listing.urgencyFeatureActive === true,
+                    // Category-specific listings (cars, real estate) leave
+                    // description empty and put their text in the other field.
+                    description: [listing.description, listing.categorySpecificDescription]
+                        .filter(text => typeof text === 'string' && text)
+                        .join(' ')
+                };
+            });
     }
 
     function getRequestUrl(input) {

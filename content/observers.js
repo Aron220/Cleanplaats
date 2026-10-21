@@ -259,7 +259,7 @@ function handleViewedListingBadgeToggle(event) {
     event.preventDefault();
     event.stopPropagation();
 
-    const listing = badge.closest('.hz-Listing');
+    const listing = badge.closest(CLEANPLAATS_LISTING_SELECTOR);
     const listingId = listing?.getAttribute('data-cleanplaats-viewed-id')
         || getListingIdFromUrl(listing?.querySelector('a[href*="/v/"]')?.href);
 

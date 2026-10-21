@@ -1531,6 +1531,26 @@
     padding: 0;
   }
 
+  /* The photo grid on the search pages gets the same buttons, one for the
+     seller and one for the ad, stacked so each unfolds without pushing the
+     other. See injectGalleryCardButtons(). */
+  .hz-StructuredListing:has(.cleanplaats-gallery-btn-row) {
+    position: relative;
+  }
+
+  .cleanplaats-gallery-btn-row {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 3;
+    width: auto;
+    margin: 0;
+    padding: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
   /* The button is only as wide as what is in it, and never clips: it grows
      around the label as that comes out. A button that clips instead shows the
      middle of the word rather than nothing at all, since a clipped label sits
@@ -1973,6 +1993,23 @@
 
   .hz-Link[data-cleanplaats-hidden] {
     display: none !important;
+  }
+
+  /* The photo grid wraps each card in a bare <li> grid cell, which would stay
+     behind as a hole in the grid. */
+  .hz-ContentCards > li:has(> .hz-StructuredListing[data-cleanplaats-hidden]) {
+    display: none !important;
+  }
+
+  /* The photo grid's viewed badge sits on the card, beside the site's
+     favourite heart in the photo's top-right corner. */
+  .hz-StructuredListing.cleanplaats-viewed-listing {
+    position: relative;
+  }
+
+  .hz-StructuredListing .cleanplaats-viewed-badge {
+    top: 14px;
+    right: 60px;
   }
 
   .hz-Listing.cleanplaats-viewed-listing .hz-Listing-item-wrapper-new {
