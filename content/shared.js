@@ -1213,6 +1213,14 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_NL = {
+    '2.2.5': {
+        intro: 'Cleanplaats 2.2.5 is een kleine update voor Firefox.',
+        highlights: [
+            'Firefox: open je Zoekopdrachten, dan vraagt Firefox je nu eerst om toestemming. Zoekopdrachten draaien op de server van Cleanplaats, en daarvoor zijn je e-mailadres, je zoekopdrachten en je filters nodig. Die toestemming geef je één keer, en je kunt hem later weer intrekken in Firefox.',
+            'Gebruik je geen Zoekopdrachten, dan merk je hier niets van: de rest van Cleanplaats stuurt niets naar ons.'
+        ],
+        note: null
+    },
     '2.2.4': {
         intro: 'Nieuw in deze versie:',
         highlights: [
@@ -1333,6 +1341,14 @@ var CLEANPLAATS_UPDATE_NOTES_NL = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_FR = {
+    '2.2.5': {
+        intro: 'Cleanplaats 2.2.5 est une petite mise à jour pour Firefox.',
+        highlights: [
+            'Firefox : quand vous ouvrez les Recherches, Firefox vous demande maintenant d’abord votre accord. Les recherches tournent sur le serveur de Cleanplaats, qui a besoin pour cela de votre adresse e-mail, de vos recherches et de vos filtres. Vous ne donnez cet accord qu’une fois, et vous pouvez le retirer plus tard dans Firefox.',
+            'Vous n’utilisez pas les Recherches ? Rien ne change pour vous : le reste de Cleanplaats ne nous envoie rien.'
+        ],
+        note: null
+    },
     '2.2.4': {
         intro: 'Nouveautés de cette version :',
         highlights: [
