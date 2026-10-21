@@ -1123,6 +1123,13 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_NL = {
+    '2.2.4': {
+        intro: 'Cleanplaats 2.2.4 is een kleine update met een belangrijke fix.',
+        highlights: [
+            'Fix: heb je een verkoper met heel veel advertenties geblokkeerd, dan verdwenen alleen hun nieuwste advertenties van de startpagina. Verder naar beneden kwamen ze weer tevoorschijn. Nu blijven ze ook daar verborgen, hoe ver je ook scrolt.'
+        ],
+        note: null
+    },
     '2.2.3': {
         intro: 'Nieuw in deze versie:',
         highlights: [
@@ -1233,6 +1240,13 @@ var CLEANPLAATS_UPDATE_NOTES_NL = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_FR = {
+    '2.2.4': {
+        intro: 'Cleanplaats 2.2.4 est une petite mise à jour avec une correction importante.',
+        highlights: [
+            'Correction : si vous aviez bloqué un vendeur qui a énormément d’annonces, seules ses annonces les plus récentes disparaissaient de la page d’accueil. Plus bas, elles réapparaissaient. Elles restent désormais masquées, aussi loin que vous fassiez défiler.'
+        ],
+        note: null
+    },
     '2.2.3': {
         intro: 'Nouveautés de cette version :',
         highlights: [
