@@ -801,6 +801,8 @@ function getPanelLocaleText() {
             feedSellerConfirm: 'Masquer toutes les annonces de ce vendeur ?',
             feedSellerHintTitle: 'Masquer le vendeur ? Cliquez sur l’œil.',
             feedSellerHintBody: 'Toutes ses annonces disparaissent alors de « Pour vous » et « Près de chez vous ».',
+            feedPauseText: (hidden, count) => `Cleanplaats a masqué ${hidden} des ${count} dernières annonces, le chargement est donc en pause.`,
+            feedPauseResume: 'Charger la suite',
             blockedListingsModalTitle: 'Annonces masquées',
             blockedListingsEmpty: 'Aucune annonce masquée',
             hideListingButton: "Masquer l'annonce",
@@ -1021,6 +1023,8 @@ function getPanelLocaleText() {
         feedSellerConfirm: 'Alle advertenties van deze verkoper verbergen?',
         feedSellerHintTitle: 'Verkoper verbergen? Klik op het oog.',
         feedSellerHintBody: 'Dan blijven alle advertenties van die verkoper weg uit Voor jou en In je buurt.',
+        feedPauseText: (hidden, count) => `Cleanplaats heeft ${hidden} van de laatste ${count} advertenties verborgen, daarom is het laden gepauzeerd.`,
+        feedPauseResume: 'Verder laden',
         blockedListingsModalTitle: 'Verborgen advertenties',
         blockedListingsEmpty: 'Geen advertenties verborgen',
         hideListingButton: 'Verberg advertentie',
@@ -1178,6 +1182,9 @@ var CLEANPLAATS = {
         searchBridgeListening: false,
         // See isPageHydrated().
         pageHydrated: false,
+        // How many feed cards there were when "Verder laden" was clicked. See
+        // updateFeedPause().
+        feedResumedAt: 0,
         // The ads of blocked sellers, which is how the homepage feed gets
         // matched. See content/feed-sellers.js.
         sellerAds: { ads: {}, picked: {}, quickAt: {}, fullAt: {}, sizes: {}, chains: {}, resolved: new Map() },

@@ -37,6 +37,14 @@
  * a request per hundred or so of their cards the site itself loaded, however
  * many ads they have in all, and nothing for a seller who never fills a feed.
  *
+ * Hiding that many cards has a cost of its own. The feed loads its next page
+ * when a marker under the cards comes into view, and hidden cards take no
+ * room, so with nothing but hidden cards coming in the marker never leaves the
+ * view. Near that seller the site loaded all 10,000 cards it goes to, 250
+ * requests, on every visit and without the user scrolling. So once it loads
+ * little but hidden cards the feed is paused, see updateFeedPause(), which
+ * also keeps the deeper lookups to what a few pages need.
+ *
  * Admarkt ads (a-ids) are the exception. A request for several sellers only
  * includes the Admarkt ads of the first seller in it, so they come back for a
  * seller with a request of their own and for the first one of a shared request,
@@ -79,6 +87,20 @@ var CLEANPLAATS_SELLER_ADS_MAX_DEPTH = 5000;
 var CLEANPLAATS_SELLER_ADS_EDGE = 50;
 var CLEANPLAATS_SELLER_ADS_HEAD = 10;
 
+// How long the ads of a seller followed further back stay known after the last
+// answer that had them, see fetchSellerAds(). On a reload the site shows the
+// feed pages it loaded before, for up to six hours, and those can be older than
+// what a chain that just started over knows. A day is that, plus the six hours
+// to the next full check, with room to spare.
+var CLEANPLAATS_SELLER_ADS_KEEP_MINUTES = 24 * 60;
+
+// The feed is paused when its last this many cards leave no more than this
+// many to see: three of the site's pages that add less than a row. Not a run of
+// hidden cards only, because near that seller of postcards the ads of others
+// come every eighty cards or so. See updateFeedPause().
+var CLEANPLAATS_FEED_PAUSE_WINDOW = 120;
+var CLEANPLAATS_FEED_PAUSE_VISIBLE = 4;
+
 // A failed request is not retried on every mutation of the feed.
 var CLEANPLAATS_SELLER_ADS_RETRY_MS = 60 * 1000;
 
@@ -110,11 +132,12 @@ var CLEANPLAATS_PHOTO_ID_PATTERN = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]
 // those ads until a request comes back. The copy comes from the background,
 // see background/seller-ads.js.
 //
-// ads maps an item id or photo id to [seller id, seller name]. The name is kept
-// per ad, not per seller, because one seller can go by two: an Admarkt
-// campaign carries a name of its own ("Fatbike Direct" on the ad, "Fresh Bikes
-// Amsterdam" on that seller's other ads), and a block by name matches on the
-// name the ad shows.
+// ads maps an item id or photo id to [seller id, seller name], and for a seller
+// followed further back also the minute the ad was last in an answer, see
+// storeSellerAds(). The name is kept per ad, not per seller, because one seller
+// can go by two: an Admarkt campaign carries a name of its own ("Fatbike
+// Direct" on the ad, "Fresh Bikes Amsterdam" on that seller's other ads), and a
+// block by name matches on the name the ad shows.
 //
 // picked is the same for the ads the user hid a seller from, with the button on
 // a feed card. Those were looked up one by one, so a full check that no longer
@@ -342,6 +365,63 @@ function showFeedCardsOfSeller(entry) {
     });
 }
 
+function getFeedGridCards() {
+    return document.querySelectorAll('.FeedItemList-module-container > .hz-ContentCards .hz-StructuredListing');
+}
+
+// Run from performCleanup(), after every filter: a card any of them hid takes
+// no room either. The pause takes the site's marker away (content.css) and
+// puts a note under the feed to go on with. It is read from the page on every
+// pass, so a feed that starts over, or a block that is lifted, brings the
+// loading back by itself.
+function updateFeedPause() {
+    const runtime = CLEANPLAATS.runtime;
+    const cards = getFeedGridCards();
+
+    // Fewer cards than at the last click: this is another feed.
+    if (runtime.feedResumedAt > cards.length) runtime.feedResumedAt = 0;
+
+    // Only cards loaded since that click count.
+    const from = cards.length - CLEANPLAATS_FEED_PAUSE_WINDOW;
+    let hidden = 0;
+    if (from >= runtime.feedResumedAt) {
+        for (let i = from; i < cards.length; i++) {
+            if (cards[i].hasAttribute('data-cleanplaats-hidden')) hidden++;
+        }
+    }
+
+    const paused = hidden >= CLEANPLAATS_FEED_PAUSE_WINDOW - CLEANPLAATS_FEED_PAUSE_VISIBLE;
+    document.documentElement.toggleAttribute('data-cleanplaats-feed-paused', paused);
+
+    let note = document.getElementById('cleanplaats-feed-pause');
+    if (!paused) {
+        note?.remove();
+        return;
+    }
+
+    const panelText = getPanelLocaleText();
+    if (!note) {
+        note = document.createElement('div');
+        note.id = 'cleanplaats-feed-pause';
+
+        const text = document.createElement('p');
+        text.className = 'cleanplaats-empty-page-text';
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'cleanplaats-empty-page-btn';
+        button.textContent = panelText.feedPauseResume;
+        button.addEventListener('click', () => {
+            runtime.feedResumedAt = getFeedGridCards().length;
+            updateFeedPause();
+        });
+
+        note.append(text, button);
+        cards[0].closest('.FeedItemList-module-container').after(note);
+    }
+    note.querySelector('p').textContent = panelText.feedPauseText(hidden, CLEANPLAATS_FEED_PAUSE_WINDOW);
+}
+
 // A block by id names its seller outright. A block by name stands for every
 // seller found under that name, and for every seller the user picked out on a
 // feed card while their name was blocked already.
@@ -558,11 +638,13 @@ async function fetchSellerAds(sellerIds, full) {
     // out and the stored copy stays at a hundred per seller. An incomplete one
     // only adds: it says nothing about the ads it had no room for. Neither
     // touches the older ads of a seller followed further back, as long as this
-    // answer still connects to them.
+    // answer still connects to them, and when it does not they stay for a day
+    // after they were last in an answer: the feed can still show them.
     if (complete) {
+        const keepFrom = getSellerAdStamp() - CLEANPLAATS_SELLER_ADS_KEEP_MINUTES;
         Object.keys(ads).forEach(key => {
             const sellerId = getAdSellerId(key);
-            if (adsOfSeller.has(sellerId) && !followed.has(sellerId)) delete ads[key];
+            if (adsOfSeller.has(sellerId) && !followed.has(sellerId) && !(ads[key][2] >= keepFrom)) delete ads[key];
         });
     }
 
@@ -605,15 +687,24 @@ function groupSellerAds(listings, sellerIds) {
     return adsOfSeller;
 }
 
+// The ads of a seller followed further back get the minute they were stored,
+// see CLEANPLAATS_SELLER_ADS_KEEP_MINUTES. Every answer that has one again
+// moves it on, so only ads that left the site run out.
 function storeSellerAds(sellerId, listings) {
-    const { ads } = CLEANPLAATS.runtime.sellerAds;
+    const { ads, chains } = CLEANPLAATS.runtime.sellerAds;
+    const stamp = chains[sellerId] ? getSellerAdStamp() : 0;
 
     listings.forEach(listing => {
         const sellerName = String(listing.sellerInformation.sellerName || '').trim();
         getAdKeys(listing).forEach(key => {
-            ads[key] = [sellerId, sellerName];
+            ads[key] = stamp ? [sellerId, sellerName, stamp] : [sellerId, sellerName];
         });
     });
+}
+
+// In minutes, which is close enough and keeps the stored copy smaller.
+function getSellerAdStamp() {
+    return Math.floor(Date.now() / 60000);
 }
 
 function getAdItemIds(listings) {
@@ -630,9 +721,10 @@ function getChainEdge(listings) {
 // include one of the newest of the answer before: then nothing was placed in
 // between that is not known. Otherwise, after more than a page of new ads, or
 // at a full check, the chain starts over from this answer, and the older ads
-// go. That is also what keeps ads that left the site from piling up.
+// go once they have not been in an answer for a day. That is also what keeps
+// ads that left the site from piling up.
 function updateSellerChains(adsOfSeller, ownTotal, full) {
-    const { chains } = CLEANPLAATS.runtime.sellerAds;
+    const { chains, fullAt } = CLEANPLAATS.runtime.sellerAds;
     const followed = new Set();
 
     adsOfSeller.forEach((listings, sellerId) => {
@@ -651,6 +743,10 @@ function updateSellerChains(adsOfSeller, ownTotal, full) {
                 return;
             }
         }
+
+        // A shared request cannot start a chain over. The seller gets a full
+        // check of their own at the next pass, rather than hours later.
+        if (chain && !ownTotal) delete fullAt[sellerId];
 
         delete chains[sellerId];
         if (ownTotal > listings.length && listings.length) {

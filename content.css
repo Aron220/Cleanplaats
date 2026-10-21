@@ -2141,6 +2141,14 @@
     display: none !important;
   }
 
+  /* The homepage feed loads its next page when this marker under the cards
+     comes into view, and hidden cards take no room to push it out. Taking it
+     away is what stops a feed that loads little but hidden cards from loading
+     on and on. See updateFeedPause(). */
+  html[data-cleanplaats-feed-paused] .FeedItemList-module-container > .hz-ContentCards + div:not([class]) {
+    display: none !important;
+  }
+
   /* The photo grid's viewed badge sits on the card, beside the site's
      favourite heart in the photo's top-right corner. */
   .hz-StructuredListing.cleanplaats-viewed-listing {
@@ -2511,7 +2519,8 @@
   }
 
   /* Empty page banner */
-  #cleanplaats-empty-page-banner {
+  #cleanplaats-empty-page-banner,
+  #cleanplaats-feed-pause {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2576,7 +2585,8 @@
     50% { opacity: 0.45; }
   }
 
-  html.cleanplaats-dark-mode #cleanplaats-empty-page-banner {
+  html.cleanplaats-dark-mode #cleanplaats-empty-page-banner,
+  html.cleanplaats-dark-mode #cleanplaats-feed-pause {
     background: #1a2332;
     border-color: #2d3f56;
   }

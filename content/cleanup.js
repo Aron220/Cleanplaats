@@ -271,6 +271,7 @@ function performCleanup() {
 
     updateStatsDisplay();
     updateEmptyPageBanner();
+    updateFeedPause();
 }
 
 function resetPreviousChanges() {
