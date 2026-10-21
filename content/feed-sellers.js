@@ -27,6 +27,16 @@
  *   placed since the full check, and the busiest sellers, who place the most,
  *   are the ones it covers best.
  *
+ * The hundred newest are not enough for a seller who uploads in bulk. One
+ * seller of postcards had 57,851 ads and placed a thousand a day, and since
+ * "In je buurt" is everything placed within about a kilometre, newest first,
+ * the feed near them was that seller and little else, page after page, well
+ * past the hundred newest. So a seller with more ads than fit on a page is
+ * followed further back, see fetchDeeperSellerAds(), one page at a time and
+ * only once the feed has got to the oldest of the ads known so far. That costs
+ * a request per hundred or so of their cards the site itself loaded, however
+ * many ads they have in all, and nothing for a seller who never fills a feed.
+ *
  * Admarkt ads (a-ids) are the exception. A request for several sellers only
  * includes the Admarkt ads of the first seller in it, so they come back for a
  * seller with a request of their own and for the first one of a shared request,
@@ -60,6 +70,14 @@ var CLEANPLAATS_SELLER_ADS_FULL_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 // check, grouped by what this one learned, and the quick looks cover it until
 // then.
 var CLEANPLAATS_SELLER_ADS_MAX_SPLIT_ROUNDS = 3;
+
+// Following a seller further back, see fetchDeeperSellerAds(). The endpoint
+// answers nothing past the 5000th result. EDGE is how many of the oldest known
+// ads count as the end: the feed reaching one of those is what asks for the
+// next page.
+var CLEANPLAATS_SELLER_ADS_MAX_DEPTH = 5000;
+var CLEANPLAATS_SELLER_ADS_EDGE = 50;
+var CLEANPLAATS_SELLER_ADS_HEAD = 10;
 
 // A failed request is not retried on every mutation of the feed.
 var CLEANPLAATS_SELLER_ADS_RETRY_MS = 60 * 1000;
@@ -95,16 +113,28 @@ var CLEANPLAATS_PHOTO_ID_PATTERN = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]
 // sizes how many ads they had at the last complete answer, which is what the
 // full checks are grouped by.
 //
+// chains holds, per seller followed further back than their hundred newest,
+// how far back that goes: head is the item ids their newest ads had at the
+// last look, next the offset the known ads reached at the last page, edge the
+// keys of the oldest known ads, and done whether there is nothing further.
+//
 // resolved (blocked name -> the sellers found under it) is a Map because seller
 // names are free text, and a seller called "__proto__" would do odd things to a
 // plain object. It is stored as a list of pairs for the same reason.
 function setSellerAdsFromStorage(stored) {
-    const sellerAds = { ads: {}, picked: {}, quickAt: {}, fullAt: {}, sizes: {}, resolved: new Map() };
+    const sellerAds = { ads: {}, picked: {}, quickAt: {}, fullAt: {}, sizes: {}, chains: {}, resolved: new Map() };
 
     if (stored && typeof stored === 'object') {
-        ['ads', 'picked', 'quickAt', 'fullAt', 'sizes'].forEach(key => {
+        ['ads', 'picked', 'quickAt', 'fullAt', 'sizes', 'chains'].forEach(key => {
             if (stored[key] && typeof stored[key] === 'object' && !Array.isArray(stored[key])) {
                 sellerAds[key] = stored[key];
+            }
+        });
+
+        // The deeper pages are asked for in a loop that counts on these.
+        Object.entries(sellerAds.chains).forEach(([sellerId, chain]) => {
+            if (!Array.isArray(chain?.head) || !Array.isArray(chain?.edge) || !Number.isFinite(chain?.next)) {
+                delete sellerAds.chains[sellerId];
             }
         });
 
@@ -120,11 +150,11 @@ function setSellerAdsFromStorage(stored) {
 }
 
 function persistSellerAds() {
-    const { ads, picked, quickAt, fullAt, sizes, resolved } = CLEANPLAATS.runtime.sellerAds;
+    const { ads, picked, quickAt, fullAt, sizes, chains, resolved } = CLEANPLAATS.runtime.sellerAds;
 
     try {
         browserAPI.storage.local.set({
-            [CLEANPLAATS_SELLER_ADS_STORAGE_KEY]: { ads, picked, quickAt, fullAt, sizes, resolved: [...resolved] }
+            [CLEANPLAATS_SELLER_ADS_STORAGE_KEY]: { ads, picked, quickAt, fullAt, sizes, chains, resolved: [...resolved] }
         }, () => {
             if (browserAPI.runtime.lastError) {
                 console.warn('Cleanplaats: Failed to save the ads of blocked sellers', browserAPI.runtime.lastError);
@@ -268,7 +298,8 @@ function refreshSellerAdsIfNeeded() {
 
     const now = Date.now();
     if (now - runtime.sellerAdsFailedAt < CLEANPLAATS_SELLER_ADS_RETRY_MS) return;
-    if (!getSellersDueForQuickLook(now).length && !getSellersDueForFullCheck(now).length && !getStaleSellerNames(now).length) return;
+    if (!getSellersDueForQuickLook(now).length && !getSellersDueForFullCheck(now).length
+        && !getStaleSellerNames(now).length && !getSellersAtTheirEdge().length) return;
 
     runtime.sellerAdsRefreshing = true;
     refreshSellerAds()
@@ -296,6 +327,14 @@ async function refreshSellerAds() {
 
         // The sellers found under those names are new here.
         if (names.length) await runFullChecks();
+
+        // Last, since the checks above can move where a seller's known ads end.
+        // Every round goes a page further back, up to MAX_DEPTH, and only as
+        // far as the feed has loaded.
+        for (let [sellerId] = getSellersAtTheirEdge(); sellerId; [sellerId] = getSellersAtTheirEdge()) {
+            await fetchDeeperSellerAds(sellerId);
+            applySellerAdsAnswer();
+        }
     } finally {
         forgetUnblockedSellers();
         persistSellerAds();
@@ -346,7 +385,7 @@ async function runFullChecks() {
 
     while (queue.length) {
         const { ids, round } = queue.shift();
-        const busy = await fetchSellerAds(ids);
+        const busy = await fetchSellerAds(ids, true);
 
         // It did not fit on one page. The sellers who took up more than their
         // share of it are asked about on their own, and the others again.
@@ -375,14 +414,15 @@ async function runQuickLooks() {
         .sort((a, b) => (sizes[a] ?? Infinity) - (sizes[b] ?? Infinity));
 
     for (let i = 0; i < due.length; i += CLEANPLAATS_SELLER_ADS_BATCH_SIZE) {
-        await fetchSellerAds(due.slice(i, i + CLEANPLAATS_SELLER_ADS_BATCH_SIZE));
+        await fetchSellerAds(due.slice(i, i + CLEANPLAATS_SELLER_ADS_BATCH_SIZE), false);
         applySellerAdsAnswer();
     }
 }
 
 // Stores the ads of these sellers. Returns nothing when the answer held all of
-// them, and otherwise the sellers who took up the page.
-async function fetchSellerAds(sellerIds) {
+// them, and otherwise the sellers who took up the page. A full check starts
+// over on the sellers it follows further back, see updateSellerChains().
+async function fetchSellerAds(sellerIds, full) {
     const params = new URLSearchParams({
         limit: String(CLEANPLAATS_SELLER_ADS_PAGE_SIZE),
         offset: '0',
@@ -395,30 +435,26 @@ async function fetchSellerAds(sellerIds) {
 
     const { listings, total } = await searchForSellerAds(params);
     const { ads, quickAt, sizes } = CLEANPLAATS.runtime.sellerAds;
-    const adsPerSeller = new Map(sellerIds.map(id => [id, 0]));
+    const adsOfSeller = groupSellerAds(listings, sellerIds);
 
     // A seller on their own gets their hundred newest, however many they have.
     const complete = sellerIds.length === 1 || total <= CLEANPLAATS_SELLER_ADS_PAGE_SIZE;
+    const followed = updateSellerChains(adsOfSeller, sellerIds.length === 1 ? total : 0, full);
 
     // A complete answer replaces what was known, so ads that left the site drop
     // out and the stored copy stays at a hundred per seller. An incomplete one
-    // only adds: it says nothing about the ads it had no room for.
+    // only adds: it says nothing about the ads it had no room for. Neither
+    // touches the older ads of a seller followed further back, as long as this
+    // answer still connects to them.
     if (complete) {
         Object.keys(ads).forEach(key => {
-            if (adsPerSeller.has(getAdSellerId(key))) delete ads[key];
+            const sellerId = getAdSellerId(key);
+            if (adsOfSeller.has(sellerId) && !followed.has(sellerId)) delete ads[key];
         });
     }
 
-    listings.forEach(listing => {
-        const sellerId = String(listing?.sellerInformation?.sellerId ?? '');
-        if (!adsPerSeller.has(sellerId)) return;
-
-        adsPerSeller.set(sellerId, adsPerSeller.get(sellerId) + 1);
-        const sellerName = String(listing.sellerInformation.sellerName || '').trim();
-        getAdKeys(listing).forEach(key => {
-            ads[key] = [sellerId, sellerName];
-        });
-    });
+    adsOfSeller.forEach((sellerListings, sellerId) => storeSellerAds(sellerId, sellerListings));
+    const adsPerSeller = new Map([...adsOfSeller].map(([sellerId, sellerListings]) => [sellerId, sellerListings.length]));
 
     const now = Date.now();
     sellerIds.forEach(id => {
@@ -442,6 +478,134 @@ async function fetchSellerAds(sellerIds) {
     const byCount = [...adsPerSeller].sort((a, b) => b[1] - a[1]);
     const busy = byCount.filter(([, count]) => count > fairShare).map(([sellerId]) => sellerId);
     return busy.length ? busy : [byCount[0][0]];
+}
+
+// The ads of each of these sellers in an answer, newest first as it gave them.
+function groupSellerAds(listings, sellerIds) {
+    const adsOfSeller = new Map(sellerIds.map(id => [id, []]));
+
+    listings.forEach(listing => {
+        const sellerId = String(listing?.sellerInformation?.sellerId ?? '');
+        adsOfSeller.get(sellerId)?.push(listing);
+    });
+
+    return adsOfSeller;
+}
+
+function storeSellerAds(sellerId, listings) {
+    const { ads } = CLEANPLAATS.runtime.sellerAds;
+
+    listings.forEach(listing => {
+        const sellerName = String(listing.sellerInformation.sellerName || '').trim();
+        getAdKeys(listing).forEach(key => {
+            ads[key] = [sellerId, sellerName];
+        });
+    });
+}
+
+function getAdItemIds(listings) {
+    return listings.map(listing => String(listing?.itemId || '').toLowerCase()).filter(Boolean);
+}
+
+function getChainEdge(listings) {
+    return listings.slice(-CLEANPLAATS_SELLER_ADS_EDGE).flatMap(getAdKeys);
+}
+
+// Which sellers are followed further back than this answer reaches, after it.
+// A seller is, once a request of their own shows they have more ads than it
+// held. They stay followed while the newest ads in each later answer still
+// include one of the newest of the answer before: then nothing was placed in
+// between that is not known. Otherwise, after more than a page of new ads, or
+// at a full check, the chain starts over from this answer, and the older ads
+// go. That is also what keeps ads that left the site from piling up.
+function updateSellerChains(adsOfSeller, ownTotal, full) {
+    const { chains } = CLEANPLAATS.runtime.sellerAds;
+    const followed = new Set();
+
+    adsOfSeller.forEach((listings, sellerId) => {
+        const chain = chains[sellerId];
+        const itemIds = getAdItemIds(listings);
+
+        if (chain && !full) {
+            // A shared request that had no room for this seller says nothing.
+            if (!listings.length && !ownTotal) {
+                followed.add(sellerId);
+                return;
+            }
+            if (itemIds.some(id => chain.head.includes(id))) {
+                chain.head = itemIds.slice(0, CLEANPLAATS_SELLER_ADS_HEAD);
+                followed.add(sellerId);
+                return;
+            }
+        }
+
+        delete chains[sellerId];
+        if (ownTotal > listings.length && listings.length) {
+            chains[sellerId] = {
+                head: itemIds.slice(0, CLEANPLAATS_SELLER_ADS_HEAD),
+                next: listings.length,
+                edge: getChainEdge(listings),
+                done: false
+            };
+        }
+    });
+
+    return followed;
+}
+
+// The next page of a seller's ads, further back than the ones known.
+//
+// The endpoint pages: it rounds the offset down to a multiple of the limit, so
+// a page cannot be made to start a little earlier to overlap the last one. It
+// does not need to. Every ad the seller placed since the last page pushed the
+// known ones a place down, so the next page starts among those, and nothing is
+// skipped. Only ads that left the site in between could leave a gap, as many
+// as left, which over the minutes between two pages is next to nothing.
+async function fetchDeeperSellerAds(sellerId) {
+    const chain = CLEANPLAATS.runtime.sellerAds.chains[sellerId];
+    const pageSize = CLEANPLAATS_SELLER_ADS_PAGE_SIZE;
+    const offset = Math.floor(chain.next / pageSize) * pageSize;
+
+    if (offset + pageSize > CLEANPLAATS_SELLER_ADS_MAX_DEPTH) {
+        chain.done = true;
+        return;
+    }
+
+    const params = new URLSearchParams({
+        limit: String(pageSize),
+        offset: String(offset),
+        sortBy: 'SORT_INDEX',
+        sortOrder: 'DECREASING',
+        viewOptions: 'list-view'
+    });
+    params.append('sellerIds[]', sellerId);
+
+    const listings = groupSellerAds((await searchForSellerAds(params)).listings, [sellerId]).get(sellerId);
+    storeSellerAds(sellerId, listings);
+    chain.next = offset + listings.length;
+    if (listings.length) chain.edge = getChainEdge(listings);
+    chain.done = listings.length < pageSize || chain.next >= CLEANPLAATS_SELLER_ADS_MAX_DEPTH;
+}
+
+// The sellers whose oldest known ads the feed has loaded, so that the cards
+// after those are likely theirs as well and not known yet. Whether the user
+// has scrolled to them does not matter: the feed loads ahead, and a page that
+// hides most of what it loads keeps loading.
+function getSellersAtTheirEdge() {
+    const open = Object.entries(CLEANPLAATS.runtime.sellerAds.chains).filter(([, chain]) => !chain.done);
+    if (!open.length) return [];
+
+    const inFeed = new Set();
+    document.querySelectorAll('.hz-StructuredListing').forEach(card => {
+        inFeed.add(getListingIdFromUrl(card.querySelector('a[href*="/v/"]')?.href));
+        inFeed.add(getFeedCardPhotoId(card));
+    });
+    inFeed.delete('');
+
+    const blockedIds = new Set(getBlockedSellerIds());
+    return open
+        .filter(([sellerId, chain]) => blockedIds.has(sellerId) && chain.edge.some(key => inFeed.has(key)))
+        .map(([sellerId]) => sellerId);
 }
 
 // A block by name has no id to ask for. The search matches seller names as well
@@ -498,7 +662,7 @@ async function searchForSellerAds(params) {
 // Sellers that are no longer blocked drop out, so the stored copy does not grow
 // with every seller the user ever blocked.
 function forgetUnblockedSellers() {
-    const { ads, picked, quickAt, fullAt, sizes, resolved } = CLEANPLAATS.runtime.sellerAds;
+    const { ads, picked, quickAt, fullAt, sizes, chains, resolved } = CLEANPLAATS.runtime.sellerAds;
     const blockedNames = new Set(getBlacklistedSellerEntries().filter(entry => !entry.id).map(entry => entry.name));
 
     [...resolved.keys()].forEach(name => {
@@ -516,7 +680,7 @@ function forgetUnblockedSellers() {
         if (!blockedIds.has(getAdSellerId(key))) delete ads[key];
     });
 
-    [quickAt, fullAt, sizes].forEach(bySeller => {
+    [quickAt, fullAt, sizes, chains].forEach(bySeller => {
         Object.keys(bySeller).forEach(sellerId => {
             if (!blockedIds.has(sellerId)) delete bySeller[sellerId];
         });

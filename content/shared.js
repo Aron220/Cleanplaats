@@ -1091,7 +1091,7 @@ var CLEANPLAATS = {
         pageHydrated: false,
         // The ads of blocked sellers, which is how the homepage feed gets
         // matched. See content/feed-sellers.js.
-        sellerAds: { ads: {}, picked: {}, quickAt: {}, fullAt: {}, sizes: {}, resolved: new Map() },
+        sellerAds: { ads: {}, picked: {}, quickAt: {}, fullAt: {}, sizes: {}, chains: {}, resolved: new Map() },
         sellerAdsRefreshing: false,
         sellerAdsFailedAt: 0,
         // Sent along with every save so storage.onChanged can tell this tab's
