@@ -9,7 +9,6 @@ var CLEANPLAATS_THEME_STORAGE_KEY = 'cleanplaats:darkMode';
 var CLEANPLAATS_SORT_STORAGE_KEY = 'cleanplaats:sortMode';
 var CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY = 'cleanplaatsViewedListings';
 var CLEANPLAATS_MAX_VIEWED_LISTINGS = 1500;
-var CLEANPLAATS_SELLER_ADS_STORAGE_KEY = 'cleanplaatsBlockedSellerAds';
 var CLEANPLAATS_LISTING_BIDS_STORAGE_KEY = 'cleanplaatsListingBids';
 var CLEANPLAATS_FLOATING_OFFSET_VAR = '--cleanplaats-floating-offset';
 // Marktplaats renamed this asset from tenant--nlnl to brand-logo--nlnl; match both.
@@ -1184,6 +1183,14 @@ var CLEANPLAATS = {
         sellerAds: { ads: {}, picked: {}, quickAt: {}, fullAt: {}, sizes: {}, chains: {}, resolved: new Map() },
         sellerAdsRefreshing: false,
         sellerAdsFailedAt: 0,
+        // Until when another tab is at work on them, see withSellerAdsLock().
+        sellerAdsBusyUntil: 0,
+        // The version of the stored copy this tab has, null before it has any,
+        // the save that waits to go out, and the lease this tab holds on the
+        // copy, if any. See syncSellerAds() and withSellerAdsLock().
+        sellerAdsVersion: null,
+        sellerAdsSaveTimer: 0,
+        sellerAdsLeaseToken: '',
         // Sent along with every save so storage.onChanged can tell this tab's
         // own writes from another tab's. See applySettingsFromOtherTab().
         settingsWriterId: Math.random().toString(36).slice(2) + Date.now().toString(36),

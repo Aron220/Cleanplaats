@@ -82,6 +82,16 @@ var CLEANPLAATS_SELLER_ADS_HEAD = 10;
 // A failed request is not retried on every mutation of the feed.
 var CLEANPLAATS_SELLER_ADS_RETRY_MS = 60 * 1000;
 
+// The stored copy is kept by the background and shared by every tab, see
+// withSellerAdsLock(). It is saved a few seconds after a change rather than
+// after every answer, since it can run to megabytes. A tab that finds another
+// one at work on it looks again this much later: BUSY for a lookup, which
+// can wait, CLAIM_RETRY for the seller of a feed card, which is waiting to be
+// saved.
+var CLEANPLAATS_SELLER_ADS_SAVE_DELAY_MS = 5 * 1000;
+var CLEANPLAATS_SELLER_ADS_BUSY_MS = 10 * 1000;
+var CLEANPLAATS_SELLER_ADS_CLAIM_RETRY_MS = 2 * 1000;
+
 // How long the sellers found under a blocked name stay looked up. A name that
 // turned up nobody is tried again sooner: that seller may simply have had no
 // ads online that day.
@@ -97,7 +107,8 @@ var CLEANPLAATS_PHOTO_ID_PATTERN = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]
 
 // Read at startup together with the settings, so the first cleanup pass on the
 // homepage already knows what the previous visit found, instead of showing
-// those ads until a request comes back.
+// those ads until a request comes back. The copy comes from the background,
+// see background/seller-ads.js.
 //
 // ads maps an item id or photo id to [seller id, seller name]. The name is kept
 // per ad, not per seller, because one seller can go by two: an Admarkt
@@ -149,20 +160,107 @@ function setSellerAdsFromStorage(stored) {
     CLEANPLAATS.runtime.sellerAds = sellerAds;
 }
 
-function persistSellerAds() {
-    const { ads, picked, quickAt, fullAt, sizes, chains, resolved } = CLEANPLAATS.runtime.sellerAds;
+function sendSellerAdsMessage(message) {
+    return Promise.resolve(browserAPI.runtime.sendMessage(message)).then(answer => {
+        if (!answer || answer.error) throw new Error(answer?.error || 'No answer from the background');
+        return answer;
+    });
+}
 
-    try {
-        browserAPI.storage.local.set({
-            [CLEANPLAATS_SELLER_ADS_STORAGE_KEY]: { ads, picked, quickAt, fullAt, sizes, chains, resolved: [...resolved] }
-        }, () => {
-            if (browserAPI.runtime.lastError) {
-                console.warn('Cleanplaats: Failed to save the ads of blocked sellers', browserAPI.runtime.lastError);
-            }
-        });
-    } catch (error) {
-        console.warn('Cleanplaats: Failed to save the ads of blocked sellers', error);
+// Takes over whatever was saved since this tab's copy, by this tab or another.
+// Says whether there was anything.
+async function syncSellerAds() {
+    const runtime = CLEANPLAATS.runtime;
+    const answer = await sendSellerAdsMessage({
+        action: 'sellerAds:load',
+        version: runtime.sellerAdsVersion,
+        token: runtime.sellerAdsLeaseToken
+    });
+    if (!('data' in answer)) return false;
+
+    setSellerAdsFromStorage(answer.data);
+    runtime.sellerAdsVersion = answer.version;
+    return true;
+}
+
+// For the first cleanup pass, see loadSettings(). Without the background this
+// tab starts empty, and the next lookup tries again.
+function loadSellerAds() {
+    return syncSellerAds().catch(error => {
+        console.warn('Cleanplaats: Failed to load the ads of blocked sellers', error);
+    });
+}
+
+function persistSellerAds() {
+    const runtime = CLEANPLAATS.runtime;
+    if (!runtime.sellerAdsSaveTimer) {
+        runtime.sellerAdsSaveTimer = setTimeout(flushSellerAds, CLEANPLAATS_SELLER_ADS_SAVE_DELAY_MS);
     }
+}
+
+function flushSellerAds() {
+    const runtime = CLEANPLAATS.runtime;
+    clearTimeout(runtime.sellerAdsSaveTimer);
+    runtime.sellerAdsSaveTimer = 0;
+
+    const { ads, picked, quickAt, fullAt, sizes, chains, resolved } = runtime.sellerAds;
+    const data = { ads, picked, quickAt, fullAt, sizes, chains, resolved: [...resolved] };
+
+    return sendSellerAdsMessage({ action: 'sellerAds:save', data, token: runtime.sellerAdsLeaseToken })
+        .then(({ version }) => {
+            runtime.sellerAdsVersion = version;
+        })
+        .catch(error => {
+            console.warn('Cleanplaats: Failed to save the ads of blocked sellers', error);
+        });
+}
+
+function releaseSellerAdsLease(token) {
+    sendSellerAdsMessage({ action: 'sellerAds:release', token }).catch(error => {
+        console.warn('Cleanplaats: Failed to hand back the ads of blocked sellers', error);
+    });
+}
+
+// A change still waiting to be saved goes out before the page does: someone who
+// opens an ad while a long first round is still running should not have to
+// start it over on the next page. The lease goes back after it, so the next
+// tab does not wait for it to run out.
+window.addEventListener('pagehide', () => {
+    const runtime = CLEANPLAATS.runtime;
+    if (runtime.sellerAdsSaveTimer) flushSellerAds();
+    if (runtime.sellerAdsLeaseToken) releaseSellerAdsLease(runtime.sellerAdsLeaseToken);
+});
+
+// Every tab used to look up and save the same sellers on its own, and put its
+// own copy back over what the others had found. So one tab at a time works on
+// the stored copy: it holds the lease on it from the background, takes over
+// what was saved before it started, and saves before it hands the lease back.
+// The token is per call, so that two calls in one tab take turns as well. With
+// ifAvailable, a call that finds the copy taken does nothing and says so;
+// otherwise it waits its turn.
+//
+// Not navigator.locks: in Firefox the page's lock manager may not touch the
+// promise a content script hands it, so the lock would never be held.
+async function withSellerAdsLock(work, ifAvailable = false) {
+    const runtime = CLEANPLAATS.runtime;
+    const token = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    const claim = () => sendSellerAdsMessage({ action: 'sellerAds:claim', token }).then(answer => answer.granted);
+
+    while (!(await claim())) {
+        if (ifAvailable) return false;
+        await new Promise(resolve => setTimeout(resolve, CLEANPLAATS_SELLER_ADS_CLAIM_RETRY_MS));
+    }
+
+    runtime.sellerAdsLeaseToken = token;
+    try {
+        if (await syncSellerAds()) scheduleCleanup();
+        await work();
+    } finally {
+        if (runtime.sellerAdsSaveTimer) await flushSellerAds();
+        if (runtime.sellerAdsLeaseToken === token) runtime.sellerAdsLeaseToken = '';
+        releaseSellerAdsLease(token);
+    }
+    return true;
 }
 
 function getPhotoIdFromUrl(url) {
@@ -296,17 +394,29 @@ function getStaleSellerNames(now) {
         .map(entry => entry.name);
 }
 
+function isSellerAdsRefreshDue(now) {
+    return getSellersDueForQuickLook(now).length > 0 || getSellersDueForFullCheck(now).length > 0
+        || getStaleSellerNames(now).length > 0 || getSellersAtTheirEdge().length > 0;
+}
+
 function refreshSellerAdsIfNeeded() {
     const runtime = CLEANPLAATS.runtime;
     if (runtime.sellerAdsRefreshing) return;
 
     const now = Date.now();
     if (now - runtime.sellerAdsFailedAt < CLEANPLAATS_SELLER_ADS_RETRY_MS) return;
-    if (!getSellersDueForQuickLook(now).length && !getSellersDueForFullCheck(now).length
-        && !getStaleSellerNames(now).length && !getSellersAtTheirEdge().length) return;
+    if (now < runtime.sellerAdsBusyUntil) return;
+    if (!isSellerAdsRefreshDue(now)) return;
 
     runtime.sellerAdsRefreshing = true;
-    refreshSellerAds()
+    // What looked due here can have been done by another tab since this one
+    // last took over the stored copy, so it is asked again with the lease held.
+    withSellerAdsLock(async () => {
+        if (isSellerAdsRefreshDue(Date.now())) await refreshSellerAds();
+    }, true)
+        .then(ran => {
+            if (!ran) runtime.sellerAdsBusyUntil = Date.now() + CLEANPLAATS_SELLER_ADS_BUSY_MS;
+        })
         .catch(error => {
             runtime.sellerAdsFailedAt = Date.now();
             console.warn('Cleanplaats: Failed to look up the ads of blocked sellers', error);
@@ -345,9 +455,8 @@ async function refreshSellerAds() {
     }
 }
 
-// Saved and applied after every answer, not once at the end: someone who opens
-// an ad while a long first round is still running should not have to start it
-// over on the next page, and the cards should go as soon as they can.
+// Applied after every answer, not once at the end, so the cards go as soon as
+// they can. Saved a few seconds later, see persistSellerAds().
 function applySellerAdsAnswer() {
     persistSellerAds();
     scheduleCleanup();
@@ -843,21 +952,23 @@ async function hideSellerOfFeedCard(card, button) {
         if (!ad) throw new Error('No ad found for this card');
 
         const seller = await lookUpSellerOfAd(ad);
-        const { picked } = CLEANPLAATS.runtime.sellerAds;
+        const entries = {};
         new Set([ad.itemId, photoId, ...seller.keys].filter(Boolean)).forEach(key => {
-            picked[key] = [seller.id, seller.name];
+            entries[key] = [seller.id, seller.name];
         });
+        Object.assign(CLEANPLAATS.runtime.sellerAds.picked, entries);
+        // Before the cleanup below, so that the lookups it sets off wait for
+        // these to be stored.
+        storePickedSellerAds(entries);
 
         if (isSellerBlacklisted(seller.id, seller.name)) {
             // Blocked already, this ad just slipped through: typically a block
             // by a common name, which the lookup by name did not get to. Now
             // this seller's id is known, and with it their other ads.
-            persistSellerAds();
             performCleanup();
             showBlacklistToast(getBlacklistedSellerLabel(seller));
         } else {
             addSellerToBlacklist(seller.name, seller.id);
-            persistSellerAds();
         }
 
         // Ready for when the seller is shown again.
@@ -868,6 +979,18 @@ async function hideSellerOfFeedCard(card, button) {
     } finally {
         button.disabled = false;
     }
+}
+
+// Stored with the lease held, see withSellerAdsLock(), so that they go into the
+// copy the other tabs saved, and are set again should that copy replace this
+// tab's while it waits.
+function storePickedSellerAds(entries) {
+    withSellerAdsLock(async () => {
+        Object.assign(CLEANPLAATS.runtime.sellerAds.picked, entries);
+        persistSellerAds();
+    }).catch(error => {
+        console.warn('Cleanplaats: Failed to save the seller of a feed card', error);
+    });
 }
 
 // The ad behind a feed card: its item id, and the address of its page. A card

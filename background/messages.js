@@ -3,6 +3,10 @@
  */
 
 function messageListener(message, sender, sendResponse) {
+    // Answered in background/seller-ads.js. Those carry megabytes, too much to
+    // log.
+    if (isSellerAdsMessage(message)) return false;
+
     console.log('Cleanplaats: messageListener received message: ', message);
 
     if (message.action === 'keepAlive') {

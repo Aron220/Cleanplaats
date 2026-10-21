@@ -224,8 +224,13 @@ function registerSettingsStorageSync() {
 }
 
 function loadSettings() {
-    return new Promise((resolve, reject) => {
-        browserAPI.storage.local.get(['cleanplaatsSettings', 'panelState', CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY, CLEANPLAATS_SELLER_ADS_STORAGE_KEY, CLEANPLAATS_LISTING_BIDS_STORAGE_KEY], (items) => {
+    // The ads of blocked sellers come from the background, alongside the
+    // settings, see setSellerAdsFromStorage(). A search page has no use for
+    // them: its own results say who the sellers are.
+    const sellerAdsLoaded = isSearchResultsPage() ? Promise.resolve() : loadSellerAds();
+
+    const settingsLoaded = new Promise((resolve, reject) => {
+        browserAPI.storage.local.get(['cleanplaatsSettings', 'panelState', CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY, CLEANPLAATS_LISTING_BIDS_STORAGE_KEY], (items) => {
             if (browserAPI.runtime.lastError) {
                 console.error('Cleanplaats: Failed to load settings from storage', browserAPI.runtime.lastError);
                 reject(browserAPI.runtime.lastError);
@@ -255,7 +260,6 @@ function loadSettings() {
                 }
 
                 setViewedListingsRuntime(items[CLEANPLAATS_VIEWED_LISTINGS_STORAGE_KEY]);
-                setSellerAdsFromStorage(items[CLEANPLAATS_SELLER_ADS_STORAGE_KEY]);
                 setListingBidsFromStorage(items[CLEANPLAATS_LISTING_BIDS_STORAGE_KEY]);
                 persistSortPreference();
                 persistHidesListingsPreference();
@@ -266,6 +270,8 @@ function loadSettings() {
             }
         });
     });
+
+    return Promise.all([settingsLoaded, sellerAdsLoaded]).then(() => {});
 }
 
 function persistSortPreference() {

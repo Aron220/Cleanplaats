@@ -13,6 +13,7 @@ importScripts(
     'background/url-rules.js',
     'background/theme.js',
     'background/messages.js',
+    'background/seller-ads.js',
     'background/keepalive.js',
     'background/lifecycle.js',
     'background/init.js'
