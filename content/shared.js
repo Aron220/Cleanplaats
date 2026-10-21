@@ -1214,8 +1214,11 @@ var CLEANPLAATS = {
 
 var CLEANPLAATS_UPDATE_NOTES_NL = {
     '2.2.4': {
-        intro: 'Cleanplaats 2.2.4 is een kleine update met een belangrijke fix.',
+        intro: 'Nieuw in deze versie:',
         highlights: [
+            'Je filters werken nu ook als je zoekresultaten bekijkt als Foto\'s.',
+            'In de Foto\'s-weergave verberg je een advertentie of verkoper via het oogje op de foto. Op de computer verschijnt het als je met de muis over de advertentie gaat.',
+            'Per ongeluk iets verborgen? Klik op Ongedaan maken in de melding onderin.',
             'Fix: heb je een verkoper met heel veel advertenties geblokkeerd, dan verdwenen alleen hun nieuwste advertenties van de startpagina. Verder naar beneden kwamen ze weer tevoorschijn. Nu blijven ze ook daar verborgen, hoe ver je ook scrolt.'
         ],
         note: null
@@ -1331,8 +1334,11 @@ var CLEANPLAATS_UPDATE_NOTES_NL = {
 
 var CLEANPLAATS_UPDATE_NOTES_FR = {
     '2.2.4': {
-        intro: 'Cleanplaats 2.2.4 est une petite mise à jour avec une correction importante.',
+        intro: 'Nouveautés de cette version :',
         highlights: [
+            'Vos filtres fonctionnent désormais aussi quand vous affichez les résultats en photos.',
+            'Dans l’affichage en photos, masquez une annonce ou un vendeur avec l’œil sur la photo. Sur ordinateur, il apparaît quand vous passez la souris sur l’annonce.',
+            'Masqué quelque chose par erreur ? Cliquez sur Annuler dans le message en bas de l’écran.',
             'Correction : si vous aviez bloqué un vendeur qui a énormément d’annonces, seules ses annonces les plus récentes disparaissaient de la page d’accueil. Plus bas, elles réapparaissaient. Elles restent désormais masquées, aussi loin que vous fassiez défiler.'
         ],
         note: null
