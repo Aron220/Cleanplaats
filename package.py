@@ -37,7 +37,7 @@ FILES = [
     "dark-mode.css",
     "LICENSE",
 ]
-DIRS = ["background", "content", "icons"]
+DIRS = ["background", "content", "icons", "pages"]
 
 # Wordt door geen enkel bestand geladen, maar zit wel in web_accessible_resources
 # ("icons/*") en zou dus zonder reden aan elke Marktplaats-pagina blootgesteld

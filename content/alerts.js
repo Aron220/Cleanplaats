@@ -97,6 +97,9 @@ var cleanplaatsAlertsRuntime = {
     walkthroughIndex: 0,
     walkthroughTarget: null,
     walkthroughReposition: null,
+    // The focus listener that waits for the Firefox data consent, while the
+    // consent view is on screen.
+    consentWatcher: null,
     // Last loaded alerts/matches, so the sub-views can render without refetching.
     cachedAlerts: null,
     cachedMatches: null,
@@ -174,6 +177,14 @@ var ALERTS_TEXT_NL = {
     loginPrivacy: 'We gebruiken je e-mailadres om je in te laten loggen en je zoekopdrachten aan te koppelen, verder niets.',
     loginPrivacyLink: 'Privacybeleid',
     loginTermsLink: 'Voorwaarden',
+
+    // Firefox only: the built-in data consent, asked before anything is sent.
+    consentTitle: 'Eerst even toestemming',
+    consentBody: 'Zoekopdrachten draaien op de server van Cleanplaats, ook als je browser dicht is. ' +
+        'Daarvoor stuurt Cleanplaats je e-mailadres, je zoekopdrachten en je filters naar die server. ' +
+        'Firefox vraagt je daar apart toestemming voor. De rest van Cleanplaats stuurt niets naar ons.',
+    consentButton: 'Toestemming geven',
+    consentHint: 'Er opent een klein venster. Intrekken kan later in Firefox, via Add-ons en thema’s.',
     emailPlaceholder: 'jouw@email.nl',
     emailButton: 'Stuur inlogcode',
     emailSending: 'Versturen…',
@@ -521,6 +532,13 @@ var ALERTS_TEXT_FR = {
     loginPrivacy: 'Nous utilisons votre adresse e-mail pour vous connecter et y rattacher vos recherches, rien de plus.',
     loginPrivacyLink: 'Politique de confidentialité',
     loginTermsLink: 'Conditions',
+
+    consentTitle: 'D’abord, votre accord',
+    consentBody: 'Les recherches tournent sur le serveur de Cleanplaats, même navigateur fermé. ' +
+        'Pour cela, Cleanplaats envoie votre adresse e-mail, vos recherches et vos filtres à ce serveur. ' +
+        'Firefox vous demande votre accord séparément. Le reste de Cleanplaats ne nous envoie rien.',
+    consentButton: 'Donner mon accord',
+    consentHint: 'Une petite fenêtre va s’ouvrir. Vous pourrez retirer votre accord plus tard dans Firefox, via Modules complémentaires et thèmes.',
     emailPlaceholder: 'votre@email.be',
     emailButton: 'Envoyer le code',
     emailSending: 'Envoi…',
@@ -1224,7 +1242,25 @@ function storeAlertsToken(token) {
     });
 }
 
+/**
+ * Every call to the server goes through here, so this is where the data
+ * consent is enforced: without it nothing leaves the browser, whichever button
+ * asked. Asked again on every call rather than cached, because the user can
+ * take it back in about:addons while the panel is open.
+ */
 function alertsApiFetch(path, options = {}) {
+    return checkAlertsDataConsent().then(granted => {
+        if (!granted) {
+            const error = new Error('Alerts API blocked: no data consent');
+            error.consentMissing = true;
+            if (document.getElementById('cleanplaats-alerts-body')) renderAlertsConsentView();
+            throw error;
+        }
+        return sendAlertsApiRequest(path, options);
+    });
+}
+
+function sendAlertsApiRequest(path, options) {
     const headers = {
         'Content-Type': 'application/json',
         // The server answers in the language the panel is drawn in. The account
@@ -1271,12 +1307,21 @@ function handleExpiredAlertsSession() {
 }
 
 /**
+ * A failure the panel already answered with a view of its own: the login view
+ * for an expired session, the consent view for missing data consent. Callers
+ * should not paint an error over it.
+ */
+function isAnsweredAlertsError(error) {
+    return Boolean(error && (error.sessionExpired || error.consentMissing));
+}
+
+/**
  * Reports a failed call, unless it was the session expiring: that already
  * replaced the panel with the login view, and a toast about it would land on
  * top of its own answer.
  */
 function notifyAlertsError(error, message) {
-    if (error && error.sessionExpired) return;
+    if (isAnsweredAlertsError(error)) return;
     showBubbleNotification(message || ALERTS_TEXT.errorToast);
 }
 
@@ -1551,13 +1596,95 @@ function showAlertsModal(options = {}) {
         }
     }
 
-    initAlertsRuntime().then(() => {
-        if (!cleanplaatsAlertsRuntime.token) {
-            renderAlertsLoginView();
+    initAlertsRuntime().then(checkAlertsDataConsent).then(granted => {
+        if (!granted) {
+            renderAlertsConsentView();
             return;
         }
-        loadAlertsDashboard();
+        openAlertsFirstView();
     });
+}
+
+function openAlertsFirstView() {
+    if (!cleanplaatsAlertsRuntime.token) {
+        renderAlertsLoginView();
+        return;
+    }
+    loadAlertsDashboard();
+}
+
+/* ===== Toestemming (Firefox) =====
+   Firefox asks for data consent per extension, and ours is optional: only this
+   panel sends anything anywhere. The background answers whether it has been
+   given (always yes in Chrome, which has no such thing). A failed answer counts
+   as no, since the alternative is sending without knowing. */
+
+function checkAlertsDataConsent() {
+    return Promise.resolve()
+        .then(() => browserAPI.runtime.sendMessage({ action: 'getAlertsDataConsent' }))
+        .then(response => Boolean(response && response.granted))
+        .catch(error => {
+            console.error('Cleanplaats: Could not check data consent', error);
+            return false;
+        });
+}
+
+function renderAlertsConsentView() {
+    // alertsApiFetch() lands here once per call, and a dashboard load makes
+    // four at once.
+    if (document.getElementById('cleanplaats-alerts-consent')) return;
+
+    const body = setAlertsBody(`
+        <div class="cleanplaats-alerts-sell" id="cleanplaats-alerts-consent">
+            <h4 class="cleanplaats-alerts-sell-title">${ALERTS_TEXT.consentTitle}</h4>
+            <p class="cleanplaats-alerts-sell-intro">${ALERTS_TEXT.consentBody}</p>
+            <div>
+                <button id="cleanplaats-alerts-consent-btn" class="cleanplaats-alerts-primary-btn">${ALERTS_TEXT.consentButton}</button>
+            </div>
+            <p class="cleanplaats-alerts-sell-privacy">${ALERTS_TEXT.consentHint}</p>
+        </div>
+    `);
+    if (!body) return;
+    setAlertsTaglineVisible(true);
+
+    // The question itself is asked on an extension page: a content script
+    // cannot call permissions.request(). See openAlertsDataConsentPage().
+    document.getElementById('cleanplaats-alerts-consent-btn').onclick = () => {
+        browserAPI.runtime.sendMessage({ action: 'openAlertsDataConsent', lang: CLEANPLAATS_ALERTS_LANG })
+            .catch(error => console.error('Cleanplaats: Could not open consent page', error));
+    };
+    watchForAlertsDataConsent();
+}
+
+/**
+ * The answer comes in another window, so the panel learns about it when this
+ * page gets the focus back (the consent window closing, or switching back to
+ * this tab on Android) and moves on to where it was headed.
+ */
+function watchForAlertsDataConsent() {
+    if (cleanplaatsAlertsRuntime.consentWatcher) return;
+
+    const stop = () => {
+        window.removeEventListener('focus', recheck);
+        document.removeEventListener('visibilitychange', recheck);
+        cleanplaatsAlertsRuntime.consentWatcher = null;
+    };
+    const recheck = () => {
+        if (document.visibilityState !== 'visible') return;
+        if (!document.getElementById('cleanplaats-alerts-consent')) {
+            stop();
+            return;
+        }
+        checkAlertsDataConsent().then(granted => {
+            if (!granted || !document.getElementById('cleanplaats-alerts-consent')) return;
+            stop();
+            openAlertsFirstView();
+        });
+    };
+
+    cleanplaatsAlertsRuntime.consentWatcher = recheck;
+    window.addEventListener('focus', recheck);
+    document.addEventListener('visibilitychange', recheck);
 }
 
 function renderAlertsShell(overlay) {
@@ -2329,7 +2456,7 @@ function renderAlertMatchesView(alertId) {
             if (cleanplaatsAlertsRuntime.openAlertMatchesId !== String(alert.id)) return;
             // A session that expired while the panel was open already put the
             // login view back, so there is nothing to say about matches.
-            if (error.sessionExpired) return;
+            if (isAnsweredAlertsError(error)) return;
             console.error('Cleanplaats: Failed to load matches for alert', error);
             const errorBody = setAlertsBody(`
                 ${header}
@@ -2509,7 +2636,7 @@ function loadAlertsDashboard() {
         setAlertsBusy(false);
     }).catch(error => {
         setAlertsBusy(false);
-        if (error.sessionExpired) return;
+        if (isAnsweredAlertsError(error)) return;
         console.error('Cleanplaats: Failed to load alerts', error);
         setAlertsBody(`<div class="cleanplaats-alerts-loading">${ALERTS_TEXT.errorToast}</div>`);
     });
