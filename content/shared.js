@@ -1228,10 +1228,11 @@ var CLEANPLAATS = {
 
 var CLEANPLAATS_UPDATE_NOTES_NL = {
     '2.2.5': {
-        intro: 'Cleanplaats 2.2.5 is een kleine update voor Firefox.',
+        intro: 'Nieuw in deze versie:',
         highlights: [
-            'Firefox: open je Zoekopdrachten, dan vraagt Firefox je nu eerst om toestemming. Zoekopdrachten draaien op de server van Cleanplaats, en daarvoor zijn je e-mailadres, je zoekopdrachten en je filters nodig. Die toestemming geef je één keer, en je kunt hem later weer intrekken in Firefox.',
-            'Gebruik je geen Zoekopdrachten, dan merk je hier niets van: de rest van Cleanplaats stuurt niets naar ons.'
+            'In je buurt: woont er een geblokkeerde verkoper met duizenden advertenties bij je in de buurt, dan stopt het laden nu na een paar pagina\'s in plaats van eindeloos door te gaan. Met "Verder laden" ga je verder.',
+            'Had je verkopers geblokkeerd en meerdere tabbladen van Marktplaats open, dan kon je browser traag worden. Dat is opgelost.',
+            'Firefox: Zoekopdrachten vragen nu eerst je toestemming, omdat ze via de server van Cleanplaats lopen.'
         ],
         note: null
     },
@@ -1356,10 +1357,11 @@ var CLEANPLAATS_UPDATE_NOTES_NL = {
 
 var CLEANPLAATS_UPDATE_NOTES_FR = {
     '2.2.5': {
-        intro: 'Cleanplaats 2.2.5 est une petite mise à jour pour Firefox.',
+        intro: 'Nouveautés de cette version :',
         highlights: [
-            'Firefox : quand vous ouvrez les Recherches, Firefox vous demande maintenant d’abord votre accord. Les recherches tournent sur le serveur de Cleanplaats, qui a besoin pour cela de votre adresse e-mail, de vos recherches et de vos filtres. Vous ne donnez cet accord qu’une fois, et vous pouvez le retirer plus tard dans Firefox.',
-            'Vous n’utilisez pas les Recherches ? Rien ne change pour vous : le reste de Cleanplaats ne nous envoie rien.'
+            'Près de chez vous : si un vendeur bloqué a des milliers d’annonces près de chez vous, le chargement s’arrête maintenant après quelques pages au lieu de continuer sans fin. Cliquez sur « Charger la suite » pour continuer.',
+            'Si vous aviez bloqué des vendeurs et ouvert plusieurs onglets, votre navigateur pouvait ralentir. C’est corrigé.',
+            'Firefox : les Recherches demandent d’abord votre accord, car elles passent par le serveur de Cleanplaats.'
         ],
         note: null
     },
