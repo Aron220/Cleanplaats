@@ -398,6 +398,11 @@ var ALERTS_TEXT_NL = {
     planStatusPastDue: 'Je laatste betaling is niet gelukt. We proberen het nog een paar keer. Werk je betaalmethode bij, anders stopt Premium.',
     planStatusGranted: 'Je hebt Premium cadeau gekregen, dus je betaalt niets.',
     planStatusGrantedUntil: date => `Je hebt Premium cadeau gekregen tot ${date}, dus je betaalt niets.`,
+    planStatusTrial: date => `Je proefperiode loopt tot ${date}. Je betaalt niets, en daarna ga je vanzelf terug naar Gratis.`,
+    trialButton: days => `${days} dagen gratis proberen`,
+    trialStarting: 'Starten…',
+    trialFinePrint: days => `Geen betaalgegevens nodig. Na ${days} dagen ga je vanzelf terug naar Gratis, je betaalt niets.`,
+    trialStartedToast: 'Je proefperiode loopt.',
     planCancel: 'Opzeggen',
     planCancelConfirmTitle: 'Premium opzeggen?',
     planCancelConfirmBody: (date, free) => `Je houdt Premium tot ${date} en betaalt daarna niets meer. Vanaf dan ${free.maxAlerts === 1 ? 'loopt er één zoekopdracht' : `lopen er ${free.maxAlerts} zoekopdrachten`} tegelijk, en controleren we elke ${free.intervalMinutes} minuten. Andere zoekopdrachten gaan op pauze, er wordt niets verwijderd.`,
@@ -772,6 +777,11 @@ var ALERTS_TEXT_FR = {
     planStatusPastDue: 'Votre dernier paiement n’a pas abouti. Nous réessayons encore quelques fois. Mettez à jour votre moyen de paiement, sinon Premium s’arrête.',
     planStatusGranted: 'Premium vous est offert, vous n’avez donc rien à payer.',
     planStatusGrantedUntil: date => `Premium vous est offert jusqu’au ${date}, vous n’avez donc rien à payer.`,
+    planStatusTrial: date => `Votre essai court jusqu’au ${date}. Vous ne payez rien, et vous revenez ensuite automatiquement à la formule gratuite.`,
+    trialButton: days => `Essayer gratuitement ${days} jours`,
+    trialStarting: 'Démarrage…',
+    trialFinePrint: days => `Aucune donnée de paiement requise. Après ${days} jours, vous revenez automatiquement à la formule gratuite, sans rien payer.`,
+    trialStartedToast: 'Votre essai a commencé.',
     planCancel: 'Résilier',
     planCancelConfirmTitle: 'Résilier Premium ?',
     planCancelConfirmBody: (date, free) => `Vous gardez Premium jusqu’au ${date} et ne payez plus rien ensuite. À partir de là, ${free.maxAlerts === 1 ? 'une seule recherche tourne' : `${free.maxAlerts} recherches tournent`} à la fois, avec un contrôle toutes les ${free.intervalMinutes} minutes. Les autres recherches sont mises en pause, rien n’est supprimé.`,
@@ -2286,7 +2296,12 @@ function alertsSubscriptionManageable(me) {
 }
 
 function alertsPremiumBuyable(me) {
-    return Boolean(me && me.tier !== 'premium' && me.plans && me.plans.premium && me.plans.premium.available);
+    const onTrial = Boolean(me && me.subscription && me.subscription.trial);
+    return Boolean(me && (me.tier !== 'premium' || onTrial) && me.plans && me.plans.premium && me.plans.premium.available);
+}
+
+function alertsTrialAvailable(me) {
+    return Boolean(me && me.tier !== 'premium' && me.plans && me.plans.premium && me.plans.premium.trialAvailable);
 }
 
 function renderAlertsAccountView() {
@@ -2423,7 +2438,9 @@ function buildAlertsPlanStatusHtml(me) {
     const paying = sub && !sub.granted;
 
     let line;
-    if (!paying) {
+    if (sub && sub.trial) {
+        line = ALERTS_TEXT.planStatusTrial(date);
+    } else if (!paying) {
         line = date ? ALERTS_TEXT.planStatusGrantedUntil(date) : ALERTS_TEXT.planStatusGranted;
     } else if (sub.status === 'past_due') {
         line = ALERTS_TEXT.planStatusPastDue;
@@ -2434,6 +2451,9 @@ function buildAlertsPlanStatusHtml(me) {
     }
 
     const actions = [];
+    if (alertsPremiumBuyable(me)) {
+        actions.push(buildAlertsBuyButtonHtml(me, 'trial'));
+    }
     if (paying && sub.cancelable && sub.cancelAtPeriodEnd) {
         actions.push(`<button type="button" class="cleanplaats-alerts-primary-btn" id="cleanplaats-alerts-plan-resume">${ALERTS_TEXT.planResume}</button>`);
     }
@@ -2502,6 +2522,13 @@ function changeAlertsSubscription(action, button, toast) {
  * bought, and the waitlist while it cannot.
  */
 function buildPricingActionHtml(me) {
+    if (alertsTrialAvailable(me)) {
+        return `
+            ${buildAlertsTrialButtonHtml(me)}
+            ${buildAlertsBuyButtonHtml(me, 'pricing', null, true)}
+            <p class="cleanplaats-alerts-plan-note">${ALERTS_TEXT.trialFinePrint(me.plans.premium.trialDays)}</p>
+        `;
+    }
     if (alertsPremiumBuyable(me)) {
         return `
             ${buildAlertsBuyButtonHtml(me, 'pricing')}
@@ -2511,8 +2538,12 @@ function buildPricingActionHtml(me) {
     return buildUpgradeInterestSlotHtml();
 }
 
-function buildAlertsBuyButtonHtml(me, source, label) {
-    return `<button type="button" class="cleanplaats-alerts-primary-btn cleanplaats-alerts-block-btn" data-billing="checkout" data-source="${source}">${label || ALERTS_TEXT.upgradeBuyButton(me.plans.premium.priceEur)}</button>`;
+function buildAlertsBuyButtonHtml(me, source, label, secondary) {
+    return `<button type="button" class="${secondary ? 'cleanplaats-alerts-secondary-btn' : 'cleanplaats-alerts-primary-btn'} cleanplaats-alerts-block-btn" data-billing="checkout" data-source="${source}">${label || ALERTS_TEXT.upgradeBuyButton(me.plans.premium.priceEur)}</button>`;
+}
+
+function buildAlertsTrialButtonHtml(me) {
+    return `<button type="button" class="cleanplaats-alerts-primary-btn cleanplaats-alerts-block-btn" data-billing="trial">${ALERTS_TEXT.trialButton(me.plans.premium.trialDays)}</button>`;
 }
 
 function buildAlertsManageButtonHtml() {
@@ -2543,7 +2574,8 @@ function renderAlertsLimitView(alerts) {
                 ${buyable ? '' : `<span class="cleanplaats-alerts-plan-badge cleanplaats-alerts-plan-badge-soon">${ALERTS_TEXT.upgradeSoon}</span>`}
             </div>
             <p class="cleanplaats-alerts-limit-premium-body">${buyable ? ALERTS_TEXT.limitPremiumBodyAvailable(premium, free) : ALERTS_TEXT.limitPremiumBody(premium, free)}</p>
-            ${buyable ? buildAlertsBuyButtonHtml(me, 'limit') : ''}
+            ${alertsTrialAvailable(me) ? buildAlertsTrialButtonHtml(me) : ''}
+            ${buyable ? buildAlertsBuyButtonHtml(me, 'limit', null, alertsTrialAvailable(me)) : ''}
             <button type="button" class="cleanplaats-alerts-text-btn" id="cleanplaats-alerts-open-pricing">${ALERTS_TEXT.accountPricingLink}</button>
         </div>
     ` : '';
@@ -2802,6 +2834,26 @@ function wireAlertsBillingButtons(root, rerender) {
     root.querySelectorAll('[data-billing="portal"]').forEach(button => {
         button.onclick = () => openAlertsPortal(button, rerender);
     });
+    root.querySelectorAll('[data-billing="trial"]').forEach(button => {
+        button.onclick = () => startAlertsTrial(button);
+    });
+}
+
+function startAlertsTrial(button) {
+    const label = button.textContent;
+    button.disabled = true;
+    button.textContent = ALERTS_TEXT.trialStarting;
+    alertsApiFetch('/api/billing/trial', { method: 'POST' })
+        .then(() => {
+            showBubbleNotification(ALERTS_TEXT.trialStartedToast);
+            cleanplaatsAlertsRuntime.view = 'plan';
+            loadAlertsDashboard();
+        })
+        .catch(error => {
+            button.disabled = false;
+            button.textContent = label;
+            notifyAlertsError(error, error && error.message);
+        });
 }
 
 /**
