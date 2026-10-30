@@ -36,7 +36,36 @@ function messageListener(message, sender, sendResponse) {
         return true;
     }
 
+    if (message.action === 'openBillingPage') {
+        if (!isBillingPageUrl(message.url)) {
+            sendResponse({ status: 'refused' });
+            return true;
+        }
+        browserAPI.tabs.create({ url: message.url })
+            .then(() => sendResponse({ status: 'opened' }))
+            .catch(error => {
+                console.error('Cleanplaats: Could not open billing page', error);
+                sendResponse({ status: 'failed' });
+            });
+        return true;
+    }
+
     return true;
+}
+
+/**
+ * The checkout and the subscription portal are the payment provider's pages,
+ * and their URL comes from our server. Only web pages get a tab: https, or
+ * plain http on this machine for the fake checkout in `npm run dev:billing`.
+ */
+function isBillingPageUrl(raw) {
+    try {
+        const url = new URL(raw);
+        if (url.protocol === 'https:') return true;
+        return url.protocol === 'http:' && (url.hostname === 'localhost' || url.hostname === '127.0.0.1');
+    } catch (error) {
+        return false;
+    }
 }
 
 /**
