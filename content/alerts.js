@@ -400,6 +400,7 @@ var ALERTS_TEXT_NL = {
     planStatusGrantedUntil: date => `Je hebt Premium cadeau gekregen tot ${date}, dus je betaalt niets.`,
     planStatusTrial: date => `Je proefperiode loopt tot ${date}. Je betaalt niets, en daarna ga je vanzelf terug naar Gratis.`,
     trialButton: days => `${days} dagen gratis proberen`,
+    trialLinkFirst: days => `Koppel eerst Telegram om ${days} dagen gratis te proberen`,
     trialStarting: 'Starten…',
     trialFinePrint: days => `Geen betaalgegevens nodig. Na ${days} dagen ga je vanzelf terug naar Gratis, je betaalt niets.`,
     trialStartedToast: 'Je proefperiode loopt.',
@@ -779,6 +780,7 @@ var ALERTS_TEXT_FR = {
     planStatusGrantedUntil: date => `Premium vous est offert jusqu’au ${date}, vous n’avez donc rien à payer.`,
     planStatusTrial: date => `Votre essai court jusqu’au ${date}. Vous ne payez rien, et vous revenez ensuite automatiquement à la formule gratuite.`,
     trialButton: days => `Essayer gratuitement ${days} jours`,
+    trialLinkFirst: days => `Liez d’abord Telegram pour essayer gratuitement ${days} jours`,
     trialStarting: 'Démarrage…',
     trialFinePrint: days => `Aucune donnée de paiement requise. Après ${days} jours, vous revenez automatiquement à la formule gratuite, sans rien payer.`,
     trialStartedToast: 'Votre essai a commencé.',
@@ -2543,6 +2545,9 @@ function buildAlertsBuyButtonHtml(me, source, label, secondary) {
 }
 
 function buildAlertsTrialButtonHtml(me) {
+    if (!me.telegramLinked) {
+        return `<button type="button" class="cleanplaats-alerts-primary-btn cleanplaats-alerts-block-btn" data-billing="trial-link">${ALERTS_TEXT.trialLinkFirst(me.plans.premium.trialDays)}</button>`;
+    }
     return `<button type="button" class="cleanplaats-alerts-primary-btn cleanplaats-alerts-block-btn" data-billing="trial">${ALERTS_TEXT.trialButton(me.plans.premium.trialDays)}</button>`;
 }
 
@@ -2836,6 +2841,9 @@ function wireAlertsBillingButtons(root, rerender) {
     });
     root.querySelectorAll('[data-billing="trial"]').forEach(button => {
         button.onclick = () => startAlertsTrial(button);
+    });
+    root.querySelectorAll('[data-billing="trial-link"]').forEach(button => {
+        button.onclick = openAlertsTelegramView;
     });
 }
 
