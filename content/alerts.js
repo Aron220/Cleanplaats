@@ -203,7 +203,7 @@ var ALERTS_TEXT_NL = {
     accountDelete: 'Account verwijderen',
     accountDeleteConfirmTitle: 'Account verwijderen?',
     accountDeleteConfirmBody: 'Je e-mailadres, zoekopdrachten en gevonden advertenties worden gewist. Dit kun je niet ongedaan maken.',
-    accountDeleteConfirmBodyPaid: 'Je Premium stopt meteen en je e-mailadres, zoekopdrachten en gevonden advertenties worden gewist. Dit kun je niet ongedaan maken. Wil je alleen stoppen met betalen, kies dan Abonnement beheren.',
+    accountDeleteConfirmBodyPaid: 'Je Premium stopt meteen en je e-mailadres, zoekopdrachten en gevonden advertenties worden gewist. Dit kun je niet ongedaan maken. Wil je alleen stoppen met betalen, zeg dan op onder Abonnement.',
     accountDeleteConfirmOk: 'Definitief verwijderen',
     accountDeletedToast: 'Je account is verwijderd.',
     tierFree: 'Gratis',
@@ -389,12 +389,27 @@ var ALERTS_TEXT_NL = {
     checkoutWaitNotYet: 'Je betaling is nog niet binnen. Dat kan een minuutje duren.',
     checkoutWaitReopen: 'Betaalpagina opnieuw openen',
     checkoutDoneToast: 'Premium staat aan. Veel succes met zoeken!',
-    manageButton: 'Abonnement beheren',
+    manageButton: 'Betaalmethode en facturen',
+    navPlan: 'Abonnement',
+    planPremiumName: 'Premium',
+    planPricePerMonth: price => `€ ${price.toFixed(2).replace('.', ',')} per maand`,
+    planStatusRenews: date => `Verlengt automatisch op ${date}.`,
+    planStatusEnds: date => `Opgezegd. Je houdt Premium tot ${date} en betaalt daarna niets meer.`,
+    planStatusPastDue: 'Je laatste betaling is niet gelukt. We proberen het nog een paar keer. Werk je betaalmethode bij, anders stopt Premium.',
+    planStatusGranted: 'Je hebt Premium gekregen. Er valt niets te betalen.',
+    planStatusGrantedUntil: date => `Je hebt Premium gekregen, tot ${date}. Er valt niets te betalen.`,
+    planCancel: 'Opzeggen',
+    planCancelConfirmTitle: 'Premium opzeggen?',
+    planCancelConfirmBody: (date, free) => `Je houdt Premium tot ${date} en betaalt daarna niets meer. Vanaf dan ${free.maxAlerts === 1 ? 'loopt er één zoekopdracht' : `lopen er ${free.maxAlerts} zoekopdrachten`} tegelijk, en controleren we elke ${free.intervalMinutes} minuten. Andere zoekopdrachten gaan op pauze, er wordt niets verwijderd.`,
+    planCancelConfirmOk: 'Premium opzeggen',
+    planCancelConfirmKeep: 'Premium houden',
+    planCanceledToast: 'Premium is opgezegd.',
+    planResume: 'Toch doorgaan met Premium',
+    planResumedToast: 'Je Premium loopt gewoon door.',
+    quotaPremiumHint: premium => `Premium: ${premium.maxAlerts} tegelijk, elke ${premium.intervalMinutes} min`,
+    quotaPremiumButton: 'Bekijk Premium',
+    stripPremiumHint: m => `Met Premium elke ${m} minuten`,
     manageOpening: 'Openen…',
-    subscriptionRenews: date => `Premium · verlengt op ${date}`,
-    subscriptionEnds: date => `Premium · stopt op ${date}`,
-    subscriptionPastDue: 'Premium · betaling mislukt',
-    subscriptionGrantedUntil: date => `Premium · tot ${date}`,
     pastDueTitle: 'Je laatste betaling is niet gelukt',
     pastDueBody: 'Premium loopt door terwijl de betaling opnieuw geprobeerd wordt. Werk je betaalgegevens bij, anders stopt Premium vanzelf.',
     pastDueButton: 'Betaalgegevens bijwerken',
@@ -419,7 +434,6 @@ var ALERTS_TEXT_NL = {
     alertsSub: max => (max === 1
         ? 'Eén zoekopdracht tegelijk op een gratis account. Zet hem aan, uit of verleng hem hier.'
         : `Tot ${max} zoekopdrachten tegelijk. Zet ze aan, uit of verleng ze hier.`),
-    quotaUpgrade: 'Meer tegelijk laten lopen',
     contactShort: 'Vragen of feedback',
 
     // The one status line above the advertisements. Anything that would not
@@ -465,12 +479,6 @@ var ALERTS_TEXT_NL = {
     accountTitle: 'Mijn account',
     accountOpen: 'Mijn account',
     accountEmailLabel: 'E-mailadres',
-    accountPlanLabel: 'Abonnement',
-    accountUsageLabel: 'Zoekopdrachten',
-    accountIntervalLabel: 'Controlefrequentie',
-    accountIntervalValue: m => `Elke ${m} minuten`,
-    accountValidityLabel: 'Geldigheid',
-    accountValidityValue: d => `${d} dagen per zoekopdracht`,
     accountTelegramLabel: 'Telegram',
     accountSinceLabel: 'Lid sinds',
     accountPricingLink: 'Bekijk wat er in elk abonnement zit',
@@ -522,7 +530,7 @@ var ALERTS_TEXT_NL = {
     pricingPremiumProvisional: 'Premium is nog in de maak. Wat er precies in komt, staat nog niet vast en kan nog veranderen.',
     pricingFeatureAlerts: n => `${n} ${n === 1 ? 'zoekopdracht' : 'zoekopdrachten'} tegelijk`,
     pricingFeatureInterval: m => `Controle elke ${m} minuten`,
-    pricingFeatureIntervalFaster: (m, freeM) => `Drie keer sneller: elke ${m} minuten in plaats van ${freeM}`,
+    pricingFeatureIntervalFaster: (m, freeM) => `Sneller: elke ${m} minuten in plaats van elke ${freeM}`,
     pricingFeatureAlertsMore: (n, freeN) => `${n} zoekopdrachten tegelijk in plaats van ${freeN}`,
     pricingFeatureValidity: d => `${d} dagen geldig per zoekopdracht`,
     pricingFeatureValidityLonger: (d, freeD) => `${d} dagen geldig in plaats van ${freeD}`,
@@ -595,7 +603,7 @@ var ALERTS_TEXT_FR = {
     accountDelete: 'Supprimer le compte',
     accountDeleteConfirmTitle: 'Supprimer le compte ?',
     accountDeleteConfirmBody: 'Votre adresse e-mail, vos recherches et les annonces trouvées seront effacées. Cette action est irréversible.',
-    accountDeleteConfirmBodyPaid: 'Premium s’arrête immédiatement et votre adresse e-mail, vos recherches et les annonces trouvées seront effacées. Cette action est irréversible. Pour simplement arrêter de payer, choisissez Gérer l’abonnement.',
+    accountDeleteConfirmBodyPaid: 'Premium s’arrête immédiatement et votre adresse e-mail, vos recherches et les annonces trouvées seront effacées. Cette action est irréversible. Pour simplement arrêter de payer, résiliez sous Abonnement.',
     accountDeleteConfirmOk: 'Supprimer définitivement',
     accountDeletedToast: 'Votre compte a été supprimé.',
     tierFree: 'Gratuit',
@@ -755,12 +763,27 @@ var ALERTS_TEXT_FR = {
     checkoutWaitNotYet: 'Votre paiement n’est pas encore arrivé. Cela peut prendre une minute.',
     checkoutWaitReopen: 'Rouvrir la page de paiement',
     checkoutDoneToast: 'Premium est activé. Bonne recherche !',
-    manageButton: 'Gérer l’abonnement',
+    manageButton: 'Moyen de paiement et factures',
+    navPlan: 'Abonnement',
+    planPremiumName: 'Premium',
+    planPricePerMonth: price => `${price.toFixed(2).replace('.', ',')} € par mois`,
+    planStatusRenews: date => `Renouvellement automatique le ${date}.`,
+    planStatusEnds: date => `Résilié. Vous gardez Premium jusqu’au ${date} et ne payez plus rien ensuite.`,
+    planStatusPastDue: 'Votre dernier paiement n’a pas abouti. Nous réessayons encore quelques fois. Mettez à jour votre moyen de paiement, sinon Premium s’arrête.',
+    planStatusGranted: 'Premium vous a été offert. Il n’y a rien à payer.',
+    planStatusGrantedUntil: date => `Premium vous a été offert jusqu’au ${date}. Il n’y a rien à payer.`,
+    planCancel: 'Résilier',
+    planCancelConfirmTitle: 'Résilier Premium ?',
+    planCancelConfirmBody: (date, free) => `Vous gardez Premium jusqu’au ${date} et ne payez plus rien ensuite. À partir de là, ${free.maxAlerts === 1 ? 'une seule recherche tourne' : `${free.maxAlerts} recherches tournent`} à la fois, avec un contrôle toutes les ${free.intervalMinutes} minutes. Les autres recherches sont mises en pause, rien n’est supprimé.`,
+    planCancelConfirmOk: 'Résilier Premium',
+    planCancelConfirmKeep: 'Garder Premium',
+    planCanceledToast: 'Premium est résilié.',
+    planResume: 'Continuer avec Premium',
+    planResumedToast: 'Votre Premium continue normalement.',
+    quotaPremiumHint: premium => `Premium : ${premium.maxAlerts} à la fois, toutes les ${premium.intervalMinutes} min`,
+    quotaPremiumButton: 'Voir Premium',
+    stripPremiumHint: m => `Avec Premium, toutes les ${m} minutes`,
     manageOpening: 'Ouverture…',
-    subscriptionRenews: date => `Premium · renouvelé le ${date}`,
-    subscriptionEnds: date => `Premium · s’arrête le ${date}`,
-    subscriptionPastDue: 'Premium · paiement échoué',
-    subscriptionGrantedUntil: date => `Premium · jusqu’au ${date}`,
     pastDueTitle: 'Votre dernier paiement n’a pas abouti',
     pastDueBody: 'Premium continue pendant qu’un nouveau paiement est tenté. Mettez à jour vos données de paiement, sinon Premium s’arrête de lui-même.',
     pastDueButton: 'Mettre à jour le paiement',
@@ -782,7 +805,6 @@ var ALERTS_TEXT_FR = {
     alertsSub: max => (max === 1
         ? 'Une recherche à la fois avec un compte gratuit. Activez-la, coupez-la ou prolongez-la ici.'
         : `Jusqu’à ${max} recherches à la fois. Activez-les, coupez-les ou prolongez-les ici.`),
-    quotaUpgrade: 'En faire tourner plus à la fois',
     contactShort: 'Question ou retour',
 
     stripRunning: n => `${n} recherche${n === 1 ? '' : 's'} en cours`,
@@ -816,12 +838,6 @@ var ALERTS_TEXT_FR = {
     accountTitle: 'Mon compte',
     accountOpen: 'Mon compte',
     accountEmailLabel: 'Adresse e-mail',
-    accountPlanLabel: 'Formule',
-    accountUsageLabel: 'Recherches',
-    accountIntervalLabel: 'Fréquence de vérification',
-    accountIntervalValue: m => `Toutes les ${m} minutes`,
-    accountValidityLabel: 'Validité',
-    accountValidityValue: d => `${d} jours par recherche`,
     accountTelegramLabel: 'Telegram',
     accountSinceLabel: 'Membre depuis',
     accountPricingLink: 'Voir ce que contient chaque formule',
@@ -863,7 +879,7 @@ var ALERTS_TEXT_FR = {
     pricingPremiumProvisional: 'Premium est encore en préparation. Son contenu exact n’est pas fixé et peut encore changer.',
     pricingFeatureAlerts: n => `${n} recherche${n === 1 ? '' : 's'} à la fois`,
     pricingFeatureInterval: m => `Vérification toutes les ${m} minutes`,
-    pricingFeatureIntervalFaster: (m, freeM) => `Trois fois plus rapide : toutes les ${m} minutes au lieu de ${freeM}`,
+    pricingFeatureIntervalFaster: (m, freeM) => `Plus rapide : toutes les ${m} minutes au lieu de ${freeM}`,
     pricingFeatureAlertsMore: (n, freeN) => `${n} recherches à la fois au lieu de ${freeN}`,
     pricingFeatureValidity: d => `${d} jours de validité par recherche`,
     pricingFeatureValidityLonger: (d, freeD) => `${d} jours de validité au lieu de ${freeD}`,
@@ -1901,7 +1917,7 @@ function closeAlertsConfirm() {
  * `onConfirm` runs when the user goes through with it. Nothing happens on
  * cancel, Escape or a click on the backdrop.
  */
-function openAlertsConfirm({ title, body, confirmLabel, danger = true, onConfirm }) {
+function openAlertsConfirm({ title, body, confirmLabel, cancelLabel, danger = true, onConfirm }) {
     closeAlertsConfirm();
 
     const overlay = document.getElementById('cleanplaats-alerts-modal');
@@ -1917,7 +1933,7 @@ function openAlertsConfirm({ title, body, confirmLabel, danger = true, onConfirm
             <div class="cleanplaats-alerts-confirm-title">${escapeHtmlText(title)}</div>
             <div class="cleanplaats-alerts-confirm-body">${escapeHtmlText(body)}</div>
             <div class="cleanplaats-alerts-confirm-actions">
-                <button type="button" class="cleanplaats-alerts-secondary-btn" id="cleanplaats-alerts-confirm-cancel">${ALERTS_TEXT.confirmCancel}</button>
+                <button type="button" class="cleanplaats-alerts-secondary-btn" id="cleanplaats-alerts-confirm-cancel">${escapeHtmlText(cancelLabel || ALERTS_TEXT.confirmCancel)}</button>
                 <button type="button" class="${danger ? 'cleanplaats-alerts-danger-btn' : 'cleanplaats-alerts-primary-btn'}" id="cleanplaats-alerts-confirm-ok">${escapeHtmlText(confirmLabel)}</button>
             </div>
         </div>
@@ -2265,22 +2281,6 @@ function formatAlertsMemberSince(timestamp) {
     return new Date(timestamp).toLocaleDateString(CLEANPLAATS_ALERTS_DATE_LOCALE, { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-/**
- * The plan line on the account view. For a paid plan the date is the part
- * that matters: whether it renews or stops, and when, is what someone opens
- * this screen to find out.
- */
-function describeAlertsPlan(me) {
-    if (me.tier !== 'premium') return ALERTS_TEXT.tierFree;
-    const sub = me.subscription;
-    if (!sub) return ALERTS_TEXT.tierPremium;
-    const date = sub.currentPeriodEnd ? formatAlertsMemberSince(sub.currentPeriodEnd) : '';
-    if (sub.granted) return date ? ALERTS_TEXT.subscriptionGrantedUntil(date) : ALERTS_TEXT.tierPremium;
-    if (sub.status === 'past_due') return ALERTS_TEXT.subscriptionPastDue;
-    if (!date) return ALERTS_TEXT.tierPremium;
-    return sub.cancelAtPeriodEnd ? ALERTS_TEXT.subscriptionEnds(date) : ALERTS_TEXT.subscriptionRenews(date);
-}
-
 function alertsSubscriptionManageable(me) {
     return Boolean(me && me.tier === 'premium' && me.subscription && me.subscription.manageable);
 }
@@ -2296,20 +2296,11 @@ function renderAlertsAccountView() {
         return;
     }
 
-    const isPremium = me.tier === 'premium';
     const rows = [
         [ALERTS_TEXT.accountEmailLabel, escapeHtmlText(me.email)],
-        [ALERTS_TEXT.accountPlanLabel, describeAlertsPlan(me)],
-        [ALERTS_TEXT.accountUsageLabel, `${me.alertCount || 0} / ${me.maxAlerts}`],
-        [ALERTS_TEXT.accountIntervalLabel, ALERTS_TEXT.accountIntervalValue(me.intervalMinutes)],
         [ALERTS_TEXT.accountTelegramLabel, me.telegramLinked ? ALERTS_TEXT.telegramLinked : ALERTS_TEXT.telegramNotLinked],
         [ALERTS_TEXT.accountSinceLabel, formatAlertsMemberSince(me.createdAt)]
     ];
-
-    const validDays = me.plans?.[isPremium ? 'premium' : 'free']?.validDays;
-    if (validDays) {
-        rows.splice(4, 0, [ALERTS_TEXT.accountValidityLabel, ALERTS_TEXT.accountValidityValue(validDays)]);
-    }
 
     setAlertsBody(`
         ${alertsViewHeader(ALERTS_TEXT.accountTitle)}
@@ -2321,8 +2312,6 @@ function renderAlertsAccountView() {
                 </div>
             `).join('')}
         </div>
-        ${alertsSubscriptionManageable(me) ? buildAlertsManageButtonHtml() : ''}
-        <button type="button" class="cleanplaats-alerts-secondary-btn cleanplaats-alerts-block-btn" id="cleanplaats-alerts-open-pricing">${ALERTS_TEXT.accountPricingLink}</button>
         ${buildAlertsContactHtml()}
         <div class="cleanplaats-alerts-footer">
             <button class="cleanplaats-alerts-danger-btn" id="cleanplaats-alerts-logout">${alertIcon('logout', 16)}<span>${ALERTS_TEXT.logout}</span></button>
@@ -2335,8 +2324,6 @@ function renderAlertsAccountView() {
     wireAlertsLogout();
     wireAlertsDeleteAccount();
     wireAlertsContact();
-    wireAlertsBillingButtons(document.getElementById('cleanplaats-alerts-body'), renderAlertsAccountView);
-    document.getElementById('cleanplaats-alerts-open-pricing').onclick = renderAlertsPricingView;
 }
 
 function buildPricingPlanHtml({ name, priceLabel, current, soon, features, includesLine, note }) {
@@ -2357,12 +2344,23 @@ function buildPricingPlanHtml({ name, priceLabel, current, soon, features, inclu
     `;
 }
 
-function renderAlertsPricingView() {
-    const me = cleanplaatsAlertsRuntime.me;
-    if (!me || !me.plans) {
+/**
+ * Abonnement, in the rail for everyone: the one place that says what you have,
+ * what the other plan would add, and how to change it. Reached from anywhere
+ * that mentions Premium; a view that took over the whole body gets the shell
+ * back first.
+ */
+function openAlertsPlanView() {
+    cleanplaatsAlertsRuntime.view = 'plan';
+    if (document.getElementById('cleanplaats-alerts-main')) {
+        renderAlertsMainView();
+    } else {
         loadAlertsDashboard();
-        return;
     }
+}
+
+function buildAlertsPlanViewHtml(me) {
+    if (!me.plans) return buildAlertsViewHead(ALERTS_TEXT.navPlan);
 
     const free = me.plans.free;
     const premium = me.plans.premium;
@@ -2377,8 +2375,9 @@ function renderAlertsPricingView() {
         ALERTS_TEXT.pricingFeatureFeed
     ];
 
-    setAlertsBody(`
-        ${alertsViewHeader(ALERTS_TEXT.pricingTitle, ALERTS_TEXT.pricingIntro)}
+    return `
+        ${buildAlertsViewHead(ALERTS_TEXT.navPlan, me.tier === 'premium' ? '' : ALERTS_TEXT.pricingIntro)}
+        ${me.tier === 'premium' ? buildAlertsPlanStatusHtml(me) : ''}
         <div class="cleanplaats-alerts-plans">
             ${buildPricingPlanHtml({
                 name: ALERTS_TEXT.pricingFree,
@@ -2409,24 +2408,100 @@ function renderAlertsPricingView() {
                 note: premium.available ? '' : ALERTS_TEXT.pricingPremiumProvisional
             })}
         </div>
-        ${buildPricingActionHtml(me)}
-        ${buildAlertsContactHtml()}
-    `);
-
-    wireAlertsBackButton();
-    wireAlertsUpgradeButton();
-    wireAlertsBillingButtons(document.getElementById('cleanplaats-alerts-body'), renderAlertsPricingView);
-    wireAlertsContact();
+        ${me.tier === 'premium' ? '' : buildPricingActionHtml(me)}
+    `;
 }
 
 /**
- * Under the plans: a way to buy premium when it can be bought, the waitlist
- * while it cannot, and the way to manage it once you have it.
+ * For a paid plan the date is the part that matters: whether it renews or
+ * stops, and when, is what someone opens this screen to find out. Cancelling
+ * and undoing it happen here; card details and invoices stay at the provider.
+ */
+function buildAlertsPlanStatusHtml(me) {
+    const sub = me.subscription;
+    const date = sub && sub.currentPeriodEnd ? formatAlertsMemberSince(sub.currentPeriodEnd) : '';
+    const paying = sub && !sub.granted;
+
+    let line;
+    if (!paying) {
+        line = date ? ALERTS_TEXT.planStatusGrantedUntil(date) : ALERTS_TEXT.planStatusGranted;
+    } else if (sub.status === 'past_due') {
+        line = ALERTS_TEXT.planStatusPastDue;
+    } else if (sub.cancelAtPeriodEnd) {
+        line = ALERTS_TEXT.planStatusEnds(date);
+    } else {
+        line = ALERTS_TEXT.planStatusRenews(date);
+    }
+
+    const actions = [];
+    if (paying && sub.cancelable && sub.cancelAtPeriodEnd) {
+        actions.push(`<button type="button" class="cleanplaats-alerts-primary-btn" id="cleanplaats-alerts-plan-resume">${ALERTS_TEXT.planResume}</button>`);
+    }
+    if (alertsSubscriptionManageable(me)) {
+        actions.push(buildAlertsManageButtonHtml());
+    }
+    if (paying && sub.cancelable && !sub.cancelAtPeriodEnd) {
+        actions.push(`<button type="button" class="cleanplaats-alerts-text-btn" id="cleanplaats-alerts-plan-cancel">${ALERTS_TEXT.planCancel}</button>`);
+    }
+
+    return `
+        <div class="cleanplaats-alerts-plan-status">
+            <div class="cleanplaats-alerts-plan-status-head">
+                <span class="cleanplaats-alerts-limit-premium-icon">${alertIcon('zap', 16)}</span>
+                <span class="cleanplaats-alerts-plan-status-name">${ALERTS_TEXT.planPremiumName}</span>
+                ${paying && me.plans ? `<span class="cleanplaats-alerts-plan-status-price">${ALERTS_TEXT.planPricePerMonth(me.plans.premium.priceEur)}</span>` : ''}
+            </div>
+            <p class="cleanplaats-alerts-plan-status-line">${line}</p>
+            ${actions.length ? `<div class="cleanplaats-alerts-plan-status-actions">${actions.join('')}</div>` : ''}
+        </div>
+    `;
+}
+
+function wireAlertsPlanView() {
+    const main = document.getElementById('cleanplaats-alerts-main');
+    if (!main) return;
+    wireAlertsUpgradeButton();
+    wireAlertsBillingButtons(main, renderAlertsMainView);
+
+    const cancel = document.getElementById('cleanplaats-alerts-plan-cancel');
+    if (cancel) {
+        cancel.onclick = () => {
+            const me = cleanplaatsAlertsRuntime.me;
+            openAlertsConfirm({
+                title: ALERTS_TEXT.planCancelConfirmTitle,
+                body: ALERTS_TEXT.planCancelConfirmBody(formatAlertsMemberSince(me.subscription.currentPeriodEnd), me.plans.free),
+                confirmLabel: ALERTS_TEXT.planCancelConfirmOk,
+                cancelLabel: ALERTS_TEXT.planCancelConfirmKeep,
+                onConfirm: () => changeAlertsSubscription('cancel', cancel, ALERTS_TEXT.planCanceledToast)
+            });
+        };
+    }
+
+    const resume = document.getElementById('cleanplaats-alerts-plan-resume');
+    if (resume) {
+        resume.onclick = () => changeAlertsSubscription('resume', resume, ALERTS_TEXT.planResumedToast);
+    }
+}
+
+function changeAlertsSubscription(action, button, toast) {
+    button.disabled = true;
+    alertsApiFetch(`/api/billing/${action}`, { method: 'POST' })
+        .then(data => {
+            if (cleanplaatsAlertsRuntime.me) cleanplaatsAlertsRuntime.me.subscription = data.subscription;
+            showBubbleNotification(toast);
+            renderAlertsMainView();
+        })
+        .catch(error => {
+            button.disabled = false;
+            notifyAlertsError(error, error && error.message);
+        });
+}
+
+/**
+ * Under the plans, for someone on free: a way to buy premium when it can be
+ * bought, and the waitlist while it cannot.
  */
 function buildPricingActionHtml(me) {
-    if (me.tier === 'premium') {
-        return alertsSubscriptionManageable(me) ? buildAlertsManageButtonHtml() : '';
-    }
     if (alertsPremiumBuyable(me)) {
         return `
             ${buildAlertsBuyButtonHtml(me, 'pricing')}
@@ -2494,7 +2569,7 @@ function renderAlertsLimitView(alerts) {
     `);
 
     wireAlertsBackButton();
-    document.getElementById('cleanplaats-alerts-open-pricing')?.addEventListener('click', renderAlertsPricingView);
+    document.getElementById('cleanplaats-alerts-open-pricing')?.addEventListener('click', openAlertsPlanView);
     wireAlertsBillingButtons(document.getElementById('cleanplaats-alerts-body'));
 
     // Deleting from here should land back on the dashboard with room to spare,
@@ -2984,18 +3059,21 @@ function loadAlertsDashboard() {
  * panel opens on. Managing searches is the second tab, and there are no
  * dashboard statistics: a number that nobody acts on is furniture.
  *
- * Views inside the shell (rail stays put): matches, alerts.
- * Views that take over the whole body (own back button): account, pricing,
- * telegram, one alert's finds, the limit screen.
+ * Views inside the shell (rail stays put): matches, alerts, plan.
+ * Views that take over the whole body (own back button): account, telegram,
+ * one alert's finds, the limit screen.
  */
 var ALERTS_NAV_ITEMS = [
     { id: 'matches', icon: 'search', label: () => ALERTS_TEXT.navMatches },
     { id: 'alerts', icon: 'bell', label: () => ALERTS_TEXT.navAlerts }
 ];
+// Under Meldingen in the rail: the two above are the product, this one is the
+// account around it.
+var ALERTS_PLAN_NAV_ITEM = { id: 'plan', icon: 'zap', label: () => ALERTS_TEXT.navPlan };
 
 function alertsCurrentView() {
     const view = cleanplaatsAlertsRuntime.view;
-    return ALERTS_NAV_ITEMS.some(item => item.id === view) ? view : 'matches';
+    return [...ALERTS_NAV_ITEMS, ALERTS_PLAN_NAV_ITEM].some(item => item.id === view) ? view : 'matches';
 }
 
 /**
@@ -3222,6 +3300,7 @@ function buildAlertsStatusStripHtml(me, alerts) {
         <span class="cleanplaats-alerts-strip-sep">·</span>
         <span>${ALERTS_TEXT.checkFrequency(me.intervalMinutes)}</span>
         ${next ? `<span class="cleanplaats-alerts-strip-sep">·</span><span>${next}</span>` : ''}
+        ${me.tier !== 'premium' && me.plans ? `<span class="cleanplaats-alerts-strip-sep">·</span><button type="button" class="cleanplaats-alerts-quota-link" data-open-plan>${ALERTS_TEXT.stripPremiumHint(me.plans.premium.intervalMinutes)}</button>` : ''}
     </div>`;
 }
 
@@ -4294,6 +4373,9 @@ function renderAlertsDashboard(me, alerts, matches) {
                         ${alertIcon('send', 16)}<span>${ALERTS_TEXT.navTelegram}</span>
                         <span class="cleanplaats-alerts-nav-state ${me.telegramLinked ? 'on' : 'off'}" title="${me.telegramLinked ? ALERTS_TEXT.telegramLinked : ALERTS_TEXT.telegramNotLinked}">${me.telegramLinked ? ALERTS_TEXT.telegramLinked : ALERTS_TEXT.telegramNotLinked}</span>
                     </button>
+                    <button type="button" class="cleanplaats-alerts-nav-item" data-nav="${ALERTS_PLAN_NAV_ITEM.id}">
+                        ${alertIcon(ALERTS_PLAN_NAV_ITEM.icon, 16)}<span>${ALERTS_PLAN_NAV_ITEM.label()}</span>
+                    </button>
                 </nav>
 
                 <div class="cleanplaats-alerts-rail-foot">
@@ -4303,7 +4385,10 @@ function renderAlertsDashboard(me, alerts, matches) {
                             <span class="cleanplaats-alerts-quota-count">${used} / ${me.maxAlerts}</span>
                         </span>
                         <span class="cleanplaats-alerts-quota-bar${usedFraction >= 1 ? ' is-full' : ''}"><span style="width:${Math.round(usedFraction * 100)}%"></span></span>
-                        ${me.tier === 'premium' ? '' : `<button type="button" class="cleanplaats-alerts-quota-link" id="cleanplaats-alerts-open-pricing">${ALERTS_TEXT.quotaUpgrade}</button>`}
+                        ${me.tier !== 'premium' && me.plans ? `
+                            <span class="cleanplaats-alerts-quota-hint">${ALERTS_TEXT.quotaPremiumHint(me.plans.premium)}</span>
+                            <button type="button" class="cleanplaats-alerts-quota-cta" data-open-plan>${alertIcon('zap', 13)}<span>${ALERTS_TEXT.quotaPremiumButton}</span></button>
+                        ` : ''}
                     </div>
                     <button type="button" class="cleanplaats-alerts-text-btn cleanplaats-alerts-rail-contact" id="cleanplaats-alerts-contact-btn">${alertIcon('mail', 14)}<span>${ALERTS_TEXT.contactShort}</span></button>
                 </div>
@@ -4323,7 +4408,7 @@ function renderAlertsDashboard(me, alerts, matches) {
     });
     body.querySelector('[data-nav-view="telegram"]')?.addEventListener('click', openAlertsTelegramView);
     document.getElementById('cleanplaats-alerts-account-bar')?.addEventListener('click', renderAlertsAccountView);
-    document.getElementById('cleanplaats-alerts-open-pricing')?.addEventListener('click', renderAlertsPricingView);
+    body.querySelector('.cleanplaats-alerts-quota [data-open-plan]')?.addEventListener('click', openAlertsPlanView);
     wireAlertsContact();
 
     renderAlertsMainView();
@@ -4401,7 +4486,9 @@ function renderAlertsMainView() {
     });
 
     let html;
-    if (view === 'alerts') {
+    if (view === 'plan') {
+        html = buildAlertsPlanViewHtml(me);
+    } else if (view === 'alerts') {
         html = `
             ${buildAlertsViewHead(ALERTS_TEXT.navAlerts, ALERTS_TEXT.alertsSub(me.maxAlerts))}
             ${buildAlertsBillingNoticeHtml(me, alerts)}
@@ -4423,6 +4510,10 @@ function renderAlertsMainView() {
 
     main.innerHTML = DOMPurify.sanitize(html);
     main.scrollTop = 0;
+    main.querySelectorAll('[data-open-plan]').forEach(button => {
+        button.addEventListener('click', openAlertsPlanView);
+    });
+    if (view === 'plan') wireAlertsPlanView();
     wireAlertsMainEvents(main, view);
 }
 

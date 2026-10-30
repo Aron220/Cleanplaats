@@ -3294,6 +3294,88 @@
 
   .cleanplaats-alerts-quota-link:hover { text-decoration: underline; }
 
+  .cleanplaats-alerts-quota-hint {
+    font-size: 12px;
+    line-height: 1.4;
+    color: #6b7688;
+  }
+
+  .cleanplaats-alerts-quota-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid #f3c79c;
+    border-radius: 8px;
+    background: #fff4e8;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #b35605;
+    cursor: pointer;
+  }
+
+  .cleanplaats-alerts-quota-cta:hover { background: #ffe9d2; }
+
+  .cleanplaats-alerts-plan-status {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 16px;
+    border: 1px solid #e3e7ed;
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  .cleanplaats-alerts-plan-status-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cleanplaats-alerts-plan-status-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1f2733;
+  }
+
+  .cleanplaats-alerts-plan-status-price {
+    margin-left: auto;
+    font-size: 13px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: #4c5666;
+  }
+
+  .cleanplaats-alerts-plan-status-line {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #4c5666;
+  }
+
+  .cleanplaats-alerts-plan-status-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    margin-top: 4px;
+  }
+
+  .cleanplaats-alerts-plan-status-actions .cleanplaats-alerts-block-btn {
+    width: auto;
+    margin: 0;
+  }
+
+  .cleanplaats-alerts-strip .cleanplaats-alerts-quota-link {
+    align-self: auto;
+    font-size: inherit;
+    line-height: inherit;
+  }
+
   .cleanplaats-alerts-rail-contact {
     justify-content: flex-start;
     gap: 7px;
@@ -6599,6 +6681,20 @@
   }
 
   html.cleanplaats-dark-mode .cleanplaats-alerts-quota-link { color: #f0932f; }
+  html.cleanplaats-dark-mode .cleanplaats-alerts-quota-hint,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-plan-status-line,
+  html.cleanplaats-dark-mode .cleanplaats-alerts-plan-status-price { color: #8fa0b8; }
+  html.cleanplaats-dark-mode .cleanplaats-alerts-quota-cta {
+    border-color: #5c3d1e;
+    background: #2c2013;
+    color: #f0932f;
+  }
+  html.cleanplaats-dark-mode .cleanplaats-alerts-quota-cta:hover { background: #38291a; }
+  html.cleanplaats-dark-mode .cleanplaats-alerts-plan-status {
+    border-color: #243044;
+    background: #161f2e;
+  }
+  html.cleanplaats-dark-mode .cleanplaats-alerts-plan-status-name { color: #e6ebf2; }
 
   /* #9a5c07 is a light-mode amber: on the dark sheet it reads as mud. */
   html.cleanplaats-dark-mode .cleanplaats-alerts-cell-warn,
@@ -6735,6 +6831,8 @@
 
     .cleanplaats-alerts-quota { flex: none; padding: 7px 10px; min-width: 150px; }
     .cleanplaats-alerts-quota-link { font-size: 11.5px; }
+    .cleanplaats-alerts-quota-hint { display: none; }
+    .cleanplaats-alerts-quota-cta { padding: 4px 8px; font-size: 11.5px; }
     .cleanplaats-alerts-rail-contact { display: none; }
 
     .cleanplaats-alerts-main { padding: 18px 18px 22px; }
