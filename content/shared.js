@@ -1230,9 +1230,9 @@ var CLEANPLAATS_UPDATE_NOTES_NL = {
     '2.2.6': {
         intro: 'Nieuw in deze versie:',
         highlights: [
-            'Binnenkort haal je meer uit Zoekopdrachten: met Premium lopen er 5 tegelijk, en controleren we ze elke 5 minuten. Je kunt het dan eerst 7 dagen gratis proberen.',
+            'Haal meer uit Zoekopdrachten met Premium: 5 tegelijk, en we controleren ze elke 5 minuten. Onder Abonnement kun je het eerst 7 dagen gratis proberen.',
             'Filteren blijft gratis, net als één zoekopdracht tegelijk. Die controleren we nu elke 30 minuten in plaats van elke 15.',
-            'Je kunt je account nu zelf verwijderen, onder Mijn account.'
+            'Je kunt je account voor Zoekopdrachten nu zelf verwijderen, onder Mijn account.'
         ],
         note: null
     },
@@ -1368,9 +1368,9 @@ var CLEANPLAATS_UPDATE_NOTES_FR = {
     '2.2.6': {
         intro: 'Nouveautés de cette version :',
         highlights: [
-            'Bientôt, vous tirerez plus des Recherches : avec Premium, 5 peuvent tourner à la fois, vérifiées toutes les 5 minutes. Vous pourrez d’abord l’essayer gratuitement pendant 7 jours.',
+            'Tirez plus des Recherches avec Premium : 5 à la fois, vérifiées toutes les 5 minutes. Sous Abonnement, vous pouvez d’abord l’essayer gratuitement pendant 7 jours.',
             'Le filtrage reste gratuit, tout comme une recherche à la fois. Nous la vérifions maintenant toutes les 30 minutes au lieu de 15.',
-            'Vous pouvez maintenant supprimer vous-même votre compte, sous Mon compte.'
+            'Vous pouvez maintenant supprimer vous-même votre compte pour les Recherches, sous Mon compte.'
         ],
         note: null
     },
