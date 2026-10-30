@@ -404,6 +404,13 @@ var ALERTS_TEXT_NL = {
     trialStarting: 'Starten…',
     trialFinePrint: days => `Geen betaalgegevens nodig. Na ${days} dagen ga je vanzelf terug naar Gratis, je betaalt niets.`,
     trialStartedToast: 'Je proefperiode loopt.',
+    withdrawButton: 'Hier de overeenkomst ontbinden',
+    withdrawHint: date => `Bedenktijd: tot en met ${date} kun je zonder reden herroepen en krijg je het hele bedrag terug.`,
+    withdrawConfirmTitle: 'Overeenkomst ontbinden?',
+    withdrawConfirmBody: 'Je Premium stopt meteen en je krijgt het hele bedrag terug op je rekening. Je krijgt hiervan een bevestiging per mail.',
+    withdrawConfirmOk: 'Ontbinding bevestigen',
+    withdrawConfirmKeep: 'Premium houden',
+    withdrawDoneToast: 'Je overeenkomst is ontbonden. De bevestiging staat in je mail.',
     planCancel: 'Opzeggen',
     planCancelConfirmTitle: 'Premium opzeggen?',
     planCancelConfirmBody: (date, free) => `Je houdt Premium tot ${date} en betaalt daarna niets meer. Vanaf dan ${free.maxAlerts === 1 ? 'loopt er één zoekopdracht' : `lopen er ${free.maxAlerts} zoekopdrachten`} tegelijk, en controleren we elke ${free.intervalMinutes} minuten. Andere zoekopdrachten gaan op pauze, er wordt niets verwijderd.`,
@@ -784,6 +791,13 @@ var ALERTS_TEXT_FR = {
     trialStarting: 'Démarrage…',
     trialFinePrint: days => `Aucune donnée de paiement requise. Après ${days} jours, vous revenez automatiquement à la formule gratuite, sans rien payer.`,
     trialStartedToast: 'Votre essai a commencé.',
+    withdrawButton: 'Se rétracter du contrat ici',
+    withdrawHint: date => `Délai de rétractation : jusqu’au ${date} inclus, vous pouvez vous rétracter sans motif et récupérer la totalité du montant.`,
+    withdrawConfirmTitle: 'Se rétracter du contrat ?',
+    withdrawConfirmBody: 'Premium s’arrête immédiatement et la totalité du montant vous est remboursée. Vous recevrez une confirmation par e-mail.',
+    withdrawConfirmOk: 'Confirmer la rétractation',
+    withdrawConfirmKeep: 'Garder Premium',
+    withdrawDoneToast: 'Votre rétractation est enregistrée. La confirmation est dans votre boîte mail.',
     planCancel: 'Résilier',
     planCancelConfirmTitle: 'Résilier Premium ?',
     planCancelConfirmBody: (date, free) => `Vous gardez Premium jusqu’au ${date} et ne payez plus rien ensuite. À partir de là, ${free.maxAlerts === 1 ? 'une seule recherche tourne' : `${free.maxAlerts} recherches tournent`} à la fois, avec un contrôle toutes les ${free.intervalMinutes} minutes. Les autres recherches sont mises en pause, rien n’est supprimé.`,
@@ -2475,6 +2489,12 @@ function buildAlertsPlanStatusHtml(me) {
             </div>
             <p class="cleanplaats-alerts-plan-status-line">${line}</p>
             ${actions.length ? `<div class="cleanplaats-alerts-plan-status-actions">${actions.join('')}</div>` : ''}
+            ${paying && sub.withdrawUntil ? `
+                <div class="cleanplaats-alerts-plan-status-withdraw">
+                    <p>${ALERTS_TEXT.withdrawHint(formatAlertsMemberSince(sub.withdrawUntil))}</p>
+                    <button type="button" class="cleanplaats-alerts-secondary-btn" id="cleanplaats-alerts-plan-withdraw">${ALERTS_TEXT.withdrawButton}</button>
+                </div>
+            ` : ''}
         </div>
     `;
 }
@@ -2495,6 +2515,30 @@ function wireAlertsPlanView() {
                 confirmLabel: ALERTS_TEXT.planCancelConfirmOk,
                 cancelLabel: ALERTS_TEXT.planCancelConfirmKeep,
                 onConfirm: () => changeAlertsSubscription('cancel', cancel, ALERTS_TEXT.planCanceledToast)
+            });
+        };
+    }
+
+    const withdraw = document.getElementById('cleanplaats-alerts-plan-withdraw');
+    if (withdraw) {
+        withdraw.onclick = () => {
+            openAlertsConfirm({
+                title: ALERTS_TEXT.withdrawConfirmTitle,
+                body: ALERTS_TEXT.withdrawConfirmBody,
+                confirmLabel: ALERTS_TEXT.withdrawConfirmOk,
+                cancelLabel: ALERTS_TEXT.withdrawConfirmKeep,
+                onConfirm: () => {
+                    withdraw.disabled = true;
+                    alertsApiFetch('/api/billing/withdraw', { method: 'POST' })
+                        .then(() => {
+                            showBubbleNotification(ALERTS_TEXT.withdrawDoneToast);
+                            loadAlertsDashboard();
+                        })
+                        .catch(error => {
+                            withdraw.disabled = false;
+                            notifyAlertsError(error, error && error.message);
+                        });
+                }
             });
         };
     }
