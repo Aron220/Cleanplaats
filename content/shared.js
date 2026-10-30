@@ -1230,9 +1230,9 @@ var CLEANPLAATS_UPDATE_NOTES_NL = {
     '2.2.6': {
         intro: 'Nieuw in deze versie:',
         highlights: [
-            'Zoekopdrachten heeft nu een eigen plek voor je abonnement. Onder Abonnement zie je wat Gratis en Premium bieden, en daar kun je Premium straks 7 dagen gratis proberen.',
-            'Gratis zoekopdrachten worden nu elke 30 minuten gecontroleerd in plaats van elke 15. Je blijft één zoekopdracht tegelijk houden, en alle filters blijven gratis.',
-            'Je kunt je account nu zelf verwijderen, onder Mijn account.'
+            'Je kunt je account nu zelf verwijderen, onder Mijn account.',
+            'Zoekopdrachten heeft een nieuw onderdeel Abonnement. Filteren blijft gratis.',
+            'Gebruik je Zoekopdrachten gratis? Die controleren we nu elke 30 minuten in plaats van elke 15.'
         ],
         note: null
     },
@@ -1368,9 +1368,9 @@ var CLEANPLAATS_UPDATE_NOTES_FR = {
     '2.2.6': {
         intro: 'Nouveautés de cette version :',
         highlights: [
-            'Les Recherches ont maintenant un espace pour votre abonnement. Sous Abonnement, vous voyez ce qu’offrent les formules Gratuit et Premium, et vous pourrez bientôt y essayer Premium gratuitement pendant 7 jours.',
-            'Les recherches gratuites sont maintenant vérifiées toutes les 30 minutes au lieu de 15. Vous gardez une recherche à la fois, et tous les filtres restent gratuits.',
-            'Vous pouvez maintenant supprimer vous-même votre compte, sous Mon compte.'
+            'Vous pouvez maintenant supprimer vous-même votre compte, sous Mon compte.',
+            'Les Recherches ont une nouvelle rubrique Abonnement. Le filtrage reste gratuit.',
+            'Vous utilisez les Recherches gratuitement ? Nous les vérifions maintenant toutes les 30 minutes au lieu de 15.'
         ],
         note: null
     },
