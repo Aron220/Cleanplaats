@@ -535,6 +535,7 @@ var ALERTS_TEXT_NL = {
     pricingFeatureValidity: d => `${d} dagen geldig per zoekopdracht`,
     pricingFeatureValidityLonger: (d, freeD) => `${d} dagen geldig in plaats van ${freeD}`,
     pricingFeatureTelegram: 'Meldingen via Telegram',
+    pricingFeatureNoAds: 'Betaalde advertenties weg, ook in je meldingen',
     pricingFeatureFilters: 'Je Cleanplaats-filters werken door in je meldingen',
     pricingFeatureBlocklist: 'Geblokkeerde verkopers en woorden tellen mee',
     pricingFeatureOneClick: `Zoekopdracht aanzetten vanaf je zoekresultaten op ${CLEANPLAATS_ALERTS_SITE_NAME}`,
@@ -884,6 +885,7 @@ var ALERTS_TEXT_FR = {
     pricingFeatureValidity: d => `${d} jours de validité par recherche`,
     pricingFeatureValidityLonger: (d, freeD) => `${d} jours de validité au lieu de ${freeD}`,
     pricingFeatureTelegram: 'Notifications via Telegram',
+    pricingFeatureNoAds: 'Plus d’annonces payantes, y compris dans vos notifications',
     pricingFeatureFilters: 'Vos filtres Cleanplaats s’appliquent à vos notifications',
     pricingFeatureBlocklist: 'Les vendeurs et termes bloqués comptent aussi',
     pricingFeatureOneClick: `Activer une recherche depuis vos résultats sur ${CLEANPLAATS_ALERTS_SITE_NAME}`,
@@ -2368,6 +2370,7 @@ function buildAlertsPlanViewHtml(me) {
     // Repeating five identical lines under a price only made the paid column
     // longer, and buried the three lines that are the actual offer.
     const sharedFeatures = [
+        ALERTS_TEXT.pricingFeatureNoAds,
         ALERTS_TEXT.pricingFeatureTelegram,
         ALERTS_TEXT.pricingFeatureOneClick,
         ALERTS_TEXT.pricingFeatureFilters,
