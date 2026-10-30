@@ -396,8 +396,8 @@ var ALERTS_TEXT_NL = {
     planStatusRenews: date => `Verlengt automatisch op ${date}.`,
     planStatusEnds: date => `Opgezegd. Je houdt Premium tot ${date} en betaalt daarna niets meer.`,
     planStatusPastDue: 'Je laatste betaling is niet gelukt. We proberen het nog een paar keer. Werk je betaalmethode bij, anders stopt Premium.',
-    planStatusGranted: 'Je hebt Premium gekregen. Er valt niets te betalen.',
-    planStatusGrantedUntil: date => `Je hebt Premium gekregen, tot ${date}. Er valt niets te betalen.`,
+    planStatusGranted: 'Je hebt Premium cadeau gekregen, dus je betaalt niets.',
+    planStatusGrantedUntil: date => `Je hebt Premium cadeau gekregen tot ${date}, dus je betaalt niets.`,
     planCancel: 'Opzeggen',
     planCancelConfirmTitle: 'Premium opzeggen?',
     planCancelConfirmBody: (date, free) => `Je houdt Premium tot ${date} en betaalt daarna niets meer. Vanaf dan ${free.maxAlerts === 1 ? 'loopt er één zoekopdracht' : `lopen er ${free.maxAlerts} zoekopdrachten`} tegelijk, en controleren we elke ${free.intervalMinutes} minuten. Andere zoekopdrachten gaan op pauze, er wordt niets verwijderd.`,
@@ -509,8 +509,7 @@ var ALERTS_TEXT_NL = {
     limitPremiumTitle: 'Meer tegelijk laten lopen?',
     limitPremiumBody: (plan, freePlan) => `Premium geeft je ${plan.maxAlerts} zoekopdrachten in plaats van ` +
         `${freePlan.maxAlerts}, en controleert elke ${plan.intervalMinutes} minuten in plaats van ` +
-        `${freePlan.intervalMinutes}. Het is er nog niet en wat er precies in komt kan nog veranderen, ` +
-        'maar we laten het weten zodra het zover is.',
+        `${freePlan.intervalMinutes}. Het is bijna te koop, en we laten het weten zodra het zover is.`,
     limitPremiumBodyAvailable: (plan, freePlan) => `Premium geeft je ${plan.maxAlerts} zoekopdrachten in plaats van ` +
         `${freePlan.maxAlerts}, en controleert elke ${plan.intervalMinutes} minuten in plaats van ${freePlan.intervalMinutes}.`,
     limitFreedToast: 'Er is weer ruimte. Zet je nieuwe zoekopdracht aan.',
@@ -527,7 +526,7 @@ var ALERTS_TEXT_NL = {
     pricingPremiumIncludes: 'Alles uit Gratis, plus:',
     // Nothing here is sold yet, so the list is a plan and not a promise. Saying
     // that on the card itself is cheaper than disappointing someone later.
-    pricingPremiumProvisional: 'Premium is nog in de maak. Wat er precies in komt, staat nog niet vast en kan nog veranderen.',
+    pricingPremiumProvisional: 'Bijna te koop. Laat je op de hoogte houden, dan hoor je het als eerste.',
     pricingFeatureAlerts: n => `${n} ${n === 1 ? 'zoekopdracht' : 'zoekopdrachten'} tegelijk`,
     pricingFeatureInterval: m => `Controle elke ${m} minuten`,
     pricingFeatureIntervalFaster: (m, freeM) => `Sneller: elke ${m} minuten in plaats van elke ${freeM}`,
@@ -771,8 +770,8 @@ var ALERTS_TEXT_FR = {
     planStatusRenews: date => `Renouvellement automatique le ${date}.`,
     planStatusEnds: date => `Résilié. Vous gardez Premium jusqu’au ${date} et ne payez plus rien ensuite.`,
     planStatusPastDue: 'Votre dernier paiement n’a pas abouti. Nous réessayons encore quelques fois. Mettez à jour votre moyen de paiement, sinon Premium s’arrête.',
-    planStatusGranted: 'Premium vous a été offert. Il n’y a rien à payer.',
-    planStatusGrantedUntil: date => `Premium vous a été offert jusqu’au ${date}. Il n’y a rien à payer.`,
+    planStatusGranted: 'Premium vous est offert, vous n’avez donc rien à payer.',
+    planStatusGrantedUntil: date => `Premium vous est offert jusqu’au ${date}, vous n’avez donc rien à payer.`,
     planCancel: 'Résilier',
     planCancelConfirmTitle: 'Résilier Premium ?',
     planCancelConfirmBody: (date, free) => `Vous gardez Premium jusqu’au ${date} et ne payez plus rien ensuite. À partir de là, ${free.maxAlerts === 1 ? 'une seule recherche tourne' : `${free.maxAlerts} recherches tournent`} à la fois, avec un contrôle toutes les ${free.intervalMinutes} minutes. Les autres recherches sont mises en pause, rien n’est supprimé.`,
@@ -865,8 +864,7 @@ var ALERTS_TEXT_FR = {
     limitPremiumTitle: 'En faire tourner plus à la fois ?',
     limitPremiumBody: (plan, freePlan) => `Premium vous donne ${plan.maxAlerts} recherches au lieu de ` +
         `${freePlan.maxAlerts}, et vérifie toutes les ${plan.intervalMinutes} minutes au lieu de ` +
-        `${freePlan.intervalMinutes}. Ce n’est pas encore disponible et son contenu exact peut encore changer, ` +
-        'mais nous vous préviendrons le moment venu.',
+        `${freePlan.intervalMinutes}. C’est bientôt en vente, et nous vous préviendrons le moment venu.`,
     limitPremiumBodyAvailable: (plan, freePlan) => `Premium vous donne ${plan.maxAlerts} recherches au lieu de ` +
         `${freePlan.maxAlerts}, et vérifie toutes les ${plan.intervalMinutes} minutes au lieu de ${freePlan.intervalMinutes}.`,
     limitFreedToast: 'Il y a de la place à nouveau. Activez votre nouvelle recherche.',
@@ -877,7 +875,7 @@ var ALERTS_TEXT_FR = {
     pricingFree: 'Gratuit',
     pricingPremium: 'Premium',
     pricingPremiumIncludes: 'Tout ce que contient Gratuit, plus :',
-    pricingPremiumProvisional: 'Premium est encore en préparation. Son contenu exact n’est pas fixé et peut encore changer.',
+    pricingPremiumProvisional: 'Bientôt en vente. Demandez à être prévenu, vous le saurez en premier.',
     pricingFeatureAlerts: n => `${n} recherche${n === 1 ? '' : 's'} à la fois`,
     pricingFeatureInterval: m => `Vérification toutes les ${m} minutes`,
     pricingFeatureIntervalFaster: (m, freeM) => `Plus rapide : toutes les ${m} minutes au lieu de ${freeM}`,
@@ -2406,9 +2404,8 @@ function buildAlertsPlanViewHtml(me) {
                     ALERTS_TEXT.pricingFeatureAlertsMore(premium.maxAlerts, free.maxAlerts),
                     ALERTS_TEXT.pricingFeatureValidityLonger(premium.validDays, free.validDays)
                 ],
-                // Only while it is still a plan: once premium can be bought,
-                // the list has to stand as it is.
-                note: premium.available ? '' : ALERTS_TEXT.pricingPremiumProvisional
+                // Only for someone who could still be waiting for it.
+                note: premium.available || me.tier === 'premium' ? '' : ALERTS_TEXT.pricingPremiumProvisional
             })}
         </div>
         ${me.tier === 'premium' ? '' : buildPricingActionHtml(me)}
