@@ -4382,6 +4382,19 @@
     margin-top: 0;
   }
 
+  /* width: 100% in the single-column views and on a phone, so the padding has
+     to count towards it or the box runs out of the card. */
+  .cleanplaats-alerts-create,
+  .cleanplaats-alerts-create .cleanplaats-alerts-form-row input {
+    box-sizing: border-box;
+  }
+
+  .cleanplaats-alerts-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
   .cleanplaats-alerts-create-note {
     margin-top: 8px;
     font-size: 12px;

@@ -214,6 +214,14 @@ var ALERTS_TEXT_NL = {
     createButton: 'Zoekopdracht maken',
     labelPlaceholder: 'Zoekterm, bijv. iphone 15 pro',
     createTermMissing: 'Vul een zoekterm in.',
+    detailsSearch: 'Zoekopdracht',
+    editButton: 'Bewerken',
+    editOtherSite: site => `Bewerken kan op ${site}`,
+    editTitle: 'Zoekopdracht bewerken',
+    editSaveButton: 'Opslaan',
+    editNote: 'Verander je de zoekterm of filters? Dan kijken we eerst wat er nu al staat. Je krijgt alleen een melding van wat er daarna bij komt.',
+    editedToast: 'Zoekopdracht aangepast.',
+    editedSearchToast: 'Zoekopdracht aangepast. We kijken eerst wat er nu al staat, daarna krijg je een melding zodra er iets nieuws bij komt.',
     createContextHint: `De filters van je zoekresultaten op ${CLEANPLAATS_ALERTS_SITE_NAME} staan hieronder al ingevuld.`,
     createBroadWarning: count => `Deze zoekopdracht is breed: ${count.toLocaleString(CLEANPLAATS_ALERTS_NUMBER_LOCALE)} advertenties. ` +
         'Je krijgt er waarschijnlijk veel meldingen van. Verfijn hem eerst met een prijs, categorie of afstand.',
@@ -627,6 +635,14 @@ var ALERTS_TEXT_FR = {
     createButton: 'Créer la recherche',
     labelPlaceholder: 'Terme, par ex. iphone 15 pro',
     createTermMissing: 'Saisissez un terme de recherche.',
+    detailsSearch: 'Recherche',
+    editButton: 'Modifier',
+    editOtherSite: site => `Modifiable sur ${site}`,
+    editTitle: 'Modifier la recherche',
+    editSaveButton: 'Enregistrer',
+    editNote: 'Vous changez le terme ou les filtres ? Nous regardons d’abord ce qui est déjà en ligne. Vous ne recevez une notification que pour ce qui arrive ensuite.',
+    editedToast: 'Recherche modifiée.',
+    editedSearchToast: 'Recherche modifiée. Nous regardons d’abord ce qui est déjà en ligne, ensuite vous recevez une notification dès qu’il y a du nouveau.',
     createContextHint: `Les filtres de vos résultats sur ${CLEANPLAATS_ALERTS_SITE_NAME} sont déjà repris ci-dessous.`,
     createBroadWarning: count => `Cette recherche est large : ${count.toLocaleString(CLEANPLAATS_ALERTS_NUMBER_LOCALE)} annonces. ` +
         'Vous en recevrez probablement beaucoup de notifications. Affinez-la d’abord avec un prix, une catégorie ou une distance.',
@@ -978,6 +994,7 @@ var ALERTS_ICONS = {
     close: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
     image: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>',
     filter: '<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>',
+    pencil: '<path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
     chevron: '<path d="m6 9 6 6 6-6"/>',
     check: '<path d="M20 6 9 17l-5-5"/>',
     clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
@@ -1656,6 +1673,7 @@ function hideAlertsModal() {
     // during this one, so what we just looked at is no longer "NIEUW".
     cleanplaatsAlertsRuntime.matchesSeenAt = null;
     cleanplaatsAlertsRuntime.openAlertMatchesId = null;
+    cleanplaatsAlertsRuntime.editingAlert = null;
     // A half-filled create box is about the page it was opened on. Next time
     // that could be a different search entirely, so it starts over.
     resetAlertCreateDraft();
@@ -3102,6 +3120,14 @@ function loadAlertsDashboard() {
     // Leaving a per-alert view: anything still in flight for it is now stale.
     cleanplaatsAlertsRuntime.openAlertMatchesId = null;
 
+    // The edit view borrows the create box's draft. Handing it back empty lets
+    // the box seed itself from the page again, instead of opening on the alert
+    // that was just edited.
+    if (cleanplaatsAlertsRuntime.editingAlert) {
+        cleanplaatsAlertsRuntime.editingAlert = null;
+        resetAlertCreateDraft();
+    }
+
     const body = document.getElementById('cleanplaats-alerts-body');
     if (!body) return;
 
@@ -3777,6 +3803,25 @@ function seedAlertCreateDraftFromContext(context) {
     const pageParams = context && context.searchParams;
     if (!pageParams) return;
 
+    fillAlertDraftFromSearchParams(draft, pageParams);
+
+    // The category keys sit in the path of the page we came from, and they are
+    // what the alert's own link gets rebuilt from. The first facet response
+    // replaces them with the site's, so a wrong guess corrects itself.
+    const pathKeys = window.location.pathname.match(/^\/l\/([^/]+)(?:\/([^/]+))?/) || [];
+    if (draft.l1CategoryId && pathKeys[1]) draft.l1Key = pathKeys[1];
+    if (draft.l2CategoryId && pathKeys[2] && pathKeys[2] !== 'p') draft.l2Key = pathKeys[2];
+
+    // Filters that came across belong on screen, not folded away: the point of
+    // showing them is that the user knows what the alert will actually watch.
+    if (countAlertCreateFilters(draft) > 0) cleanplaatsAlertsRuntime.createFilterOpen = true;
+}
+
+/**
+ * Search params into the draft's controls: the ones a page hands over and the
+ * ones an existing alert has stored, which are the same shape.
+ */
+function fillAlertDraftFromSearchParams(draft, pageParams) {
     if (pageParams.l1CategoryId) draft.l1CategoryId = String(pageParams.l1CategoryId);
     if (pageParams.l2CategoryId) draft.l2CategoryId = String(pageParams.l2CategoryId);
     if (pageParams.postcode) draft.postcode = String(pageParams.postcode);
@@ -3804,18 +3849,9 @@ function seedAlertCreateDraftFromContext(context) {
     }
     if (Array.isArray(pageParams.attributesByKey)) {
         draft.attributesByKey = pageParams.attributesByKey.map(String);
+    } else if (pageParams.attributesByKey) {
+        draft.attributesByKey = [String(pageParams.attributesByKey)];
     }
-
-    // The category keys sit in the path of the page we came from, and they are
-    // what the alert's own link gets rebuilt from. The first facet response
-    // replaces them with the site's, so a wrong guess corrects itself.
-    const pathKeys = window.location.pathname.match(/^\/l\/([^/]+)(?:\/([^/]+))?/) || [];
-    if (draft.l1CategoryId && pathKeys[1]) draft.l1Key = pathKeys[1];
-    if (draft.l2CategoryId && pathKeys[2] && pathKeys[2] !== 'p') draft.l2Key = pathKeys[2];
-
-    // Filters that came across belong on screen, not folded away: the point of
-    // showing them is that the user knows what the alert will actually watch.
-    if (countAlertCreateFilters(draft) > 0) cleanplaatsAlertsRuntime.createFilterOpen = true;
 }
 
 /**
@@ -4390,6 +4426,8 @@ function buildAlertsTableHtml(alerts, me) {
                    ${alertIcon('send', 14)}<span class="cleanplaats-alerts-switch-label">${ALERTS_TEXT.channelTelegram}</span><span class="cleanplaats-alerts-switch-track"></span>
                </button>`;
 
+        const editControl = buildAlertEditControlHtml(alert, currentSite);
+
         const extendBtn = (validity && validity.soon && !expired)
             ? `<button class="cleanplaats-alerts-extend-btn" data-alert-id="${alert.id}" data-extend="1">${ALERTS_TEXT.extendButton}</button>`
             : '';
@@ -4415,6 +4453,11 @@ function buildAlertsTableHtml(alerts, me) {
                             <span class="cleanplaats-alerts-details-label">${ALERTS_TEXT.detailsChannel}</span>
                             <span class="cleanplaats-alerts-details-controls">${telegramSwitch}${extendBtn}</span>
                         </div>
+                        ${editControl ? `
+                        <div class="cleanplaats-alerts-details-row">
+                            <span class="cleanplaats-alerts-details-label">${ALERTS_TEXT.detailsSearch}</span>
+                            <span class="cleanplaats-alerts-details-controls">${editControl}</span>
+                        </div>` : ''}
                         ${buildAlertFilterBlockHtml(alert)}
                         <div class="cleanplaats-alerts-details-row cleanplaats-alerts-details-row-danger">
                             <span class="cleanplaats-alerts-details-label">${ALERTS_TEXT.detailsRemove}</span>
@@ -4444,6 +4487,158 @@ function buildAlertsTableHtml(alerts, me) {
             ${rows}
         </div>
     `;
+}
+
+// The stored search, or null for a server that does not send it yet (the
+// extension can update first) or a row we cannot read.
+function parseAlertSearchParams(alert) {
+    try {
+        const params = JSON.parse(alert.search_params_json);
+        return params && typeof params === 'object' ? params : null;
+    } catch (error) {
+        return null;
+    }
+}
+
+/**
+ * The form asks this page for its counts and categories, and the search API is
+ * only reachable from the site it belongs to. So an alert from another site is
+ * edited over there, and the row links to it rather than showing a form that
+ * would describe the wrong marketplace.
+ */
+function buildAlertEditControlHtml(alert, currentSite) {
+    if (!parseAlertSearchParams(alert)) return '';
+
+    const alertSite = alert.site || 'marktplaats';
+    if (alertSite === currentSite) {
+        return `<button type="button" class="cleanplaats-alerts-secondary-btn cleanplaats-alerts-edit-btn" data-edit-alert="${alert.id}">${alertIcon('pencil', 14)}<span>${ALERTS_TEXT.editButton}</span></button>`;
+    }
+    const text = escapeHtmlText(ALERTS_TEXT.editOtherSite(getAlertsSiteName(alertSite)));
+    return alert.search_url
+        ? `<a class="cleanplaats-alerts-subview-link" href="${escapeHtmlText(alert.search_url)}">${text}</a>`
+        : `<span class="cleanplaats-alerts-create-note">${text}</span>`;
+}
+
+/**
+ * Changing an existing alert, in the same controls that made it. They all read
+ * and write the one draft on the runtime, so this view fills that draft from the
+ * alert, and loadAlertsDashboard() clears it again on the way out.
+ */
+function renderAlertEditView(alertId) {
+    const alert = (cleanplaatsAlertsRuntime.cachedAlerts || [])
+        .find(item => String(item.id) === String(alertId));
+    const params = alert && parseAlertSearchParams(alert);
+    if (!params) {
+        loadAlertsDashboard();
+        return;
+    }
+
+    resetAlertCreateDraft();
+    const draft = getAlertCreateDraft();
+    fillAlertDraftFromSearchParams(draft, params);
+
+    // The link is the only place the category slugs are stored. An alert without
+    // them gets them from the first facet response.
+    let linkPath = '';
+    try {
+        linkPath = new URL(alert.search_url).pathname;
+    } catch (error) {
+        /* no link on this alert */
+    }
+    const linkKeys = linkPath.match(/^\/l\/([^/]+)(?:\/([^/]+))?/) || [];
+    if (draft.l1CategoryId && linkKeys[1]) draft.l1Key = linkKeys[1];
+    if (draft.l2CategoryId && linkKeys[2] && linkKeys[2] !== 'p') draft.l2Key = linkKeys[2];
+
+    // The box holds the search term. A category alert has none, so it shows the
+    // name and alertCreateQueryTerm() keeps that name out of the search, the
+    // same way the create box does on a category page.
+    const term = String(params.query || alert.label || '').trim();
+    cleanplaatsAlertsRuntime.createLabelOnly = params.query ? '' : term;
+    // Price and location are what people come here to change.
+    cleanplaatsAlertsRuntime.createFilterOpen = true;
+    // What the controls make of the alert before anyone touches them. An old
+    // alert can differ from that in ways that mean nothing (a parameter the site
+    // ignores, a space in a postcode), and comparing against the stored search
+    // would restart its baseline over a change nobody made.
+    cleanplaatsAlertsRuntime.editingAlert = {
+        id: String(alert.id),
+        term,
+        paramsKey: JSON.stringify(buildAlertCreateSearchParams(draft, alertCreateQueryTerm(term)))
+    };
+
+    const body = setAlertsBody(`
+        ${alertsViewHeader(ALERTS_TEXT.editTitle, escapeHtmlText(alert.label))}
+        <section class="cleanplaats-alerts-create">
+            <div class="cleanplaats-alerts-form-row">
+                <input type="text" id="cleanplaats-alert-label-input" value="${escapeHtmlText(term)}" placeholder="${ALERTS_TEXT.labelPlaceholder}" maxlength="120" aria-label="${ALERTS_TEXT.editTitle}">
+                <button id="cleanplaats-alert-save" class="cleanplaats-alerts-primary-btn">${ALERTS_TEXT.editSaveButton}</button>
+            </div>
+            <div class="cleanplaats-alerts-create-note">${ALERTS_TEXT.editNote}</div>
+            ${buildAlertCreateFilterHtml()}
+            <div class="cleanplaats-alerts-create-count" id="cleanplaats-alert-result-count" hidden></div>
+            <div class="cleanplaats-alerts-create-warning" id="cleanplaats-alert-broad-warning" hidden></div>
+        </section>
+    `);
+    if (!body) return;
+    wireAlertsBackButton();
+    wireAlertCreateFilters(body);
+    body.querySelector('#cleanplaats-alert-label-input')
+        ?.addEventListener('input', () => scheduleAlertCreateRefresh());
+    body.querySelector('#cleanplaats-alert-save')?.addEventListener('click', saveAlertEdit);
+    refreshAlertCreateFacets();
+}
+
+/**
+ * Sends only what changed. The server restarts an alert's baseline when its
+ * search changes, so an untouched search stays out of the request altogether,
+ * and pressing Opslaan on nothing does nothing.
+ */
+function saveAlertEdit() {
+    const editing = cleanplaatsAlertsRuntime.editingAlert;
+    const saveButton = document.getElementById('cleanplaats-alert-save');
+    const labelInput = document.getElementById('cleanplaats-alert-label-input');
+    if (!editing || !saveButton || !labelInput) return;
+
+    const term = labelInput.value.trim();
+    const draft = getAlertCreateDraft();
+    const query = alertCreateQueryTerm(term);
+    const searchParams = buildAlertCreateSearchParams(draft, query);
+    if (!term || Object.keys(searchParams).length === 0) {
+        showBubbleNotification(ALERTS_TEXT.createTermMissing);
+        labelInput.focus();
+        return;
+    }
+
+    const payload = {};
+    if (term !== editing.term) payload.label = term;
+    if (JSON.stringify(searchParams) !== editing.paramsKey) {
+        payload.searchParams = searchParams;
+        // Without the category's slug the rebuilt link would be a text search
+        // for the whole site. Keeping the old link is the smaller mistake, and
+        // this only happens if saved before the first facet response.
+        const slugKnown = !draft.l1CategoryId || draft.l1Key || alertCategoryKeyFor(draft.l1CategoryId);
+        if (slugKnown) payload.searchUrl = buildAlertSearchUrl(draft, query);
+    }
+
+    if (Object.keys(payload).length === 0) {
+        loadAlertsDashboard();
+        return;
+    }
+
+    saveButton.disabled = true;
+    alertsApiFetch(`/api/alerts/${editing.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload)
+    }).then(response => {
+        showBubbleNotification(response && response.searchChanged
+            ? ALERTS_TEXT.editedSearchToast
+            : ALERTS_TEXT.editedToast);
+        cleanplaatsAlertsRuntime.view = 'alerts';
+        loadAlertsDashboard();
+    }).catch(error => {
+        saveButton.disabled = false;
+        notifyAlertsError(error, error && error.message);
+    });
 }
 
 function renderAlertsDashboard(me, alerts, matches) {
@@ -4934,6 +5129,10 @@ function wireAlertsRowToggles(main) {
 }
 
 function wireAlertsRowControls(main) {
+    main.querySelectorAll('[data-edit-alert]').forEach(button => {
+        button.onclick = () => renderAlertEditView(button.dataset.editAlert);
+    });
+
     main.querySelectorAll('.cleanplaats-alerts-delete').forEach(button => {
         button.onclick = () => {
             openAlertsConfirm({
