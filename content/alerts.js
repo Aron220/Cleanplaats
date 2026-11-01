@@ -124,10 +124,6 @@ var cleanplaatsAlertsRuntime = {
     // dashboard repaints from what is already here instead of asking the site
     // the same question again.
     createFacetsKey: '',
-    // Set when the label input was prefilled with a name rather than a search
-    // term (a category page has no term). While the input still reads exactly
-    // this, it names the alert and nothing more. See alertCreateQueryTerm().
-    createLabelOnly: '',
     // One render's worth of "start over": set after a create so the box does not
     // immediately fill itself back up from the page behind the panel.
     createCleared: false,
@@ -212,8 +208,9 @@ var ALERTS_TEXT_NL = {
     checkFrequency: m => `Controleert elke ${m} minuten`,
     createTitle: 'Maak een zoekopdracht',
     createButton: 'Zoekopdracht maken',
-    labelPlaceholder: 'Zoekterm, bijv. iphone 15 pro',
-    createTermMissing: 'Vul een zoekterm in.',
+    labelPlaceholder: 'Zoekterm (optioneel), bijv. iphone 15 pro',
+    createTermMissing: 'Vul een zoekterm in of kies een categorie.',
+    createMainCategoryTooBroad: 'Een hele hoofdcategorie geeft te veel meldingen. Kies er een subcategorie, prijs of afstand bij, of vul een zoekterm in.',
     detailsSearch: 'Zoekopdracht',
     editButton: 'Bewerken',
     editOtherSite: site => `Bewerken kan op ${site}`,
@@ -224,7 +221,7 @@ var ALERTS_TEXT_NL = {
     editedSearchToast: 'Zoekopdracht aangepast. We kijken eerst wat er nu al staat, daarna krijg je een melding zodra er iets nieuws bij komt.',
     createContextHint: `De filters van je zoekresultaten op ${CLEANPLAATS_ALERTS_SITE_NAME} staan hieronder al ingevuld.`,
     createBroadWarning: count => `Deze zoekopdracht is breed: ${count.toLocaleString(CLEANPLAATS_ALERTS_NUMBER_LOCALE)} advertenties. ` +
-        'Je krijgt er waarschijnlijk veel meldingen van. Verfijn hem eerst met een prijs, categorie of afstand.',
+        'Je krijgt er waarschijnlijk veel meldingen van. Verfijn hem eerst met een filter, zoals prijs of afstand.',
 
     // The filters you can set on the search itself, in the create box. Named
     // one by one on the trigger: "Verfijnen" alone left people assuming the
@@ -486,7 +483,7 @@ var ALERTS_TEXT_NL = {
     setupAccountTitle: 'Account gemaakt',
     setupAccountBody: 'Je zoekopdrachten volgen je e-mailadres, ook op een ander apparaat.',
     setupAlertTitle: 'Zet je eerste zoekopdracht aan',
-    setupAlertBody: `Vul hieronder een zoekterm in en kies er een categorie, prijs en afstand bij. Zoek je eerst op ${CLEANPLAATS_ALERTS_SITE_NAME}, dan staan die filters al klaar.`,
+    setupAlertBody: `Vul hieronder een zoekterm in, of kies alleen een categorie, en zet er een prijs en afstand bij. Zoek je eerst op ${CLEANPLAATS_ALERTS_SITE_NAME}, dan staan die filters al klaar.`,
     setupAlertBodyDone: n => `Je hebt ${n} ${n === 1 ? 'zoekopdracht' : 'zoekopdrachten'} lopen.`,
     setupTelegramTitle: 'Koppel Telegram',
     // Says what actually happens: without a linked chat the server stops
@@ -633,8 +630,9 @@ var ALERTS_TEXT_FR = {
     checkFrequency: m => `Vérifie toutes les ${m} minutes`,
     createTitle: 'Créer une recherche',
     createButton: 'Créer la recherche',
-    labelPlaceholder: 'Terme, par ex. iphone 15 pro',
-    createTermMissing: 'Saisissez un terme de recherche.',
+    labelPlaceholder: 'Terme (facultatif), par ex. iphone 15 pro',
+    createTermMissing: 'Saisissez un terme de recherche ou choisissez une catégorie.',
+    createMainCategoryTooBroad: 'Une catégorie principale entière génère trop de notifications. Ajoutez une sous-catégorie, un prix ou une distance, ou saisissez un terme.',
     detailsSearch: 'Recherche',
     editButton: 'Modifier',
     editOtherSite: site => `Modifiable sur ${site}`,
@@ -645,7 +643,7 @@ var ALERTS_TEXT_FR = {
     editedSearchToast: 'Recherche modifiée. Nous regardons d’abord ce qui est déjà en ligne, ensuite vous recevez une notification dès qu’il y a du nouveau.',
     createContextHint: `Les filtres de vos résultats sur ${CLEANPLAATS_ALERTS_SITE_NAME} sont déjà repris ci-dessous.`,
     createBroadWarning: count => `Cette recherche est large : ${count.toLocaleString(CLEANPLAATS_ALERTS_NUMBER_LOCALE)} annonces. ` +
-        'Vous en recevrez probablement beaucoup de notifications. Affinez-la d’abord avec un prix, une catégorie ou une distance.',
+        'Vous en recevrez probablement beaucoup de notifications. Affinez-la d’abord avec un filtre, comme le prix ou la distance.',
 
     createFilterTrigger: 'Catégorie, prix et distance',
     createFilterNone: 'Régler',
@@ -870,7 +868,7 @@ var ALERTS_TEXT_FR = {
     setupAccountTitle: 'Compte créé',
     setupAccountBody: 'Vos recherches suivent votre adresse e-mail, même sur un autre appareil.',
     setupAlertTitle: 'Activez votre première recherche',
-    setupAlertBody: `Saisissez un terme ci-dessous et choisissez-y une catégorie, un prix et une distance. Si vous cherchez d’abord sur ${CLEANPLAATS_ALERTS_SITE_NAME}, ces filtres sont déjà prêts.`,
+    setupAlertBody: `Saisissez un terme ci-dessous, ou choisissez seulement une catégorie, et ajoutez-y un prix et une distance. Si vous cherchez d’abord sur ${CLEANPLAATS_ALERTS_SITE_NAME}, ces filtres sont déjà prêts.`,
     setupAlertBodyDone: n => `Vous avez ${n} recherche${n === 1 ? '' : 's'} en cours.`,
     setupTelegramTitle: 'Liez Telegram',
     setupTelegramBody: hours => `Telegram est la façon dont nous vous joignons. Sans liaison, la vérification s’arrête après ${hours} heures.`,
@@ -1524,17 +1522,7 @@ function getAlertSearchContext() {
     // Sending nothing means an alert keeps matching whatever the search page
     // itself matches, even if that default ever changes.
 
-    const suggestedLabel = searchParams.query || decodeURIComponent(
-        (window.location.pathname.match(/\/[ql]\/([^/]+)/) || [, ''])[1] || ''
-    ).replace(/[-+]/g, ' ').trim() || `${CLEANPLAATS_ALERTS_SITE_NAME} zoekopdracht`;
-
     return {
-        suggestedLabel: suggestedLabel.slice(0, 120),
-        // Whether that label is a search term or only a name. On a category page
-        // it is read off the URL slug, and searching for the words "fietsen en
-        // brommers" inside the fietsen category is a different, far narrower
-        // search than the one on screen — so the box must not send it as one.
-        labelIsSearchTerm: Boolean(searchParams.query),
         searchParams,
         searchUrl: href.slice(0, 500)
     };
@@ -3603,7 +3591,6 @@ function resetAlertCreateDraft() {
     cleanplaatsAlertsRuntime.createFacets = null;
     cleanplaatsAlertsRuntime.createFilterOpen = false;
     cleanplaatsAlertsRuntime.createFacetsKey = '';
-    cleanplaatsAlertsRuntime.createLabelOnly = '';
     cleanplaatsAlertsRuntime.createSubCategories = null;
     // Requests already out belong to the draft that just went away. Moving the
     // sequence on retires them: without this a response landing after the panel
@@ -3612,19 +3599,6 @@ function resetAlertCreateDraft() {
     // because seeding only fills a box that has no draft yet.
     cleanplaatsAlertsRuntime.createFacetsSeq += 1;
     clearTimeout(cleanplaatsAlertCreateRefreshTimer);
-}
-
-/**
- * What the box should actually search for. Normally the label is the term, but a
- * label the panel filled in on a category page is only a name for the alert —
- * sending it as a term would swap the category the user is looking at for a
- * text search inside it. The moment they change a character it is theirs, and
- * it counts.
- */
-function alertCreateQueryTerm(term) {
-    const value = String(term || '').trim();
-    const labelOnly = cleanplaatsAlertsRuntime.createLabelOnly;
-    return labelOnly && value === labelOnly ? '' : value;
 }
 
 function normalizeAlertPostcode(value) {
@@ -3697,6 +3671,49 @@ function countAlertCreateFilters(draft) {
     // just as much, and a summary that skipped them would read "geen filters"
     // over a search that has several.
     return count + draft.attributesById.length + draft.attributesByKey.length + draft.otherRanges.length;
+}
+
+/**
+ * What an alert without a search term is called. The server wants a name and the
+ * notifications lead with it. A subcategory's full name carries its whole path
+ * ("Fietsen | Heren | Herenfietsen"), and only the last part says which one.
+ */
+function alertCategoryOnlyName(draft) {
+    const mainCategory = (cleanplaatsAlertsRuntime.createMainCategories || [])
+        .find(item => String(item.id) === String(draft.l1CategoryId));
+    // Only a label whose id is set: the "all" options carry a label too, and
+    // going back to one leaves that text in the draft with the id empty.
+    const name = (draft.l2CategoryId && draft.l2Label) || (draft.l1CategoryId && draft.l1Label)
+        || (mainCategory && (mainCategory.name || mainCategory.fullName)) || '';
+    return String(name).split('|').pop().trim().slice(0, 120)
+        || `${CLEANPLAATS_ALERTS_SITE_NAME} zoekopdracht`;
+}
+
+/**
+ * True for a whole main category and nothing else to go on. "Huis en Inrichting"
+ * alone gained about 80 ads in five minutes (measured 2026-11-01), more than a
+ * 30-minute poll of 100 can even see, and a message every round. A search that
+ * was already saved like this stays editable: only changing it is refused.
+ */
+function isAlertBareMainCategory(draft, term) {
+    if (String(term || '').trim() || !draft.l1CategoryId || draft.l2CategoryId) return false;
+    // A postcode without a radius only sorts by distance, it filters nothing.
+    const hasDistance = isValidAlertPostcode(draft.postcode) && Boolean(draft.distanceMeters);
+    if (hasDistance || alertPriceRangeFor(draft)) return false;
+    if (draft.attributesById.length + draft.attributesByKey.length + draft.otherRanges.length > 0) return false;
+    const editing = cleanplaatsAlertsRuntime.editingAlert;
+    return !(editing && JSON.stringify(buildAlertCreateSearchParams(draft, '')) === editing.paramsKey);
+}
+
+/**
+ * Why this box cannot be saved yet, as the message to show, or '' when it can.
+ * A price or distance on its own is not enough to go without a term: that would
+ * watch every category on the site.
+ */
+function alertCreateBlockReason(draft, term) {
+    if (isAlertBareMainCategory(draft, term)) return ALERTS_TEXT.createMainCategoryTooBroad;
+    if (String(term || '').trim() || draft.l1CategoryId) return '';
+    return ALERTS_TEXT.createTermMissing;
 }
 
 /**
@@ -3794,11 +3811,6 @@ function seedAlertCreateDraftFromContext(context) {
 
     const draft = emptyAlertCreateDraft();
     cleanplaatsAlertsRuntime.createDraft = draft;
-
-    // A label the panel wrote itself, on a page with nothing typed to search
-    // for. Remembered so the box can tell it apart from a term of the user's.
-    cleanplaatsAlertsRuntime.createLabelOnly =
-        context && !context.labelIsSearchTerm ? context.suggestedLabel : '';
 
     const pageParams = context && context.searchParams;
     if (!pageParams) return;
@@ -3928,7 +3940,7 @@ function refreshAlertCreateFacets() {
     if (!input) return;
 
     const draft = getAlertCreateDraft();
-    const params = buildAlertCreateSearchParams(draft, alertCreateQueryTerm(input.value));
+    const params = buildAlertCreateSearchParams(draft, input.value);
 
     // Re-rendering the dashboard rewires this box every time — switching views,
     // toggling a row open, coming back from a PATCH — and none of that changes
@@ -3938,6 +3950,9 @@ function refreshAlertCreateFacets() {
     // site answers that with an empty body. Worth not asking.
     if (Object.keys(params).length === 0) {
         cleanplaatsAlertsRuntime.createFacetsKey = '';
+        // The box can start empty on purpose now, and picking a category is one
+        // way to fill it, so the list cannot wait for someone to type first.
+        loadAlertMainCategories();
         paintAlertCategoryOptions();
         paintAlertCreateCount(null);
         return;
@@ -3981,10 +3996,7 @@ function refreshAlertCreateFacets() {
             syncAlertDraftCategoryNames(draft, result.selected);
             paintAlertCategoryOptions();
             paintAlertBuyItNowOption();
-            // The raw text, not the search term: this only needs *a* word to
-            // ask the site for its category list, and on a category page the
-            // term is deliberately empty.
-            loadAlertMainCategories(input.value);
+            loadAlertMainCategories();
         } else {
             // Nothing came back, so nothing is cached under this key either —
             // let the next paint try again instead of repeating the silence.
@@ -4063,19 +4075,16 @@ function ensureAlertMainCategoriesFromPage() {
  * that branch instead of the whole list. So one extra request, and only when
  * there is nothing on the page to read.
  */
-function loadAlertMainCategories(term) {
+function loadAlertMainCategories() {
     if (cleanplaatsAlertsRuntime.createMainCategories) return;
     // Every keystroke comes back through here until the list lands, and they
     // would all ask for the same thing.
     if (cleanplaatsAlertCreateCategoriesPending) return;
 
-    // A search with no term at all comes back with an empty body, so there is
-    // nothing to ask for yet. The next keystroke arrives back here.
-    const query = String(term || '').trim();
-    if (!query) return;
-
+    // A search with no term at all comes back with an empty body, and the list
+    // is the same for any word, so this one only exists to get an answer.
     cleanplaatsAlertCreateCategoriesPending = true;
-    fetchAlertCreateFacets({ query }).then(result => {
+    fetchAlertCreateFacets({ query: 'a' }).then(result => {
         cleanplaatsAlertCreateCategoriesPending = false;
         if (!result || result.categoryOptions.length <= 1) return;
         // Worth keeping whenever it arrives — the list outlives any one draft.
@@ -4241,7 +4250,12 @@ function paintAlertCreateFilterCount() {
 function paintAlertCreateCount(total) {
     const countEl = document.getElementById('cleanplaats-alert-result-count');
     const warningEl = document.getElementById('cleanplaats-alert-broad-warning');
-    if (warningEl) warningEl.hidden = true;
+    const termInput = document.getElementById('cleanplaats-alert-label-input');
+    const bareMainCategory = isAlertBareMainCategory(getAlertCreateDraft(), termInput ? termInput.value : '');
+    if (warningEl) {
+        warningEl.hidden = !bareMainCategory;
+        if (bareMainCategory) warningEl.textContent = ALERTS_TEXT.createMainCategoryTooBroad;
+    }
     if (!countEl) return;
 
     if (!Number.isFinite(total)) {
@@ -4257,7 +4271,7 @@ function paintAlertCreateCount(total) {
         : ALERTS_TEXT.createResultCount(total);
     countEl.classList.toggle('cleanplaats-alerts-create-count-none', total === 0);
 
-    if (warningEl && total >= CLEANPLAATS_ALERTS_BROAD_RESULT_COUNT) {
+    if (warningEl && !bareMainCategory && total >= CLEANPLAATS_ALERTS_BROAD_RESULT_COUNT) {
         warningEl.textContent = ALERTS_TEXT.createBroadWarning(total);
         warningEl.hidden = false;
     }
@@ -4362,7 +4376,7 @@ function buildAlertsCreateHtml(context, me) {
         <section class="cleanplaats-alerts-create">
             <div class="cleanplaats-alerts-create-title">${ALERTS_TEXT.createTitle}</div>
             <div class="cleanplaats-alerts-form-row">
-                <input type="text" id="cleanplaats-alert-label-input" value="${context ? escapeHtmlText(context.suggestedLabel) : ''}" placeholder="${ALERTS_TEXT.labelPlaceholder}" maxlength="120" aria-label="${ALERTS_TEXT.createTitle}">
+                <input type="text" id="cleanplaats-alert-label-input" value="${escapeHtmlText(String((context && context.searchParams.query) || '').slice(0, 120))}" placeholder="${ALERTS_TEXT.labelPlaceholder}" maxlength="120" aria-label="${ALERTS_TEXT.createTitle}">
                 <button id="cleanplaats-alert-create" class="cleanplaats-alerts-primary-btn">${ALERTS_TEXT.createButton}</button>
             </div>
             ${context ? `<div class="cleanplaats-alerts-create-note" id="cleanplaats-alert-create-note">${ALERTS_TEXT.createContextHint}</div>` : ''}
@@ -4549,11 +4563,9 @@ function renderAlertEditView(alertId) {
     if (draft.l1CategoryId && linkKeys[1]) draft.l1Key = linkKeys[1];
     if (draft.l2CategoryId && linkKeys[2] && linkKeys[2] !== 'p') draft.l2Key = linkKeys[2];
 
-    // The box holds the search term. A category alert has none, so it shows the
-    // name and alertCreateQueryTerm() keeps that name out of the search, the
-    // same way the create box does on a category page.
-    const term = String(params.query || alert.label || '').trim();
-    cleanplaatsAlertsRuntime.createLabelOnly = params.query ? '' : term;
+    // The box holds the search term and nothing else, so a category alert opens
+    // with it empty. Its name is in the header above.
+    const term = String(params.query || '').trim();
     // Price and location are what people come here to change.
     cleanplaatsAlertsRuntime.createFilterOpen = true;
     // What the controls make of the alert before anyone touches them. An old
@@ -4563,7 +4575,9 @@ function renderAlertEditView(alertId) {
     cleanplaatsAlertsRuntime.editingAlert = {
         id: String(alert.id),
         term,
-        paramsKey: JSON.stringify(buildAlertCreateSearchParams(draft, alertCreateQueryTerm(term)))
+        label: alert.label,
+        categoryKey: `${draft.l1CategoryId}/${draft.l2CategoryId}`,
+        paramsKey: JSON.stringify(buildAlertCreateSearchParams(draft, term))
     };
 
     const body = setAlertsBody(`
@@ -4601,23 +4615,34 @@ function saveAlertEdit() {
 
     const term = labelInput.value.trim();
     const draft = getAlertCreateDraft();
-    const query = alertCreateQueryTerm(term);
-    const searchParams = buildAlertCreateSearchParams(draft, query);
-    if (!term || Object.keys(searchParams).length === 0) {
-        showBubbleNotification(ALERTS_TEXT.createTermMissing);
+    const searchParams = buildAlertCreateSearchParams(draft, term);
+    const changedSearch = JSON.stringify(searchParams) !== editing.paramsKey;
+    const blockReason = changedSearch ? alertCreateBlockReason(draft, term) : '';
+    if (blockReason) {
+        showBubbleNotification(blockReason);
         labelInput.focus();
         return;
     }
 
+    // Without a term the alert is named after its category, so the name only
+    // has to change along with the category: a price change leaves it alone.
+    const sameCategoryName = !editing.term && `${draft.l1CategoryId}/${draft.l2CategoryId}` === editing.categoryKey;
+    // An unchanged term keeps the stored name too: the server cleans names up
+    // (and an older alert's can differ from its term), so comparing against the
+    // term would rename the alert on a save that changed nothing.
+    const label = term
+        ? (term === editing.term ? editing.label : term)
+        : (sameCategoryName ? editing.label : alertCategoryOnlyName(draft));
+
     const payload = {};
-    if (term !== editing.term) payload.label = term;
-    if (JSON.stringify(searchParams) !== editing.paramsKey) {
+    if (label !== editing.label) payload.label = label;
+    if (changedSearch) {
         payload.searchParams = searchParams;
         // Without the category's slug the rebuilt link would be a text search
         // for the whole site. Keeping the old link is the smaller mistake, and
         // this only happens if saved before the first facet response.
         const slugKnown = !draft.l1CategoryId || draft.l1Key || alertCategoryKeyFor(draft.l1CategoryId);
-        if (slugKnown) payload.searchUrl = buildAlertSearchUrl(draft, query);
+        if (slugKnown) payload.searchUrl = buildAlertSearchUrl(draft, term);
     }
 
     if (Object.keys(payload).length === 0) {
@@ -5041,8 +5066,10 @@ function wireAlertsCreateBox(main) {
 
     createButton.onclick = () => {
         const term = (labelInput?.value || '').trim();
-        if (!term) {
-            showBubbleNotification(ALERTS_TEXT.createTermMissing);
+        const draft = getAlertCreateDraft();
+        const blockReason = alertCreateBlockReason(draft, term);
+        if (blockReason) {
+            showBubbleNotification(blockReason);
             if (labelInput) labelInput.focus();
             return;
         }
@@ -5060,27 +5087,17 @@ function wireAlertsCreateBox(main) {
         // user can see and change every part of that. So there is no longer a
         // context to fall back on, and editing the term no longer quietly drops
         // the filters that came with it.
-        const draft = getAlertCreateDraft();
-        // On a category page the box names the alert after the category, and
-        // that name is not something to search for. What is left is the
-        // category itself, which is exactly the search on screen.
-        const query = alertCreateQueryTerm(term);
-        const searchParams = buildAlertCreateSearchParams(draft, query);
-        const searchUrl = buildAlertSearchUrl(draft, query);
-
-        // Clearing the category out of an alert that never had a term leaves
-        // nothing to watch but the whole site.
-        if (Object.keys(searchParams).length === 0) {
-            showBubbleNotification(ALERTS_TEXT.createTermMissing);
-            if (labelInput) labelInput.focus();
-            return;
-        }
+        const searchParams = buildAlertCreateSearchParams(draft, term);
+        // With no term and no slug yet there is no page to link to: a /q/ link
+        // would have nothing in it. The server stores no link in that case.
+        const hasLinkTarget = term || draft.l1Key || alertCategoryKeyFor(draft.l1CategoryId);
+        const searchUrl = hasLinkTarget ? buildAlertSearchUrl(draft, term) : undefined;
 
         createButton.disabled = true;
         alertsApiFetch('/api/alerts', {
             method: 'POST',
             body: JSON.stringify({
-                label: term,
+                label: term || alertCategoryOnlyName(draft),
                 // The site the alert is made on decides where it is polled and
                 // which origin its links carry, so it travels with the search
                 // itself rather than being inferred later.
@@ -5453,7 +5470,7 @@ var ALERTS_WALKTHROUGH_TEXT_NL = {
     loginBody: 'Je e-mailadres is je account. Je krijgt er een inlogcode op, dus er is geen wachtwoord om te onthouden.',
     createTitle: 'Maak je eerste melding',
     createBody: 'Je huidige zoekopdracht staat al ingevuld, mét de filters die je nu gebruikt. Pas categorie, prijs of afstand hieronder nog aan, en Cleanplaats zoekt vanaf nu voor je door.',
-    createBodyPlain: 'Vul hier een zoekterm in en verfijn hem met categorie, prijs en afstand. Kom je vanaf een zoekresultatenpagina, dan staan die filters al ingevuld.',
+    createBodyPlain: 'Vul hier een zoekterm in, of kies alleen een categorie, en verfijn met prijs en afstand. Kom je vanaf een zoekresultatenpagina, dan staan die filters al ingevuld.',
     telegramTitle: 'Koppel Telegram',
     telegramBody: 'Je meldingen komen binnen via Telegram, ook als je browser dicht is. Zonder koppeling blijft het stil.',
     telegramLinkedTitle: 'Zo ontvang je ze',
@@ -5471,7 +5488,7 @@ var ALERTS_WALKTHROUGH_TEXT_FR = {
     loginBody: 'Votre adresse e-mail est votre compte. Vous y recevez un code de connexion, il n’y a donc pas de mot de passe à retenir.',
     createTitle: 'Créez votre première recherche',
     createBody: 'Votre recherche actuelle est déjà remplie, avec les filtres que vous utilisez. Ajustez encore la catégorie, le prix ou la distance ci-dessous, et Cleanplaats continue à chercher pour vous.',
-    createBodyPlain: 'Saisissez un terme ici et affinez-le avec la catégorie, le prix et la distance. Si vous venez d’une page de résultats, ces filtres sont déjà remplis.',
+    createBodyPlain: 'Saisissez un terme ici, ou choisissez seulement une catégorie, et affinez avec le prix et la distance. Si vous venez d’une page de résultats, ces filtres sont déjà remplis.',
     telegramTitle: 'Liez Telegram',
     telegramBody: 'Vos notifications arrivent via Telegram, même navigateur fermé. Sans liaison, rien ne part.',
     telegramLinkedTitle: 'Voilà comment vous les recevez',
