@@ -1408,6 +1408,9 @@ function sendAlertsApiRequest(path, options) {
         .then(response => response.json().catch(() => ({})).then(data => {
             if (!response.ok) {
                 const error = new Error(data.error || `Alerts API error ${response.status}`);
+                // Kept apart from .message, which also holds the technical text
+                // of a failure the server never answered: that one is for logs.
+                error.serverMessage = typeof data.error === 'string' ? data.error : '';
                 error.status = response.status;
                 if (response.status === 401) {
                     error.sessionExpired = true;
@@ -1451,9 +1454,20 @@ function isAnsweredAlertsError(error) {
  * replaced the panel with the login view, and a toast about it would land on
  * top of its own answer.
  */
-function notifyAlertsError(error, message) {
+function notifyAlertsError(error) {
     if (isAnsweredAlertsError(error)) return;
-    showBubbleNotification(message || ALERTS_TEXT.errorToast);
+    showBubbleNotification(alertsErrorText(error));
+}
+
+/**
+ * What to tell the user about a failed call. A refusal the server explains,
+ * such as the running limit after a downgrade, is shown in its own words:
+ * "could not connect" over an answer that says exactly what to do sends people
+ * looking for a network problem. Anything else gets the fallback, never the
+ * raw "Failed to fetch" or "Alerts API error 500".
+ */
+function alertsErrorText(error, fallback = ALERTS_TEXT.errorToast) {
+    return (error && error.serverMessage) || fallback;
 }
 
 /**
@@ -2056,7 +2070,7 @@ function renderAlertsLoginView() {
         }).catch(error => {
             submit.disabled = false;
             submit.textContent = ALERTS_TEXT.emailButton;
-            showAlertsInlineError(error.message || ALERTS_TEXT.errorToast);
+            showAlertsInlineError(alertsErrorText(error));
         });
     };
 
@@ -2108,7 +2122,7 @@ function renderAlertsCodeView() {
         }).catch(error => {
             submit.disabled = false;
             submit.textContent = ALERTS_TEXT.codeButton;
-            showAlertsInlineError(error.message || ALERTS_TEXT.errorToast);
+            showAlertsInlineError(alertsErrorText(error));
         });
     };
 
@@ -2139,7 +2153,7 @@ function renderAlertsCodeView() {
         }).catch(error => {
             resend.disabled = false;
             resend.textContent = ALERTS_TEXT.codeResend;
-            showAlertsInlineError(error.message || ALERTS_TEXT.errorToast);
+            showAlertsInlineError(alertsErrorText(error));
         });
     };
 }
@@ -2279,7 +2293,7 @@ function renderTelegramConnect(me) {
         }).catch(error => {
             verifyBtn.disabled = false;
             verifyBtn.textContent = ALERTS_TEXT.telegramVerifyButton;
-            showError((error && error.message) || ALERTS_TEXT.telegramVerifyError);
+            showError(alertsErrorText(error, ALERTS_TEXT.telegramVerifyError));
         });
     };
 
@@ -2542,7 +2556,7 @@ function wireAlertsPlanView() {
                         })
                         .catch(error => {
                             withdraw.disabled = false;
-                            notifyAlertsError(error, error && error.message);
+                            notifyAlertsError(error);
                         });
                 }
             });
@@ -2565,7 +2579,7 @@ function changeAlertsSubscription(action, button, toast) {
         })
         .catch(error => {
             button.disabled = false;
-            notifyAlertsError(error, error && error.message);
+            notifyAlertsError(error);
         });
 }
 
@@ -2677,7 +2691,7 @@ function renderAlertsLimitView(alerts) {
                         })
                         .catch(error => {
                             button.disabled = false;
-                            notifyAlertsError(error, error && error.message);
+                            notifyAlertsError(error);
                         });
                 }
             });
@@ -2793,7 +2807,7 @@ function wireAlertsDeleteAccount() {
                     })
                     .catch(error => {
                         button.disabled = false;
-                        notifyAlertsError(error, error && error.message);
+                        notifyAlertsError(error);
                     });
             }
         });
@@ -2848,7 +2862,7 @@ function wireAlertsUpgradeButton() {
             }).catch(error => {
                 button.disabled = false;
                 button.textContent = ALERTS_TEXT.upgradeButton;
-                notifyAlertsError(error, error && error.message);
+                notifyAlertsError(error);
             });
         };
     }
@@ -2869,7 +2883,7 @@ function wireAlertsUpgradeButton() {
                 .catch(error => {
                     withdraw.disabled = false;
                     withdraw.textContent = ALERTS_TEXT.upgradeWithdraw;
-                    notifyAlertsError(error, error && error.message);
+                    notifyAlertsError(error);
                 });
         };
     }
@@ -2910,7 +2924,7 @@ function startAlertsTrial(button) {
         .catch(error => {
             button.disabled = false;
             button.textContent = label;
-            notifyAlertsError(error, error && error.message);
+            notifyAlertsError(error);
         });
 }
 
@@ -2942,7 +2956,7 @@ function startAlertsCheckout(button) {
                 loadAlertsDashboard();
                 return;
             }
-            notifyAlertsError(error, error && error.message);
+            notifyAlertsError(error);
         });
 }
 
@@ -3046,7 +3060,7 @@ function openAlertsPortal(button, rerender) {
         .catch(error => {
             button.disabled = false;
             button.textContent = label;
-            notifyAlertsError(error, error && error.message);
+            notifyAlertsError(error);
         });
 }
 
@@ -4662,7 +4676,7 @@ function saveAlertEdit() {
         loadAlertsDashboard();
     }).catch(error => {
         saveButton.disabled = false;
-        notifyAlertsError(error, error && error.message);
+        notifyAlertsError(error);
     });
 }
 
@@ -5125,7 +5139,7 @@ function wireAlertsCreateBox(main) {
                 renderAlertsLimitView(cleanplaatsAlertsRuntime.cachedAlerts || []);
                 return;
             }
-            showBubbleNotification(error.message || ALERTS_TEXT.errorToast);
+            showBubbleNotification(alertsErrorText(error));
         });
     };
 }
@@ -5162,7 +5176,7 @@ function wireAlertsRowControls(main) {
                             showBubbleNotification(ALERTS_TEXT.deletedToast);
                             loadAlertsDashboard();
                         })
-                        .catch(error => notifyAlertsError(error, error && error.message));
+                        .catch(error => notifyAlertsError(error));
                 }
             });
         };
@@ -5356,7 +5370,7 @@ function wireAlertsTelegramButtons() {
             test.textContent = ALERTS_TEXT.telegramTestSending;
             alertsApiFetch('/api/telegram/test', { method: 'POST' })
                 .then(() => showBubbleNotification(ALERTS_TEXT.telegramTestToast))
-                .catch(error => notifyAlertsError(error, error && error.message))
+                .catch(error => notifyAlertsError(error))
                 .then(() => {
                     if (!test.isConnected) return;
                     test.disabled = false;
