@@ -29,3 +29,13 @@ brag-output/
 
 # Python-cache van package.py
 __pycache__/
+
+# Lokale Claude-instellingen en worktrees
+.claude/
+
+# Sleutels, ook de privésleutel van een zelf ingepakte extensie
+*.pem
+*.key
+*.p12
+*.crx
+*.xpi

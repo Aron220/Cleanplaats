@@ -1227,6 +1227,14 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_NL = {
+    '2.2.7': {
+        intro: 'Nieuw in deze versie:',
+        highlights: [
+            'Je kunt een zoekopdracht nu bewerken in plaats van opnieuw maken.',
+            'Een zoekterm is niet meer nodig: je kunt ook op alleen een categorie zoeken.'
+        ],
+        note: null
+    },
     '2.2.6': {
         intro: 'Nieuw in deze versie:',
         highlights: [
@@ -1365,6 +1373,14 @@ var CLEANPLAATS_UPDATE_NOTES_NL = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_FR = {
+    '2.2.7': {
+        intro: 'Nouveautés de cette version :',
+        highlights: [
+            'Vous pouvez désormais modifier une recherche au lieu de la recréer.',
+            'Un terme n’est plus nécessaire : vous pouvez aussi chercher sur une seule catégorie.'
+        ],
+        note: null
+    },
     '2.2.6': {
         intro: 'Nouveautés de cette version :',
         highlights: [
