@@ -117,6 +117,8 @@ var cleanplaatsAlertsRuntime = {
     // whole (after a create, after a row PATCH) and a half-filled form must
     // survive that. Cleared on close and after a successful create.
     createDraft: null,
+    // The ad-type filters picked in the create box; see getAlertCreateFilters().
+    createFilters: null,
     createFacets: null,
     createFacetsSeq: 0,
     createFilterOpen: false,
@@ -354,12 +356,13 @@ var ALERTS_TEXT_NL = {
     sortPriceDesc: 'Prijs: hoog-laag',
     // Per-alert filters
     filterButton: 'Filters',
-    filterEditorTitle: 'Wat wil je overslaan?',
-    filterEditorIntro: 'Vink aan welke soorten advertenties je voor deze zoekopdracht níét wilt zien.',
+    filterEditorTitle: 'Welke advertenties wil je krijgen?',
+    filterEditorIntro: 'Haal het vinkje weg bij wat je voor deze zoekopdracht niet wilt zien.',
     filterReserved: 'Gereserveerd',
     filterOpval: 'Opvalstickers',
     filterSimilar: 'Suggesties zonder je zoekwoorden',
     filterCountActive: n => `${n} actief`,
+    filterCountHidden: n => `${n} verborgen`,
     filterNoneActive: 'Alles tonen',
     filterAlwaysExcluded: 'Top- en bedrijfsadvertenties krijg je nooit als melding.',
     filterGlobalListsTitle: 'Geblokkeerde verkopers & woorden',
@@ -755,12 +758,13 @@ var ALERTS_TEXT_FR = {
     sortPriceDesc: 'Prix : décroissant',
 
     filterButton: 'Filtres',
-    filterEditorTitle: 'Que voulez-vous ignorer ?',
-    filterEditorIntro: 'Cochez les types d’annonces que vous ne voulez pas voir pour cette recherche.',
+    filterEditorTitle: 'Quelles annonces voulez-vous recevoir ?',
+    filterEditorIntro: 'Décochez ce que vous ne voulez pas voir pour cette recherche.',
     filterReserved: 'Réservées',
     filterOpval: 'Autocollants promotionnels',
     filterSimilar: 'Suggestions sans vos mots-clés',
     filterCountActive: n => `${n} actif${n === 1 ? '' : 's'}`,
+    filterCountHidden: n => `${n} masqué${n === 1 ? '' : 's'}`,
     filterNoneActive: 'Tout afficher',
     filterAlwaysExcluded: 'Les pubs au top et les annonces professionnelles ne font jamais l’objet d’une notification.',
     filterGlobalListsTitle: 'Vendeurs et termes bloqués',
@@ -958,6 +962,16 @@ var ALERT_FILTER_DEFS = [
     { key: 'removeSimilarListings', setting: null, label: () => ALERTS_TEXT.filterSimilar }
 ];
 
+// The ad-type filters chosen in the create box. Kept apart from the search
+// draft but cleared with it, and started from the panel's own settings, so a
+// re-render of the box does not undo a click.
+function getAlertCreateFilters() {
+    if (!cleanplaatsAlertsRuntime.createFilters) {
+        cleanplaatsAlertsRuntime.createFilters = getDefaultAlertFilters();
+    }
+    return cleanplaatsAlertsRuntime.createFilters;
+}
+
 function getDefaultAlertFilters() {
     const s = (typeof CLEANPLAATS !== 'undefined' && CLEANPLAATS.settings) || {};
     const filters = {};
@@ -1150,20 +1164,55 @@ function buildGlobalListsSummaryHtml() {
     `;
 }
 
-function buildAlertFilterBlockHtml(alert) {
-    const filters = parseAlertFilters(alert);
-    const activeCount = countActiveAlertFilters(filters);
-    const summary = activeCount > 0
-        ? `<span class="cleanplaats-alerts-filter-count">${ALERTS_TEXT.filterCountActive(activeCount)}</span>`
-        : `<span class="cleanplaats-alerts-filter-count cleanplaats-alerts-filter-count-zero">${ALERTS_TEXT.filterNoneActive}</span>`;
-
-    const toggles = ALERT_FILTER_DEFS.map(def => `
+/**
+ * The ad-type checkboxes, shared by the row's Filters fold-out (which saves on
+ * every click) and the create and edit boxes (which save with their button).
+ * `keyAttr` is the attribute that carries the filter key, so each view's
+ * handler only ever picks up its own checkboxes.
+ *
+ * A tick means "send me these". The stored keys say the opposite (remove…),
+ * but a list of ticks meaning "not this" read backwards to people: every box
+ * ticked looked like getting everything. So the boxes start ticked and you
+ * untick what you do not want; readAlertFilterToggles() turns that back.
+ */
+function buildAlertFilterTogglesHtml(filters, keyAttr) {
+    return ALERT_FILTER_DEFS.map(def => `
         <label class="cleanplaats-alerts-filter-opt">
-            <input type="checkbox" data-alert-id="${alert.id}" data-filter-key="${def.key}"${filters[def.key] ? ' checked' : ''}>
+            <input type="checkbox" ${keyAttr}="${def.key}"${filters[def.key] ? '' : ' checked'}>
             <span class="cleanplaats-alerts-filter-opt-box">${alertIcon('check', 12)}</span>
             <span class="cleanplaats-alerts-filter-opt-label">${def.label()}</span>
         </label>
     `).join('');
+}
+
+// The stored filters from a set of checkboxes built by buildAlertFilterTogglesHtml.
+function readAlertFilterToggles(checkboxes, datasetKey) {
+    const filters = {};
+    checkboxes.forEach(checkbox => { filters[checkbox.dataset[datasetKey]] = !checkbox.checked; });
+    return filters;
+}
+
+// The "which ads do you want" box in the create and edit views. Always open:
+// unlike the search filters it is four checkboxes, nothing to fold away.
+function buildAlertSkipBoxHtml(filters, keyAttr) {
+    return `
+        <div class="cleanplaats-alerts-create-filters cleanplaats-alerts-edit-skip">
+            <div class="cleanplaats-alerts-create-field">
+                <span class="cleanplaats-alerts-create-field-label">${ALERTS_TEXT.filterEditorTitle}</span>
+                <div class="cleanplaats-alerts-filter-opts">${buildAlertFilterTogglesHtml(filters, keyAttr)}</div>
+            </div>
+        </div>
+    `;
+}
+
+function buildAlertFilterBlockHtml(alert) {
+    const filters = parseAlertFilters(alert);
+    const activeCount = countActiveAlertFilters(filters);
+    const summary = activeCount > 0
+        ? `<span class="cleanplaats-alerts-filter-count">${ALERTS_TEXT.filterCountHidden(activeCount)}</span>`
+        : `<span class="cleanplaats-alerts-filter-count cleanplaats-alerts-filter-count-zero">${ALERTS_TEXT.filterNoneActive}</span>`;
+
+    const toggles = buildAlertFilterTogglesHtml(filters, `data-alert-id="${alert.id}" data-filter-key`);
 
     return `
         <div class="cleanplaats-alerts-filter-block">
@@ -3609,6 +3658,7 @@ function getAlertCreateDraft() {
 
 function resetAlertCreateDraft() {
     cleanplaatsAlertsRuntime.createDraft = null;
+    cleanplaatsAlertsRuntime.createFilters = null;
     cleanplaatsAlertsRuntime.createFacets = null;
     cleanplaatsAlertsRuntime.createFilterOpen = false;
     cleanplaatsAlertsRuntime.createFacetsKey = '';
@@ -4403,6 +4453,7 @@ function buildAlertsCreateHtml(context, me) {
             ${context ? `<div class="cleanplaats-alerts-create-note" id="cleanplaats-alert-create-note">${ALERTS_TEXT.createContextHint}</div>` : ''}
             ${buildAlertCreateFilterHtml()}
             <div class="cleanplaats-alerts-create-count" id="cleanplaats-alert-result-count" hidden></div>
+            ${buildAlertSkipBoxHtml(getAlertCreateFilters(), 'data-create-filter-key')}
             ${atLimit ? `<div class="cleanplaats-alerts-create-note cleanplaats-alerts-create-note-limit">${ALERTS_TEXT.createAtLimitHint(me.maxAlerts)}</div>` : ''}
             <div class="cleanplaats-alerts-create-warning" id="cleanplaats-alert-broad-warning" hidden></div>
         </section>
@@ -4598,7 +4649,8 @@ function renderAlertEditView(alertId) {
         term,
         label: alert.label,
         categoryKey: `${draft.l1CategoryId}/${draft.l2CategoryId}`,
-        paramsKey: JSON.stringify(buildAlertCreateSearchParams(draft, term))
+        paramsKey: JSON.stringify(buildAlertCreateSearchParams(draft, term)),
+        filters: parseAlertFilters(alert)
     };
 
     const body = setAlertsBody(`
@@ -4612,6 +4664,7 @@ function renderAlertEditView(alertId) {
             ${buildAlertCreateFilterHtml()}
             <div class="cleanplaats-alerts-create-count" id="cleanplaats-alert-result-count" hidden></div>
             <div class="cleanplaats-alerts-create-warning" id="cleanplaats-alert-broad-warning" hidden></div>
+            ${buildAlertSkipBoxHtml(cleanplaatsAlertsRuntime.editingAlert.filters, 'data-edit-filter-key')}
         </section>
     `);
     if (!body) return;
@@ -4655,8 +4708,15 @@ function saveAlertEdit() {
         ? (term === editing.term ? editing.label : term)
         : (sameCategoryName ? editing.label : alertCategoryOnlyName(draft));
 
+    const filters = readAlertFilterToggles(document.querySelectorAll('[data-edit-filter-key]'), 'editFilterKey');
+
     const payload = {};
     if (label !== editing.label) payload.label = label;
+    // The ad-type filters never touch the search, so changing only these keeps
+    // the alert's baseline: they decide what gets sent, not what is fetched.
+    if (Object.keys(filters).length > 0 && JSON.stringify(filters) !== JSON.stringify(editing.filters)) {
+        payload.filters = filters;
+    }
     if (changedSearch) {
         payload.searchParams = searchParams;
         // Without the category's slug the rebuilt link would be a text search
@@ -5077,6 +5137,13 @@ function wireAlertsCreateBox(main) {
 
     wireAlertCreateFilters(main);
 
+    main.querySelectorAll('[data-create-filter-key]').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            cleanplaatsAlertsRuntime.createFilters = readAlertFilterToggles(
+                main.querySelectorAll('[data-create-filter-key]'), 'createFilterKey');
+        });
+    });
+
     // The count and the categories belong to whatever is in the box, not to the
     // page it was opened from: someone who types a term of their own gets the
     // same numbers and the same choices as someone who arrived from a search.
@@ -5086,20 +5153,23 @@ function wireAlertsCreateBox(main) {
     refreshAlertCreateFacets();
 
     createButton.onclick = () => {
+        // Out of room: explain the ceiling here rather than firing a request we
+        // know the server will refuse. Checked before what is in the box: at
+        // the limit no term would get through, so asking for one first sends
+        // someone to fill in a search that is refused anyway, and they never
+        // see the screen that offers the way out (delete one, or Premium).
+        const me = cleanplaatsAlertsRuntime.me;
+        if (me && (me.alertCount || 0) >= me.maxAlerts) {
+            renderAlertsLimitView(cleanplaatsAlertsRuntime.cachedAlerts || []);
+            return;
+        }
+
         const term = (labelInput?.value || '').trim();
         const draft = getAlertCreateDraft();
         const blockReason = alertCreateBlockReason(draft, term);
         if (blockReason) {
             showBubbleNotification(blockReason);
             if (labelInput) labelInput.focus();
-            return;
-        }
-
-        // Out of room: explain the ceiling here rather than firing a request we
-        // know the server will refuse.
-        const me = cleanplaatsAlertsRuntime.me;
-        if (me && (me.alertCount || 0) >= me.maxAlerts) {
-            renderAlertsLimitView(cleanplaatsAlertsRuntime.cachedAlerts || []);
             return;
         }
 
@@ -5125,7 +5195,7 @@ function wireAlertsCreateBox(main) {
                 site: getCleanplaatsSiteKey(),
                 searchParams,
                 searchUrl,
-                filters: getDefaultAlertFilters()
+                filters: getAlertCreateFilters()
             })
         }).then(() => {
             showBubbleNotification(ALERTS_TEXT.createdToast);
@@ -5396,11 +5466,12 @@ function paintAlertFilterCount(block) {
     const countEl = block.querySelector('.cleanplaats-alerts-filter-count');
     if (!countEl) return;
 
+    // Unticked is hidden: see buildAlertFilterTogglesHtml().
     const activeCount = [...block.querySelectorAll('.cleanplaats-alerts-filter-opt input[type="checkbox"]')]
-        .filter(cb => cb.checked).length;
+        .filter(cb => !cb.checked).length;
 
     if (activeCount > 0) {
-        countEl.textContent = ALERTS_TEXT.filterCountActive(activeCount);
+        countEl.textContent = ALERTS_TEXT.filterCountHidden(activeCount);
         countEl.classList.remove('cleanplaats-alerts-filter-count-zero');
     } else {
         countEl.textContent = ALERTS_TEXT.filterNoneActive;
@@ -5433,10 +5504,8 @@ function wireAlertFilterControls(body) {
             const block = checkbox.closest('.cleanplaats-alerts-filter-block');
             if (!block) return;
 
-            const filters = {};
-            block.querySelectorAll('.cleanplaats-alerts-filter-opt input[type="checkbox"]').forEach(cb => {
-                filters[cb.dataset.filterKey] = cb.checked;
-            });
+            const filters = readAlertFilterToggles(
+                block.querySelectorAll('.cleanplaats-alerts-filter-opt input[type="checkbox"]'), 'filterKey');
 
             // Update the collapsed summary count immediately.
             paintAlertFilterCount(block);

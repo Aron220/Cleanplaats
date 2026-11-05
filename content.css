@@ -4433,6 +4433,12 @@
     border-color: #c3cad6;
   }
 
+  /* The edit view's ad-type filters: always open, so no trigger row above. */
+  .cleanplaats-alerts-edit-skip {
+    margin-top: 10px;
+    padding: 10px 11px 9px;
+  }
+
   .cleanplaats-alerts-create-filters-trigger {
     display: flex;
     align-items: center;
