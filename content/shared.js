@@ -1230,7 +1230,8 @@ var CLEANPLAATS_UPDATE_NOTES_NL = {
     '2.2.8': {
         intro: 'Nieuw in deze versie:',
         highlights: [
-            'Heeft een zoekopdracht weinig echte resultaten, dan vult Marktplaats die aan met advertenties die er alleen op lijken. Wil je die niet als melding krijgen? Vink onder Filters van je zoekopdracht "Suggesties zonder je zoekwoorden" aan.',
+            'Heeft een zoekopdracht weinig echte resultaten, dan vult Marktplaats die aan met advertenties die er alleen op lijken. Wil je die niet als melding krijgen? Haal bij je zoekopdracht het vinkje weg bij "Suggesties zonder je zoekwoorden".',
+            'Bij Filters van een zoekopdracht betekent een vinkje nu: wel tonen. Haal het vinkje weg bij wat je niet wilt zien. Je instellingen blijven hetzelfde.',
             'Lukt iets niet bij je zoekopdrachten, dan zie je nu waarom.'
         ],
         note: null
@@ -1384,7 +1385,8 @@ var CLEANPLAATS_UPDATE_NOTES_FR = {
     '2.2.8': {
         intro: 'Nouveautés de cette version :',
         highlights: [
-            'Quand une recherche a peu de vrais résultats, le site les complète avec des annonces qui y ressemblent seulement. Vous ne voulez pas les recevoir en notification ? Cochez « Suggestions sans vos mots-clés » sous Filtres de votre recherche.',
+            'Quand une recherche a peu de vrais résultats, le site les complète avec des annonces qui y ressemblent seulement. Vous ne voulez pas les recevoir en notification ? Décochez « Suggestions sans vos mots-clés » dans votre recherche.',
+            'Dans les filtres d’une recherche, une case cochée signifie maintenant : afficher. Décochez ce que vous ne voulez pas voir. Vos réglages ne changent pas.',
             'Si une action sur vos recherches ne fonctionne pas, vous voyez maintenant pourquoi.'
         ],
         note: null
