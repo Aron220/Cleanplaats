@@ -29,7 +29,7 @@ var ALERT_MATCHES_PAGE_SIZE = 60;
  * French copy to show.
  *
  * An account is not tied to a site, so a zoekopdracht made on one site shows
- * up in the panel on the other. buildAlertsTableHtml() badges those rows
+ * up in the panel on the other. buildAlertsListHtml() badges those rows
  * rather than hiding them: filtering them out makes an alert someone is still
  * paying attention to look deleted.
  */
@@ -122,6 +122,9 @@ var cleanplaatsAlertsRuntime = {
     createFacets: null,
     createFacetsSeq: 0,
     createFilterOpen: false,
+    // Whether the create box is unfolded on the Zoekopdrachten view. Only asked
+    // for once there is a list; with no searches the box is the view.
+    createOpen: false,
     // The params the last facet request went out with, so a re-render of the
     // dashboard repaints from what is already here instead of asking the site
     // the same question again.
@@ -457,6 +460,17 @@ var ALERTS_TEXT_NL = {
         ? 'Eén zoekopdracht tegelijk op een gratis account. Zet hem aan, uit of verleng hem hier.'
         : `Tot ${max} zoekopdrachten tegelijk. Zet ze aan, uit of verleng ze hier.`),
     contactShort: 'Vragen of feedback',
+
+    // The Zoekopdrachten view: the create box waits behind a button once there
+    // is a list to look at, and a search you just did on the site is offered
+    // as one click.
+    newAlertButton: 'Nieuwe zoekopdracht',
+    deleteAlertButton: 'Zoekopdracht verwijderen',
+    suggestTitle: term => `Je zocht net op "${term}"`,
+    suggestBody: 'Volg deze zoekopdracht, dan krijg je een bericht zodra er iets nieuws bij komt.',
+    suggestButton: 'Volgen',
+    matchCountNone: 'Nog niets gevonden',
+    matchesEarlier: 'Eerder gevonden',
 
     // The one status line above the advertisements. Anything that would not
     // change what you do next does not belong here.
@@ -853,6 +867,14 @@ var ALERTS_TEXT_FR = {
         : `Jusqu’à ${max} recherches à la fois. Activez-les, coupez-les ou prolongez-les ici.`),
     contactShort: 'Question ou retour',
 
+    newAlertButton: 'Nouvelle recherche',
+    deleteAlertButton: 'Supprimer la recherche',
+    suggestTitle: term => `Vous venez de chercher "${term}"`,
+    suggestBody: 'Suivez cette recherche et recevez un message dès qu’une nouvelle annonce apparaît.',
+    suggestButton: 'Suivre',
+    matchCountNone: 'Rien trouvé pour l’instant',
+    matchesEarlier: 'Trouvées plus tôt',
+
     stripRunning: n => `${n} recherche${n === 1 ? '' : 's'} en cours`,
     stripIdle: 'Aucune recherche ne tourne, donc rien n’arrivera.',
     stripUnlinked: 'Telegram n’est pas lié, donc rien ne vous est envoyé.',
@@ -1023,6 +1045,7 @@ var ALERTS_ICONS = {
     user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
     zap: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
     search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+    plus: '<path d="M12 5v14"/><path d="M5 12h14"/>',
     archive: '<rect x="2" y="4" width="20" height="5" rx="1"/><path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"/><path d="M10 13h4"/>',
     logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>'
 };
@@ -1242,19 +1265,29 @@ function renderAlertMatchItems(matches, options = {}) {
     if (!matches || matches.length === 0) {
         return `<div class="cleanplaats-alerts-empty">${options.emptyText || ALERTS_TEXT.matchesEmpty}</div>`;
     }
+    let sawNew = false;
+    let dividerDone = false;
     return matches.map(match => {
         // "NIEUW" means new *to this user*: found after the last time they
         // looked. Baseline listings (the snapshot from the alert's first poll)
         // never qualify — they were already there when the alert was made.
         const seenAt = cleanplaatsAlertsRuntime.matchesSeenAt || 0;
         const isNew = !match.is_baseline && match.found_at > seenAt;
+        // In date order the new finds come first; one quiet line marks where
+        // they stop, so the feed reads as "since you last looked" and "before".
+        let divider = '';
+        if (isNew) sawNew = true;
+        else if (options.groupEarlier && sawNew && !dividerDone) {
+            dividerDone = true;
+            divider = `<div class="cleanplaats-alerts-matches-divider">${ALERTS_TEXT.matchesEarlier}</div>`;
+        }
         const thumb = match.image_url
             ? `<img class="cleanplaats-alerts-match-thumb" src="${escapeHtmlText(match.image_url)}" alt="" loading="lazy">`
             : `<span class="cleanplaats-alerts-match-thumb cleanplaats-alerts-match-thumb-empty">${alertIcon('image', 20)}</span>`;
         // The badge sits at the end of the row rather than in front of the
         // title: inline, it pushed the first line over and left every badged
         // title breaking a word early.
-        return `
+        return `${divider}
             <a class="cleanplaats-alerts-match${isNew ? ' is-new' : ''}" href="${escapeHtmlText(match.url)}">
                 ${thumb}
                 <span class="cleanplaats-alerts-match-info">
@@ -1348,7 +1381,9 @@ function wireAlertMatchesSort(getMatches, options = {}) {
         const matches = getMatches();
         if (!matchesList || !matches) return;
         const sorted = sortAlertMatches(matches, sortSelect.value);
-        matchesList.innerHTML = DOMPurify.sanitize(renderAlertMatchItems(sorted, options));
+        // The new/earlier split only means something in date order.
+        const renderOptions = { ...options, groupEarlier: options.groupEarlier && sortSelect.value === 'newest' };
+        matchesList.innerHTML = DOMPurify.sanitize(renderAlertMatchItems(sorted, renderOptions));
         wireAlertMatchLinks(matchesList);
     });
 }
@@ -1732,6 +1767,7 @@ function hideAlertsModal() {
     cleanplaatsAlertsRuntime.matchesSeenAt = null;
     cleanplaatsAlertsRuntime.openAlertMatchesId = null;
     cleanplaatsAlertsRuntime.editingAlert = null;
+    cleanplaatsAlertsRuntime.createOpen = false;
     // A half-filled create box is about the page it was opened on. Next time
     // that could be a different search entirely, so it starts over.
     resetAlertCreateDraft();
@@ -3264,21 +3300,6 @@ function alertsCurrentView() {
     return [...ALERTS_NAV_ITEMS, ALERTS_PLAN_NAV_ITEM].some(item => item.id === view) ? view : 'matches';
 }
 
-/**
- * How much of an alert's validity window is left, as a fraction. The bar is
- * the one place the window is a quantity rather than a sentence, which is what
- * makes "still fine" and "about to lapse" readable without doing the sum.
- */
-function alertValidityFraction(alert, me) {
-    const validity = getAlertValidity(alert);
-    if (!validity) return null;
-    const plan = me.plans && me.plans[me.tier === 'premium' ? 'premium' : 'free'];
-    const total = (plan && plan.validDays) || 0;
-    if (!total) return null;
-    if (validity.expired) return 0;
-    return Math.max(0.02, Math.min(1, validity.daysLeft / total));
-}
-
 // A search that keeps failing is not "checked 3 minutes ago": last_checked_at
 // moves on whether or not Marktplaats answered. Two strikes in a row is the
 // point where this stops being a blip.
@@ -3356,38 +3377,46 @@ function alertCheckCellHtml(alert, me) {
 }
 
 /**
- * The validity column of one row. Both lines answer the same question — how
- * much longer does this keep running — so the Telegram deadline sits here
- * rather than in the check column, where it was pushing out the one thing that
- * column exists to say. Repainted in place for the same reason as the check
- * cell: pausing a search retires the deadline with it.
+ * The line under a search's name, in words: when it is next checked, how long
+ * it keeps running, and anything that will stop it sooner. This replaces three
+ * table columns and a progress bar, which had people reading instruments to
+ * answer one question: is this still looking for me? Repainted in place by
+ * applyAlertRowState(), since pausing changes every part of it.
  */
-function alertValidityCellHtml(alert, me) {
+function alertMetaHtml(alert, me) {
     const validity = getAlertValidity(alert);
     const expired = Boolean(validity && validity.expired);
+    const parts = [];
+
+    if (expired) {
+        parts.push(`<span class="cleanplaats-alerts-meta-bad">${ALERTS_TEXT.validityExpired}</span>`);
+    } else {
+        parts.push(`<span>${alertCheckCellHtml(alert, me)}</span>`);
+        if (validity && validity.soon) {
+            // Verleng sits right next to the deadline it answers.
+            parts.push(`<span><span class="cleanplaats-alerts-meta-warn">${ALERTS_TEXT.validityLeft(validity.daysLeft)}</span>
+                <button type="button" class="cleanplaats-alerts-extend-btn cleanplaats-alerts-meta-action" data-alert-id="${alert.id}" data-extend="1">${ALERTS_TEXT.extendButton}</button></span>`);
+        } else if (validity) {
+            parts.push(`<span>${ALERTS_TEXT.validityLeft(validity.daysLeft)}</span>`);
+        }
+    }
+
     const unlinked = (alert.enabled && !expired) ? alertUnlinkedCheckState(alert, me) : null;
     // Paused by a downgrade rather than by the user: without the note it reads
     // as a switch someone flipped, and nobody remembers flipping it.
     const planPaused = !alert.enabled && alert.paused_reason === 'plan';
-    const note = unlinked
-        ? `<span class="cleanplaats-alerts-validity-note">${unlinked.stopped
+    if (unlinked) {
+        parts.push(`<span class="cleanplaats-alerts-meta-warn">${unlinked.stopped
             ? ALERTS_TEXT.unlinkedStopped
-            : ALERTS_TEXT.unlinkedStops(unlinked.hoursLeft)}</span>`
-        : (planPaused ? `<span class="cleanplaats-alerts-validity-note">${ALERTS_TEXT.planPausedNote}</span>` : '');
-
-    if (!validity) {
-        return `<span class="cleanplaats-alerts-validity-meter">
-                   <span class="cleanplaats-alerts-validity-text">∞</span>
-                   ${note}
-               </span>`;
+            : ALERTS_TEXT.unlinkedStops(unlinked.hoursLeft)}</span>`);
+    } else if (planPaused) {
+        parts.push(`<span class="cleanplaats-alerts-meta-warn">${ALERTS_TEXT.planPausedNote}</span>`);
     }
 
-    const fraction = alertValidityFraction(alert, me);
-    return `<span class="cleanplaats-alerts-validity-meter${expired ? ' is-expired' : (validity.soon ? ' is-soon' : '')}">
-               <span class="cleanplaats-alerts-validity-bar"><span style="width:${Math.round((fraction || 0) * 100)}%"></span></span>
-               <span class="cleanplaats-alerts-validity-text">${expired ? ALERTS_TEXT.validityExpired : ALERTS_TEXT.validityLeft(validity.daysLeft)}</span>
-               ${note}
-           </span>`;
+    // The middots are drawn by the stylesheet in front of every part but the
+    // first, so a part that wraps takes its dot along instead of leaving one
+    // hanging at the end of the line above.
+    return parts.join('');
 }
 
 /**
@@ -4441,11 +4470,14 @@ function buildAlertCreateFilterHtml() {
     `;
 }
 
-function buildAlertsCreateHtml(context, me) {
+function buildAlertsCreateHtml(context, me, closable) {
     const atLimit = (me.alertCount || 0) >= me.maxAlerts;
     return `
         <section class="cleanplaats-alerts-create">
-            <div class="cleanplaats-alerts-create-title">${ALERTS_TEXT.createTitle}</div>
+            <div class="cleanplaats-alerts-create-head">
+                <div class="cleanplaats-alerts-create-title">${ALERTS_TEXT.createTitle}</div>
+                ${closable ? `<button type="button" class="cleanplaats-alerts-text-btn" data-create-close>${ALERTS_TEXT.confirmCancel}</button>` : ''}
+            </div>
             <div class="cleanplaats-alerts-form-row">
                 <input type="text" id="cleanplaats-alert-label-input" value="${escapeHtmlText(String((context && context.searchParams.query) || '').slice(0, 120))}" placeholder="${ALERTS_TEXT.labelPlaceholder}" maxlength="120" aria-label="${ALERTS_TEXT.createTitle}">
                 <button id="cleanplaats-alert-create" class="cleanplaats-alerts-primary-btn">${ALERTS_TEXT.createButton}</button>
@@ -4461,30 +4493,32 @@ function buildAlertsCreateHtml(context, me) {
 }
 
 /**
- * One alert per row, with everything you only need while changing something
- * (channel, filters, delete) folded into a second row underneath. The row
- * itself answers the two questions the panel gets opened for: is it running,
- * and did it find anything.
+ * One search per item. The item answers the questions the panel gets opened
+ * for, in this order: which search, is it still looking (the line under the
+ * name, in words), and did it find anything (the button on the right). The
+ * pause switch stays on the item; everything you only need while changing
+ * something (channel, edit, ad types, delete) waits behind Instellingen.
+ *
+ * It used to be a six-column table with uppercase headers, a validity bar and
+ * a bare chevron, which read like a control panel rather than a list of things
+ * someone is looking for.
  */
-function buildAlertsTableHtml(alerts, me) {
-    if (alerts.length === 0) {
-        return `<div class="cleanplaats-alerts-empty">${ALERTS_TEXT.empty}</div>`;
-    }
+function buildAlertsListHtml(alerts, me) {
+    if (alerts.length === 0) return '';
 
     const currentSite = getCleanplaatsSiteKey() || 'marktplaats';
 
-    const rows = alerts.map(alert => {
+    const items = alerts.map(alert => {
         const validity = getAlertValidity(alert);
         const expired = Boolean(validity && validity.expired);
         const statusClass = alertStatusClass(alert, me);
-        const checkText = alertCheckCellHtml(alert, me);
 
         const label = alert.search_url
             ? `<a href="${escapeHtmlText(alert.search_url)}" class="cleanplaats-alerts-card-label">${escapeHtmlText(alert.label)}</a>`
             : `<span class="cleanplaats-alerts-card-label">${escapeHtmlText(alert.label)}</span>`;
 
-        // Only rows from somewhere else get a badge: naming the site you are
-        // already on would put a label on every row and say nothing.
+        // Only searches from somewhere else get a badge: naming the site you
+        // are already on would put a label on every item and say nothing.
         const alertSite = alert.site || 'marktplaats';
         const siteBadge = alertSite === currentSite
             ? ''
@@ -4492,11 +4526,10 @@ function buildAlertsTableHtml(alerts, me) {
 
         const matchCount = alert.match_count || 0;
         const openable = matchCount > 0 || (alert.baseline_count || 0) > 0;
+        const matchText = matchCount > 0 ? ALERTS_TEXT.matchCount(matchCount) : ALERTS_TEXT.matchCountNone;
         const matchCell = openable
-            ? `<button type="button" class="cleanplaats-alerts-match-badge cleanplaats-alerts-match-badge-link" data-open-matches="${alert.id}" aria-label="${escapeHtmlText(ALERTS_TEXT.alertMatchesOpen(alert.label))}">${ALERTS_TEXT.matchCount(matchCount)}${alertIcon('chevron', 13)}</button>`
-            : `<span class="cleanplaats-alerts-match-badge cleanplaats-alerts-match-badge-zero">${ALERTS_TEXT.matchCount(matchCount)}</span>`;
-
-        const validityCell = alertValidityCellHtml(alert, me);
+            ? `<button type="button" class="cleanplaats-alerts-found${matchCount > 0 ? ' has-finds' : ''}" data-open-matches="${alert.id}" aria-label="${escapeHtmlText(ALERTS_TEXT.alertMatchesOpen(alert.label))}"><span>${matchText}</span>${alertIcon('chevron', 15)}</button>`
+            : `<span class="cleanplaats-alerts-found is-empty">${matchText}</span>`;
 
         const statusCell = expired
             ? `<button class="cleanplaats-alerts-extend-btn cleanplaats-alerts-extend-btn-primary" data-alert-id="${alert.id}" data-extend="1">${ALERTS_TEXT.reactivateButton}</button>`
@@ -4514,30 +4547,29 @@ function buildAlertsTableHtml(alerts, me) {
 
         const editControl = buildAlertEditControlHtml(alert, currentSite);
 
-        const extendBtn = (validity && validity.soon && !expired)
-            ? `<button class="cleanplaats-alerts-extend-btn" data-alert-id="${alert.id}" data-extend="1">${ALERTS_TEXT.extendButton}</button>`
-            : '';
-
         return `
-            <div class="cleanplaats-alerts-row-group cleanplaats-alerts-alert-${statusClass}" data-alert-id="${alert.id}">
-                <div class="cleanplaats-alerts-row" role="row">
-                    <span class="cleanplaats-alerts-cell cleanplaats-alerts-cell-name" role="cell">
-                        <span class="cleanplaats-alerts-status-dot" title="${statusClass === 'expired' ? ALERTS_TEXT.validityExpired : (statusClass === 'active' ? ALERTS_TEXT.activeLabel : ALERTS_TEXT.pausedLabel)}"></span>
-                        ${label}${siteBadge}
-                    </span>
-                    <span class="cleanplaats-alerts-cell cleanplaats-alerts-cell-count" role="cell" data-label="${ALERTS_TEXT.tableFound}">${matchCell}</span>
-                    <span class="cleanplaats-alerts-cell cleanplaats-alerts-cell-check" role="cell" data-label="${ALERTS_TEXT.tableCheck}"><span class="cleanplaats-alerts-cell-value">${checkText}</span></span>
-                    <span class="cleanplaats-alerts-cell cleanplaats-alerts-cell-validity" role="cell" data-label="${ALERTS_TEXT.tableValidity}">${validityCell}</span>
-                    <span class="cleanplaats-alerts-cell cleanplaats-alerts-cell-status" role="cell">${statusCell}</span>
-                    <span class="cleanplaats-alerts-cell cleanplaats-alerts-cell-toggle" role="cell">
-                        <button type="button" class="cleanplaats-alerts-row-toggle" data-row-toggle="${alert.id}" aria-expanded="false" aria-label="${ALERTS_TEXT.detailsShow}">${alertIcon('chevron', 16)}</button>
-                    </span>
+            <li class="cleanplaats-alerts-row-group cleanplaats-alerts-item cleanplaats-alerts-alert-${statusClass}" data-alert-id="${alert.id}">
+                <div class="cleanplaats-alerts-item-main">
+                    <span class="cleanplaats-alerts-status-dot" aria-hidden="true"></span>
+                    <div class="cleanplaats-alerts-item-copy">
+                        <div class="cleanplaats-alerts-item-title">${label}${siteBadge}</div>
+                        <div class="cleanplaats-alerts-item-meta">${alertMetaHtml(alert, me)}</div>
+                    </div>
+                    <div class="cleanplaats-alerts-item-side">
+                        ${matchCell}
+                        <div class="cleanplaats-alerts-item-controls">
+                            ${statusCell}
+                            <button type="button" class="cleanplaats-alerts-item-settings" data-row-toggle="${alert.id}" aria-expanded="false">
+                                <span>${ALERTS_TEXT.detailsShow}</span>${alertIcon('chevron', 15)}
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="cleanplaats-alerts-row-details" hidden>
                     <div class="cleanplaats-alerts-details">
                         <div class="cleanplaats-alerts-details-row">
                             <span class="cleanplaats-alerts-details-label">${ALERTS_TEXT.detailsChannel}</span>
-                            <span class="cleanplaats-alerts-details-controls">${telegramSwitch}${extendBtn}</span>
+                            <span class="cleanplaats-alerts-details-controls">${telegramSwitch}</span>
                         </div>
                         ${editControl ? `
                         <div class="cleanplaats-alerts-details-row">
@@ -4545,32 +4577,40 @@ function buildAlertsTableHtml(alerts, me) {
                             <span class="cleanplaats-alerts-details-controls">${editControl}</span>
                         </div>` : ''}
                         ${buildAlertFilterBlockHtml(alert)}
-                        <div class="cleanplaats-alerts-details-row cleanplaats-alerts-details-row-danger">
-                            <span class="cleanplaats-alerts-details-label">${ALERTS_TEXT.detailsRemove}</span>
-                            <span class="cleanplaats-alerts-details-controls">
-                                <button class="cleanplaats-alerts-text-btn cleanplaats-alerts-text-btn-danger cleanplaats-alerts-delete" data-alert-id="${alert.id}" data-alert-label="${escapeHtmlText(alert.label)}">${alertIcon('trash', 14)}<span>${ALERTS_TEXT.deleteButton}</span></button>
-                            </span>
+                        <div class="cleanplaats-alerts-details-foot">
+                            <button class="cleanplaats-alerts-text-btn cleanplaats-alerts-text-btn-danger cleanplaats-alerts-delete" data-alert-id="${alert.id}" data-alert-label="${escapeHtmlText(alert.label)}">${alertIcon('trash', 14)}<span>${ALERTS_TEXT.deleteAlertButton}</span></button>
                         </div>
                     </div>
                 </div>
-            </div>
+            </li>
         `;
     }).join('');
 
-    // A grid rather than a <table>: the expandable detail row needs a full-width
-    // block under each row, and inside a real table that meant a colspan cell
-    // whose intrinsic width fought the fixed column widths.
+    return `<ul class="cleanplaats-alerts-list" aria-label="${ALERTS_TEXT.navAlerts}">${items}</ul>`;
+}
+
+/**
+ * A search the user just ran on the site, offered as one click: the most
+ * likely reason to open this view, and the create box already knows how to
+ * fill itself from that page. Left out when a search with the same term is
+ * already in the list.
+ */
+function buildAlertsSuggestionHtml(context, alerts) {
+    const term = String((context && context.searchParams && context.searchParams.query) || '').trim();
+    if (!term) return '';
+    // At the ceiling the offer could only end on the limit screen.
+    const me = cleanplaatsAlertsRuntime.me;
+    if (me && (me.alertCount || 0) >= me.maxAlerts) return '';
+    const lower = term.toLowerCase();
+    if (alerts.some(alert => String(alert.label || '').trim().toLowerCase() === lower)) return '';
     return `
-        <div class="cleanplaats-alerts-tablelist" role="table" aria-label="${ALERTS_TEXT.navAlerts}">
-            <div class="cleanplaats-alerts-row cleanplaats-alerts-row-head" role="row">
-                <span role="columnheader">${ALERTS_TEXT.tableName}</span>
-                <span role="columnheader">${ALERTS_TEXT.tableFound}</span>
-                <span role="columnheader">${ALERTS_TEXT.tableCheck}</span>
-                <span role="columnheader">${ALERTS_TEXT.tableValidity}</span>
-                <span role="columnheader">${ALERTS_TEXT.tableStatus}</span>
-                <span role="columnheader"><span class="cleanplaats-alerts-sr">${ALERTS_TEXT.detailsShow}</span></span>
-            </div>
-            ${rows}
+        <div class="cleanplaats-alerts-suggest">
+            <span class="cleanplaats-alerts-suggest-icon">${alertIcon('search', 18)}</span>
+            <span class="cleanplaats-alerts-suggest-copy">
+                <span class="cleanplaats-alerts-suggest-title">${escapeHtmlText(ALERTS_TEXT.suggestTitle(term.slice(0, 80)))}</span>
+                <span class="cleanplaats-alerts-suggest-body">${ALERTS_TEXT.suggestBody}</span>
+            </span>
+            <button type="button" class="cleanplaats-alerts-primary-btn" data-create-open>${ALERTS_TEXT.suggestButton}</button>
         </div>
     `;
 }
@@ -4894,21 +4934,33 @@ function renderAlertsMainView() {
     if (view === 'plan') {
         html = buildAlertsPlanViewHtml(me);
     } else if (view === 'alerts') {
+        // The create box is the whole view while there is nothing to list, and
+        // waits behind a button once there is: a form permanently on top of
+        // the list pushed the searches themselves below the fold.
+        const showCreate = alerts.length === 0
+            || cleanplaatsAlertsRuntime.createOpen
+            || isAlertsWalkthroughArmed();
+        const newButton = showCreate ? '' : `
+            <button type="button" class="cleanplaats-alerts-primary-btn cleanplaats-alerts-new-btn" data-create-open>
+                ${alertIcon('plus', 16)}<span>${ALERTS_TEXT.newAlertButton}</span>
+            </button>`;
         html = `
-            ${buildAlertsViewHead(ALERTS_TEXT.navAlerts, ALERTS_TEXT.alertsSub(me.maxAlerts))}
+            ${buildAlertsViewHead(ALERTS_TEXT.navAlerts, ALERTS_TEXT.alertsSub(me.maxAlerts), newButton)}
             ${buildAlertsBillingNoticeHtml(me, alerts)}
-            ${buildAlertsCreateHtml(context, me)}
+            ${showCreate ? buildAlertsCreateHtml(context, me, alerts.length > 0) : buildAlertsSuggestionHtml(context, alerts)}
             ${buildAlertsUnlinkedNoticeHtml(me, alerts)}
-            ${buildAlertsTableHtml(alerts, me)}
+            ${buildAlertsListHtml(alerts, me)}
         `;
     } else {
         const truncated = matches.length >= ALERT_MATCHES_PAGE_SIZE;
+        const seenAt = cleanplaatsAlertsRuntime.matchesSeenAt || 0;
+        const anyNew = matches.some(match => !match.is_baseline && match.found_at > seenAt);
         html = `
             ${buildAlertsViewHead(ALERTS_TEXT.navMatches, ALERTS_TEXT.matchesSub)}
             ${buildAlertsBillingNoticeHtml(me, alerts)}
             ${buildAlertsStatusStripHtml(me, alerts)}
             ${buildAlertsChecklistHtml(me, alerts)}
-            ${buildAlertMatchesSectionHtml(matches, ALERTS_TEXT.matchesTitle)}
+            ${buildAlertMatchesSectionHtml(matches, anyNew ? ALERTS_TEXT.matchesTitle : ALERTS_TEXT.alertMatchesTitle, { groupEarlier: true })}
             ${truncated ? `<div class="cleanplaats-alerts-matches-note">${ALERTS_TEXT.alertMatchesTruncated(ALERT_MATCHES_PAGE_SIZE)}</div>` : ''}
         `;
     }
@@ -4922,11 +4974,14 @@ function renderAlertsMainView() {
     wireAlertsMainEvents(main, view);
 }
 
-function buildAlertsViewHead(title, subtitle) {
+function buildAlertsViewHead(title, subtitle, action) {
     return `
         <div class="cleanplaats-alerts-view-head">
-            <h4>${title}</h4>
-            ${subtitle ? `<p>${subtitle}</p>` : ''}
+            <div class="cleanplaats-alerts-view-head-copy">
+                <h4>${title}</h4>
+                ${subtitle ? `<p>${subtitle}</p>` : ''}
+            </div>
+            ${action ? `<div class="cleanplaats-alerts-view-head-action">${action}</div>` : ''}
         </div>
     `;
 }
@@ -4967,8 +5022,29 @@ function wireAlertsMainEvents(main, view) {
     wireAlertMatchLinks(main);
 
     if (view === 'matches') {
-        wireAlertMatchesSort(() => cleanplaatsAlertsRuntime.cachedMatches);
+        wireAlertMatchesSort(() => cleanplaatsAlertsRuntime.cachedMatches, { groupEarlier: true });
     }
+
+    main.querySelectorAll('[data-create-open]').forEach(button => {
+        button.addEventListener('click', () => {
+            // At the ceiling the box could only end in a refusal, so the screen
+            // that offers the way out comes first.
+            const me = cleanplaatsAlertsRuntime.me;
+            if (me && (me.alertCount || 0) >= me.maxAlerts) {
+                renderAlertsLimitView(cleanplaatsAlertsRuntime.cachedAlerts || []);
+                return;
+            }
+            cleanplaatsAlertsRuntime.createOpen = true;
+            renderAlertsMainView();
+            document.getElementById('cleanplaats-alert-label-input')?.focus();
+        });
+    });
+
+    main.querySelector('[data-create-close]')?.addEventListener('click', () => {
+        cleanplaatsAlertsRuntime.createOpen = false;
+        resetAlertCreateDraft();
+        renderAlertsMainView();
+    });
 
     main.querySelectorAll('[data-open-matches]').forEach(button => {
         button.addEventListener('click', () => renderAlertMatchesView(button.dataset.openMatches));
@@ -5206,6 +5282,7 @@ function wireAlertsCreateBox(main) {
             // over again.
             resetAlertCreateDraft();
             cleanplaatsAlertsRuntime.createCleared = true;
+            cleanplaatsAlertsRuntime.createOpen = false;
             cleanplaatsAlertsRuntime.view = 'alerts';
             loadAlertsDashboard();
         }).catch(error => {
@@ -5275,22 +5352,7 @@ function wireAlertsRowControls(main) {
         };
     });
 
-    main.querySelectorAll('.cleanplaats-alerts-extend-btn').forEach(button => {
-        button.onclick = () => {
-            const wasExpired = button.classList.contains('cleanplaats-alerts-extend-btn-primary');
-            button.disabled = true;
-            alertsApiFetch(`/api/alerts/${button.dataset.alertId}`, {
-                method: 'PATCH',
-                body: JSON.stringify({ extend: true })
-            }).then(() => {
-                showBubbleNotification(wasExpired ? ALERTS_TEXT.reactivatedToast : ALERTS_TEXT.extendedToast);
-                loadAlertsDashboard();
-            }).catch(error => {
-                button.disabled = false;
-                notifyAlertsError(error);
-            });
-        };
-    });
+    wireAlertExtendButtons(main);
 
     main.querySelectorAll('.cleanplaats-alerts-switch[data-channel]').forEach(button => {
         button.onclick = () => {
@@ -5328,6 +5390,30 @@ function wireAlertsRowControls(main) {
                 confirmLabel: ALERTS_TEXT.telegramOffPauseConfirm,
                 danger: false,
                 onConfirm: send
+            });
+        };
+    });
+}
+
+/**
+ * Verleng and Reactiveren. Their own function because Verleng lives in the
+ * item's status line, which applyAlertRowState() repaints, and a repainted
+ * button has lost its handler.
+ */
+function wireAlertExtendButtons(root) {
+    root.querySelectorAll('.cleanplaats-alerts-extend-btn').forEach(button => {
+        button.onclick = () => {
+            const wasExpired = button.classList.contains('cleanplaats-alerts-extend-btn-primary');
+            button.disabled = true;
+            alertsApiFetch(`/api/alerts/${button.dataset.alertId}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ extend: true })
+            }).then(() => {
+                showBubbleNotification(wasExpired ? ALERTS_TEXT.reactivatedToast : ALERTS_TEXT.extendedToast);
+                loadAlertsDashboard();
+            }).catch(error => {
+                button.disabled = false;
+                notifyAlertsError(error);
             });
         };
     });
@@ -5390,22 +5476,14 @@ function applyAlertRowState(main, alertId, response, fallback) {
             );
             group.classList.add(`cleanplaats-alerts-alert-${statusClass}`);
 
-            const dot = group.querySelector('.cleanplaats-alerts-status-dot');
-            if (dot) {
-                dot.title = statusClass === 'expired'
-                    ? ALERTS_TEXT.validityExpired
-                    : (statusClass === 'active' ? ALERTS_TEXT.activeLabel : ALERTS_TEXT.pausedLabel);
-            }
-
             // "Volgende controle over 4 minuten" is no longer true once the
-            // alert is paused, so the check column is rewritten with it. The
-            // validity column goes along: a paused search is not counting down
-            // to the Telegram deadline either.
-            const checkValue = group.querySelector('.cleanplaats-alerts-cell-check .cleanplaats-alerts-cell-value');
-            if (checkValue) checkValue.innerHTML = DOMPurify.sanitize(alertCheckCellHtml(cached, me));
-
-            const validityCell = group.querySelector('.cleanplaats-alerts-cell-validity');
-            if (validityCell) validityCell.innerHTML = DOMPurify.sanitize(alertValidityCellHtml(cached, me));
+            // alert is paused, and a paused search is not counting down to the
+            // Telegram deadline either, so the status line is rewritten whole.
+            const meta = group.querySelector('.cleanplaats-alerts-item-meta');
+            if (meta) {
+                meta.innerHTML = DOMPurify.sanitize(alertMetaHtml(cached, me));
+                wireAlertExtendButtons(meta);
+            }
         }
     }
 
