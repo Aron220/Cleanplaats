@@ -1227,6 +1227,14 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_NL = {
+    '2.2.8': {
+        intro: 'Nieuw in deze versie:',
+        highlights: [
+            'Heeft een zoekopdracht weinig echte resultaten, dan vult Marktplaats die aan met advertenties die er alleen op lijken. Wil je die niet als melding krijgen? Vink onder Filters van je zoekopdracht "Suggesties zonder je zoekwoorden" aan.',
+            'Lukt iets niet bij je zoekopdrachten, dan zie je nu waarom.'
+        ],
+        note: null
+    },
     '2.2.7': {
         intro: 'Nieuw in deze versie:',
         highlights: [
@@ -1373,6 +1381,14 @@ var CLEANPLAATS_UPDATE_NOTES_NL = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_FR = {
+    '2.2.8': {
+        intro: 'Nouveautés de cette version :',
+        highlights: [
+            'Quand une recherche a peu de vrais résultats, le site les complète avec des annonces qui y ressemblent seulement. Vous ne voulez pas les recevoir en notification ? Cochez « Suggestions sans vos mots-clés » sous Filtres de votre recherche.',
+            'Si une action sur vos recherches ne fonctionne pas, vous voyez maintenant pourquoi.'
+        ],
+        note: null
+    },
     '2.2.7': {
         intro: 'Nouveautés de cette version :',
         highlights: [
