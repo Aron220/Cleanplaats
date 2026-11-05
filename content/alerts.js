@@ -358,6 +358,7 @@ var ALERTS_TEXT_NL = {
     filterEditorIntro: 'Vink aan welke soorten advertenties je voor deze zoekopdracht níét wilt zien.',
     filterReserved: 'Gereserveerd',
     filterOpval: 'Opvalstickers',
+    filterSimilar: 'Suggesties zonder je zoekwoorden',
     filterCountActive: n => `${n} actief`,
     filterNoneActive: 'Alles tonen',
     filterAlwaysExcluded: 'Top- en bedrijfsadvertenties krijg je nooit als melding.',
@@ -758,6 +759,7 @@ var ALERTS_TEXT_FR = {
     filterEditorIntro: 'Cochez les types d’annonces que vous ne voulez pas voir pour cette recherche.',
     filterReserved: 'Réservées',
     filterOpval: 'Autocollants promotionnels',
+    filterSimilar: 'Suggestions sans vos mots-clés',
     filterCountActive: n => `${n} actif${n === 1 ? '' : 's'}`,
     filterNoneActive: 'Tout afficher',
     filterAlwaysExcluded: 'Les pubs au top et les annonces professionnelles ne font jamais l’objet d’une notification.',
@@ -948,13 +950,18 @@ var ALERT_FILTER_DEFS = [
     // things in one product.
     { key: 'removeDagtoppers', setting: 'removeDagtoppers', label: () => getPanelLocaleText().dagtoppersLabel },
     { key: 'removeOpvalStickers', setting: 'removeOpvalStickers', label: () => ALERTS_TEXT.filterOpval },
-    { key: 'removeReservedListings', setting: 'removeReservedListings', label: () => ALERTS_TEXT.filterReserved }
+    { key: 'removeReservedListings', setting: 'removeReservedListings', label: () => ALERTS_TEXT.filterReserved },
+    // The 15 "looks like this" picks the site adds to a search with few real
+    // matches (searchType "kNN", see normalizeListing() on the server). No
+    // panel setting behind it: the search page has no such filter, and it is
+    // opt-in, so a new alert starts with it off.
+    { key: 'removeSimilarListings', setting: null, label: () => ALERTS_TEXT.filterSimilar }
 ];
 
 function getDefaultAlertFilters() {
     const s = (typeof CLEANPLAATS !== 'undefined' && CLEANPLAATS.settings) || {};
     const filters = {};
-    ALERT_FILTER_DEFS.forEach(def => { filters[def.key] = Boolean(s[def.setting]); });
+    ALERT_FILTER_DEFS.forEach(def => { filters[def.key] = def.setting ? Boolean(s[def.setting]) : false; });
     return filters;
 }
 
