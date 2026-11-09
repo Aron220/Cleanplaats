@@ -421,7 +421,7 @@ function createControlPanel() {
                             <option value="distance" ${CLEANPLAATS.settings.defaultSortMode == 'distance' ? 'selected' : ''}>${panelText.sortOptions.distance}</option>
                         </select>
                     </div>
-                    <button id="cleanplaats-open-preferences" class="cleanplaats-button secondary cleanplaats-panel-nav-button" type="button">${panelText.preferencesLabel}</button>
+                    <button id="cleanplaats-open-preferences" class="cleanplaats-button secondary cleanplaats-panel-nav-button" type="button"><span class="cleanplaats-row-icon">${alertIcon('sliders', 16)}</span><span class="cleanplaats-row-label">${panelText.preferencesLabel}</span></button>
                 </div>
 
                 ${CLEANPLAATS.featureFlags.showStats ? `
@@ -468,9 +468,13 @@ function createControlPanel() {
                 </details>
                 ` : ''}
 
-                <button id="cleanplaats-manage-terms" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageTerms}</button>
-                <button id="cleanplaats-manage-blacklist" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageSellers}</button>
-                <button id="cleanplaats-manage-blocked-listings" class="cleanplaats-button cleanplaats-blacklist-manage-btn">${panelText.manageBlockedListings}</button>
+                <div class="cleanplaats-section-title cleanplaats-section-title-next">${panelText.manageSectionTitle}</div>
+                <div class="cleanplaats-manage-list">
+                    <button id="cleanplaats-manage-terms" class="cleanplaats-button cleanplaats-blacklist-manage-btn" type="button"><span class="cleanplaats-row-icon">${alertIcon('type', 16)}</span><span class="cleanplaats-row-label">${panelText.manageTerms}</span></button>
+                    <button id="cleanplaats-manage-blacklist" class="cleanplaats-button cleanplaats-blacklist-manage-btn" type="button"><span class="cleanplaats-row-icon">${alertIcon('user', 16)}</span><span class="cleanplaats-row-label">${panelText.manageSellers}</span></button>
+                    <button id="cleanplaats-manage-blocked-listings" class="cleanplaats-button cleanplaats-blacklist-manage-btn" type="button"><span class="cleanplaats-row-icon">${alertIcon('tag', 16)}</span><span class="cleanplaats-row-label">${panelText.manageBlockedListings}</span></button>
+                    <button id="cleanplaats-manage-categories" class="cleanplaats-button cleanplaats-blacklist-manage-btn" type="button"><span class="cleanplaats-row-icon">${alertIcon('grid', 16)}</span><span class="cleanplaats-row-label">${panelText.manageCategories}</span></button>
+                </div>
                 ${getDonationSectionHtml(panelText)}
             </div>
             <div class="cleanplaats-panel-view" id="cleanplaats-view-preferences">
@@ -582,12 +586,24 @@ function createControlPanel() {
                             </select>
                         </div>
                     </div>
+                    <div class="cleanplaats-option cleanplaats-option-preference cleanplaats-option-preference-block cleanplaats-settings-transfer">
+                        <div class="cleanplaats-option-label">
+                            <span class="cleanplaats-option-label-text">${panelText.settingsTransferLabel}</span>
+                            <span class="cleanplaats-tooltip-icon" data-tooltip="${panelText.settingsTransferTooltip}">?</span>
+                        </div>
+                        <div class="cleanplaats-settings-transfer-buttons">
+                            <button id="cleanplaats-export-settings" class="cleanplaats-inline-button" type="button">${panelText.settingsExportButton}</button>
+                            <button id="cleanplaats-import-settings" class="cleanplaats-inline-button" type="button">${panelText.settingsImportButton}</button>
+                            <input id="cleanplaats-import-settings-file" type="file" accept="application/json,.json" hidden>
+                        </div>
+                    </div>
                 </div>
             </div>
             </div>
             <div id="cleanplaats-blacklist-modal" class="cleanplaats-blacklist-modal" style="display:none;"></div>
             <div id="cleanplaats-terms-modal" class="cleanplaats-terms-modal" style="display:none;"></div>
             <div id="cleanplaats-blocked-listings-modal" class="cleanplaats-blacklist-modal" style="display:none;"></div>
+            <div id="cleanplaats-categories-modal" class="cleanplaats-terms-modal cleanplaats-categories-modal" style="display:none;"></div>
         </div>
     `);
 
@@ -620,6 +636,13 @@ function createControlPanel() {
         e.preventDefault();
         showBlockedListingsModal(e.currentTarget);
     });
+
+    document.getElementById('cleanplaats-manage-categories').addEventListener('click', (e) => {
+        e.preventDefault();
+        showCategoriesModal(e.currentTarget);
+    });
+
+    wireSettingsTransferEvents();
 
     applyAlertsPromoIcon(panel);
     wireAlertsPromoEvents();
@@ -967,7 +990,7 @@ function setPanelCollapsed(targetCollapsed, options = {}) {
     // Anchored sub-modals (blacklist/terms/blocked listings) hang off the panel,
     // so fold them away with it. The alerts modal is intentionally left alone —
     // it lives independently and manages the panel itself.
-    ['cleanplaats-blacklist-modal', 'cleanplaats-terms-modal', 'cleanplaats-blocked-listings-modal'].forEach(id => {
+    ['cleanplaats-blacklist-modal', 'cleanplaats-terms-modal', 'cleanplaats-blocked-listings-modal', 'cleanplaats-categories-modal'].forEach(id => {
         const subModal = document.getElementById(id);
         if (subModal && subModal.style.display === 'block') {
             subModal.style.display = 'none';

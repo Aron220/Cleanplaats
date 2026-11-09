@@ -481,28 +481,179 @@
     opacity: 0.68;
   }
 
+  /* Back: a quiet text button with a drawn chevron, not a bordered pill. */
   .cleanplaats-panel-back {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    background: rgba(127, 127, 127, 0.1);
-    border: 1px solid rgba(127, 127, 127, 0.16);
-    border-radius: 999px;
+    gap: 6px;
+    margin-left: -6px;
+    padding: 6px 10px 6px 8px;
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
     color: inherit;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
-    padding: 4px 9px;
-    opacity: 0.84;
-    transition: opacity 0.2s ease, color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    line-height: 1;
+    opacity: 0.72;
+    transition: opacity 0.15s ease, background-color 0.15s ease;
+  }
+
+  .cleanplaats-panel-back::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    margin-left: 3px;
+    border-left: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+    transition: transform 0.15s ease;
   }
 
   .cleanplaats-panel-back:hover {
     opacity: 1;
-    background: rgba(127, 127, 127, 0.15);
-    border-color: rgba(127, 127, 127, 0.24);
+    background: rgba(127, 127, 127, 0.12);
   }
-  
+
+  .cleanplaats-panel-back:hover::before {
+    transform: translateX(-2px) rotate(45deg);
+  }
+
+  .cleanplaats-panel-back:active {
+    background: rgba(127, 127, 127, 0.2);
+  }
+
+  /* One focus ring for every button in the panel, instead of the browser's
+     black one. Only for keyboard focus and focus the panel moves itself. */
+  .cleanplaats-panel button:focus-visible,
+  .cleanplaats-panel select:focus-visible {
+    outline: 2px solid #2196F3;
+    outline-offset: 2px;
+  }
+
+  /* The "Beheer ..." buttons and the way into Voorkeuren: rows that lead
+     somewhere, so they look like a list with a chevron and not like four
+     primary actions stacked on top of each other. */
+  .cleanplaats-row-icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    opacity: 0.6;
+  }
+
+  .cleanplaats-row-label {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .cleanplaats-button:hover > .cleanplaats-row-icon {
+    opacity: 0.9;
+  }
+
+  .cleanplaats-manage-list {
+    margin-top: 0;
+    border: 1px solid #e3e7ec;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .cleanplaats-button.cleanplaats-blacklist-manage-btn,
+  .cleanplaats-button.cleanplaats-panel-nav-button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    margin: 0;
+    padding: 11px 12px;
+    background: #fff;
+    border: 0;
+    border-radius: 0;
+    color: #2b3440;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.25;
+    text-align: left;
+    transition: background-color 0.15s ease;
+  }
+
+  .cleanplaats-button.cleanplaats-blacklist-manage-btn + .cleanplaats-blacklist-manage-btn {
+    border-top: 1px solid #edf0f3;
+  }
+
+  .cleanplaats-button.secondary.cleanplaats-panel-nav-button {
+    margin-top: 10px;
+    margin-bottom: 4px;
+    background: #fff;
+    border: 1px solid #e3e7ec;
+    border-radius: 10px;
+  }
+
+  .cleanplaats-button.secondary.cleanplaats-panel-nav-button:hover {
+    background: #f4f6f8;
+  }
+
+  .cleanplaats-button.cleanplaats-blacklist-manage-btn::after,
+  .cleanplaats-button.cleanplaats-panel-nav-button::after {
+    content: "";
+    flex: 0 0 auto;
+    width: 6px;
+    height: 6px;
+    margin-right: 3px;
+    border-right: 2px solid currentColor;
+    border-top: 2px solid currentColor;
+    opacity: 0.4;
+    transform: rotate(45deg);
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+
+  .cleanplaats-button.cleanplaats-blacklist-manage-btn:hover,
+  .cleanplaats-button.cleanplaats-panel-nav-button:hover {
+    background: #f4f6f8;
+  }
+
+  .cleanplaats-button.cleanplaats-blacklist-manage-btn:hover::after,
+  .cleanplaats-button.cleanplaats-panel-nav-button:hover::after {
+    opacity: 0.8;
+    transform: translateX(2px) rotate(45deg);
+  }
+
+  .cleanplaats-button.cleanplaats-blacklist-manage-btn:active,
+  .cleanplaats-button.cleanplaats-panel-nav-button:active {
+    background: #e9edf1;
+    transform: none;
+  }
+
+  .cleanplaats-button.cleanplaats-blacklist-manage-btn:focus-visible {
+    outline-offset: -2px;
+  }
+
+  .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-button.secondary.cleanplaats-panel-nav-button {
+    background: var(--cleanplaats-dark-bg-soft);
+    color: var(--cleanplaats-dark-text);
+  }
+
+  .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-button.secondary.cleanplaats-panel-nav-button:hover {
+    background: #253240;
+  }
+
+  .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-manage-list,
+  .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-button.cleanplaats-panel-nav-button {
+    border-color: rgba(166, 189, 214, 0.16);
+  }
+
+  .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-button.cleanplaats-blacklist-manage-btn + .cleanplaats-blacklist-manage-btn {
+    border-top-color: rgba(166, 189, 214, 0.12);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cleanplaats-panel-back::before,
+    .cleanplaats-button.cleanplaats-blacklist-manage-btn::after,
+    .cleanplaats-button.cleanplaats-panel-nav-button::after {
+      transition: none;
+    }
+  }
+
   /* Options Styling */
   .cleanplaats-options {
     margin-bottom: 15px;
@@ -722,10 +873,6 @@
     color: #e4ebf3;
   }
 
-  .cleanplaats-panel-nav-button {
-    margin-top: 10px;
-    margin-bottom: 4px;
-  }
 
   @media (prefers-reduced-motion: reduce) {
     .cleanplaats-panel-views,
@@ -1919,24 +2066,6 @@
     }
   }
 
-  /* Style for the "Beheer verborgen verkopers" button */
-  #cleanplaats-manage-blacklist {
-    background-color: #2196F3;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    width: 100%;
-    margin-top: 15px;
-    transition: background-color 0.3s ease;
-    font-size: 14px;
-  }
-
-  #cleanplaats-manage-blacklist:hover {
-    background-color: #1976D2;
-  }
 
   /* Blacklist terms modal styles */
   .cleanplaats-terms-modal {
@@ -2017,7 +2146,8 @@
 
   /* Modern button style for blacklist terms */
   .cleanplaats-unblacklist-term-btn,
-  .cleanplaats-unblacklist-description-term-btn {
+  .cleanplaats-unblacklist-description-term-btn,
+  .cleanplaats-unblock-category-btn {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -2034,7 +2164,8 @@
   }
 
   .cleanplaats-unblacklist-term-btn::before,
-  .cleanplaats-unblacklist-description-term-btn::before {
+  .cleanplaats-unblacklist-description-term-btn::before,
+  .cleanplaats-unblock-category-btn::before {
     content: "👁";
     font-size: 14px;
     text-decoration: line-through;
@@ -2043,18 +2174,21 @@
   }
 
   .cleanplaats-unblacklist-term-btn:hover,
-  .cleanplaats-unblacklist-description-term-btn:hover {
+  .cleanplaats-unblacklist-description-term-btn:hover,
+  .cleanplaats-unblock-category-btn:hover {
     background: #4CAF50;
     transform: translateY(-1px);
   }
 
   .cleanplaats-unblacklist-term-btn:hover::before,
-  .cleanplaats-unblacklist-description-term-btn:hover::before {
+  .cleanplaats-unblacklist-description-term-btn:hover::before,
+  .cleanplaats-unblock-category-btn:hover::before {
     text-decoration: none;
   }
 
   /* Close button style for terms modal */
-  #cleanplaats-terms-close {
+  #cleanplaats-terms-close,
+  #cleanplaats-categories-close {
     width: 100%;
     margin-top: 12px;
     padding: 8px;
@@ -2067,7 +2201,8 @@
     transition: background 0.2s;
   }
 
-  #cleanplaats-terms-close:hover {
+  #cleanplaats-terms-close:hover,
+  #cleanplaats-categories-close:hover {
     background: #e0e0e0;
   }
 
@@ -2088,43 +2223,7 @@
     background: #e0e0e0;
   }
 
-  /* Style for the "Beheer blacklist termen" button */
-  #cleanplaats-manage-terms {
-    background-color: #2196F3;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    width: 100%;
-    margin-top: 15px;
-    transition: background-color 0.3s ease;
-    font-size: 14px;
-  }
 
-  #cleanplaats-manage-terms:hover {
-    background-color: #1976D2;
-  }
-
-  /* Style for the "Beheer verborgen advertenties" button */
-  #cleanplaats-manage-blocked-listings {
-    background-color: #2196F3;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    width: 100%;
-    margin-top: 15px;
-    transition: background-color 0.3s ease;
-    font-size: 14px;
-  }
-
-  #cleanplaats-manage-blocked-listings:hover {
-    background-color: #1976D2;
-  }
 
   /* Ensure removed ads do not leave blank spaces */
   .hz-Listing[data-cleanplaats-hidden] {
@@ -7234,3 +7333,58 @@
     border-top-color: #2b3641;
     color: #f0a0a0;
   }
+
+/* Hidden categories modal: reuses the terms modal, plus the pickers and the
+   shortlist of categories in the current results. */
+.cleanplaats-categories-modal-content h4::before {
+  content: "🗂️";
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-select {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+  background: #fff;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-select:disabled {
+  opacity: 0.6;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-add {
+  max-width: none;
+  width: 100%;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-add:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-suggestions {
+  max-height: 220px;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-count {
+  display: block;
+  margin-top: 2px;
+  color: #888;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cleanplaats-settings-transfer-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-categories-modal-content .cleanplaats-category-select {
+  background: var(--cleanplaats-dark-bg-soft);
+  color: var(--cleanplaats-dark-text);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-categories-modal-content .cleanplaats-category-count {
+  color: #9fb0c2;
+}

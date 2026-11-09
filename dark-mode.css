@@ -640,7 +640,8 @@ html.cleanplaats-dark-mode .cleanplaats-feed-hint::before {
 .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-term-input,
 .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-add-term-btn,
 .cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-blacklist-close,
-.cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-terms-close {
+.cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-terms-close,
+.cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-categories-close {
   background: var(--cleanplaats-dark-bg-soft);
   color: var(--cleanplaats-dark-text);
   border-color: var(--cleanplaats-dark-border);
@@ -667,7 +668,8 @@ html.cleanplaats-dark-mode .cleanplaats-feed-hint::before {
 .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-results-dropdown:hover,
 .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-add-term-btn:hover,
 .cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-blacklist-close:hover,
-.cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-terms-close:hover {
+.cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-terms-close:hover,
+.cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-categories-close:hover {
   background: #253240;
 }
 

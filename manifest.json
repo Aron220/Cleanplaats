@@ -70,6 +70,8 @@
           "content/cleanup.js",
           "content/range-filters.js",
           "content/blacklist.js",
+        "content/categories.js",
+        "content/settings-transfer.js",
           "content/alerts.js",
           "content/ui.js",
           "content/observers.js",

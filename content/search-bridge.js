@@ -38,9 +38,30 @@
     // The content script loads at document_end and the first search response
     // can arrive before that, so it asks for a replay of what it missed.
     let buffered = [];
+    // The category facet of the last response: which categories this search
+    // reaches, with counts. Only the latest matters, so it replaces.
+    let lastCategories = null;
 
     function post(listings) {
         window.postMessage({ source: SOURCE, type: 'listings', listings }, window.location.origin);
+    }
+
+    function postCategories(categories) {
+        window.postMessage({ source: SOURCE, type: 'categories', categories }, window.location.origin);
+    }
+
+    function collectCategories(data) {
+        const facet = (data?.facets || []).find(item => item?.key === 'RelevantCategories');
+        if (!facet || !Array.isArray(facet.categories)) return null;
+
+        return facet.categories
+            .filter(item => item && item.id)
+            .map(item => ({
+                id: String(item.id),
+                label: String(item.label || ''),
+                parentId: item.parentId ? String(item.parentId) : '',
+                count: Number(item.histogramCount) || 0
+            }));
     }
 
     function collectListings(data) {
@@ -67,7 +88,15 @@
                     // description empty and put their text in the other field.
                     description: [listing.description, listing.categorySpecificDescription]
                         .filter(text => typeof text === 'string' && text)
-                        .join(' ')
+                        .join(' '),
+                    // categoryId is the subcategory; the main one comes alongside.
+                    categoryId: listing.categoryId ? String(listing.categoryId) : '',
+                    l1CategoryId: listing.l1CategoryId ? String(listing.l1CategoryId) : '',
+                    // "Thin content" cards have no link to read an item id
+                    // from; their photo is the one thing that says which ad
+                    // they are. Same pattern as getApiListingImageId().
+                    imageId: (String((listing.imageUrls && listing.imageUrls[0]) || '')
+                        .match(/\/images\/(?:[0-9a-f]{2}\/)?([0-9a-f-]{8,})/i) || [])[1] || ''
                 };
             });
     }
@@ -95,6 +124,12 @@
             if (!response.ok) return;
 
             response.clone().json().then(data => {
+                const categories = collectCategories(data);
+                if (categories) {
+                    lastCategories = categories;
+                    postCategories(categories);
+                }
+
                 const listings = collectListings(data);
                 if (!listings.length) return;
 
@@ -109,6 +144,7 @@
     window.addEventListener('message', event => {
         if (event.source !== window || event.data?.source !== SOURCE || event.data.type !== 'replay') return;
         if (buffered.length) post(buffered);
+        if (lastCategories) postCategories(lastCategories);
     });
 })();
 

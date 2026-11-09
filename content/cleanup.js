@@ -249,6 +249,8 @@ function performCleanup() {
         });
     }
 
+    userBlockedCount += hideBlockedCategoryListings();
+
     if (CLEANPLAATS.settings.blockedListings?.length > 0) {
         getSearchResultCards().forEach(listing => {
             if (listing.hasAttribute('data-cleanplaats-hidden')) return;
@@ -969,6 +971,8 @@ function isApiListingBlocked(apiListing, topAdIds = new Set()) {
 
     const sellerName = apiListing.sellerInformation?.sellerName || '';
     if (isSellerBlacklisted(apiListing.sellerInformation?.sellerId, sellerName)) return true;
+
+    if (isListingCategoryBlocked(apiListing.categoryId, apiListing.l1CategoryId)) return true;
 
     const title = (apiListing.title || '').toLowerCase();
     if (CLEANPLAATS.settings.blacklistedTerms.some(term => title.includes(term.toLowerCase()))) return true;

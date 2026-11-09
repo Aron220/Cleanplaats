@@ -331,7 +331,9 @@ function getListingFactsFromApi(listing) {
         sticker: Boolean(listing?.opvalStickerText) || listing?.urgencyFeatureActive === true,
         description: [listing?.description, listing?.categorySpecificDescription]
             .filter(text => typeof text === 'string' && text)
-            .join(' ')
+            .join(' '),
+        categoryId: listing?.categoryId ? String(listing.categoryId) : '',
+        l1CategoryId: listing?.l1CategoryId ? String(listing.l1CategoryId) : ''
     };
 }
 
@@ -343,7 +345,9 @@ function rememberListingFacts(itemId, facts) {
         sellerName: String(facts.sellerName || ''),
         reserved: facts.reserved === true,
         sticker: facts.sticker === true,
-        description: String(facts.description || '')
+        description: String(facts.description || ''),
+        categoryId: String(facts.categoryId || ''),
+        l1CategoryId: String(facts.l1CategoryId || '')
     };
 
     const known = CLEANPLAATS.runtime.listingFactsById[key];
@@ -351,7 +355,9 @@ function rememberListingFacts(itemId, facts) {
         && known.sellerName === normalized.sellerName
         && known.reserved === normalized.reserved
         && known.sticker === normalized.sticker
-        && known.description === normalized.description) {
+        && known.description === normalized.description
+        && known.categoryId === normalized.categoryId
+        && known.l1CategoryId === normalized.l1CategoryId) {
         return false;
     }
 
@@ -359,10 +365,39 @@ function rememberListingFacts(itemId, facts) {
     return true;
 }
 
+var CLEANPLAATS_LISTING_IMAGE_ID_PATTERN = /\/images\/(?:[0-9a-f]{2}\/)?([0-9a-f-]{8,})/i;
+
+function getApiListingImageId(listing) {
+    const url = String(listing?.imageUrls?.[0] || listing?.pictures?.[0]?.url || '');
+    return (url.match(CLEANPLAATS_LISTING_IMAGE_ID_PATTERN)?.[1] || '').toLowerCase();
+}
+
+function rememberListingImage(itemId, imageId) {
+    const key = String(itemId || '').toLowerCase();
+    const image = String(imageId || '').toLowerCase();
+    if (!key || !image || CLEANPLAATS.runtime.listingIdsByImageId[image] === key) return false;
+    CLEANPLAATS.runtime.listingIdsByImageId[image] = key;
+    return true;
+}
+
+// Marktplaats renders "thin content" ads without an href on the card (see
+// hashStringToId), so there is no item id to read off them. Their photo is in
+// the search payload under the same id, which is enough to tell which ad the
+// card is. A card with neither a link nor a photo stays unknown.
+function getListingItemIdFromImage(listing) {
+    const image = listing.querySelector('img[src*="/images/"], img[data-src*="/images/"]');
+    if (!image) return '';
+
+    const src = image.getAttribute('src') || image.getAttribute('data-src') || '';
+    const imageId = (src.match(CLEANPLAATS_LISTING_IMAGE_ID_PATTERN)?.[1] || '').toLowerCase();
+    return imageId ? CLEANPLAATS.runtime.listingIdsByImageId[imageId] || '' : '';
+}
+
 function getListingFacts(listing) {
     if (!(listing instanceof Element)) return null;
 
-    const itemId = getListingIdFromUrl(listing.querySelector('a[href*="/v/"]')?.href);
+    const itemId = getListingIdFromUrl(listing.querySelector('a[href*="/v/"]')?.href)
+        || getListingItemIdFromImage(listing);
     return itemId ? CLEANPLAATS.runtime.listingFactsById[itemId] || null : null;
 }
 
@@ -377,6 +412,7 @@ function indexApiListings(apiListings) {
         rememberSellerId(itemId, listing?.sellerInformation?.sellerId);
         if (rememberPriceType(itemId, listing?.priceInfo?.priceType)) learnedSomething = true;
         if (rememberListingFacts(itemId, getListingFactsFromApi(listing))) learnedSomething = true;
+        if (rememberListingImage(itemId, getApiListingImageId(listing))) learnedSomething = true;
     });
 
     return learnedSomething;
@@ -396,6 +432,22 @@ function indexApiListingsFromNextData() {
         if (!response) return;
 
         indexApiListings([...(response.listings || []), ...(response.topBlock || [])]);
+
+        // The bridge's answer is newer whenever there is one: __NEXT_DATA__ is
+        // never rewritten on client-side navigation.
+        if (!CLEANPLAATS.runtime.searchCategoriesFromBridge) {
+            const facet = (response.facets || []).find(item => item?.key === 'RelevantCategories');
+            if (facet && Array.isArray(facet.categories)) {
+                CLEANPLAATS.runtime.searchCategories = facet.categories
+                    .filter(item => item && item.id)
+                    .map(item => ({
+                        id: String(item.id),
+                        label: String(item.label || ''),
+                        parentId: item.parentId ? String(item.parentId) : '',
+                        count: Number(item.histogramCount) || 0
+                    }));
+            }
+        }
     } catch (error) {
         // A parse failure only costs us id resolution on this pass.
     }
@@ -461,7 +513,14 @@ function listenForPageSearchResults() {
     window.addEventListener('message', event => {
         if (event.source !== window) return;
         const data = event.data;
-        if (!data || data.source !== CLEANPLAATS_SEARCH_BRIDGE_SOURCE || data.type !== 'listings') return;
+        if (!data || data.source !== CLEANPLAATS_SEARCH_BRIDGE_SOURCE) return;
+        if (data.type === 'categories' && Array.isArray(data.categories)) {
+            CLEANPLAATS.runtime.searchCategories = data.categories;
+            CLEANPLAATS.runtime.searchCategoriesFromBridge = true;
+            if (typeof updateCategoriesModal === 'function') updateCategoriesModal();
+            return;
+        }
+        if (data.type !== 'listings') return;
         if (!Array.isArray(data.listings)) return;
 
         let learnedSomething = false;
@@ -480,6 +539,7 @@ function listenForPageSearchResults() {
             // what makes a card a candidate for the bid lookup below.
             if (rememberPriceType(itemId, listing?.priceType)) learnedSomething = true;
             if (rememberListingFacts(itemId, listing)) learnedSomething = true;
+            if (rememberListingImage(itemId, listing?.imageId)) learnedSomething = true;
         });
 
         // The cards for this response may already be on screen, and nothing else
@@ -724,10 +784,19 @@ function getPanelLocaleText() {
             sellerAgeWarningToastTitle: 'Compte vendeur récent',
             sellerAgeWarningToastMessage: (sellerName, sellerAgeText, thresholdLabel) => `${sellerName} est sur la plateforme depuis ${sellerAgeText}. Votre seuil est ${thresholdLabel}.`,
             preferencesLabel: 'Préférences',
-            backLabel: '← Retour',
+            backLabel: 'Retour',
             preferencesIntro: '',
             expandPanelOnPageLoadLabel: 'Déplier le panneau à l’ouverture de la page',
             expandPanelOnPageLoadTooltip: 'Si cette option est désactivée, le panneau reste replié en bas à droite à chaque chargement de page (sauf la toute première visite).',
+            settingsTransferLabel: 'Transférer les paramètres',
+            settingsTransferTooltip: 'Enregistrez vos filtres, préférences et tout ce que vous avez masqué dans un fichier. Sur un autre ordinateur, Importer les remet en place. Ce que vous y aviez déjà masqué est conservé.',
+            settingsExportButton: 'Exporter',
+            settingsImportButton: 'Importer',
+            settingsExportedToast: 'Vos paramètres ont été enregistrés dans un fichier.',
+            settingsImportedToast: added => added > 0
+                ? `Paramètres importés, ${added} ${added === 1 ? 'blocage ajouté' : 'blocages ajoutés'}.`
+                : 'Paramètres importés.',
+            settingsImportFailedToast: 'Cleanplaats ne peut pas lire ce fichier. Choisissez un fichier créé avec Exporter.',
             showUpdatePopupsLabel: 'Afficher les notifications de mise à jour',
             showUpdatePopupsTooltip: "Affiche une fenêtre 'Quoi de neuf ?' après une mise à jour de Cleanplaats.",
             updatePopupDontShowAgainLabel: 'Ne plus afficher ceci lors des prochaines mises à jour',
@@ -773,9 +842,25 @@ function getPanelLocaleText() {
             statsBids: 'Avec offre :',
             statsUserBlocked: 'Masquées par vous :',
             statsOther: 'Bannières pub :',
-            manageTerms: 'Gérer les termes masqués',
-            manageSellers: 'Gérer les vendeurs masqués',
-            manageBlockedListings: 'Gérer les annonces masquées',
+            manageSectionTitle: 'Masqué par vous',
+            manageTerms: 'Termes',
+            manageSellers: 'Vendeurs',
+            manageBlockedListings: 'Annonces',
+            manageCategories: 'Catégories',
+            categoriesModalTitle: 'Catégories masquées',
+            categoriesBlockedLabel: 'Masquées',
+            categoriesEmpty: 'Aucune catégorie masquée',
+            categoriesInResultsLabel: 'Dans ces résultats',
+            categoriesOnPageCount: n => `${n} sur cette page`,
+            categoriesInSearchCount: n => `${n} dans toute la recherche`,
+            categoriesPickLabel: 'Choisir une catégorie',
+            categoriesMainPlaceholder: 'Choisissez une catégorie principale',
+            categoriesSubAll: 'Toute la catégorie',
+            categoriesLoading: 'Chargement des catégories…',
+            categoriesHideButton: 'Masquer',
+            categoriesHelp: 'Les annonces de cette catégorie disparaissent de vos résultats. Laissez la sous-catégorie vide pour masquer toute la catégorie principale.',
+            categoryToastHidden: name => `Les annonces de ${name} sont maintenant masquées.`,
+            categoryToastShown: name => `Les annonces de ${name} sont de nouveau affichées.`,
             termsModalTitle: 'Termes masqués',
             termsTitleSectionLabel: 'Dans le titre',
             termsDescriptionSectionLabel: 'Dans la description',
@@ -946,10 +1031,19 @@ function getPanelLocaleText() {
         sellerAgeWarningToastTitle: 'Nieuw verkoperaccount',
         sellerAgeWarningToastMessage: (sellerName, sellerAgeText, thresholdLabel) => `${sellerName} zit pas ${sellerAgeText}. Jouw grens staat op ${thresholdLabel}. Verberg verkoper via de knop onder de naam.`,
         preferencesLabel: 'Voorkeuren',
-        backLabel: '← Terug',
+        backLabel: 'Terug',
         preferencesIntro: '',
         expandPanelOnPageLoadLabel: 'Paneel uitklappen bij openen pagina',
         expandPanelOnPageLoadTooltip: 'Uit: het paneel start bij elke pagina ingeklapt (behalve de allereerste keer). Aan: onthoudt of het paneel uit- of ingeklapt was.',
+        settingsTransferLabel: 'Instellingen overzetten',
+        settingsTransferTooltip: 'Sla je filters, voorkeuren en alles wat je verborgen hebt op als bestand. Op een andere computer zet je ze met Importeren terug. Wat je daar al verborgen had, blijft staan.',
+        settingsExportButton: 'Exporteren',
+        settingsImportButton: 'Importeren',
+        settingsExportedToast: 'Je instellingen zijn opgeslagen als bestand.',
+        settingsImportedToast: added => added > 0
+            ? `Instellingen geïmporteerd, ${added} ${added === 1 ? 'blokkade' : 'blokkades'} toegevoegd.`
+            : 'Instellingen geïmporteerd.',
+        settingsImportFailedToast: 'Dit bestand kan Cleanplaats niet lezen. Kies een bestand dat je met Exporteren hebt gemaakt.',
         showUpdatePopupsLabel: 'Toon updatemeldingen',
         showUpdatePopupsTooltip: "Toon na een update van Cleanplaats een 'Wat is er nieuw?'-pop-up.",
         updatePopupDontShowAgainLabel: 'Laat dit niet meer zien bij volgende updates',
@@ -995,9 +1089,26 @@ function getPanelLocaleText() {
         statsBids: 'Met biedingen:',
         statsUserBlocked: 'Door jou verborgen:',
         statsOther: 'Reclamebanners:',
-        manageTerms: 'Beheer blacklist-termen',
-        manageSellers: 'Beheer verborgen verkopers',
-        manageBlockedListings: 'Beheer verborgen advertenties',
+        // Under their own heading, so the rows only have to say what kind.
+        manageSectionTitle: 'Door jou verborgen',
+        manageTerms: 'Termen',
+        manageSellers: 'Verkopers',
+        manageBlockedListings: 'Advertenties',
+        manageCategories: 'Categorieën',
+        categoriesModalTitle: 'Verborgen categorieën',
+        categoriesBlockedLabel: 'Verborgen',
+        categoriesEmpty: 'Geen categorieën verborgen',
+        categoriesInResultsLabel: 'In deze zoekresultaten',
+        categoriesOnPageCount: n => `${n} op deze pagina`,
+        categoriesInSearchCount: n => `${n} in de hele zoekopdracht`,
+        categoriesPickLabel: 'Kies een categorie',
+        categoriesMainPlaceholder: 'Kies een hoofdcategorie',
+        categoriesSubAll: 'Hele categorie',
+        categoriesLoading: 'Categorieën laden…',
+        categoriesHideButton: 'Verbergen',
+        categoriesHelp: 'Advertenties uit deze categorie verdwijnen uit je zoekresultaten. Laat de subcategorie leeg om de hele hoofdcategorie te verbergen.',
+        categoryToastHidden: name => `Advertenties uit ${name} zijn nu verborgen.`,
+        categoryToastShown: name => `Advertenties uit ${name} worden weer getoond.`,
         termsModalTitle: 'Blacklist termen',
         termsTitleSectionLabel: 'In titels',
         termsDescriptionSectionLabel: 'In beschrijvingen',
@@ -1110,6 +1221,8 @@ var CLEANPLAATS = {
         blacklistedTerms: [],
         blacklistedDescriptionTerms: [],
         blockedListings: [],
+        // Whole main categories or subcategories, see content/categories.js.
+        blockedCategories: [],
         resultsPerPage: 30,
         defaultSortMode: 'standard',
         expandPanelOnPageLoad: false,
@@ -1161,6 +1274,16 @@ var CLEANPLAATS = {
         // itemId -> what a photo-grid card does not show: seller name,
         // reserved, sticker, description. See getListingFactsFromApi().
         listingFactsById: {},
+        // first photo's id -> itemId, for the cards that carry no link. See
+        // getListingItemIdFromImage().
+        listingIdsByImageId: {},
+        // The category facet of the search on screen: { id, label, parentId,
+        // count }, from __NEXT_DATA__ or, once the page fetches, the bridge.
+        searchCategories: null,
+        searchCategoriesFromBridge: false,
+        // The main categories of this site, and subcategories per main
+        // category, for the pickers in the categories modal.
+        categoryTree: { main: null, sub: {} },
         // The photo-grid card menu that is open, if any. See
         // toggleGalleryCardMenu().
         galleryCardMenu: null,

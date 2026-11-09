@@ -17,6 +17,8 @@ function showTermsModal(triggerButton) {
     if (blockedListingsModal) blockedListingsModal.style.display = 'none';
     const alertsModalFromTerms = document.getElementById('cleanplaats-alerts-modal');
     if (alertsModalFromTerms) alertsModalFromTerms.style.display = 'none';
+    const categoriesModalFromTerms = document.getElementById('cleanplaats-categories-modal');
+    if (categoriesModalFromTerms) categoriesModalFromTerms.style.display = 'none';
 
     if (modal.style.display === 'block') {
         modal.style.display = 'none';
@@ -579,6 +581,8 @@ function showBlacklistModal(triggerButton) {
     if (blockedListingsModal2) blockedListingsModal2.style.display = 'none';
     const alertsModalFromBlacklist = document.getElementById('cleanplaats-alerts-modal');
     if (alertsModalFromBlacklist) alertsModalFromBlacklist.style.display = 'none';
+    const categoriesModalFromBlacklist = document.getElementById('cleanplaats-categories-modal');
+    if (categoriesModalFromBlacklist) categoriesModalFromBlacklist.style.display = 'none';
 
     if (modal.style.display === 'block') {
         modal.style.display = 'none';
@@ -1024,6 +1028,8 @@ function showBlockedListingsModal(triggerButton) {
     if (termsModal) termsModal.style.display = 'none';
     const alertsModalFromBlocked = document.getElementById('cleanplaats-alerts-modal');
     if (alertsModalFromBlocked) alertsModalFromBlocked.style.display = 'none';
+    const categoriesModalFromBlocked = document.getElementById('cleanplaats-categories-modal');
+    if (categoriesModalFromBlocked) categoriesModalFromBlocked.style.display = 'none';
 
     if (modal.style.display === 'block') {
         modal.style.display = 'none';

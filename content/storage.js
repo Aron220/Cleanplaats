@@ -179,6 +179,7 @@ function applySettingsFromOtherTab(serializedSettings) {
     updateBlacklistModal();
     updateTermsModal();
     updateBlockedListingsModal();
+    if (typeof updateCategoriesModal === 'function') updateCategoriesModal();
 }
 
 function applyPanelStateFromOtherTab(serializedPanelState) {
@@ -306,6 +307,7 @@ function persistHidesListingsPreference() {
             || settings.blacklistedDescriptionTerms?.length
             || settings.blacklistedSellers?.length
             || settings.blockedListings?.length
+            || settings.blockedCategories?.length
         );
         window.localStorage.setItem(CLEANPLAATS_HIDES_LISTINGS_STORAGE_KEY, hidesSomething ? 'true' : 'false');
     } catch (error) {

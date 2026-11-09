@@ -1047,7 +1047,12 @@ var ALERTS_ICONS = {
     search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
     plus: '<path d="M12 5v14"/><path d="M5 12h14"/>',
     archive: '<rect x="2" y="4" width="20" height="5" rx="1"/><path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"/><path d="M10 13h4"/>',
-    logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>'
+    logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
+    // The rows in the panel that lead to a list or a view, see content/ui.js.
+    type: '<path d="M4 7V5h16v2"/><path d="M12 5v14"/><path d="M9 19h6"/>',
+    tag: '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/>',
+    grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    sliders: '<path d="M4 6h8"/><path d="M18 6h2"/><circle cx="15" cy="6" r="2.5"/><path d="M4 18h2"/><path d="M12 18h8"/><circle cx="9" cy="18" r="2.5"/>'
 };
 
 function alertIcon(name, size) {
@@ -1791,7 +1796,7 @@ function restorePanelAfterAlerts() {
 function showAlertsModal(options = {}) {
     const overlay = getAlertsOverlay();
 
-    ['cleanplaats-blacklist-modal', 'cleanplaats-terms-modal', 'cleanplaats-blocked-listings-modal'].forEach(id => {
+    ['cleanplaats-blacklist-modal', 'cleanplaats-terms-modal', 'cleanplaats-blocked-listings-modal', 'cleanplaats-categories-modal'].forEach(id => {
         const otherModal = document.getElementById(id);
         if (otherModal) otherModal.style.display = 'none';
     });
