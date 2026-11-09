@@ -1355,6 +1355,14 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_NL = {
+    '2.2.9': {
+        intro: 'Nieuw in deze versie:',
+        highlights: [
+            'Verberg hele categorieën, zoals Boeken of alleen Vinyl Singles. Kies Categorieën onder "Door jou verborgen" in het paneel. Het werkt in je zoekresultaten en op de homepage bij Voor jou en In je buurt.',
+            'Zet je instellingen over naar een andere computer: Voorkeuren > Instellingen overzetten.'
+        ],
+        note: null
+    },
     '2.2.8': {
         intro: 'Nieuw in deze versie:',
         highlights: [
@@ -1510,6 +1518,14 @@ var CLEANPLAATS_UPDATE_NOTES_NL = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_FR = {
+    '2.2.9': {
+        intro: 'Nouveautés de cette version :',
+        highlights: [
+            'Masquez des catégories entières, comme Livres ou seulement une sous-catégorie. Choisissez Catégories sous « Masqué par vous » dans le panneau. Cela fonctionne dans vos résultats et sur la page d’accueil.',
+            'Transférez vos paramètres vers un autre ordinateur : Préférences > Transférer les paramètres.'
+        ],
+        note: null
+    },
     '2.2.8': {
         intro: 'Nouveautés de cette version :',
         highlights: [
