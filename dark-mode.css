@@ -817,3 +817,47 @@ html.cleanplaats-dark-mode .SellerLocationSection-locationMap {
   overflow: hidden !important;
 }
 
+
+/* List windows on the dark surface. The soft fill used above is the same
+   colour as the window itself, so Toevoegen and Sluiten read as loose text,
+   and the control border is far too bright for rows and dividers. The fills
+   are fixed values: the site's own hover token resolves to the surface colour. */
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-add-term-btn {
+  background: #1976d2;
+  color: #fff;
+  border-color: transparent;
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-add-term-btn:hover {
+  background: #1e88e5;
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-blacklist-close,
+.cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-terms-close,
+.cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-categories-close,
+.cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-blocked-listings-close {
+  background: #363635;
+  color: var(--cleanplaats-dark-text);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-blacklist-close:hover,
+.cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-terms-close:hover,
+.cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-categories-close:hover,
+.cleanplaats-panel.cleanplaats-dark-mode #cleanplaats-blocked-listings-close:hover {
+  background: #424241;
+}
+
+html.cleanplaats-dark-mode .cleanplaats-blacklist-modal-content li,
+html.cleanplaats-dark-mode .cleanplaats-terms-modal-content li {
+  border-color: var(--cleanplaats-dark-border-subtle) !important;
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-terms-section,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-contact-grid,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-stats {
+  border-color: var(--cleanplaats-dark-border-subtle);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-tooltip-icon {
+  background: #363635;
+}

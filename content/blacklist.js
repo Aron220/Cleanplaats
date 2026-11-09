@@ -30,13 +30,13 @@ function showTermsModal(triggerButton) {
 
     modal.innerHTML = DOMPurify.sanitize(`
         <div class="cleanplaats-terms-modal-content">
-            <h4>${panelText.termsModalTitle}</h4>
+            <h4><span class="cleanplaats-modal-title-icon">${alertIcon('type', 18)}</span>${panelText.termsModalTitle}</h4>
 
             <div class="cleanplaats-terms-section-label">${panelText.termsTitleSectionLabel}</div>
             <ul id="cleanplaats-terms-list">
                 ${titleTerms.length === 0 ? `<li><em>${panelText.termsEmpty}</em></li>` : titleTerms.map(term => `
                     <li>
-                        <span>${escapeHtmlText(term)}</span>
+                        <span title="${escapeHtmlText(term)}">${escapeHtmlText(term)}</span>
                         <button class="cleanplaats-unblacklist-term-btn" data-term="${escapeHtmlText(term)}">${panelText.hiddenButton}</button>
                     </li>
                 `).join('')}
@@ -52,7 +52,7 @@ function showTermsModal(triggerButton) {
                 <ul id="cleanplaats-description-terms-list">
                     ${descTerms.length === 0 ? `<li><em>${panelText.descriptionTermsEmpty}</em></li>` : descTerms.map(term => `
                         <li>
-                            <span>${escapeHtmlText(term)}</span>
+                            <span title="${escapeHtmlText(term)}">${escapeHtmlText(term)}</span>
                             <button class="cleanplaats-unblacklist-description-term-btn" data-term="${escapeHtmlText(term)}">${panelText.hiddenButton}</button>
                         </li>
                     `).join('')}
@@ -136,7 +136,7 @@ function updateTermsModal() {
                 ? `<li><em>${panelText.termsEmpty}</em></li>`
                 : CLEANPLAATS.settings.blacklistedTerms.map(term => `
                     <li>
-                        <span>${escapeHtmlText(term)}</span>
+                        <span title="${escapeHtmlText(term)}">${escapeHtmlText(term)}</span>
                         <button class="cleanplaats-unblacklist-term-btn" data-term="${escapeHtmlText(term)}">${panelText.hiddenButton}</button>
                     </li>
                 `).join('')
@@ -151,7 +151,7 @@ function updateTermsModal() {
                 ? `<li><em>${panelText.descriptionTermsEmpty}</em></li>`
                 : CLEANPLAATS.settings.blacklistedDescriptionTerms.map(term => `
                     <li>
-                        <span>${escapeHtmlText(term)}</span>
+                        <span title="${escapeHtmlText(term)}">${escapeHtmlText(term)}</span>
                         <button class="cleanplaats-unblacklist-description-term-btn" data-term="${escapeHtmlText(term)}">${panelText.hiddenButton}</button>
                     </li>
                 `).join('')
@@ -593,11 +593,11 @@ function showBlacklistModal(triggerButton) {
 
     modal.innerHTML = DOMPurify.sanitize(`
         <div class="cleanplaats-blacklist-modal-content">
-            <h4>${panelText.sellersModalTitle}</h4>
+            <h4><span class="cleanplaats-modal-title-icon">${alertIcon('user', 18)}</span>${panelText.sellersModalTitle}</h4>
             <ul id="cleanplaats-blacklist-list">
                 ${sellers.length === 0 ? `<li><em>${panelText.sellersEmpty}</em></li>` : sellers.map(seller => `
                     <li>
-                        <span>${escapeHtmlText(getBlacklistedSellerLabel(seller))}</span>
+                        <span title="${escapeHtmlText(getBlacklistedSellerLabel(seller))}">${escapeHtmlText(getBlacklistedSellerLabel(seller))}</span>
                         <button class="cleanplaats-unblacklist-btn" data-seller-key="${escapeHtmlText(getBlacklistedSellerKey(seller))}">${panelText.hiddenButton}</button>
                     </li>
                 `).join('')}
@@ -662,7 +662,7 @@ function updateBlacklistModal() {
                 ? `<li><em>${panelText.sellersEmpty}</em></li>`
                 : sellers.map(seller => `
                     <li>
-                        <span>${escapeHtmlText(getBlacklistedSellerLabel(seller))}</span>
+                        <span title="${escapeHtmlText(getBlacklistedSellerLabel(seller))}">${escapeHtmlText(getBlacklistedSellerLabel(seller))}</span>
                         <button class="cleanplaats-unblacklist-btn" data-seller-key="${escapeHtmlText(getBlacklistedSellerKey(seller))}">${panelText.hiddenButton}</button>
                     </li>
                 `).join('')
@@ -1040,11 +1040,11 @@ function showBlockedListingsModal(triggerButton) {
 
     modal.innerHTML = DOMPurify.sanitize(`
         <div class="cleanplaats-blacklist-modal-content">
-            <h4>${panelText.blockedListingsModalTitle}</h4>
+            <h4><span class="cleanplaats-modal-title-icon">${alertIcon('tag', 18)}</span>${panelText.blockedListingsModalTitle}</h4>
             <ul id="cleanplaats-blocked-listings-list">
                 ${listings.length === 0 ? `<li><em>${panelText.blockedListingsEmpty}</em></li>` : listings.map(item => `
                     <li>
-                        <span>${escapeHtmlText(item.title || item.id)}</span>
+                        <span title="${escapeHtmlText(item.title || item.id)}">${escapeHtmlText(item.title || item.id)}</span>
                         <button class="cleanplaats-unblock-listing-btn" data-listing-id="${escapeHtmlText(item.id)}">${panelText.hiddenButton}</button>
                     </li>
                 `).join('')}
@@ -1081,7 +1081,7 @@ function updateBlockedListingsModal() {
                 ? `<li><em>${panelText.blockedListingsEmpty}</em></li>`
                 : listings.map(item => `
                     <li>
-                        <span>${escapeHtmlText(item.title || item.id)}</span>
+                        <span title="${escapeHtmlText(item.title || item.id)}">${escapeHtmlText(item.title || item.id)}</span>
                         <button class="cleanplaats-unblock-listing-btn" data-listing-id="${escapeHtmlText(item.id)}">${panelText.hiddenButton}</button>
                     </li>
                 `).join('')

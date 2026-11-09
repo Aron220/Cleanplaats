@@ -1109,7 +1109,7 @@ function getPanelLocaleText() {
         categoriesHelp: 'Advertenties uit deze categorie verdwijnen uit je zoekresultaten. Laat de subcategorie leeg om de hele hoofdcategorie te verbergen.',
         categoryToastHidden: name => `Advertenties uit ${name} zijn nu verborgen.`,
         categoryToastShown: name => `Advertenties uit ${name} worden weer getoond.`,
-        termsModalTitle: 'Blacklist termen',
+        termsModalTitle: 'Verborgen termen',
         termsTitleSectionLabel: 'In titels',
         termsDescriptionSectionLabel: 'In beschrijvingen',
         termsEmpty: 'Geen termen toegevoegd',

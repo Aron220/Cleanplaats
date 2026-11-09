@@ -2,7 +2,7 @@
 .cleanplaats-panel {
     /* One source for the header ceiling: the header animates against it when
        the panel folds, and the content subtracts it to stay inside 82vh. */
-    --cleanplaats-header-max: 160px;
+    --cleanplaats-header-max: 72px;
     position: fixed;
     bottom: calc(20px + var(--cleanplaats-floating-offset, 0px));
     right: 20px;
@@ -93,10 +93,8 @@
     user-select: none;
     opacity: 1;
     visibility: visible;
-    /* Tall enough for the title row plus both contact rows. It was 120px, which
-       silently cut off the GitHub and review links once the mail address moved
-       onto a row of its own. The collapse animation still needs a number here,
-       so it stays a ceiling rather than becoming `none`. */
+    /* Only the title row lives here now. The collapse animation still needs a
+       number, so it stays a ceiling rather than becoming `none`. */
     max-height: var(--cleanplaats-header-max);
     overflow: hidden;
     transition: opacity 0.25s ease-out,
@@ -291,7 +289,10 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 8px;
-    padding-top: 8px;
+    /* Footer of the main view: help and review links sit under everything the
+       panel is actually for. */
+    margin-top: 14px;
+    padding-top: 10px;
     border-top: 1px solid #f0f0f0;
   }
 
@@ -1429,11 +1430,6 @@
     gap: 8px;
   }
 
-  .cleanplaats-blacklist-modal-content h4::before {
-    content: "👁";
-    font-size: 18px;
-  }
-
   .cleanplaats-blacklist-modal-content ul {
     list-style: none;
     padding: 0;
@@ -2094,12 +2090,6 @@
     display: flex;
     align-items: center;
     gap: 8px;
-  }
-
-  .cleanplaats-terms-modal-content h4::before {
-    content: "✏️";
-    font-size: 18px;
-    margin-right: 6px;
   }
 
   .cleanplaats-terms-modal-content ul {
@@ -7336,10 +7326,6 @@
 
 /* Hidden categories modal: reuses the terms modal, plus the pickers and the
    shortlist of categories in the current results. */
-.cleanplaats-categories-modal-content h4::before {
-  content: "🗂️";
-}
-
 .cleanplaats-categories-modal-content .cleanplaats-category-select {
   display: block;
   width: 100%;
@@ -7387,4 +7373,15 @@
 
 .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-categories-modal-content .cleanplaats-category-count {
   color: #9fb0c2;
+}
+
+/* Window titles carry the same icon as the row that opens them. */
+.cleanplaats-modal-title-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: #6b7280;
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-modal-title-icon {
+  color: var(--cleanplaats-dark-text-muted);
 }

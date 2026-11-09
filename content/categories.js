@@ -319,7 +319,7 @@ function renderCategoriesModal() {
 
     modal.innerHTML = DOMPurify.sanitize(`
         <div class="cleanplaats-terms-modal-content cleanplaats-categories-modal-content">
-            <h4>${panelText.categoriesModalTitle}</h4>
+            <h4><span class="cleanplaats-modal-title-icon">${alertIcon('grid', 18)}</span>${panelText.categoriesModalTitle}</h4>
 
             <div class="cleanplaats-terms-section-label">${panelText.categoriesBlockedLabel}</div>
             <ul id="cleanplaats-categories-list">
