@@ -1964,6 +1964,8 @@ function renderAlertsShell(overlay) {
 function setAlertsBody(html) {
     const body = document.getElementById('cleanplaats-alerts-body');
     if (!body) return null;
+    const card = alertsCard();
+    const fromRect = card ? card.getBoundingClientRect() : null;
     body.innerHTML = DOMPurify.sanitize(html);
     // Only the dashboard runs the rail-and-surface grid; every other view is a
     // single readable column, and the dashboard adds the class back itself.
@@ -1982,7 +1984,32 @@ function setAlertsBody(html) {
     // would throw the input away, and the sub-views have their own way back.
     setAlertsRefreshVisible(false);
     setAlertsAccountVisible(false);
+    // The dashboard puts its class back after this returns, so the card's new
+    // size is only known once the caller's synchronous work is done. A
+    // microtask still runs before the next paint, so nothing flashes.
+    if (card) queueMicrotask(() => animateAlertsCardResize(card, body, fromRect));
     return body;
+}
+
+/**
+ * Between the dashboard and a sub-view the card changes width and height in
+ * one frame, which reads as a jump. Tween from the old box to the new one and
+ * fade the new content in, so its reflow during the tween isn't visible.
+ */
+function animateAlertsCardResize(card, body, from) {
+    if (!from || from.width === 0 || !card.isConnected) return;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    // A second view change mid-tween: start from where the card is now, which
+    // is what `from` measured, rather than letting two tweens fight.
+    card.getAnimations?.().forEach(a => { if (a.id === 'cleanplaats-resize') a.cancel(); });
+    const to = card.getBoundingClientRect();
+    if (Math.abs(to.width - from.width) < 4 && Math.abs(to.height - from.height) < 4) return;
+    const resize = card.animate([
+        { width: `${from.width}px`, height: `${from.height}px` },
+        { width: `${to.width}px`, height: `${to.height}px` }
+    ], { duration: 280, easing: 'cubic-bezier(0.2, 0.9, 0.3, 1)' });
+    resize.id = 'cleanplaats-resize';
+    body.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, delay: 60, easing: 'ease-out', fill: 'backwards' });
 }
 
 /**
