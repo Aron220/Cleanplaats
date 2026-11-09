@@ -274,6 +274,7 @@ function performCleanup() {
     updateStatsDisplay();
     updateEmptyPageBanner();
     updateFeedPause();
+    refreshCategorySuggestions();
 }
 
 function resetPreviousChanges() {

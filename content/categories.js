@@ -54,11 +54,63 @@ function isListingCategoryBlocked(categoryId, l1CategoryId) {
         : entry.id === main));
 }
 
+// The cards category blocks apply to: the results of a search, or on the
+// homepage the "Voor jou" / "In je buurt" feed, whose items carry their
+// category in /hp/api/feed-items (see content/search-bridge.js). Scoped to
+// the feed itself, so photo cards elsewhere (a carousel on an ad page) are
+// never taken for it.
+var CLEANPLAATS_FEED_CARD_SELECTOR = '.FeedItemList-module-container .hz-StructuredListing';
+
+function getCategoryFilterCards() {
+    return isSearchResultsPage()
+        ? getSearchResultCards()
+        : document.querySelectorAll(CLEANPLAATS_FEED_CARD_SELECTOR);
+}
+
+// The bridge only sees the feed pages the site fetches. The ones it loaded on
+// an earlier visit (up to six hours back) it keeps in sessionStorage and
+// renders from there without a request, so on a return visit the first
+// hundred or more cards would never be matched. Same items as the API, read
+// once per page load: anything newer comes through the bridge.
+var CLEANPLAATS_FEED_CACHE_KEY_PATTERN = /^HOMEPAGE_FEED_.+_VALUE$/;
+
+function indexHomepageFeedCache() {
+    if (isSearchResultsPage() || CLEANPLAATS.runtime.feedCacheIndexed) return;
+    CLEANPLAATS.runtime.feedCacheIndexed = true;
+
+    let keys = [];
+    try {
+        keys = Object.keys(sessionStorage).filter(key => CLEANPLAATS_FEED_CACHE_KEY_PATTERN.test(key));
+    } catch (error) {
+        return;
+    }
+
+    keys.forEach(key => {
+        try {
+            const pages = JSON.parse(sessionStorage.getItem(key) || 'null')?.feedItems;
+            Object.values(pages || {}).forEach(items => {
+                (Array.isArray(items) ? items : []).forEach(item => {
+                    const itemId = String(item?.itemId || '').toLowerCase();
+                    const id = item?.category?.id ? String(item.category.id) : '';
+                    if (!itemId || !id) return;
+
+                    const parentId = item.category.parentId ? String(item.category.parentId) : '';
+                    rememberListingFacts(itemId, { categoryId: id, l1CategoryId: parentId || id });
+                    rememberListingImage(itemId, (String(item.picture?.url || '').match(CLEANPLAATS_LISTING_IMAGE_ID_PATTERN) || [])[1]);
+                });
+            });
+        } catch (error) {
+            // A cache the site changed shape of only costs the matching.
+        }
+    });
+}
+
 function hideBlockedCategoryListings() {
     if (getBlockedCategoryEntries().length === 0) return 0;
+    indexHomepageFeedCache();
 
     let count = 0;
-    getSearchResultCards().forEach(listing => {
+    getCategoryFilterCards().forEach(listing => {
         if (listing.hasAttribute('data-cleanplaats-hidden')) return;
         const facts = getListingFacts(listing);
         if (facts && isListingCategoryBlocked(facts.categoryId, facts.l1CategoryId) && hideElement(listing)) {
@@ -175,13 +227,18 @@ function loadSubCategories(l1Id) {
 // subcategories of the search, so a category can have ads on the page and
 // still be missing from it.
 function getSearchCategorySuggestions() {
-    if (!isSearchResultsPage()) return [];
+    const onSearchPage = isSearchResultsPage();
+    if (!onSearchPage && !document.querySelector(CLEANPLAATS_FEED_CARD_SELECTOR)) return [];
+    indexHomepageFeedCache();
 
     const names = new Map();
     (CLEANPLAATS.runtime.categoryTree.main || []).forEach(item => names.set(item.id, item.name));
 
     const totals = new Map();
-    const facet = Array.isArray(CLEANPLAATS.runtime.searchCategories) ? CLEANPLAATS.runtime.searchCategories : [];
+    // The homepage has no search, so no facet: only what the feed has loaded.
+    const facet = onSearchPage && Array.isArray(CLEANPLAATS.runtime.searchCategories)
+        ? CLEANPLAATS.runtime.searchCategories
+        : [];
     facet.forEach(item => {
         if (item.parentId) return;
         if (item.label && !names.has(item.id)) names.set(item.id, item.label);
@@ -194,7 +251,7 @@ function getSearchCategorySuggestions() {
     });
 
     const onPage = new Map();
-    getSearchResultCards().forEach(listing => {
+    getCategoryFilterCards().forEach(listing => {
         if (listing.hasAttribute('data-cleanplaats-hidden')) return;
         const main = getListingFacts(listing)?.l1CategoryId;
         if (main) onPage.set(main, (onPage.get(main) || 0) + 1);
@@ -308,6 +365,25 @@ function updateCategoriesModal() {
     renderCategoriesModal();
 }
 
+// What the open modal last listed under "In deze zoekresultaten" / "Op de
+// homepage", to tell whether a cleanup pass changed it.
+var cleanplaatsCategorySuggestionsShown = '';
+
+function getCategorySuggestionsSignature(suggestions) {
+    return suggestions.map(item => `${item.id}:${item.onPage}:${item.total}`).join(',');
+}
+
+// Run after every cleanup pass. The feed keeps loading cards while the modal
+// is open, and a cleanup pass is what follows them onto the page, so this is
+// where the counts can change. Only redrawn when they did: a pass runs on
+// every mutation of the page, and a redraw takes the focus off its buttons.
+function refreshCategorySuggestions() {
+    const modal = document.getElementById('cleanplaats-categories-modal');
+    if (!modal || modal.style.display !== 'block') return;
+    if (getCategorySuggestionsSignature(getSearchCategorySuggestions()) === cleanplaatsCategorySuggestionsShown) return;
+    updateCategoriesModal();
+}
+
 function renderCategoriesModal() {
     const modal = document.getElementById('cleanplaats-categories-modal');
     if (!modal || modal.style.display !== 'block') return;
@@ -315,6 +391,7 @@ function renderCategoriesModal() {
 
     const blocked = getBlockedCategoryEntries();
     const suggestions = getSearchCategorySuggestions();
+    cleanplaatsCategorySuggestionsShown = getCategorySuggestionsSignature(suggestions);
     const numberLocale = is2ememainLocale() ? 'fr-BE' : 'nl-NL';
 
     modal.innerHTML = DOMPurify.sanitize(`
@@ -333,7 +410,7 @@ function renderCategoriesModal() {
 
             ${suggestions.length > 0 ? `
             <div class="cleanplaats-terms-section">
-                <div class="cleanplaats-terms-section-label">${panelText.categoriesInResultsLabel}</div>
+                <div class="cleanplaats-terms-section-label">${isSearchResultsPage() ? panelText.categoriesInResultsLabel : panelText.categoriesInFeedLabel}</div>
                 <ul class="cleanplaats-category-suggestions">
                     ${suggestions.map(item => `
                         <li>

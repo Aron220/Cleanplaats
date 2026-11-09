@@ -851,6 +851,7 @@ function getPanelLocaleText() {
             categoriesBlockedLabel: 'Masquées',
             categoriesEmpty: 'Aucune catégorie masquée',
             categoriesInResultsLabel: 'Dans ces résultats',
+            categoriesInFeedLabel: 'Sur la page d’accueil',
             categoriesOnPageCount: n => `${n} sur cette page`,
             categoriesInSearchCount: n => `${n} dans toute la recherche`,
             categoriesPickLabel: 'Choisir une catégorie',
@@ -858,7 +859,7 @@ function getPanelLocaleText() {
             categoriesSubAll: 'Toute la catégorie',
             categoriesLoading: 'Chargement des catégories…',
             categoriesHideButton: 'Masquer',
-            categoriesHelp: 'Les annonces de cette catégorie disparaissent de vos résultats. Laissez la sous-catégorie vide pour masquer toute la catégorie principale.',
+            categoriesHelp: 'Les annonces de cette catégorie disparaissent de vos résultats et de la page d’accueil. Laissez la sous-catégorie vide pour masquer toute la catégorie principale.',
             categoryToastHidden: name => `Les annonces de ${name} sont maintenant masquées.`,
             categoryToastShown: name => `Les annonces de ${name} sont de nouveau affichées.`,
             termsModalTitle: 'Termes masqués',
@@ -1099,6 +1100,7 @@ function getPanelLocaleText() {
         categoriesBlockedLabel: 'Verborgen',
         categoriesEmpty: 'Geen categorieën verborgen',
         categoriesInResultsLabel: 'In deze zoekresultaten',
+        categoriesInFeedLabel: 'Op de homepage',
         categoriesOnPageCount: n => `${n} op deze pagina`,
         categoriesInSearchCount: n => `${n} in de hele zoekopdracht`,
         categoriesPickLabel: 'Kies een categorie',
@@ -1106,7 +1108,7 @@ function getPanelLocaleText() {
         categoriesSubAll: 'Hele categorie',
         categoriesLoading: 'Categorieën laden…',
         categoriesHideButton: 'Verbergen',
-        categoriesHelp: 'Advertenties uit deze categorie verdwijnen uit je zoekresultaten. Laat de subcategorie leeg om de hele hoofdcategorie te verbergen.',
+        categoriesHelp: 'Advertenties uit deze categorie verdwijnen uit je zoekresultaten en van de homepage. Laat de subcategorie leeg om de hele hoofdcategorie te verbergen.',
         categoryToastHidden: name => `Advertenties uit ${name} zijn nu verborgen.`,
         categoryToastShown: name => `Advertenties uit ${name} worden weer getoond.`,
         termsModalTitle: 'Verborgen termen',
@@ -1277,6 +1279,9 @@ var CLEANPLAATS = {
         // first photo's id -> itemId, for the cards that carry no link. See
         // getListingItemIdFromImage().
         listingIdsByImageId: {},
+        // Whether the homepage feed's own sessionStorage cache has been read,
+        // see indexHomepageFeedCache().
+        feedCacheIndexed: false,
         // The category facet of the search on screen: { id, label, parentId,
         // count }, from __NEXT_DATA__ or, once the page fetches, the bridge.
         searchCategories: null,

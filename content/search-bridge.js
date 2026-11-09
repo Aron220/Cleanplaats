@@ -29,6 +29,10 @@
 (() => {
     const SOURCE = 'cleanplaats-search-bridge';
     const SEARCH_PATH = '/lrp/api/search';
+    // The homepage feed ("Voor jou" / "In je buurt"). Its items carry no
+    // seller, but they do carry their category, which is what the category
+    // blocks need there.
+    const FEED_PATH = '/hp/api/feed-items';
     // Enough to cover a 100-result page plus its top block several times over.
     const MAX_BUFFERED = 500;
 
@@ -101,6 +105,28 @@
             });
     }
 
+    // A feed item names its subcategory and that one's parent. Only the
+    // category is passed on: the rest of what a search listing has is not in
+    // the feed, and empty values would tell the filters nothing.
+    function collectFeedListings(data) {
+        const items = Array.isArray(data) ? data : (Array.isArray(data?.items) ? data.items : []);
+
+        return items
+            .filter(item => item?.itemId && item.category?.id)
+            .map(item => {
+                const id = String(item.category.id);
+                const parentId = item.category.parentId ? String(item.category.parentId) : '';
+                return {
+                    itemId: String(item.itemId),
+                    categoryId: id,
+                    // A listing filed straight under a main category has no parent.
+                    l1CategoryId: parentId || id,
+                    imageId: (String(item.picture?.url || '')
+                        .match(/\/images\/(?:[0-9a-f]{2}\/)?([0-9a-f-]{8,})/i) || [])[1] || ''
+                };
+            });
+    }
+
     function getRequestUrl(input) {
         try {
             if (typeof input === 'string') return input;
@@ -114,7 +140,9 @@
     window.fetch = function (...args) {
         const responsePromise = originalFetch.apply(window, args);
 
-        if (!getRequestUrl(args[0]).includes(SEARCH_PATH)) {
+        const url = getRequestUrl(args[0]);
+        const isFeed = url.includes(FEED_PATH);
+        if (!isFeed && !url.includes(SEARCH_PATH)) {
             return responsePromise;
         }
 
@@ -124,6 +152,14 @@
             if (!response.ok) return;
 
             response.clone().json().then(data => {
+                if (isFeed) {
+                    const feedListings = collectFeedListings(data);
+                    if (!feedListings.length) return;
+                    buffered = buffered.concat(feedListings).slice(-MAX_BUFFERED);
+                    post(feedListings);
+                    return;
+                }
+
                 const categories = collectCategories(data);
                 if (categories) {
                     lastCategories = categories;
