@@ -787,12 +787,36 @@ function parseLocationHashParams() {
 // /q/<term>/ pages and in the hash on category pages (/l/<cat>/#q:<term>). The
 // hash never reaches the server, so __NEXT_DATA__ reports an empty searchQuery
 // there — searching without the term returns a far larger, unrelated result set.
-function getSearchQueryFromUrl() {
+//
+// A literal plus needs care. The search box writes a space as a raw "+" and a
+// plus as "%2b", but the site then turns every plus into a space anyway, so
+// "VU+" searches the page for "vu". The search API does know "vu+" as a token
+// of its own (it only answers to it quoted, see quotePlusTerms() on the
+// server), so an alert can do what the page cannot. The default mirrors the
+// site, because the page filter has to fetch exactly the result set on screen;
+// keepPlus reads what the user typed, for alerts. In the hash the site decodes
+// twice: "%2B" becomes a space there too, a doubly encoded "%252B" survives as
+// a plus.
+function getSearchQueryFromUrl({ keepPlus = false } = {}) {
+    const decode = value => {
+        try { return decodeURIComponent(value); } catch (error) { return value; }
+    };
+
     const hashQuery = parseLocationHashParams().q;
-    if (hashQuery) return decodeURIComponent(hashQuery).replace(/\+/g, ' ').trim();
+    if (hashQuery) {
+        const term = keepPlus
+            ? decode(decode(hashQuery.replace(/\+/g, ' ')))
+            : decode(decode(hashQuery).replace(/\+/g, ' '));
+        return term.trim();
+    }
 
     const pathQuery = (window.location.pathname.match(/\/q\/([^/]+)/) || [, ''])[1];
-    if (pathQuery) return decodeURIComponent(pathQuery).replace(/[-+]/g, ' ').trim();
+    if (pathQuery) {
+        const term = keepPlus
+            ? decode(pathQuery.replace(/\+/g, ' '))
+            : decode(pathQuery).replace(/\+/g, ' ');
+        return term.replace(/-/g, ' ').trim();
+    }
 
     return '';
 }

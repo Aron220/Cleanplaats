@@ -1585,13 +1585,15 @@ function getAlertSearchContext() {
     // searchQuery there. getSearchQueryFromUrl() knows both spots;
     // getNextDataQuery() pairs the term with the filters of the search on
     // screen, and returns null when __NEXT_DATA__ still describes an older one.
-    const urlQuery = getSearchQueryFromUrl();
+    // keepPlus: the term as typed, so "VU+" stays "VU+" here even though the
+    // page itself searched for "vu".
+    const urlQuery = getSearchQueryFromUrl({ keepPlus: true });
     const pageQuery = getNextDataQuery();
 
     let searchParams = {};
 
     if (pageQuery) {
-        if (pageQuery.searchQuery) searchParams.query = String(pageQuery.searchQuery);
+        if (pageQuery.searchQuery) searchParams.query = urlQuery || String(pageQuery.searchQuery);
         // Only the names /lrp/api/search answers to. The path-shaped ones the
         // page also carries (attributesValuesIds and friends) are accepted by
         // the endpoint and then ignored — sending them would look like a filter
@@ -3902,6 +3904,10 @@ function alertCategoryKeyFor(categoryId) {
 function buildAlertSearchUrl(draft, term) {
     const query = String(term || '').trim();
     const encoded = encodeURIComponent(query).replace(/%20/g, '+');
+    // In the hash a plus has to be encoded twice to reach the site's search as
+    // a plus (see getSearchQueryFromUrl() in cleanup.js). The /q/ path has no
+    // such escape: there the site always reads it as a space.
+    const hashEncoded = encoded.replace(/%2B/g, '%252B');
     const l1Key = draft.l1Key || alertCategoryKeyFor(draft.l1CategoryId);
     const l2Key = draft.l2Key || alertCategoryKeyFor(draft.l2CategoryId);
 
@@ -3912,7 +3918,7 @@ function buildAlertSearchUrl(draft, term) {
     const hash = [];
     // On a category page the term only exists in the hash; on a /q/ page it is
     // already in the path and repeating it changes nothing.
-    if (l1Key && query) hash.push(`q:${encoded}`);
+    if (l1Key && query) hash.push(`q:${hashEncoded}`);
 
     // A range is two fragment keys here, not one with two colons: the site
     // splits every fragment entry on its first colon, so "PriceCents:0:50000"
@@ -3999,6 +4005,21 @@ function fillAlertDraftFromSearchParams(draft, pageParams) {
 }
 
 /**
+ * A copy of quotePlusTerms() in the server's marktplaats.js, so the count under
+ * the box is the count the poller will see: "VU+" only means VU+ to the search
+ * API when it is quoted, unquoted the plus is dropped and it searches "vu".
+ */
+function quoteAlertPlusTerms(query) {
+    return String(query).replace(/"[^"]*"|[^\s"]+/g, part => {
+        if (part.startsWith('"') || !part.includes('+')) return part;
+        const negated = part.startsWith('-');
+        const word = negated ? part.slice(1) : part;
+        if (!/[\p{L}\p{N}]/u.test(word)) return part;
+        return `${negated ? '-' : ''}"${word}"`;
+    });
+}
+
+/**
  * Runs the search the create box currently describes, for a single result, and
  * hands back both the total and the filter data the site itself would show for
  * it. One request feeds three things: the live count under the box, the broad
@@ -4014,6 +4035,7 @@ function fetchAlertCreateFacets(searchParams) {
         // l1CategoryIds does not), so this renames one parameter.
         if (key === 'l2CategoryId') params.append('l2CategoryIds[]', value);
         else if (Array.isArray(value)) value.forEach(item => params.append(`${key}[]`, item));
+        else if (key === 'query') params.set(key, quoteAlertPlusTerms(value));
         else params.set(key, value);
     });
 
