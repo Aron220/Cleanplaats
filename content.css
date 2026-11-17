@@ -7337,18 +7337,192 @@
   opacity: 0.6;
 }
 
+/* The subcategory picker under the main select: a caption with the tick
+   count, a filter for long lists, the checklist and its loading, empty and
+   error line. */
+.cleanplaats-categories-modal-content .cleanplaats-category-subpicker[hidden],
+.cleanplaats-categories-modal-content .cleanplaats-category-checklist[hidden],
+.cleanplaats-categories-modal-content .cleanplaats-category-sub-state[hidden],
+.cleanplaats-categories-modal-content .cleanplaats-category-filter[hidden],
+.cleanplaats-categories-modal-content .cleanplaats-category-textlink[hidden] {
+  display: none;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-subhead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 4px 0 6px;
+  font-size: 13px;
+}
+
+.cleanplaats-categories-modal-content #cleanplaats-category-subhead-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: #2d3c4d;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-subhead-status {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: baseline;
+  gap: 8px;
+  color: #5f6b7a;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-filter {
+  display: block;
+  width: 100%;
+  margin-bottom: 6px;
+  background: #fff;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-checklist {
+  max-height: min(220px, 32vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin-bottom: 8px;
+  padding: 4px;
+  border: 1px solid #d5dbe2;
+  border-radius: 6px;
+  background: #fff;
+  scrollbar-width: thin;
+  scrollbar-color: #c3cad3 transparent;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 30px;
+  padding: 0 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1.25;
+  color: #2d3c4d;
+  cursor: pointer;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-check:hover {
+  background: #f2f5f8;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-check.is-checked {
+  background: rgba(33, 150, 243, 0.09);
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-check input {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #2196F3;
+  cursor: inherit;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-check input:focus-visible {
+  outline: 2px solid #2196F3;
+  outline-offset: 2px;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-check-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-check-group {
+  color: #5f6b7a;
+}
+
+/* Already hidden: the box is ticked and locked, the name stays readable and
+   says why in words, not only in a tooltip. */
+.cleanplaats-categories-modal-content .cleanplaats-category-check:has(input:disabled) {
+  cursor: default;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-check:has(input:disabled):hover {
+  background: none;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-check input:disabled {
+  opacity: 0.45;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-check-tag {
+  flex: 0 0 auto;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #eef1f4;
+  color: #4e5b6a;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-sub-state {
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #f5f7f9;
+  color: #4e5b6a;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-sub-state.is-error {
+  background: #fdf1f1;
+  color: #a12828;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-textlink {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #1769c2;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-textlink:hover {
+  color: #0f4f96;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-sub-state.is-error .cleanplaats-category-textlink {
+  color: inherit;
+}
+
+.cleanplaats-categories-modal-content .cleanplaats-category-whole {
+  display: block;
+  margin: 10px auto 0;
+  font-size: 13px;
+  font-weight: 500;
+}
+
 .cleanplaats-categories-modal-content .cleanplaats-category-add {
   max-width: none;
   width: 100%;
 }
 
 .cleanplaats-categories-modal-content .cleanplaats-category-add:disabled {
-  opacity: 0.5;
+  background: #e8ecf0;
+  color: #5f6b7a;
   cursor: default;
 }
 
 .cleanplaats-categories-modal-content .cleanplaats-category-suggestions {
-  max-height: 220px;
+  max-height: min(220px, 24vh);
 }
 
 .cleanplaats-categories-modal-content .cleanplaats-category-count {
@@ -7369,6 +7543,61 @@
 .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-categories-modal-content .cleanplaats-category-select {
   background: var(--cleanplaats-dark-bg-soft);
   color: var(--cleanplaats-dark-text);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-categories-modal-content .cleanplaats-category-checklist,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-categories-modal-content .cleanplaats-category-filter {
+  background: var(--cleanplaats-dark-bg-soft);
+  border-color: var(--cleanplaats-dark-border-subtle);
+  color: var(--cleanplaats-dark-text);
+  scrollbar-color: var(--cleanplaats-dark-border-subtle) transparent;
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-categories-modal-content #cleanplaats-category-subhead-title,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-categories-modal-content .cleanplaats-category-check {
+  color: var(--cleanplaats-dark-text);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-categories-modal-content .cleanplaats-category-subhead-status,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-categories-modal-content .cleanplaats-category-check-group,
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-input-help {
+  color: var(--cleanplaats-dark-text-muted);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-categories-modal-content .cleanplaats-category-check:hover {
+  background: #2f2f2e;
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-categories-modal-content .cleanplaats-category-check.is-checked {
+  background: rgba(33, 150, 243, 0.18);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-categories-modal-content .cleanplaats-category-check-tag {
+  background: #363635;
+  color: var(--cleanplaats-dark-text-muted);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-categories-modal-content .cleanplaats-category-sub-state {
+  background: #2f2f2e;
+  color: var(--cleanplaats-dark-text-muted);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-categories-modal-content .cleanplaats-category-sub-state.is-error {
+  background: rgba(233, 96, 96, 0.16);
+  color: #f5a3a3;
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-categories-modal-content .cleanplaats-category-textlink {
+  color: var(--cleanplaats-dark-link);
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-categories-modal-content .cleanplaats-category-sub-state.is-error .cleanplaats-category-textlink {
+  color: inherit;
+}
+
+.cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-categories-modal-content .cleanplaats-category-add:disabled {
+  background: #363635;
+  color: var(--cleanplaats-dark-text-muted);
 }
 
 .cleanplaats-panel.cleanplaats-dark-mode .cleanplaats-categories-modal-content .cleanplaats-category-count {

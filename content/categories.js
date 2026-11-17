@@ -125,36 +125,63 @@ function getCategoryEntryLabel(entry) {
 }
 
 function addBlockedCategory(entry) {
-    const normalized = normalizeBlockedCategoryEntry({ ...entry, site: getCategorySiteScope() });
-    if (!normalized || isBlockedCategoryEntry(normalized.id)) return;
+    addBlockedCategories([entry]);
+}
+
+// Several at once, from the subcategory checklist: one save, one cleanup pass
+// and one toast whose undo takes them all back.
+function addBlockedCategories(entries) {
+    const scope = getCategorySiteScope();
+    const added = [];
+    (entries || []).forEach(entry => {
+        const normalized = normalizeBlockedCategoryEntry({ ...entry, site: scope });
+        if (!normalized || isBlockedCategoryEntry(normalized.id) || added.some(item => item.id === normalized.id)) return;
+        added.push(normalized);
+    });
+    if (added.length === 0) return;
 
     const panelText = getPanelLocaleText();
-    CLEANPLAATS.settings.blockedCategories = [...(CLEANPLAATS.settings.blockedCategories || []), normalized];
+    CLEANPLAATS.settings.blockedCategories = [...(CLEANPLAATS.settings.blockedCategories || []), ...added];
     incrementActionCount();
     saveSettings().then(() => {
         renderCategoriesModal();
         performCleanup();
-        showBubbleNotification(panelText.categoryToastHidden(getCategoryEntryLabel(normalized)),
-            () => removeBlockedCategory(normalized.id));
+        showBubbleNotification(getCategoryBatchToast(added, panelText.categoryToastHidden, panelText.categoryToastHiddenMany),
+            () => removeBlockedCategories(added.map(entry => entry.id)));
         refreshDonationNudge();
     });
 }
 
 function removeBlockedCategory(id) {
-    const scope = getCategorySiteScope();
-    const entry = getBlockedCategoryEntries().find(item => item.id === String(id));
-    if (!entry) return;
+    removeBlockedCategories([id]);
+}
 
+function removeBlockedCategories(ids) {
+    const scope = getCategorySiteScope();
+    const wanted = new Set((ids || []).map(String));
+    const removed = getBlockedCategoryEntries().filter(item => wanted.has(item.id));
+    if (removed.length === 0) return;
+
+    const removedIds = new Set(removed.map(entry => entry.id));
     const panelText = getPanelLocaleText();
     CLEANPLAATS.settings.blockedCategories = (CLEANPLAATS.settings.blockedCategories || [])
-        .filter(item => !(String(item?.id) === entry.id && (item?.site === 'be' ? 'be' : 'nl') === scope));
+        .filter(item => !(removedIds.has(String(item?.id)) && (item?.site === 'be' ? 'be' : 'nl') === scope));
     saveSettings().then(() => {
         renderCategoriesModal();
         // Lifting a block has to bring cards back, which only a fresh pass does.
         resetPreviousChanges();
         performCleanup();
-        showBubbleNotification(panelText.categoryToastShown(getCategoryEntryLabel(entry)));
+        showBubbleNotification(getCategoryBatchToast(removed, panelText.categoryToastShown, panelText.categoryToastShownMany));
     });
+}
+
+// One entry is named in full. A batch from the checklist always shares its
+// main category, so that one is named: "3 subcategorieën uit Boeken".
+function getCategoryBatchToast(entries, single, many) {
+    if (entries.length === 1) return single(getCategoryEntryLabel(entries[0]));
+    const parents = new Set(entries.map(entry => entry.parentName));
+    const parent = parents.size === 1 ? [...parents][0] : '';
+    return many(entries.length, parent);
 }
 
 /* ---- Where the category names come from ---------------------------------- */
@@ -204,19 +231,28 @@ function loadMainCategories() {
     });
 }
 
-// A search on just the main category lists all of its subcategories.
+// Main categories whose subcategories could not be fetched, so the picker
+// can say so instead of "loading" forever. Cleared on a retry.
+var cleanplaatsSubCategoriesFailed = {};
+
+// A search on just the main category lists all of its subcategories. A
+// category without any is stored as an empty list: that is an answer, not a
+// failure.
 function loadSubCategories(l1Id) {
     const tree = CLEANPLAATS.runtime.categoryTree;
     const key = String(l1Id);
     if (tree.sub[key]) return Promise.resolve(tree.sub[key]);
+    delete cleanplaatsSubCategoriesFailed[key];
 
     return fetchCategoryOptions({ l1CategoryId: key, limit: '1', offset: '0' }).then(options => {
-        const subs = (options || []).filter(item => String(item.parentId) === key).map(toCategoryOption);
-        if (subs.length > 0) {
-            subs.sort((a, b) => a.name.localeCompare(b.name, 'nl'));
-            tree.sub[key] = subs;
+        if (!options) {
+            cleanplaatsSubCategoriesFailed[key] = true;
+            return null;
         }
-        return tree.sub[key] || null;
+        const subs = options.filter(item => String(item.parentId) === key).map(toCategoryOption);
+        subs.sort((a, b) => a.name.localeCompare(b.name, 'nl'));
+        tree.sub[key] = subs;
+        return subs;
     });
 }
 
@@ -292,8 +328,16 @@ function hideOtherPanelModals(keepId) {
 }
 
 // What the user picked in the "other category" picker, so a re-render after
-// a block elsewhere does not throw it away.
-var cleanplaatsCategoryPicker = { main: '', sub: '' };
+// a block elsewhere does not throw it away: the main category, the ticked
+// subcategory ids and what is typed in the filter.
+var cleanplaatsCategoryPicker = { main: '', subs: [], filter: '' };
+
+// Where focus goes after the next full render, which rebuilds the modal and
+// would otherwise drop it on the page.
+var cleanplaatsCategoryRefocus = '';
+
+// A filter field only pays for itself on a list too long to scan.
+var CLEANPLAATS_SUBCATEGORY_FILTER_MIN = 12;
 
 function showCategoriesModal(triggerButton) {
     const modal = document.getElementById('cleanplaats-categories-modal');
@@ -306,7 +350,7 @@ function showCategoriesModal(triggerButton) {
         return;
     }
 
-    cleanplaatsCategoryPicker = { main: '', sub: '' };
+    cleanplaatsCategoryPicker = { main: '', subs: [], filter: '' };
     cleanplaatsCategoriesModalBottom = triggerButton
         ? window.innerHeight - triggerButton.getBoundingClientRect().top + 8
         : null;
@@ -317,8 +361,14 @@ function showCategoriesModal(triggerButton) {
     // The names of the categories on this page come with the main list, so
     // the whole modal is drawn again once it is in, not just the picker.
     const hadMain = Boolean(CLEANPLAATS.runtime.categoryTree.main);
-    loadMainCategories().then(() => (hadMain ? paintCategoryPicker() : renderCategoriesModal()));
+    loadMainCategories().then(main => {
+        cleanplaatsMainCategoriesFailed = !main;
+        if (hadMain) paintCategoryPicker();
+        else renderCategoriesModal();
+    });
 }
+
+var cleanplaatsMainCategoriesFailed = false;
 
 // Where the modal wants to sit: just above the button that opened it. Null
 // leaves it to the stylesheet.
@@ -361,7 +411,11 @@ function updateCategoriesModal() {
     // A search response landing while a dropdown is open would close it under
     // the user's cursor; the next change repaints anyway.
     const modal = document.getElementById('cleanplaats-categories-modal');
-    if (modal && modal.contains(document.activeElement) && document.activeElement.tagName === 'SELECT') return;
+    // Same for the subcategory checklist: a redraw would scroll it back to the
+    // top while the user is ticking boxes further down.
+    const active = document.activeElement;
+    if (modal && modal.contains(active)
+        && (active.tagName === 'SELECT' || active.closest('#cleanplaats-category-subpicker'))) return;
     renderCategoriesModal();
 }
 
@@ -429,10 +483,20 @@ function renderCategoriesModal() {
                 <select id="cleanplaats-category-main" class="cleanplaats-term-input cleanplaats-category-select" aria-label="${panelText.categoriesMainPlaceholder}">
                     <option value="">${panelText.categoriesLoading}</option>
                 </select>
-                <select id="cleanplaats-category-sub" class="cleanplaats-term-input cleanplaats-category-select" aria-label="${panelText.categoriesSubAll}" disabled>
-                    <option value="">${panelText.categoriesSubAll}</option>
-                </select>
-                <button type="button" id="cleanplaats-category-add" class="cleanplaats-add-term-btn cleanplaats-category-add" disabled>${panelText.categoriesHideButton}</button>
+                <div id="cleanplaats-category-subpicker" class="cleanplaats-category-subpicker" hidden>
+                    <div class="cleanplaats-category-subhead">
+                        <span id="cleanplaats-category-subhead-title"></span>
+                        <span class="cleanplaats-category-subhead-status" aria-live="polite">
+                            <span id="cleanplaats-category-ticked"></span>
+                            <button type="button" id="cleanplaats-category-clear" class="cleanplaats-category-textlink" hidden>${panelText.categoriesClearTicks}</button>
+                        </span>
+                    </div>
+                    <input type="search" id="cleanplaats-category-filter" class="cleanplaats-term-input cleanplaats-category-filter" placeholder="${panelText.categoriesFilterPlaceholder}" aria-label="${panelText.categoriesFilterPlaceholder}" autocomplete="off" hidden>
+                    <div id="cleanplaats-category-subs" class="cleanplaats-category-checklist" role="group" aria-labelledby="cleanplaats-category-subhead-title"></div>
+                    <div id="cleanplaats-category-sub-state" class="cleanplaats-category-sub-state" hidden></div>
+                </div>
+                <button type="button" id="cleanplaats-category-add" class="cleanplaats-add-term-btn cleanplaats-category-add" disabled>${panelText.categoriesPickFirst}</button>
+                <button type="button" id="cleanplaats-category-whole" class="cleanplaats-category-textlink cleanplaats-category-whole" hidden></button>
                 <div class="cleanplaats-input-help">${panelText.categoriesHelp}</div>
             </div>
 
@@ -455,66 +519,280 @@ function renderCategoriesModal() {
     });
 
     const mainSelect = document.getElementById('cleanplaats-category-main');
-    const subSelect = document.getElementById('cleanplaats-category-sub');
+    const filterInput = document.getElementById('cleanplaats-category-filter');
 
-    mainSelect.onchange = () => {
-        cleanplaatsCategoryPicker = { main: mainSelect.value, sub: '' };
-        paintCategoryPicker();
-        if (mainSelect.value) loadSubCategories(mainSelect.value).then(() => paintCategoryPicker());
+    mainSelect.onchange = () => pickCategoryMain(mainSelect.value);
+
+    filterInput.oninput = () => {
+        cleanplaatsCategoryPicker.filter = filterInput.value;
+        paintSubCategoryRows();
     };
-    subSelect.onchange = () => {
-        cleanplaatsCategoryPicker.sub = subSelect.value;
-        paintCategoryPicker();
+    // Escape empties the filter first; only an empty one lets it through.
+    filterInput.onkeydown = event => {
+        if (event.key !== 'Escape' || !filterInput.value) return;
+        event.preventDefault();
+        event.stopPropagation();
+        filterInput.value = '';
+        cleanplaatsCategoryPicker.filter = '';
+        paintSubCategoryRows();
     };
+
+    document.getElementById('cleanplaats-category-clear').onclick = () => {
+        cleanplaatsCategoryPicker.subs = [];
+        paintSubCategoryRows();
+        const first = document.querySelector('#cleanplaats-category-subs input:not(:disabled)');
+        if (first) first.focus();
+    };
+
     document.getElementById('cleanplaats-category-add').onclick = () => {
-        const tree = CLEANPLAATS.runtime.categoryTree;
-        const main = (tree.main || []).find(item => item.id === cleanplaatsCategoryPicker.main);
+        const main = getPickedMainCategory();
         if (!main) return;
-        const sub = (tree.sub[main.id] || []).find(item => item.id === cleanplaatsCategoryPicker.sub);
-        cleanplaatsCategoryPicker = { main: '', sub: '' };
-        addBlockedCategory(sub
-            ? { id: sub.id, name: sub.name, parentId: main.id, parentName: main.name }
-            : { id: main.id, name: main.name });
+        const all = CLEANPLAATS.runtime.categoryTree.sub[main.id];
+        // A category without subcategories: the button is the whole-category action.
+        if (all && all.length === 0) {
+            document.getElementById('cleanplaats-category-whole').click();
+            return;
+        }
+        const ticked = new Set(cleanplaatsCategoryPicker.subs);
+        const subs = (all || []).filter(item => ticked.has(item.id) && !isBlockedCategoryEntry(item.id));
+        if (subs.length === 0) return;
+        // The main category stays picked: the rows just hidden turn into
+        // "verborgen" right where the user was looking.
+        cleanplaatsCategoryPicker = { main: main.id, subs: [], filter: cleanplaatsCategoryPicker.filter };
+        cleanplaatsCategoryRefocus = 'list';
+        addBlockedCategories(subs.map(sub => ({ id: sub.id, name: sub.name, parentId: main.id, parentName: main.name })));
+    };
+
+    document.getElementById('cleanplaats-category-whole').onclick = () => {
+        const main = getPickedMainCategory();
+        if (!main) return;
+        cleanplaatsCategoryPicker = { main: '', subs: [], filter: '' };
+        cleanplaatsCategoryRefocus = 'main';
+        addBlockedCategory({ id: main.id, name: main.name });
     };
 
     paintCategoryPicker();
     fitCategoriesModalToViewport();
+    restoreCategoryPickerFocus();
+}
+
+function getPickedMainCategory() {
+    return (CLEANPLAATS.runtime.categoryTree.main || []).find(item => item.id === cleanplaatsCategoryPicker.main) || null;
+}
+
+function pickCategoryMain(id) {
+    cleanplaatsCategoryPicker = { main: id, subs: [], filter: '' };
+    const filterInput = document.getElementById('cleanplaats-category-filter');
+    if (filterInput) filterInput.value = '';
+    const list = document.getElementById('cleanplaats-category-subs');
+    if (list) list.scrollTop = 0;
+    paintCategoryPicker();
+    if (!id) return;
+
+    loadSubCategories(id)
+        .catch(() => null)
+        .then(() => {
+            if (cleanplaatsCategoryPicker.main !== id) return;
+            paintCategoryPicker();
+            fitCategoriesModalToViewport();
+            // In a short window the list and the button end up below the
+            // fold of the modal; bring them up once there is something to see.
+            const add = document.getElementById('cleanplaats-category-add');
+            if (add) add.scrollIntoView({ block: 'nearest' });
+        });
+}
+
+function restoreCategoryPickerFocus() {
+    const target = cleanplaatsCategoryRefocus;
+    cleanplaatsCategoryRefocus = '';
+    if (!target) return;
+    const element = target === 'list'
+        ? document.querySelector('#cleanplaats-category-subs input:not(:disabled)')
+            || document.getElementById('cleanplaats-category-main')
+        : document.getElementById('cleanplaats-category-main');
+    if (element) element.focus({ preventScroll: true });
 }
 
 // Built as elements: the names are the site's own text, so there is no
 // escaping to get wrong.
 function paintCategoryPicker() {
     const mainSelect = document.getElementById('cleanplaats-category-main');
-    const subSelect = document.getElementById('cleanplaats-category-sub');
-    const addButton = document.getElementById('cleanplaats-category-add');
-    if (!mainSelect || !subSelect || !addButton) return;
+    const subPicker = document.getElementById('cleanplaats-category-subpicker');
+    if (!mainSelect || !subPicker) return;
     const panelText = getPanelLocaleText();
     const tree = CLEANPLAATS.runtime.categoryTree;
     const picked = cleanplaatsCategoryPicker;
 
-    const fill = (select, placeholder, items) => {
-        select.replaceChildren();
-        const first = document.createElement('option');
-        first.value = '';
-        first.textContent = placeholder;
-        select.appendChild(first);
-        (items || []).forEach(item => {
-            const option = document.createElement('option');
-            option.value = item.id;
-            option.textContent = item.name;
-            option.disabled = isBlockedCategoryEntry(item.id);
-            select.appendChild(option);
-        });
-    };
-
-    fill(mainSelect, tree.main ? panelText.categoriesMainPlaceholder : panelText.categoriesLoading, tree.main);
+    mainSelect.replaceChildren();
+    const first = document.createElement('option');
+    first.value = '';
+    first.textContent = tree.main
+        ? panelText.categoriesMainPlaceholder
+        : (cleanplaatsMainCategoriesFailed ? panelText.categoriesMainFailed : panelText.categoriesLoading);
+    mainSelect.appendChild(first);
+    (tree.main || []).forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.id;
+        const blocked = isBlockedCategoryEntry(item.id);
+        option.textContent = blocked ? panelText.categoriesOptionHidden(item.name) : item.name;
+        option.disabled = blocked;
+        mainSelect.appendChild(option);
+    });
     mainSelect.value = picked.main;
 
-    const subs = picked.main ? tree.sub[picked.main] : null;
-    fill(subSelect, picked.main && !subs ? panelText.categoriesLoading : panelText.categoriesSubAll, subs);
-    subSelect.value = picked.sub;
-    subSelect.disabled = !picked.main || !subs || isBlockedCategoryEntry(picked.main);
+    const main = getPickedMainCategory();
+    if (!main || isBlockedCategoryEntry(main.id)) {
+        if (main) picked.main = '';
+        picked.subs = [];
+        mainSelect.value = picked.main;
+    }
 
-    const target = picked.sub || picked.main;
-    addButton.disabled = !target || isBlockedCategoryEntry(target);
+    // The select right above already names the main category; repeating it
+    // here only got the caption cut off once the tick count showed up.
+    subPicker.hidden = !picked.main;
+    document.getElementById('cleanplaats-category-subhead-title').textContent = panelText.categoriesSubsLabel;
+
+    paintSubCategoryRows();
+}
+
+// "Auto's | Folders en Tijdschriften": the part before the bar is the group
+// the site files it under, the part after is the name people look for.
+function appendSubCategoryName(parent, name) {
+    const bar = name.indexOf(' | ');
+    if (bar > 0) {
+        const group = document.createElement('span');
+        group.className = 'cleanplaats-category-check-group';
+        group.textContent = `${name.slice(0, bar)} · `;
+        parent.appendChild(group);
+        parent.appendChild(document.createTextNode(name.slice(bar + 3)));
+    } else {
+        parent.textContent = name;
+    }
+}
+
+// The rows, the filter, the status line and the buttons. Kept apart from
+// paintCategoryPicker so typing in the filter does not rebuild the select.
+function paintSubCategoryRows() {
+    const subList = document.getElementById('cleanplaats-category-subs');
+    const filterInput = document.getElementById('cleanplaats-category-filter');
+    const state = document.getElementById('cleanplaats-category-sub-state');
+    if (!subList || !filterInput || !state) return;
+    const panelText = getPanelLocaleText();
+    const picked = cleanplaatsCategoryPicker;
+    const subs = picked.main ? CLEANPLAATS.runtime.categoryTree.sub[picked.main] : null;
+    const failed = Boolean(picked.main) && !subs && cleanplaatsSubCategoriesFailed[picked.main];
+
+    // Ticks on a subcategory that got hidden meanwhile no longer count.
+    picked.subs = picked.subs.filter(id => !isBlockedCategoryEntry(id));
+
+    // The list scrolls on its own; redrawing it would jump back to the top.
+    const scrollTop = subList.scrollTop;
+    subList.replaceChildren();
+    state.replaceChildren();
+    state.classList.toggle('is-error', failed);
+
+    if (!picked.main) {
+        state.hidden = true;
+    } else if (!subs) {
+        state.hidden = false;
+        if (failed) {
+            state.append(document.createTextNode(`${panelText.categoriesSubsFailed} `));
+            const retry = document.createElement('button');
+            retry.type = 'button';
+            retry.className = 'cleanplaats-category-textlink';
+            retry.textContent = panelText.categoriesRetry;
+            retry.onclick = () => pickCategoryMain(picked.main);
+            state.appendChild(retry);
+        } else {
+            state.textContent = panelText.categoriesLoading;
+        }
+    } else if (subs.length === 0) {
+        state.hidden = false;
+        state.textContent = panelText.categoriesSubsNone;
+    } else {
+        const query = picked.filter.trim().toLocaleLowerCase('nl');
+        const shown = query
+            ? subs.filter(item => item.name.toLocaleLowerCase('nl').includes(query))
+            : subs;
+        state.hidden = shown.length > 0;
+        if (shown.length === 0) state.textContent = panelText.categoriesFilterNone(picked.filter.trim());
+
+        shown.forEach(item => {
+            const blocked = isBlockedCategoryEntry(item.id);
+            const label = document.createElement('label');
+            label.className = 'cleanplaats-category-check';
+            const box = document.createElement('input');
+            box.type = 'checkbox';
+            box.value = item.id;
+            box.checked = blocked || picked.subs.includes(item.id);
+            box.disabled = blocked;
+            label.classList.toggle('is-checked', box.checked && !blocked);
+            box.onchange = () => {
+                picked.subs = box.checked
+                    ? [...picked.subs, item.id]
+                    : picked.subs.filter(id => id !== item.id);
+                label.classList.toggle('is-checked', box.checked);
+                paintCategoryPickerStatus();
+            };
+            const name = document.createElement('span');
+            name.className = 'cleanplaats-category-check-name';
+            appendSubCategoryName(name, item.name);
+            label.title = item.name;
+            label.append(box, name);
+            if (blocked) {
+                const tag = document.createElement('span');
+                tag.className = 'cleanplaats-category-check-tag';
+                tag.textContent = panelText.categoriesSubAlreadyHidden;
+                label.appendChild(tag);
+            }
+            subList.appendChild(label);
+        });
+    }
+    subList.hidden = !subs || subs.length === 0;
+    subList.scrollTop = scrollTop;
+
+    filterInput.hidden = !subs || subs.length < CLEANPLAATS_SUBCATEGORY_FILTER_MIN;
+    if (filterInput.value !== picked.filter) filterInput.value = picked.filter;
+
+    paintCategoryPickerStatus();
+}
+
+// The primary button only ever hides what is ticked. Hiding the whole main
+// category is its own, quieter action under it, so nothing hides all of
+// "Boeken" just because no box was ticked yet.
+function paintCategoryPickerStatus() {
+    const addButton = document.getElementById('cleanplaats-category-add');
+    const wholeButton = document.getElementById('cleanplaats-category-whole');
+    const ticked = document.getElementById('cleanplaats-category-ticked');
+    const clear = document.getElementById('cleanplaats-category-clear');
+    if (!addButton || !wholeButton || !ticked || !clear) return;
+    const panelText = getPanelLocaleText();
+    const picked = cleanplaatsCategoryPicker;
+    const main = getPickedMainCategory();
+    const subs = main ? CLEANPLAATS.runtime.categoryTree.sub[main.id] : null;
+    const count = picked.subs.length;
+
+    ticked.textContent = count > 0 ? panelText.categoriesTickedCount(count) : '';
+    clear.hidden = count === 0;
+
+    if (!main) {
+        addButton.textContent = panelText.categoriesPickFirst;
+        addButton.disabled = true;
+    } else if (subs && subs.length === 0) {
+        // Nothing to tick: hiding the main category is the only action left,
+        // so it is the button.
+        addButton.textContent = panelText.categoriesHideWhole(main.name);
+        addButton.disabled = false;
+    } else if (count > 0) {
+        addButton.textContent = panelText.categoriesHideSubsButton(count);
+        addButton.disabled = false;
+    } else {
+        addButton.textContent = panelText.categoriesTickFirst;
+        addButton.disabled = true;
+    }
+
+    // With no subcategories the button itself hides the whole category.
+    const onlyWhole = Boolean(main) && Boolean(subs) && subs.length === 0;
+    wholeButton.hidden = !main || onlyWhole;
+    if (main) wholeButton.textContent = panelText.categoriesOrHideWhole(main.name);
 }
