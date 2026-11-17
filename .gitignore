@@ -39,3 +39,4 @@ __pycache__/
 *.p12
 *.crx
 *.xpi
+.impeccable/
