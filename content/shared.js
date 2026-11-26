@@ -1397,6 +1397,14 @@ var CLEANPLAATS = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_NL = {
+    '3.0.0': {
+        intro: 'Nieuw in deze versie:',
+        highlights: [
+            'Verberg meerdere subcategorieën tegelijk: vink ze aan in de lijst en verberg ze in één keer.',
+            'Zoekopdrachten met een plus, zoals VU+ of C++, houden nu hun plus.'
+        ],
+        note: null
+    },
     '2.2.9': {
         intro: 'Nieuw in deze versie:',
         highlights: [
@@ -1560,6 +1568,14 @@ var CLEANPLAATS_UPDATE_NOTES_NL = {
 };
 
 var CLEANPLAATS_UPDATE_NOTES_FR = {
+    '3.0.0': {
+        intro: 'Nouveautés de cette version :',
+        highlights: [
+            'Masquez plusieurs sous-catégories à la fois : cochez-les dans la liste et masquez-les en une fois.',
+            'Les recherches avec un plus, comme VU+ ou C++, gardent maintenant leur plus.'
+        ],
+        note: null
+    },
     '2.2.9': {
         intro: 'Nouveautés de cette version :',
         highlights: [
