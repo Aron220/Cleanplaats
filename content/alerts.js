@@ -3905,9 +3905,15 @@ function buildAlertSearchUrl(draft, term) {
     const query = String(term || '').trim();
     const encoded = encodeURIComponent(query).replace(/%20/g, '+');
     // In the hash a plus has to be encoded twice to reach the site's search as
-    // a plus (see getSearchQueryFromUrl() in cleanup.js). The /q/ path has no
-    // such escape: there the site always reads it as a space.
-    const hashEncoded = encoded.replace(/%2B/g, '%252B');
+    // a plus (see getSearchQueryFromUrl() in cleanup.js), and even then the
+    // search API drops it unless the word is quoted, so the hash carries the
+    // term quoted the way the poller runs it. Quotes need the same double
+    // encoding (verified: #q:%2522vu%252B%2522 searches "vu+"). The /q/ path
+    // has no such escape: there the site always reads a plus as a space.
+    const hashEncoded = encodeURIComponent(quoteAlertPlusTerms(query))
+        .replace(/%20/g, '+')
+        .replace(/%2B/g, '%252B')
+        .replace(/%22/g, '%2522');
     const l1Key = draft.l1Key || alertCategoryKeyFor(draft.l1CategoryId);
     const l2Key = draft.l2Key || alertCategoryKeyFor(draft.l2CategoryId);
 
